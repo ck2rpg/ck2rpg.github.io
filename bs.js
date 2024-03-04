@@ -4007,6 +4007,8 @@ function wholeImage() {
                                                                                                                                 drawAndDownload("wetlands_02_mask", "wetlands_02_mask.png", function() {
                                                                                                                                   drawAndDownload("wetlands_02_mud_mask", "wetlands_02_mud_mask.png", function() {
                                                                                                                                     drawAndDownload("book", "book.png", function() {
+                                                                                                                                      world.drawingType = "rivermap"
+                                                                                                                                      drawWorld();
                                                                                                                                       drawHPRivers();
                                                                                                                                       downloadImage(canvas, "rivers.png");
                                                                                                                                       drawHeightmapFromScratch()
