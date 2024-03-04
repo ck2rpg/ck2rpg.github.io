@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Bookmap</title>
+    <link rel="stylesheet" href="bs.css"></link>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <canvas id="texture-canvas"></canvas>
+    <canvas id="gradientCanvas"></canvas>
+    <div id="loading-screen">
+      LOADING
+    </div>
+    <div id="main-sidebar">
+      <div class="sbtn" id="open-editor-menu">Map Editor</div>
+      <div class="sbtn" id="civ-process">Generate Provinces (Long Wait)</div>
+      <div class="sbtn" id="open-download-menu">Downloads Menu</div>
+      <div class="sbtn" id="raisebrush">Raise Land Brush</div>
+      <div class="sbtn" id="lowerbrush">Lower Land Brush</div>
+      <div class="sbtn" id="increasebrushsize">Increase Brush Size</div>
+      <div class="sbtn" id="decreasebrushsize">Decrease Brush Size</div>
+      <div class="sbtn" id="increasebrushhardness">Increase Brush Hardness</div>
+      <div class="sbtn" id="decreasebrushhardness">Decrease Brush Hardness</div>
+    </div>
+    <div id="downloads-sidebar">
+      <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
+      <div class="sbtn" id="downloadallbtn">Download Image Files</div>
+      <div class="sbtn" id="add-downloads">Download Text Files</div>
+      <div class="sbtn" id="download-palettes">Download Palettes</div>
+      <div class="sbtn" id="download-clothing-palettes">Download Clothing Palettes</div>
+    </div>
+    <div id="sidebar">
+      <div class="sbtn" id="back-to-main-menu-editor">Back to Main Menu</div>
+      <div class="sbtn" id="previewmap">Preview Map</div>
+      <div class="sbtn" id="heightmap">Height Map</div>
+      <div class="sbtn" id="provinceMap">Province Map</div>
+      <div class="sbtn" id="rivermap">River Map</div>
+      <div class="sbtn" id="paper-map">Paper Map</div>
+      <div class="sbtn" id="papyrus-map">Papyrus Map</div>
+      <div class="sbtn" id="beach_02_mask">beach_02_mask</div>
+      <div class="sbtn" id="beach_02_mediterranean_mask">beach_02_mediterranean_mask</div>
+      <div class="sbtn" id="beach_02_pebbles_mask">beach_02_pebbles_mask</div>
+      <div class="sbtn" id="coastline_cliff_brown_mask">coastline_cliff_brown_mask</div>
+      <div class="sbtn" id="coastline_cliff_desert_mask">coastline_cliff_desert_mask</div>
+      <div class="sbtn" id="coastline_cliff_grey_mask">coastline_cliff_grey_mask</div>
+      <div class="sbtn" id="desert_01_mask">desert_01_mask</div>
+      <div class="sbtn" id="desert_02_mask">desert_02_mask</div>
+      <div class="sbtn" id="desert_cracked_mask">desert_cracked_mask</div>
+      <div class="sbtn" id="desert_flat_01_mask">desert_flat_01_mask</div>
+      <div class="sbtn" id="desert_rocky_mask">desert_rocky_mask</div>
+      <div class="sbtn" id="desert_wavy_01_larger_mask">desert_wavy_01_larger_mask</div>
+      <div class="sbtn" id="desert_wavy_01_mask">desert_wavy_01_mask</div>
+      <div class="sbtn" id="drylands_01_cracked_mask">drylands_01_cracked_mask</div>
+      <div class="sbtn" id="drylands_01_grassy_mask">drylands_01_grassy_mask</div>
+      <div class="sbtn" id="drylands_01_mask">drylands_01_mask</div>
+      <div class="sbtn" id="farmland_01_mask">farmland_01_mask</div>
+      <div class="sbtn" id="floodplains_01_mask">floodplains_01_mask</div>
+      <div class="sbtn" id="forest_jungle_01_mask">forest_jungle_01_mask</div>
+      <div class="sbtn" id="forest_leaf_01_mask">forest_leaf_01_mask</div>
+      <div class="sbtn" id="forest_pine_01_mask">forest_pine_01_mask</div>
+      <div class="sbtn" id="forestfloor_02_mask">forestfloor_02_mask</div>
+      <div class="sbtn" id="forestfloor_mask">forestfloor_mask</div>
+      <div class="sbtn" id="hills_01_mask">hills_01_mask</div>
+      <div class="sbtn" id="hills_01_rocks_mask">hills_01_rocks_mask</div>
+      <div class="sbtn" id="hills_01_rocks_medi_mask">hills_01_rocks_medi_mask</div>
+      <div class="sbtn" id="hills_01_rocks_small_mask">hills_01_rocks_small_mask</div>
+      <div class="sbtn" id="india_farmlands_mask">india_farmlands_mask</div>
+      <div class="sbtn" id="medi_dry_mud_mask">medi_dry_mud_mask</div>
+      <div class="sbtn" id="medi_farmlands_mask">medi_farmlands_mask</div>
+      <div class="sbtn" id="medi_grass_01_mask">medi_grass_01_mask</div>
+      <div class="sbtn" id="medi_grass_02_mask">medi_grass_02_mask</div>
+      <div class="sbtn" id="medi_hills_01_mask">medi_hills_01_mask</div>
+      <div class="sbtn" id="medi_lumpy_grass_mask">medi_lumpy_grass_mask</div>
+      <div class="sbtn" id="medi_noisy_grass_mask">medi_noisy_grass_mask</div>
+      <div class="sbtn" id="mountain_02_b_mask">mountain_02_b_mask</div>
+      <div class="sbtn" id="mountain_02_c_mask">mountain_02_c_mask</div>
+      <div class="sbtn" id="mountain_02_c_snow_mask">mountain_02_c_snow_mask</div>
+      <div class="sbtn" id="mountain_02_d_desert_mask">mountain_02_d_desert_mask</div>
+      <div class="sbtn" id="mountain_02_d_mask">mountain_02_d_mask</div>
+      <div class="sbtn" id="mountain_02_d_snow_mask">mountain_02_d_snow_mask</div>
+      <div class="sbtn" id="mountain_02_d_valleys_mask">mountain_02_d_valleys_mask</div>
+      <div class="sbtn" id="mountain_02_desert_c_mask">mountain_02_desert_c_mask</div>
+      <div class="sbtn" id="mountain_02_desert_mask">mountain-02_desert_mask</div>
+      <div class="sbtn" id="mountain_02_mask">mountain_02_mask</div>
+      <div class="sbtn" id="mountain_02_snow_mask">mountain_02_snow_mask</div>
+      <div class="sbtn" id="mud_wet_01_mask">mud_wet_01_mask</div>
+      <div class="sbtn" id="northern_hills_01_mask">northern_hills_01_mask</div>
+      <div class="sbtn" id="northern_plains_01_mask">northern_plains_01_mask</div>
+      <div class="sbtn" id="oasis_mask">oasis_mask</div>
+      <div class="sbtn" id="plains_01_desat_mask">plains_01_desat_mask</div>
+      <div class="sbtn" id="plains_01_dry_mask">plains_01_dry_mask</div>
+      <div class="sbtn" id="plains_01_dry_mud_mask">plains_01_dry_mud_mask</div>
+      <div class="sbtn" id="plains_01_mask">plains_01_mask</div>
+      <div class="sbtn" id="plains_01_noisy_mask">plains_01_noisy_mask</div>
+      <div class="sbtn" id="plains_01_rough_mask">plains_01_rough_mask</div>
+      <div class="sbtn" id="snow_mask">snow_mask</div>
+      <div class="sbtn" id="steppe_01_mask">steppe_01_mask</div>
+      <div class="sbtn" id="steppe_bushes_mask">steppe_bushes_mask</div>
+      <div class="sbtn" id="steppe_rocks_mask">steppe_rocks_mask</div>
+      <div class="sbtn" id="wetlands_02_mask">wetlands_02_mask</div>
+      <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
+    </div>
+    <div id="buttons">
+      <span class="btn" id="startup">Startup</span>
+      <span class="btn" id="add-downloads">Add Downloads</span>
+      <span class="btn" id="tick">Tick</span>
+      <span class="btn" id="spread">Spread</span>
+      <span class="btn" id="drift">Drift</span>
+      <span class="btn" id="cleanup">Cleanup</span>
+
+
+      <span class="btn" id="beachmask">Beach Mask</span>
+      <span class="btn" id="desertmask">Desert Mask</span>
+      <span class="btn" id="mountainmask">Mountain Mask</span>
+      <span class="btn" id="plainsmask">Plains Mask</span>
+      <span class="btn" id="snowmask">Snow Mask</span>
+      <span class="btn" id="treemask">Tree Mask</span>
+      
+      <span class="btn" id="letter-map">Letter Map</span>
+      <span class="btn" id="seedCiv">Seed Civilization</span>
+      <span class="btn" id="parch">Parchment</span>
+      <span class="btn" id="erode">Erode</span>
+      <span class="btn" id="randomerode">Random Erosion</span>
+      <span class="btn" id="softenMountains">Soften Mountains And Emit</span>
+      <span class="btn" id="rainErosion">Rain Erosion</span>
+      <span class="btn" id="lowerMountains">Lower Mountains</span>
+      <span class="btn" id="raiseMountains">Raise Mountains</span>
+      <span class="btn" id="raiseElevation">Raise Elevation</span>
+      <span class="btn" id="lowerElevation">Lower Elevation</span>
+    </div>
+    <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
+    <img id="waterlines" src="waterlines.png" width="32" height="32" />
+    <img id="field" src="field.png" width="32" height="32" />
+    <img id="tree1" src="tree1.png" width="32" height="32" />
+    <img id="tree2" src="tree2.png" width="32" height="32" />
+    <img id="tree3" src="tree3.png" width="32" height="32" />
+    <img id="tree4" src="tree4.png" width="32" height="32" />
+    <img id="marsh1" src="marsh1.png" width="32" height="32" />
+    <img id="marsh2" src="marsh2.png" width="32" height="32" />
+    <img id="marsh3" src="marsh3.png" width="32" height="32" />
+    <img id="marsh4" src="marsh4.png" width="32" height="32" />
+    <img id="castle" src="town.png" width="32" height="32"/>
+    <img id="mountain" src="mountain1.png" width="32" height="32"/>
+    <img id="hills1" src="hills1.png" width="32" height="32"/>
+    <img id="hills2" src="hills2.png" width="32" height="32"/>
+    <img id="hills3" src="hills3.png" width="32" height="32"/>
+    <img id="hills4" src="hills4.png" width="32" height="32"/>
+    <img id="mountain1" src="mountain1.png" width="32" height="32"/>
+    <img id="mountain2" src="mountain2.png" width="32" height="32"/>
+    <img id="mountain3" src="mountain3.png" width="32" height="32"/>
+    <img id="mountain4" src="mountain4.png" width="32" height="32"/>
+    <img id="rivertemp" src="rivertemp.png"/>
+    <img id="riverTransTemp" src="riverTransTemp.png"/>
+    <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
+    <script src="simplex-noise.js"></script>
+    <script src="parsedspanishmalenames.js"></script>
+    <script src="parsedspanishsurnames.js"></script>
+    <script src="parsedspanishfemalenames.js"></script>
+    <script src="religionnames.js"></script>
+    <script src="parsedsurnames.js"></script>
+    <script src="malenames.js"></script>
+    <script src="femalenames.js"></script>
+    <script src="allplaces.js"></script>
+    <script src="mostcommon.js"></script>
+    <script src="places.js"></script>
+    <script src="britishplaces.js"></script>
+    <script src="frenchplacesparsed.js"></script>
+    <script src="clock.js"></script>
+    <script src="compromise.js"></script>
+    <script src="utilities.js"></script>
+    <script src="alice.js"></script>
+    <script src="biome.js"></script>
+    <script src="masking.js"></script>
+    <script src="bs.js"></script>
+    <script src="parchMap.js"></script>
+    <script src="lang2.js"></script>
+    <script src="worldHistory.js"></script>
+    <script src="ck3.js"></script>
+    <script src="fromheightmap.js"></script>
+    <script src="ck3stuff/culture.js"></script>
+    <script src="ck3stuff/religion.js"></script>
+    <script src="ck3stuff/simplehistory.js"></script>
+    <script src="clothingtextures.js"></script>
+    <script src="eyeskinhair.js"></script>
+    
+  </body>
+</html>
