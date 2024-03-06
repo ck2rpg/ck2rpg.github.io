@@ -134,3 +134,9 @@ table {
   z-index: 10000;
   background: white;
 }
+
+.loading {
+  margin-top: 40vh;
+  text-align: center;
+  font-size: 5em;
+}

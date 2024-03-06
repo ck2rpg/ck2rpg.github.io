@@ -1,0 +1,245 @@
+/* General Resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+    overflow-x: hidden;
+  }
+  
+  .container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 20px;
+  }
+  
+  a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+  /* Header */
+  header {
+    background: #333;
+    color: #fff;
+    padding-top: 10px;
+    min-height: 70px;
+    border-bottom: #F8F4E3 3px solid;
+    font-size: 0.8em;
+  }
+  
+  header a {
+    color: #fff;
+  }
+  
+  header ul {
+    display: flex;
+    list-style: none;
+    justify-content: flex-end;
+  }
+  
+  header ul li {
+    margin: 0 20px;
+  }
+  
+  header h1 {
+    float: left;
+    margin: 0;
+  }
+  
+  /* Hero Section */
+  #hero {
+    background: url('map.png') no-repeat center center/cover;
+    color: #fff;
+    padding: 100px 0;
+    text-align: center;
+    position: relative;
+  }
+  
+  /* Optional: Overlay to enhance text readability */
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Adjust the color and opacity to your liking */
+    z-index: 1;
+  }
+  
+  #hero * {
+    position: relative;
+    z-index: 2;
+  }
+  
+  #hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  #hero p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    background: #333;
+    color: #fff;
+    padding: 10px 30px;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .cta-btn:hover {
+    background: #555;
+  }
+  
+  /* Section Styling */
+  section {
+    padding: 60px 0;
+  }
+  
+  .section-bg {
+    background: #eaeaea;
+  }
+  
+  /* Mods & Collaboration Sections */
+  .mod-item, .collaboration-item {
+    margin-bottom: 20px;
+  }
+  
+  .mod-item img, .collaboration-item img {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Skills Section */
+  #skills ul {
+    list-style: none;
+    padding: 20px;
+  }
+  
+  #skills ul li {
+    background: #333;
+    color: #fff;
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 10px;
+    border-radius: 5px;
+  }
+  
+  /* Contact Form */
+  #contact form {
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  #contact form input, #contact form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  #contact form button {
+    width: 100%;
+    background: #333;
+    color: #fff;
+    border: 0;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  #contact form button:hover {
+    background: #555;
+  }
+  
+  /* Footer */
+  footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    header ul {
+      padding-top: 20px;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    header ul li {
+      margin-bottom: 20px;
+    }
+  
+    .cta-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  }
+  
+  .hamburger {
+    display: none;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Mobile Navigation */
+  @media (max-width: 768px) {
+    .hamburger {
+      display: block;
+    }
+  
+    #nav-links {
+      width: 100%;
+      background: #333;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    #nav-links li {
+      margin: 15px 0;
+    }
+  
+    #nav-links li a {
+      color: #fff;
+    }
+  
+    #nav-links.active {
+      display: flex;
+    }
+  }
+
+  .landing-headline {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .header-byline {
+    margin-top: 0px;
+  }

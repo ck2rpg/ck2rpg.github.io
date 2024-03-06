@@ -223,6 +223,7 @@ function createReligion(empire) {
     r.doctrines.push(pickFrom(faithClerical3))
     r.doctrines.push(pickFrom(faithClerical4))
     r.doctrines.push(pickFrom(faithPilgrimages))
+    r.doctrines.push(pickFrom(funeralDoctrines))
     r.virtueSins = []
     pickUniqFromWithoutDelete(virtueSinPairs, r.virtueSins)
     pickUniqFromWithoutDelete(virtueSinPairs, r.virtueSins)
@@ -405,6 +406,16 @@ let faithClerical4 = [
 let faithPilgrimages = [
     "doctrine_pilgrimage_encouraged",
     "doctrine_pilgrimage_forbidden"
+]
+
+//funerals 
+
+let funeralDoctrines = [
+    "doctrine_funeral_sky_burial",
+    "doctrine_funeral_cremation",
+    "doctrine_funeral_bewailment",
+    "doctrine_funeral_stoic",
+    "doctrine_funeral_mummification"
 ]
 
 function generateReligionLocalizationBlock(r) {

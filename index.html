@@ -1,167 +1,117 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Bookmap</title>
-    <link rel="stylesheet" href="bs.css"></link>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <canvas id="texture-canvas"></canvas>
-    <canvas id="gradientCanvas"></canvas>
-    <div id="loading-screen">
-      LOADING
-    </div>
-    <div id="main-sidebar">
-      <div class="sbtn" id="open-editor-menu">Map Editor</div>
-      <div class="sbtn" id="civ-process">Generate Provinces (Long Wait)</div>
-      <div class="sbtn" id="open-download-menu">Downloads Menu</div>
-      <div class="sbtn" id="raisebrush">Raise Land Brush</div>
-      <div class="sbtn" id="lowerbrush">Lower Land Brush</div>
-      <div class="sbtn" id="increasebrushsize">Increase Brush Size</div>
-      <div class="sbtn" id="decreasebrushsize">Decrease Brush Size</div>
-      <div class="sbtn" id="increasebrushhardness">Increase Brush Hardness</div>
-      <div class="sbtn" id="decreasebrushhardness">Decrease Brush Hardness</div>
-    </div>
-    <div id="downloads-sidebar">
-      <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
-      <div class="sbtn" id="downloadallbtn">Download Image Files</div>
-      <div class="sbtn" id="add-downloads">Download Text Files</div>
-      <div class="sbtn" id="download-palettes">Download Palettes</div>
-      <div class="sbtn" id="download-clothing-palettes">Download Clothing Palettes</div>
-    </div>
-    <div id="sidebar">
-      <div class="sbtn" id="back-to-main-menu-editor">Back to Main Menu</div>
-      <div class="sbtn" id="previewmap">Preview Map</div>
-      <div class="sbtn" id="heightmap">Height Map</div>
-      <div class="sbtn" id="provinceMap">Province Map</div>
-      <div class="sbtn" id="rivermap">River Map</div>
-      <div class="sbtn" id="paper-map">Paper Map</div>
-      <div class="sbtn" id="papyrus-map">Papyrus Map</div>
-      <div class="sbtn" id="beach_02_mask">beach_02_mask</div>
-      <div class="sbtn" id="beach_02_mediterranean_mask">beach_02_mediterranean_mask</div>
-      <div class="sbtn" id="beach_02_pebbles_mask">beach_02_pebbles_mask</div>
-      <div class="sbtn" id="coastline_cliff_brown_mask">coastline_cliff_brown_mask</div>
-      <div class="sbtn" id="coastline_cliff_desert_mask">coastline_cliff_desert_mask</div>
-      <div class="sbtn" id="coastline_cliff_grey_mask">coastline_cliff_grey_mask</div>
-      <div class="sbtn" id="desert_01_mask">desert_01_mask</div>
-      <div class="sbtn" id="desert_02_mask">desert_02_mask</div>
-      <div class="sbtn" id="desert_cracked_mask">desert_cracked_mask</div>
-      <div class="sbtn" id="desert_flat_01_mask">desert_flat_01_mask</div>
-      <div class="sbtn" id="desert_rocky_mask">desert_rocky_mask</div>
-      <div class="sbtn" id="desert_wavy_01_larger_mask">desert_wavy_01_larger_mask</div>
-      <div class="sbtn" id="desert_wavy_01_mask">desert_wavy_01_mask</div>
-      <div class="sbtn" id="drylands_01_cracked_mask">drylands_01_cracked_mask</div>
-      <div class="sbtn" id="drylands_01_grassy_mask">drylands_01_grassy_mask</div>
-      <div class="sbtn" id="drylands_01_mask">drylands_01_mask</div>
-      <div class="sbtn" id="farmland_01_mask">farmland_01_mask</div>
-      <div class="sbtn" id="floodplains_01_mask">floodplains_01_mask</div>
-      <div class="sbtn" id="forest_jungle_01_mask">forest_jungle_01_mask</div>
-      <div class="sbtn" id="forest_leaf_01_mask">forest_leaf_01_mask</div>
-      <div class="sbtn" id="forest_pine_01_mask">forest_pine_01_mask</div>
-      <div class="sbtn" id="forestfloor_02_mask">forestfloor_02_mask</div>
-      <div class="sbtn" id="forestfloor_mask">forestfloor_mask</div>
-      <div class="sbtn" id="hills_01_mask">hills_01_mask</div>
-      <div class="sbtn" id="hills_01_rocks_mask">hills_01_rocks_mask</div>
-      <div class="sbtn" id="hills_01_rocks_medi_mask">hills_01_rocks_medi_mask</div>
-      <div class="sbtn" id="hills_01_rocks_small_mask">hills_01_rocks_small_mask</div>
-      <div class="sbtn" id="india_farmlands_mask">india_farmlands_mask</div>
-      <div class="sbtn" id="medi_dry_mud_mask">medi_dry_mud_mask</div>
-      <div class="sbtn" id="medi_farmlands_mask">medi_farmlands_mask</div>
-      <div class="sbtn" id="medi_grass_01_mask">medi_grass_01_mask</div>
-      <div class="sbtn" id="medi_grass_02_mask">medi_grass_02_mask</div>
-      <div class="sbtn" id="medi_hills_01_mask">medi_hills_01_mask</div>
-      <div class="sbtn" id="medi_lumpy_grass_mask">medi_lumpy_grass_mask</div>
-      <div class="sbtn" id="medi_noisy_grass_mask">medi_noisy_grass_mask</div>
-      <div class="sbtn" id="mountain_02_b_mask">mountain_02_b_mask</div>
-      <div class="sbtn" id="mountain_02_c_mask">mountain_02_c_mask</div>
-      <div class="sbtn" id="mountain_02_c_snow_mask">mountain_02_c_snow_mask</div>
-      <div class="sbtn" id="mountain_02_d_desert_mask">mountain_02_d_desert_mask</div>
-      <div class="sbtn" id="mountain_02_d_mask">mountain_02_d_mask</div>
-      <div class="sbtn" id="mountain_02_d_snow_mask">mountain_02_d_snow_mask</div>
-      <div class="sbtn" id="mountain_02_d_valleys_mask">mountain_02_d_valleys_mask</div>
-      <div class="sbtn" id="mountain_02_desert_c_mask">mountain_02_desert_c_mask</div>
-      <div class="sbtn" id="mountain_02_desert_mask">mountain-02_desert_mask</div>
-      <div class="sbtn" id="mountain_02_mask">mountain_02_mask</div>
-      <div class="sbtn" id="mountain_02_snow_mask">mountain_02_snow_mask</div>
-      <div class="sbtn" id="mud_wet_01_mask">mud_wet_01_mask</div>
-      <div class="sbtn" id="northern_hills_01_mask">northern_hills_01_mask</div>
-      <div class="sbtn" id="northern_plains_01_mask">northern_plains_01_mask</div>
-      <div class="sbtn" id="oasis_mask">oasis_mask</div>
-      <div class="sbtn" id="plains_01_desat_mask">plains_01_desat_mask</div>
-      <div class="sbtn" id="plains_01_dry_mask">plains_01_dry_mask</div>
-      <div class="sbtn" id="plains_01_dry_mud_mask">plains_01_dry_mud_mask</div>
-      <div class="sbtn" id="plains_01_mask">plains_01_mask</div>
-      <div class="sbtn" id="plains_01_noisy_mask">plains_01_noisy_mask</div>
-      <div class="sbtn" id="plains_01_rough_mask">plains_01_rough_mask</div>
-      <div class="sbtn" id="snow_mask">snow_mask</div>
-      <div class="sbtn" id="steppe_01_mask">steppe_01_mask</div>
-      <div class="sbtn" id="steppe_bushes_mask">steppe_bushes_mask</div>
-      <div class="sbtn" id="steppe_rocks_mask">steppe_rocks_mask</div>
-      <div class="sbtn" id="wetlands_02_mask">wetlands_02_mask</div>
-      <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
-    </div>
-    <div id="buttons">
-      <span class="btn" id="startup">Startup</span>
-      <span class="btn" id="add-downloads">Add Downloads</span>
-      <span class="btn" id="tick">Tick</span>
-      <span class="btn" id="spread">Spread</span>
-      <span class="btn" id="drift">Drift</span>
-      <span class="btn" id="cleanup">Cleanup</span>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CK3 Procedural Map Generator</title>
+<link rel="stylesheet" href="index.css">
+</head>
+<body>
 
-
-      <span class="btn" id="beachmask">Beach Mask</span>
-      <span class="btn" id="desertmask">Desert Mask</span>
-      <span class="btn" id="mountainmask">Mountain Mask</span>
-      <span class="btn" id="plainsmask">Plains Mask</span>
-      <span class="btn" id="snowmask">Snow Mask</span>
-      <span class="btn" id="treemask">Tree Mask</span>
+<header>
+    <div class="container">
+        <h1 class="header-byline">CK3 Procedural Map Generator</h1>
+        <nav>
+        <ul id="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#mods">Examples</a></li>
+            <li><a href="#collaborations">Team</a></li>
+            <li><a href="#skills">Join Us</a></li>
+        </ul>
+        </nav>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    </header>
       
-      <span class="btn" id="letter-map">Letter Map</span>
-      <span class="btn" id="seedCiv">Seed Civilization</span>
-      <span class="btn" id="parch">Parchment</span>
-      <span class="btn" id="erode">Erode</span>
-      <span class="btn" id="randomerode">Random Erosion</span>
-      <span class="btn" id="softenMountains">Soften Mountains And Emit</span>
-      <span class="btn" id="rainErosion">Rain Erosion</span>
-      <span class="btn" id="lowerMountains">Lower Mountains</span>
-      <span class="btn" id="raiseMountains">Raise Mountains</span>
-      <span class="btn" id="raiseElevation">Raise Elevation</span>
-      <span class="btn" id="lowerElevation">Lower Elevation</span>
+
+<section id="hero">
+  <div class="container">
+    <h2>Uncharted Worlds Await</h2>
+    <p>Breathe new worlds into existence in CK3.</p>
+    <a href="generator.html" class="cta-btn">Go to Generator</a>
+  </div>
+</section>
+
+<section id="about" class="section-bg">
+  <div class="container">
+    <h2 class="landing-headline">About</h2>
+    <p>The CK3 Procedural Map Generator Project is an open source browser based world generator for Crusader Kings 3.</p>
+  </div>
+</section>
+
+<section id="mods">
+  <div class="container">
+    <h2 class="landing-headline">Examples</h2>
+    <!-- Mod items -->
+    <div class="mod-item">
+        <h3>Generated Worlds</h3>
+        <img src="worldmap.jpg" alt="Mod Name">
     </div>
-    <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
-    <img id="rivertemp" src="rivertemp.png" style="display: none"/>
-    <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
-    <script src="simplex-noise.js"></script>
-    <script src="parsedspanishmalenames.js"></script>
-    <script src="parsedspanishsurnames.js"></script>
-    <script src="parsedspanishfemalenames.js"></script>
-    <script src="religionnames.js"></script>
-    <script src="parsedsurnames.js"></script>
-    <script src="malenames.js"></script>
-    <script src="femalenames.js"></script>
-    <script src="allplaces.js"></script>
-    <script src="mostcommon.js"></script>
-    <script src="places.js"></script>
-    <script src="britishplaces.js"></script>
-    <script src="frenchplacesparsed.js"></script>
-    <script src="clock.js"></script>
-    <script src="compromise.js"></script>
-    <script src="utilities.js"></script>
-    <script src="alice.js"></script>
-    <script src="biome.js"></script>
-    <script src="masking.js"></script>
-    <script src="bs.js"></script>
-    <script src="parchMap.js"></script>
-    <script src="lang2.js"></script>
-    <script src="worldhistory.js"></script>
-    <script src="ck3.js"></script>
-    <script src="fromheightmap.js"></script>
-    <script src="ck3stuff/culture.js"></script>
-    <script src="ck3stuff/religion.js"></script>
-    <script src="ck3stuff/simplehistory.js"></script>
-    <script src="clothingtextures.js"></script>
-    <script src="eyeskinhair.js"></script>
+    <div class="mod-item">
+        <h3>Generated Terrain</h3>
+        <img src="terrain.jpg" alt="Mod Name">
+    </div>
+    <div class="mod-item">
+        <h3>Generated Ethnicities</h3>
+        <img src="eth.jpg" alt="Mod Name">
+        <br><br>
+        <img src="greeneyes.jpg" alt="greeneyes">
+    </div>
+    <div class="mod-item">
+        <h3>Generated Papermaps</h3>
+        <img src="map.png" alt="Mod Name">
+    </div>
+
+    <!-- Add more mod items here -->
+  </div>
+</section>
+
+<section id="collaborations" class="section-bg">
+  <div class="container">
+    <h2 class="landing-headline">Team Members</h2>
+    <!-- Collaboration items -->
+    <div class="collaboration-item">
+      <p>ck2rpg - Project Co-Lead and Coder</p>
+      <p>xbestfish - Project Co-Lead and Coder</p>
+      <p>citrullahol - Writer and Lead Playtester</p>
+      <p>General Mudkip - Coder</p>
+      <p>Shapur - Worldbuilder and Writer</p>
+      <p>Perceval - Worldbuilder and Writer</p>
+    </div>
+    <!-- Add more collaboration items here -->
+  </div>
+</section>
+
+<section id="skills">
+  <div class="container">
+    <h2 class="landing-headline">Join Us</h2>
+    <p>Apply to be a member of our team on our <a href="https://discord.gg/eemRxbCUX3">Discord</a>. We are looking for:</p>
+    <ul>
+      <li>CK3 Modding Experience</li>
+      <li>Javascript Skills</li>
+      <li>Python Skills</li>
+      <li>Writers</li>
+      <li>Worldbuilders</li>
+      <li>Community Management</li>
+    </ul>
+
+  </div>
+</section>
+
+<footer class="section-bg">
+  <div class="container">
+    <p style="color: black">&copy; 2024 - ck2rpg - All rights reserved.</p>
+    <!-- Social media or community links -->
     
-  </body>
+  </div>
+</footer>
+
+
+<script src="index.js"></script>
+
+</body>
 </html>
