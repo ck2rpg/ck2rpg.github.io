@@ -748,8 +748,14 @@ function createBlankWorld() {
   world.tectonics = {}
   world.religions = []
   world.tectonics.spreadingCenters = []
-  world.height = 256
-  world.width = 512
+  if (world.height) {
+
+  } else {
+    //default otherwise
+    world.height = 256
+    world.width = 512
+  }
+
   world.equator = Math.floor(world.height / 2)
   world.steppeTop = world.equator + Math.floor(world.height / 8)
   world.steppeBottom = world.equator - Math.floor(world.height / 8)
@@ -4119,7 +4125,9 @@ function setMasks() {
 }
 
 window.onload = function() {
-  startup();
+  document.getElementById("loading-screen").style.display = "none"
+  document.getElementById("settings-box").style.display = "block"
+  //startup();
 };
 
 /* TEMPLATE
@@ -4453,6 +4461,7 @@ GID("civ-process").onclick = function() {
 }
 
 function drawRiverTemplate(cell, ran) {
+  //have to change this and drawRiverTemplateTransparent at same time
   if (ran) {
 
   } else if (cell.riverRun) {
@@ -5157,4 +5166,10 @@ function createWinterSeverity() {
   document.getElementById(`gen_province_properties`).href = url
   document.getElementById(`gen_province_properties`).click();
 
+}
+
+GID("save-settings").onclick = function() {
+  GID("settings-box").style.display = "none"
+  GID("loading-screen").style.display = "block"
+  startup()
 }

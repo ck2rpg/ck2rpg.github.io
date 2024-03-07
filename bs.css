@@ -133,10 +133,112 @@ table {
   height: 100vh;
   z-index: 10000;
   background: white;
+  display: none;
 }
 
 .loading {
   margin-top: 40vh;
   text-align: center;
   font-size: 5em;
+}
+
+#settings-box {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #333;
+  line-height: 1.6;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+}
+
+.centered-text {
+  text-align: center
+}
+
+.bold-text {
+  font-weight: bold;
+}
+
+.large-text {
+  font-size: 2em
+}
+
+.settings-container {
+  margin: 50px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-container h2 {
+  margin-bottom: 20px;
+}
+
+.settings-columns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings-column {
+  flex: 1;
+  margin-right: 40px; /* Space between columns */
+}
+
+.settings-column:last-child {
+  margin-right: 0; /* Remove margin for the last column */
+}
+
+.setting {
+  margin-bottom: 20px;
+}
+
+.setting label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.setting input[type="text"],
+.setting input[type="email"],
+.setting input[type="password"],
+.setting input[type="number"],
+.setting select,
+.setting input[type="range"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.theme-options {
+  display: flex;
+  justify-content: start;
+}
+
+.theme-options label {
+  margin-right: 20px;
+}
+
+.setting input[type="radio"] {
+  margin-right: 5px;
+}
+
+button[type="submit"] {
+  width: 100%;
+  background: #333;
+  color: #fff;
+  padding: 10px;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background: #555;
 }

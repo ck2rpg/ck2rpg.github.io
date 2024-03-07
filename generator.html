@@ -9,6 +9,109 @@
     <canvas id="canvas"></canvas>
     <canvas id="texture-canvas"></canvas>
     <canvas id="gradientCanvas"></canvas>
+    <div id="settings-box">
+      <div class="settings-container">
+        <h2 class="centered-text bold-text large-text">Settings</h2>
+        <div class="settings-columns">
+            <div class="settings-column">
+                <!-- Column 1 -->
+                <div class="setting">
+                  <label for="modname">Mod Name</label>
+                  <input type="text" id="modname" placeholder="Enter your mod name">
+                </div>
+
+                <div class="setting">
+                  <label for="map-dimension-settings">Map Dimensions</label>
+                  <select id="map-dimension-settings">
+                      <option value="defaultDimensions">8192x4096</option>
+                      <option value="smallestDimensions">2048x1024</option>
+                      <option value="smallerDimensions">4096x2048</option>
+                      <option value="largestDimensions">16384x8192</option>
+                      
+                  </select>
+              </div>
+          
+                <div class="setting">
+                    <label for="paper-map-settings">Paper Map Type</label>
+                    <select id="paper-map-settings">
+                        <option value="colorPaperMap">Color</option>
+                        <option value="papyrusPaperMap">Papyrus</option>
+                    </select>
+                </div>
+                <div class="setting">
+                  <label for="generate-skin-palettes">Generate Skin Palettes</label>
+                  <select id="generate-skin-palettes">
+                      <option value="yesSkin">Yes</option>
+                      <option value="noSkin">No</option>
+                  </select>
+                </div>
+          
+                <div class="setting">
+                  <label for="generate-eye-palettes">Generate Eye Palettes</label>
+                  <select id="generate-eye-palettes">
+                      <option value="yesEyes">Yes</option>
+                      <option value="noEyes">No</option>
+                  </select>
+                </div>
+
+                <div class="setting">
+                  <label for="generate-clothing-palettes">Generate Clothing Palettes</label>
+                  <select id="generate-clothing-palettes">
+                      <option value="yesClothing">Yes</option>
+                      <option value="noClothing">No</option>
+                  </select>
+                </div>
+
+                <div class="setting">
+                  <label for="language-generator-select">Name Generation</label>
+                  <select id="language-generator-select">
+                      <option value="yesClothing">Markov</option>
+                      <option value="noClothing">Conlang</option>
+                  </select>
+                </div>
+            </div>
+
+            <div class="settings-column">
+                <!-- Column 2 -->
+                <div class="setting">
+                  <label for="range">Arctic Range</label>
+                  <input type="range" id="frostRange" min="0" max="100">
+                </div>
+          
+                <div class="setting">
+                  <label for="range">Desert Range</label>
+                  <input type="range" id="desertRange" min="0" max="100">
+                </div>
+          
+                <div class="setting">
+                  <label for="range">Tree Prevalence</label>
+                  <input type="range" id="treePrevalence" min="0" max="100">
+                </div>
+
+                <div class="setting">
+                  <label for="range">Spreading Centers</label>
+                  <input type="range" id="spreadingCentersToggle" min="5" max="45">
+                </div>
+
+                <div class="setting">
+                  <label for="range">Random Lower Elevation Limit</label>
+                  <input type="range" id="spreadingCentersToggle" min="-254" max="-100">
+                </div>
+
+                <div class="setting">
+                  <label for="range">Random Upper Elevation Limit</label>
+                  <input type="range" id="spreadingCentersToggle" min="-99" max="36">
+                </div>
+
+            </div>
+        </div>
+        <button type="submit" id="save-settings">Save Changes</button>
+      </div>
+    </div>
+    
+  
+
+
     <div id="loading-screen">
       <h1 class="loading">Generating a New World</h1>
     </div>
