@@ -4460,11 +4460,10 @@ GID("civ-process").onclick = function() {
   civProcess()
 }
 
-function drawRiverTemplate(cell, ran) {
+function drawRiverTemplate(cell, r) {
   //have to change this and drawRiverTemplateTransparent at same time
-  if (ran) {
-
-  } else if (cell.riverRun) {
+  let ran;
+  if (cell.riverRun) {
     ran = cell.riverRun;
   } else {
     ran = 0;
