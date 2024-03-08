@@ -45,6 +45,14 @@
                       <option value="noSkin">No</option>
                   </select>
                 </div>
+
+                <div class="setting">
+                  <label for="generate-hair-palettes">Generate Hair Palettes</label>
+                  <select id="generate-hair-palettes">
+                      <option value="yesHair">Yes</option>
+                      <option value="noHair">No</option>
+                  </select>
+                </div>
           
                 <div class="setting">
                   <label for="generate-eye-palettes">Generate Eye Palettes</label>
@@ -125,6 +133,20 @@
       <div class="sbtn" id="decreasebrushsize">Decrease Brush Size</div>
       <div class="sbtn" id="increasebrushhardness">Increase Brush Hardness</div>
       <div class="sbtn" id="decreasebrushhardness">Decrease Brush Hardness</div>
+      <div class="sbtn" id="startup">Startup</div>
+      <div class="sbtn" id="add-downloads">Add Downloads</div>
+      
+      <div class="sbtn" id="spread">Spread</div>
+      <div class="sbtn" id="cleanup">Cleanup</div>
+      <div class="sbtn" id="softenMountains">Soften Mountains And Emit</div>
+      <div class="sbtn" id="rainErosion">Rain Erosion</div>
+      <div class="sbtn" id="lowerMountains">Lower Mountains</div>
+      <div class="sbtn" id="raiseMountains">Raise Mountains</div>
+      <div class="sbtn" id="raiseElevation">Raise Elevation</div>
+      <div class="sbtn" id="lowerElevation">Lower Elevation</div>
+      <div class="sbtn" id="rerunRivers">Rerun Rivers</div>
+
+
     </div>
     <div id="downloads-sidebar">
       <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
@@ -205,14 +227,6 @@
       <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
     </div>
     <div id="buttons">
-      <span class="btn" id="startup">Startup</span>
-      <span class="btn" id="add-downloads">Add Downloads</span>
-      <span class="btn" id="tick">Tick</span>
-      <span class="btn" id="spread">Spread</span>
-      <span class="btn" id="drift">Drift</span>
-      <span class="btn" id="cleanup">Cleanup</span>
-
-
       <span class="btn" id="beachmask">Beach Mask</span>
       <span class="btn" id="desertmask">Desert Mask</span>
       <span class="btn" id="mountainmask">Mountain Mask</span>
@@ -223,14 +237,11 @@
       <span class="btn" id="letter-map">Letter Map</span>
       <span class="btn" id="seedCiv">Seed Civilization</span>
       <span class="btn" id="parch">Parchment</span>
-      <span class="btn" id="erode">Erode</span>
-      <span class="btn" id="randomerode">Random Erosion</span>
-      <span class="btn" id="softenMountains">Soften Mountains And Emit</span>
-      <span class="btn" id="rainErosion">Rain Erosion</span>
-      <span class="btn" id="lowerMountains">Lower Mountains</span>
-      <span class="btn" id="raiseMountains">Raise Mountains</span>
-      <span class="btn" id="raiseElevation">Raise Elevation</span>
-      <span class="btn" id="lowerElevation">Lower Elevation</span>
+      <div class="btn" id="tick">Tick</div>
+      <div class="btn" id="erode">Erode</div>
+      <div class="btn" id="randomerode">Random Erosion</div>
+      <div class="btn" id="drift">Drift</div>
+
     </div>
     <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
     <img id="rivertemp" src="rivertemp.png" style="display: none"/>

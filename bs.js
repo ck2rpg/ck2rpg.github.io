@@ -1249,10 +1249,10 @@ function cleanupAll() {
   getBeaches()
 }
 
-function lowerMountains() {
+function lowerMountains(num) {
   let mountains = getMountains();
   for (let i = 0; i < mountains.length; i++) {
-    mountains[i].elevation -= 1;
+    mountains[i].elevation -= num;
   }
 }
 
@@ -1290,12 +1290,12 @@ function raiseMountains() {
 }
 
 GID("lowerMountains").onclick = function() {
-  lowerMountains();
+  lowerMountains(10);
   drawWorld()
 }
 
 GID("raiseMountains").onclick = function() {
-  raiseMountains()
+  raiseMountains(10)
   drawWorld()
 }
 
@@ -3420,16 +3420,69 @@ function pushIfNotUsed(cell, usedArr, pushArr) {
   }
 }
 
+function rerunRivers() {
+  world.rivers = [];
+  let arr = []
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = xy(j, i)
+      cell.river = false;
+      cell.drawableRiver = false;
+      cell.highPointRiver = false;
+      cell.riverStartGreen = false;
+      cell.riverEndRed = false;
+      cell.tributaryMerge = undefined;
+      cell.riverRun = -1;
+      cell.headingTo = undefined;
+      cell.comingFrom = undefined;
+      arr.push(cell);
+    }
+  }
+  arr.sort((a, b) => (a.elevation < b.elevation) ? 1 : -1)
+  for (let i = 0; i < arr.length; i++) {
+
+    let tooClose = false
+    for (let n = 0; n < world.rivers.length; n++) {
+      try {
+        let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
+        if (dist < 5) {
+          tooClose = true
+        }
+      } catch {
+        tooClose = true;
+      }
+
+    }
+    if (tooClose === false) {
+      let cell = xy(arr[i].x, arr[i].y)
+      if (cell.elevation < limits.seaLevel.upper) {
+
+      } else {
+        drawRiver(cell.x, cell.y)
+      }
+    }
+  }
+
+  
+  drawWorld()
+
+}
+
 function riversFromHighPoints() {
   let arr = world.tectonics.spreadingLine;
   arr.sort((a, b) => (a.elevation < b.elevation) ? 1 : -1)
   for (let i = 0; i < 2000; i++) {
     let tooClose = false
     for (let n = 0; n < world.rivers.length; n++) {
-      let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
-      if (dist < 2) {
-        tooClose = true
+      try {
+        let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
+        if (dist < 2) {
+          tooClose = true
+        }
+      } catch {
+        tooClose = true;
       }
+
     }
     if (tooClose === false) {
       let cell = xy(arr[i].x, arr[i].y)
@@ -5171,4 +5224,8 @@ GID("save-settings").onclick = function() {
   GID("settings-box").style.display = "none"
   GID("loading-screen").style.display = "block"
   startup()
+}
+
+GID("rerunRivers").onclick = function() {
+  rerunRivers() 
 }

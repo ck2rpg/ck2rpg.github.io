@@ -242,3 +242,7 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background: #555;
 }
+
+#buttons {
+  display: none;
+}
