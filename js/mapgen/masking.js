@@ -1,10 +1,11 @@
 //modding rivers: https://forum.paradoxplaza.com/forum/threads/how-to-mod-rivers-navigable-rivers-and-lakes.1478521/
-
-
-let simp = new SimplexNoise()
-
-function noise(nx, ny) {
-    return simp.noise2D(nx, ny) / 2 + 0.5;
+function setMasks() {
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = xy(j, i);
+      assignMasks(cell)
+    }
+  }
 }
 
 function assignMasks(cell) { //need to convert from percentages to actual - do we want for individual pixels or just cells? Will blur sort it out for us?
@@ -186,3 +187,4 @@ function assignMasks(cell) { //need to convert from percentages to actual - do w
         }
     }
 }
+

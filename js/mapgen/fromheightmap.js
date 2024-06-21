@@ -116,4 +116,11 @@ function heightMapCivProcess() {
     simpleKingdoms()
 }
 
+function getGreyscalePixelAt(pixels, x, y) {
+    let yMult = y * 8192 * 4;
+    let xMult = x * 4
+    let total =  yMult + xMult
+    return pixels.data[total]
+}
+
 //createProvinceTerrain still uses bigCell

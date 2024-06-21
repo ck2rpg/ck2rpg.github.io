@@ -1,8 +1,15 @@
-let gCount = 0;
-let bCount = 0;
-
-const daBom = `\ufeff`
-
+/**
+ * Generates a sequential color object with unique RGB values.
+ * 
+ * The function increments the blue color value (`bCount`) each time it's called.
+ * When `bCount` reaches 256, it resets to 0, and the green color value (`gCount`) is incremented.
+ * This ensures a sequential generation of unique RGB color values.
+ * 
+ * @returns {Object} An object containing the RGB color values.
+ * @returns {number} return.r - The red color value, always set to 0.
+ * @returns {number} return.g - The green color value, incremented after blue reaches 256.
+ * @returns {number} return.b - The blue color value, incremented on each call until it reaches 256.
+ */
 function getRandomSequentialColorObject() {
     bCount += 1; 
     if (bCount === 256) {
@@ -13,9 +20,16 @@ function getRandomSequentialColorObject() {
     o.r = 0;
     o.g = gCount;
     o.b = bCount;
-    return o
+    return o;
 }
 
+/**
+ * Generates a CSV file containing province definitions and triggers a download.
+ * 
+ * The function iterates over all the provinces in the world, creating a CSV string
+ * with the necessary details. It includes both land and ocean provinces, ensuring
+ * that all areas are accounted for.
+ */
 function createProvinceDefinitions() {
     let t = ``
     t += `0;0;0;0;x;x;\n`
@@ -57,58 +71,75 @@ function createProvinceTerrain() {
             let cell = world.smallMap[p.y][p.x]
             let n = noise(cell.bigCell.x, cell.bigCell.y)
             let terrain = biome(cell.bigCell)
-            if (cell.bigCell.elevation > limits.seaLevel.upper) {
+            if (cell.bigCell.elevation >= limits.seaLevel.upper) {
                 //only assign terrain above sea level.
                 if (cell.bigCell.highPointRiver && cell.bigCell.elevation > 40 && cell.bigCell.elevation < 70 && cell.bigCell.desert === false && ((n > 0.1 && n < 0.4) || (n > 0.6 && n < 0.9))) {
                     t += `${count}=`
                     t += `farmlands`
                     t += `\n`
+                    p.terrain = "farmlands"
                 } else if (cell.bigCell.elevation > limits.seaLevel.upper && cell.bigCell.moisture > 150 && cell.bigCell.y < world.steppeTop && cell.bigCell.y > world.steppeBottom) { //using steppe as cutoff of main deserts indicator to keep jungles close to equator
                     t += `${count}=`
                     t += `jungle`
                     t += `\n`
+                    p.terrain = "jungle"
                 } else if (cell.bigCell.desert) {
                     if (cell.elevation > limits.mountains.lower) {
                         t += `${count}=`
                         t += `desert_mountains`
                         t += `\n`
+                        p.terrain = "desert_mountains"
+                        p.isDesert = true
                     } else if ((cell.bigCell.y > world.steppeTop || cell.bigCell.y < world.steppeBottom)) {
                         t += `${count}=`
                         t += `steppe`
                         t += `\n`
+                        p.terrain = "steppe"
                     } else if (cell.bigCell.moisture < 25) {
                         t += `${count}=`
                         t += `drylands`
                         t += `\n`
+                        p.terrain = "drylands"
+                        p.isDesert = true
                     } else {
                         t += `${count}=`
                         t += `desert`
                         t += `\n`
+                        p.terrain = "desert"
+                        p.isDesert = true
                     }
                 } else if (cell.bigCell.elevation > limits.mountains.lower) {
                     t += `${count}=`
                     t += `mountains`
                     t += `\n`
+                    p.terrain = "mountains"
                 } else if (limits.mountains.lower - cell.bigCell.elevation < 50) {
                     t += `${count}=`
                     t += `hills`
                     t += `\n`
+                    p.terrain = "hills"
                 } else if (!cell.bigCell.maskMarked && ((n > 0.1 && n < 0.2) || (n > 0.6 && n < 0.9))) {
                     t += `${count}=`
                     t += `forest`
                     t += `\n`
+                    p.terrain = "forest"
                 } else if (terrain === "arctic") {
                     t += `${count}=`
                     t += `taiga`
                     t += `\n`
+                    p.terrain = "taiga"
                 } else if (terrain === "grass") {
                     t += `${count}=`
                     t += `plains`
                     t += `\n`
+                    p.terrain = "plains"
                 } else if (terrain === "beach") {
                     t += `${count}=` // need because you won't be setting terrain for seas, etc.
                     t += `plains`
                     t += `\n`
+                    p.terrain = "plains"
+                } else {
+                    p.terrain = "plains" // default
                 }
             }
         }
@@ -166,7 +197,13 @@ function createBookmarkGroup() {
     document.getElementById('bm-group-download-link').click()
 }
 
-
+/**
+ * Generates the landed titles hierarchy for the world, including empires, kingdoms, duchies, counties, and provinces.
+ * 
+ * The function constructs a string representation of the landed titles in a hierarchical format,
+ * including the RGB color values and the capitals for each level. This string is then converted 
+ * to a downloadable text file.
+ */
 function createLandedTitles() {
     let t = `${daBom}`
     for (let j = 0; j < world.empires.length; j++) {
@@ -211,28 +248,13 @@ function createLandedTitles() {
     document.getElementById('title-download-link').click()
 }
 
-function createHistory() {
-    let t = `${daBom}`
-    let counter = 0;
-    for (let i = 0; i < world.provinces.length; i++) {
-        let p = world.provinces[i]
-        if (p.land) {
-            let num = i + 1
-            t += `${num} = { #${p.localizedTitle}\n`
-            t += `  culture = french\n`
-            t += `  religion = catholic\n`
-            t += `  holding = castle_holding\n`
-            t += `}\n`
-        }
-    }
-    var data = new Blob([t], {type: 'text/plain'})
-    var url = window.URL.createObjectURL(data);
-    let link = `<a id="history_link" download="k_generic.txt" href="">Download History</a><br>`
-    document.getElementById("download-links").innerHTML += `${link}`;
-    document.getElementById(`history_link`).href = url
-    document.getElementById(`history_link`).click();
-}
-
+/**
+ * Generates the localization file for all titles in the world.
+ * 
+ * This function constructs a string containing the localized names for all titles 
+ * (empires, kingdoms, duchies, counties, and provinces) in the world in YAML format.
+ * The string is then converted to a downloadable YAML file.
+ */
 function createTitleLocalization() {
     let t = `${daBom}l_english:\n`
 
@@ -294,195 +316,9 @@ function createCultureLocalization() {
     document.getElementById(`name_lists_loc_link`).click();
 }
 
-/*
-function createLandedTitles() {
-    let t = ``
-    for (let i = 0; i < world.empires.length; i++) {
-      let e = world.empires[i];
-      t += `e_${e.name} = {\n`
-      t += `  color = { ${e.color} }\n`
-      t += `  color2 = { ${color2()} }\n`
-      for (let j = 0; j < e.kingdoms.length; j++) {
-        let k = e.kingdoms[j];
-        t += `  k_${k.name} = {\n`
-        t += `    color = { ${k.color} }\n`
-        t += `    color2 = { ${color2()} }\n`
-        t += `    capital = ${k.capital.name}\n`
-        for (let n = 0; n < k.duchies.length; n++) {
-          let d = k.duchies[n]
-          t += `    d_${d.name} = {\n`
-          t += `      color = ${d.color}\n`
-          t += `      color2 = ${color2()}\n`
-          t += `      capital = ${d.capital.name}\n`
-          for (let z = 0; z < d.counties.length; z++) {
-            let c = d.counties[z]
-            t += `      c_${c.name} = {\n`
-            t += `        color = ${c.color}\n`
-            t += `        color2 = ${color2()}\n`
-            for (let q = 0; q < c.baronies.length; q++) {
-              let b = c.baronies[q]
-              if (b && b.isWater) {
-                //no history for water
-              } else if (b) {
-                t += `        b_${b.name} = {\n`
-                t += `          color = { ${b.r} ${b.g} ${b.b}} \n`
-                t += `          color2 = ${color2()}\n`
-                t += `          province = ${b.provinceID}\n`
-                t += `        }\n`
-              }
-            }
-            t += `      }\n`
-          }
-          t += `    }\n`
-        }
-        t += `  }\n`
-      }
-      t += `}\n`
-    }
-    var data = new Blob([t], {type: 'text/plain'})
-    var url = window.URL.createObjectURL(data);
-    let link = `<a id="title-download-link" download="00_landed_titles.txt" href="">Download Landed Titles</a><br>`
-    document.getElementById("download-links").innerHTML += `${link}`;
-    document.getElementById('title-download-link').href = url
-  }
-
-*/
-
-/*
-function createHistory() {
-    let t = ``
-    for (let i = 0; i < world.empires.length; i++) {
-        let e = world.empires[i]
-        for (let j = 0; j < e.kingdoms.length; j++) {
-        let k = e.kingdoms[j]
-        for (let n = 0; n < k.duchies.length; n++) {
-            let d = k.duchies[n];
-            for (let m = 0; m < d.counties.length; m++) {
-            let c = d.counties[m]
-            for (let z = 0; z < c.baronies.length; z++) {
-                let p = c.baronies[z]
-                t += `${p.provinceID} = {\n`
-                t += `  culture = french\n`
-                t += `  religion = catholic\n`
-                t += `  holding = castle_holding\n`
-                t += `}\n`
-            }
-            }
-        }
-        var data = new Blob([t], {type: 'text/plain'})
-        var url = window.URL.createObjectURL(data);
-        let link = `<a id="${k.name}_link" download="k_${k.name}.txt" href="">Download k_${k.name}</a><br>`
-        document.getElementById("download-links").innerHTML += `${link}`;
-        document.getElementById(`${k.name}_link`).href = url
-        t = ``
-        }
-    }
-}
-*/
-  
-
-  
-//WORK ON THE STUFF ABOVE
-let colorKeys = {}
-
-function getRandomColorObject() {
-    let generating = true;
-    let o = {};
-    while (generating === true) {
-        o.r = getRandomInt(0, 255);
-        o.g = getRandomInt(0, 255);
-        o.b = getRandomInt(0, 255)
-        if (colorKeys[`${o.r},${o.g}, ${o.b}`]) {
-            // don't use it if it exists - reroll
-        } else {
-            colorKeys[`${o.r},${o.g}, ${o.b}`] = true
-            generating = false
-        }
-    }
-    
-    
-    return o
-  }
-
-function wholeMapImage() {
-    let d = ctx.getImageData(0, 0, (world.width * world.pixelSize), (world.height * world.pixelSize));
-    //let b = new Uint32Array(d);
-    return d
-}
-
- let provinceCount = 0;
- let adjacencySet = new Set();
-
- let uniqueColorSet = new Set();
- for (let i = 0; i < 20000; i++) {
-    uniqueColorSet.add(getRandomColor())
- }
- uniqueColorSet = [...uniqueColorSet]
-
-
-
-function setWestEastAdjacency() {
-    for (let i = 0; i < 8192; i++) {
-        for (let j = 0; j < 4096; j++) {
-            let cell1 = world.smallMap[j][i];
-            if (cell1 && cell1.province) {
-                let east = i + 1;
-                let cell2 = world.smallMap[j][east]
-                if (cell2 && cell2.province) {
-                    let p1 = cell1.province.nonDefID
-                    let p2 = cell2.province.nonDefID
-                    if (p1 && p2 && p1 !== p2) {
-                        adjacencySet.add(`${p1}-${p2}`)
-                    }
-                }
-            } 
-        }
-    }
-}
-
-function setNorthSouthAdjacency() {
-    for (let i = 0; i < 8192; i++) {
-        for (let j = 0; j < 4096; j++) {
-            let cell1 = world.smallMap[j][i];
-            if (cell1 && cell1.province) {
-                let north = j + 1; 
-                if (world.smallMap[north]) {
-                    let cell2 = world.smallMap[north][i]
-                    if (cell2 && cell2.province) {
-                        let p1 = cell1.province.nonDefID
-                        let p2 = cell2.province.nonDefID
-                        if (p1 && p2 && p1 !== p2) {
-                            adjacencySet.add(`${p1}-${p2}`)
-                        }
-                    }
-                }
-            } 
-        }
-    }
-}
-
-function assignAdjacenciesToProvinces() {
-    adjacencySet.forEach((value) => {
-        let p1 = value.match(/(\d+)\-/)[1];
-        let p2 = value.match(/\-(\d+)/)[1]
-        world.provinces[p1].adjacencies.push(p2);
-        world.provinces[p2].adjacencies.push(p1)
-    })
-}
-
 function onlyUnique(value, index, array) {
     return array.indexOf(value) === index
 }
-
-function flattenAdjacencyArrays() {
-    for (let i = 0; i < world.provinces.length; i++) {
-        let province = world.provinces[i]
-        let unique = province.adjacencies.filter(onlyUnique)
-        province.adjacencies = unique;
-    }
-}
-
-let uniqueColorCount = 0;
 
 function getColorObjectFromString(string) {
     let colors = string.match(/(\d+)\,\s(\d+)\,\s(\d+)/)
@@ -493,174 +329,7 @@ function getColorObjectFromString(string) {
     return o;
 }
 
-function seedCell(x, y, landWater) {
-    let cell = world.smallMap[y][x]
-    if (cell.colorR) {
 
-    } else {
-        let randColor = uniqueColorSet[uniqueColorCount]
-        uniqueColorCount += 1;
-        cell.color = randColor;
-        let colorObject = getColorObjectFromString(randColor);
-        cell.colorR = colorObject.r;
-        cell.colorG = colorObject.g;
-        cell.colorB = colorObject.b;
-        cell.elevation = cell.bigCell.elevation + getRandomInt(-3, 3)
-        let province = {};
-        if (landWater === "l") {
-            province.land = true;
-            province.titleName = `${rando()}`
-        } else {
-            province.land = false
-        }
-        provinceCount += 1;
-        province.color = randColor
-        province.colorR = colorObject.r;
-        province.colorG = colorObject.g;
-        province.colorB = colorObject.b;
-        province.adjacencies = []
-        province.x = x; 
-        province.y = y; 
-        province.bigCell = cell.bigCell
-        cell.province = province
-        cell.seedCell = true;
-        province.cells = 1
-        world.provinces.push(province)
-        world.populatedCells.push(cell)
-    }
-}
-
-function assignProvinceIds() {
-    let count = 0;
-    for (let i = 0; i < world.provinces.length; i++) {
-        let province = world.provinces[i]
-        if (province.cells > 0) {
-            count += 1;
-            province.id = count
-        }
-    }
-}
-
-function assignNonDefIds() {
-    for (let i = 0; i < world.provinces.length; i++) {
-        let prov = world.provinces[i]
-        prov.nonDefID = i;
-    }
-}
-
-function addWaterProvinces() {
-    let provinceCount = 0;
-    while (provinceCount < 10000) {
-        if (world.coveredWater > world.waterCells) {
-            break;
-        }
-        provinceCount += 1;
-        console.log(`Growing water province attempt ${provinceCount}`)
-        seedAndGrowWaterCell()
-    }
-    let num = (world.coveredWater / world.waterCells);
-    console.log(`${num}% water provincing complete`)
-}
-
-function seedAndGrowWaterCell() {
-    let randomY = getRandomInt(0, 4095);
-    let randomX = getRandomInt(0, 8191);
-    let cell = world.smallMap[randomY][randomX]
-    if (cell.colorR || cell.bigCell.elevation > limits.seaLevel.upper) {
-        //do nothing if province already applied or land
-    } else {
-        let generating = true;
-        let count = 0;
-        cell.children = [];
-        cell.children.push(cell);
-        cell.parent = cell;
-        seedCell(cell.x, cell.y, "w")
-        world.seedCells.push(cell)
-        while (generating === true) {
-            for (let i = 0; i < cell.children.length; i++) {
-                growWaterCell(cell.children[i])
-                count += 1;
-                if (count === 100000 || cell.children.length > 50000) {
-                    generating = false;
-                }
-            }
-        }
-    }
-}
-
-world.coveredWater = 0;
-
-function growWaterCell(cell) {
-    let randX = 0;
-    let randY = 0;
-    let rand = getRandomInt(0, 3);
-    if (rand === 0) {
-        randX = -1
-    } else if (rand === 1) {
-        randX = 1;
-    } else if (rand === 2) {
-        randY = -1
-    } else if (rand === 3) {
-        randY = 1;
-    }
-    let neighborX = randX + cell.x;
-    let neighborY = randY + cell.y
-    if (randX === 0 && randY === 0) {
-        //do nothing if same cell
-    } else {
-        let randomNeighbor
-        if (world.smallMap[neighborY]) {
-            randomNeighbor = world.smallMap[neighborY][neighborX]
-        }
-
-        if (randomNeighbor) {
-            randomNeighbor.elevation = cell.bigCell.elevation;
-        }
-        
-        if (randomNeighbor && randomNeighbor.colorR) {
-            //do nothing if assigned - look later to see if wwe need to check elevation - shouldn't have to because it should be assigned.
-        } else {
-            if (randomNeighbor && cell.bigCell.elevation <= limits.seaLevel.upper && randomNeighbor.bigCell.elevation <= limits.seaLevel.upper) {
-                cell.province.cells += 1;
-                randomNeighbor.colorR = cell.colorR
-                randomNeighbor.colorG = cell.colorG
-                randomNeighbor.colorB = cell.colorB
-                randomNeighbor.parent = cell.parent;
-                randomNeighbor.province = cell.province
-                if (cell.children) {
-                    cell.children.push(randomNeighbor)
-                } else {
-                    cell.parent.children.push(randomNeighbor)
-                }
-                world.coveredWater += 1;
-            }
-        }
-    }
-}
-
-function seedAndGrowCell() {
-    let cell = world.landCells[getRandomInt(0, world.landCells.length - 1)]
-    if (cell.colorR) {
-        //do nothing if province already applied
-    } else {
-        let generating = true;
-        let count = 0;
-        cell.children = [];
-        cell.children.push(cell);
-        cell.parent = cell;
-        seedCell(cell.x, cell.y, "l")
-        world.seedCells.push(cell)
-        while (generating === true) {
-            for (let i = 0; i < cell.children.length; i++) {
-                growCell(cell.children[i])
-                count += 1;
-                if (count === 20000 || cell.children.length > 5000) {
-                    generating = false;
-                }
-            }
-        }
-    }
-}
 
 function isOnContinent(x, y, continent) {
     let pixelCell = world.smallMap[y][x];
@@ -680,6 +349,7 @@ function mapProvincesToContinents() {
             let continent = world.continents[j]
             if (isOnContinent(province.x, province.y, continent)) {
                 continent.provinces.push(province)
+                province.continent = continent.id
             }
         }
     }
@@ -704,199 +374,8 @@ function defineProvinceDistances() {
     }
 }
 
-
-
-
-
 function createKingdoms() {
     floodFillContinents();
-}
-
-function growCell(cell) {
-    let randX = 0;
-    let randY = 0;
-    let rand = getRandomInt(0, 3);
-    if (rand === 0) {
-        randX = -1
-    } else if (rand === 1) {
-        randX = 1;
-    } else if (rand === 2) {
-        randY = -1
-    } else if (rand === 3) {
-        randY = 1;
-    }
-    let neighborX = randX + cell.x;
-    let neighborY = randY + cell.y
-    if (randX === 0 && randY === 0) {
-        //do nothing if same cell
-    } else {
-        let randomNeighbor
-        if (world.smallMap[neighborY]) {
-            randomNeighbor = world.smallMap[neighborY][neighborX]
-        }
-        
-        if (randomNeighbor && randomNeighbor.colorR) {
-            //do nothing if assigned
-        } else {
-            if (randomNeighbor && cell.bigCell.elevation > limits.seaLevel.upper && randomNeighbor.bigCell.elevation > limits.seaLevel.upper) {
-                cell.province.cells += 1;
-                randomNeighbor.colorR = cell.colorR
-                randomNeighbor.colorG = cell.colorG
-                randomNeighbor.colorB = cell.colorB
-                randomNeighbor.parent = cell.parent;
-                randomNeighbor.province = cell.province
-                randomNeighbor.elevation = randomNeighbor.bigCell.elevation + getRandomInt(-3, 3)
-                if (cell.children) {
-                    cell.children.push(randomNeighbor)
-                } else {
-                    cell.parent.children.push(randomNeighbor)
-                }
-                world.coveredLand += 1;
-            } else if (randomNeighbor) {
-                if (randomNeighbor.bigCell) {
-                    randomNeighbor.bigCell.maskMarked = true; //mark for masking
-                }
-                cell.province.cells += 1;
-                randomNeighbor.colorR = cell.colorR
-                randomNeighbor.colorG = cell.colorG
-                randomNeighbor.colorB = cell.colorB
-                randomNeighbor.parent = cell.parent;
-                randomNeighbor.elevation = limits.seaLevel.upper + getRandomInt(1, 3)
-                //randomNeighbor.elevation = cell.elevation;
-                world.landCells.push(randomNeighbor)
-                randomNeighbor.province = cell.province
-                if (cell.children) {
-                    cell.children.push(randomNeighbor)
-                } else {
-                    cell.parent.children.push(randomNeighbor)
-                }
-                world.coveredLand += 1;
-            }
-        }
-    }
-}
-
-function deleteSmallProvinces() {
-    for (let i = 0; i < world.seedCells.length; i++) {
-        let cell = world.seedCells[i]
-        if (cell.children && cell.children.length < 900) {
-            cell.colorR = undefined;
-            cell.colorG = undefined;
-            cell.colorB = undefined;
-            cell.color = undefined;
-            for (let j = 0; j < cell.children.length; j++) {
-                cell.children[j].colorR = undefined;
-                cell.children[j].colorG = undefined;
-                cell.children[j].colorB = undefined;
-                cell.children[j].color = undefined;
-                world.coveredLand -= 1
-            }
-            cell.children = []
-            let index = world.provinces.indexOf(cell.province);
-            if (index !== -1) {
-                world.provinces.splice(index, 1)
-            }
-            cell.province.cells = 0
-        }
-    }
-}
-
-function civProcess() {
-    world.coveredLand = 0;
-    world.coveredWater = 0;
-    world.seedCells = []
-    createSmallMap()
-    console.log("Small Map Created")
-    let addProvinceCounter = 0;
-    addProvinces();
-    let addingProvinces = true
-    while (addingProvinces === true) {
-        addProvinceCounter += 1;
-        addProvinces();
-        if ((world.coveredLand >= world.landCells.length) || addProvinceCounter === 10 || world.provinces.length > 8000) {
-            addingProvinces = false;
-        }
-    }
-    addWaterProvinces();
-    addWaterProvinces();
-    addWaterProvinces();
-    console.log("Deleting too small provinces")
-    deleteSmallProvinces();
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    fillIn()
-    console.log("Filling In")
-    console.log("Adding Provinces")
-    addProvinces();
-    bruteFillIn();
-    console.log("Assigning province ids")
-    assignProvinceIds();
-    assignNonDefIds();
-    console.log("Setting west-east adjacency")
-    setWestEastAdjacency();
-    console.log("Setting north-south adjacency");
-    setNorthSouthAdjacency();
-    console.log("Assigning adjacency to provinces")
-    assignAdjacenciesToProvinces();
-    console.log("Flattening adjacency arrays")
-    flattenAdjacencyArrays();
-    console.log("creating province definitions")
-    world.counties = createCounties(world)
-    world.duchies = createDuchies(world.counties, world) // duchies are later changed in createMyKingdoms function. Not ideal, but was a quick patch
-    world.kingdoms = createMyKingdoms(world)
-    world.empires = createEmpires(world)
-    createRealCounties()
-    assignTitleInfo()
-    assignCultures();
-    religionGenerator()
-    console.log("Drawing province map")
-    drawProvinceMap()
-    //simpleCounties()
-    //simpleDuchies()
-    //simpleKingdoms()
 }
 
 function createRealCounties() {
@@ -916,56 +395,6 @@ function createRealCounties() {
     }
     world.counties = countyArr
 }
-
-function fillIn() {
-    for (let i = 0; i < world.seedCells.length; i++) {
-        let cell = world.seedCells[i]
-        if (cell.children && cell.children.length > 0) {
-            for (let j = 0; j < cell.children.length; j++) {
-                if (cell.bigCell.elevation > limits.seaLevel.upper) {
-                    growCell(cell.children[j])
-                } else {
-                    growWaterCell(cell.children[j])
-                }
-            }
-        }
-    }
-}
-
-function bruteFillIn() {
-    console.log("Starting brute fill")
-    for (let i = 0; i < 4096; i++) {
-        let last = {};
-        for (let j = 0; j < 8192; j++) {
-            let cell = world.smallMap[i][j]
-            if (cell.colorR) {
-
-            } else {
-                if (last.colorR) {
-                    cell.colorR = last.colorR
-                }
-            }
-            last = cell;
-        }
-    }
-    console.log("ending brute fill")
-}
-
-function addProvinces() {
-    let provinceCount = 0;
-    while (provinceCount < 10000) {
-        if ((world.coveredLand >= world.landCells.length) || world.provinces.length > 8000) {
-            break;
-        }
-        provinceCount += 1;
-        console.log(`Growing Province ${provinceCount}`)
-        seedAndGrowCell()
-    }
-    let num = (world.coveredLand / world.landCells.length)
-    console.log(`${num}% complete`)
-}
-  
-world.waterCells = 0
 
 function createSmallMap() { //this is only land
     let count = 0;
@@ -997,13 +426,6 @@ function createSmallMap() { //this is only land
     }
 }
 
-function getGreyscalePixelAt(pixels, x, y) {
-    let yMult = y * 8192 * 4;
-    let xMult = x * 4
-    let total =  yMult + xMult
-    return pixels.data[total]
-}
-
 function drawProvinceMap() {
     let count = 0
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1030,51 +452,6 @@ function drawProvinceMap() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.putImageData(pixels, 0, 0)
     alert("done")
-}
-
-function smallXY(x, y) {
-    if (x < 0 || y < 0 || x > world.width || y > world.height) {
-      return "edge"
-    }
-    return world.smallMap[y][x]
-  }
-
-function smallPixelFloodFill(x, y, color) {
-    let cell = smallXY(x, y);
-    let c = color || `rgb(${getRandomInt(1, 255)}, ${getRandomInt(1, 255)}, ${getRandomInt(1, 255)})`
-    if ((cell && cell.lake === false) || (cell && cell.floodFilled === true)) {
-      return
-    }
-    if (cell && cell.lake === true) {
-      cell.floodFilled = true;
-      cell.riverId = c
-      try {
-        floodFill(x + 1, y, c);
-      } catch {
-  
-      }
-      try {
-        floodFill(x - 1, y, c);
-      } catch {
-  
-      }
-      try {
-        floodFill(x, y + 1, c);
-      } catch {
-  
-      }
-      try {
-        floodFill(x, y - 1, c)
-      } catch {
-  
-      }
-  
-    }
-  }
-
-
-GID("provinceMap").onclick = function() {
-    drawProvinceMap()
 }
 
 function createLocators(type) {
@@ -1171,104 +548,4 @@ function createDefaultMap() {
     document.getElementById("download-links").innerHTML += `${link}`;
     document.getElementById(`default-download-link`).href = url
     document.getElementById(`default-download-link`).click()
-}
-
-function simpleLandedTitleAssignment() { //a very simple non-functioning top-down generator of title information. I don't like it and only goes to duchy for now.
-    let empires = []
-    for (let i = 0; i < 20; i++) {
-        let e = {};
-        e.centerX = getRandomInt(1, 8191);
-        e.centerY = getRandomInt(1, 4091);
-        e.power = getRandomInt(500, 2000);
-        e.provinces = []
-        empires.push(e)
-    }
-    for (let i = 0; i < world.provinces.length; i++) { // Assing provinces to empires
-        let closest;
-        let closestDist
-        let prov = world.provinces[i]
-        if (prov.cells > 0 && prov.land) {
-            for (let j = 0; j < empires.length; j++) {
-                let dist = getDistance(empires[j].centerX, empires[j].centerY, prov.x, prov.y)
-                if (j === 0) {
-                    closest = empires[j]
-                    closestDist = dist
-                } else {
-                    if (dist < closestDist) {
-                        closest = empires[j]
-                        closestDist = dist
-                    }
-                }
-            }
-            closest.provinces.push(prov)
-            prov.empire = closest
-        }
-    }
-    
-    for (let i = 0; i < empires.length; i++) { // attach kingdoms to empires and assign provinces
-        let currentEmpire = empires[i]
-        currentEmpire.kingdoms = [];
-        for (let j = 0; j < 20; j++) {
-            let k = {};
-            k.centerX = currentEmpire.centerX + getRandomInt(-300, 300);
-            k.centerY = currentEmpire.centerY + getRandomInt(-300, 300);
-            k.power = getRandomInt(100, 300);
-            k.provinces = []
-            currentEmpire.kingdoms.push(k)
-        }
-        for (let j = 0; j < currentEmpire.provinces.length; j++) {
-            let prov = currentEmpire.provinces[j]
-            let closest;
-            let closestDist
-            for (let n = 0; n < currentEmpire.kingdoms.length; n++) {
-                let currentKingdom = currentEmpire.kingdoms[n]
-                let dist = getDistance(currentKingdom.centerX, currentKingdom.centerY, prov.x, prov.y)
-                if (n === 0) {
-                    closest = currentKingdom;
-                    closestDist = dist;
-                } else {
-                    if (dist < closestDist) {
-                        closest = currentKingdom;
-                        closestDist = dist
-                    }
-                }
-            }
-            closest.provinces.push(prov)
-            prov.kingdom = closest
-        }
-
-        for (let j = 0; j < currentEmpire.kingdoms.length; j++) {
-            let currentKingdom = currentEmpire.kingdoms[j]
-            currentKingdom.duchies = []
-            for (let n = 0; n < 20; n++) {
-                let d = {};
-                d.centerX = currentKingdom.centerX + getRandomInt(-300, 300);
-                d.centerY = currentKingdom.centerY + getRandomInt(-300, 300);
-                d.provinces = [];
-                currentKingdom.duchies.push(d)
-            }
-            for (let n = 0; n < currentKingdom.provinces.length; n++) {
-                let prov = currentKingdom.provinces[n]
-                let closest;
-                let closestDist;
-                for (let z = 0; z < currentKingdom.duchies.length; z++) {
-                    let currentDuchy = currentKingdom.duchies[z]
-                    let dist = getDistance(currentDuchy.centerX, currentDuchy.centerY, prov.x, prov.y)
-                    if (z === 0) {
-                        closest = currentDuchy;
-                        closestDist = dist
-                    } else {
-                        if (dist < closestDist) {
-                            closest = currentDuchy
-                            closestDist = dist
-                        }
-                    }
-                }
-                closest.provinces.push(prov)
-                prov.duchy = closest
-            }
-            
-        }
-    }
-    world.empires = empires
 }

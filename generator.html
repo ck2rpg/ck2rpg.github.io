@@ -125,7 +125,7 @@
     </div>
     <div id="main-sidebar">
       <div class="sbtn" id="open-editor-menu">Map Previewer</div>
-      <div class="sbtn" id="civ-process">Generate Provinces (Long Wait)</div>
+      <div class="sbtn" id="create-provinces">Generate Provinces (Long Wait)</div>
       <div class="sbtn" id="open-download-menu">Downloads Menu</div>
       <div class="sbtn" id="raisebrush">Raise Land Brush</div>
       <div class="sbtn" id="lowerbrush">Lower Land Brush</div>
@@ -226,58 +226,74 @@
       <div class="sbtn" id="wetlands_02_mask">wetlands_02_mask</div>
       <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
     </div>
-    <div id="buttons">
-      <span class="btn" id="beachmask">Beach Mask</span>
-      <span class="btn" id="desertmask">Desert Mask</span>
-      <span class="btn" id="mountainmask">Mountain Mask</span>
-      <span class="btn" id="plainsmask">Plains Mask</span>
-      <span class="btn" id="snowmask">Snow Mask</span>
-      <span class="btn" id="treemask">Tree Mask</span>
-      
-      <span class="btn" id="letter-map">Letter Map</span>
-      <span class="btn" id="seedCiv">Seed Civilization</span>
-      <span class="btn" id="parch">Parchment</span>
-      <div class="btn" id="tick">Tick</div>
-      <div class="btn" id="erode">Erode</div>
-      <div class="btn" id="randomerode">Random Erosion</div>
-      <div class="btn" id="drift">Drift</div>
-
-    </div>
     <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
     <img id="rivertemp" src="rivertemp.png" style="display: none"/>
     <img id="river-temp-trans" src="riverTransTemp.png" style="display: none"/>
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
-    <script src="simplex-noise.js"></script>
-    <script src="parsedspanishmalenames.js"></script>
-    <script src="parsedspanishsurnames.js"></script>
-    <script src="parsedspanishfemalenames.js"></script>
-    <script src="religionnames.js"></script>
-    <script src="parsedsurnames.js"></script>
-    <script src="malenames.js"></script>
-    <script src="femalenames.js"></script>
-    <script src="allplaces.js"></script>
-    <script src="mostcommon.js"></script>
-    <script src="places.js"></script>
-    <script src="britishplaces.js"></script>
-    <script src="frenchplacesparsed.js"></script>
-    <script src="clock.js"></script>
-    <script src="compromise.js"></script>
-    <script src="utilities.js"></script>
-    <script src="alice.js"></script>
-    <script src="biome.js"></script>
-    <script src="masking.js"></script>
-    <script src="transparentTest.js"></script>
-    <script src="bs.js"></script>
-    <script src="parchMap.js"></script>
-    <script src="lang2.js"></script>
+    <script src="js/langgen/alice.js"></script>
+    <script src="js/external_libraries/simplex-noise.js"></script>
+    <script src="js/langgen/parsedspanishmalenames.js"></script>
+    <script src="js/langgen/parsedspanishsurnames.js"></script>
+    <script src="js/langgen/parsedspanishfemalenames.js"></script>
+    <script src="js/langgen/religionnames.js"></script>
+    <script src="js/langgen/parsedsurnames.js"></script>
+    <script src="js/langgen/malenames.js"></script>
+    <script src="js/langgen/femalenames.js"></script>
+    <script src="js/langgen/allplaces.js"></script>
+    <script src="js/langgen/mostcommon.js"></script>
+    <script src="js/langgen/places.js"></script>
+    <script src="js/langgen/britishplaces.js"></script>
+    <script src="js/langgen/frenchplacesparsed.js"></script>
+
+
+
+
+
+    <script src="js/all/clock.js"></script>
+    <script src="js/external_libraries/compromise.js"></script>
+    <script src="js/all/utilities.js"></script>
+    <script src="js/all/initialState.js"></script>
+    <script src="js/mapgen/sorting.js"></script>
+    <script src="js/mapgen/canvasOperations.js"></script>
+    <script src="js/mapgen/getNeighbors.js"></script>
+    <script src="js/mapgen/downloading.js"></script>
+    <script src="js/mapgen/showInfo.js"></script>
+    <script src="js/mapgen/brushEditor.js"></script>
+
+    <script src="ck3stuff/gameConcepts.js"></script>
+    <script src="js/mapgen/biome.js"></script>
+    <script src="js/mapgen/masking.js"></script>
+    <script src="js/mapgen/transparentTest.js"></script>
+    <script src="js/mapgen/tectonics.js"></script>
+    <script src="js/mapgen/winterSeverity.js"></script>
+    <script src="js/mapgen/asteroids.js"></script>
+    <script src="js/mapgen/createWorld.js"></script>
+    <script src="js/mapgen/drawing.js"></script>
+    <script src="js/mapgen/getFeatures.js"></script>
+    
+    <script src="js/mapgen/rain.js"></script>
+    <script src="js/mapgen/changeElevation.js"></script>
+    <script src="js/mapgen/cleanup.js"></script>
+    <script src="js/mapgen/moisture.js"></script>
+    <script src="js/mapgen/erosion.js"></script>
+    <script src="js/mapgen/floodfills.js"></script>
+    <script src="js/mapgen/rivers.js"></script>
+    <script src="js/mapgen/parchMap.js"></script>
+    <script src="js/langgen/lang2.js"></script>
     <script src="worldhistory.js"></script>
     <script src="ck3.js"></script>
-    <script src="fromheightmap.js"></script>
+    <script src="js/mapgen/createProvinces.js"></script>
+    <script src="js/mapgen/fromheightmap.js"></script>
     <script src="ck3stuff/culture.js"></script>
     <script src="ck3stuff/religion.js"></script>
     <script src="ck3stuff/simplehistory.js"></script>
     <script src="clothingtextures.js"></script>
     <script src="eyeskinhair.js"></script>
+    <script src="experimental/explainer.js"></script>
+    <script src="experimental/explainerHistory.js"></script>
+    <script src="js/mapgen/maskButtons.js"></script>
+    <script src="js/mapgen/startup.js"></script>
+    <script src="js/interface/clickables.js"></script>
     
   </body>
 </html>

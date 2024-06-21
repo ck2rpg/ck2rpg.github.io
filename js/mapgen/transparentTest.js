@@ -23,46 +23,7 @@ function drawRiverTemplateTransparent(cell, r) {
   
     let possibilities = "01234567" // 3nw 5n 7ne 0w (5)place 1e 6sw 4s 2se - leftover from the way getNeighbors returns array
     let sideNeighbors = []
-    /*
-    if (neighbors) {
       
-      let nw = neighbors[3]
-      let n = neighbors[5]
-      let ne = neighbors[7]
-      let w = neighbors[0]
-      let e = neighbors[1]
-      let sw = neighbors[6]
-      let s = neighbors[4]
-      let se = neighbors[2]
-      
-      if (w && w.highPointRiver) {
-        possibilities = riverReplace(possibilities, ["1", "4", "6", "7"])
-        if (w.drawableRiver) {
-          drawableNeighbors += 1;
-        }
-      }
-      if (n && n.highPointRiver) {
-        possibilities = riverReplace(possibilities, ["1", "2", "3", "8"])
-        if (n.highPointRiver) {
-          drawableNeighbors += 1;
-        }
-      }
-      if (e && e.highPointRiver) {
-        possibilities = riverReplace(possibilities, ["3", "4", "6", "9"])
-        if (e.highPointRiver) {
-          drawableNeighbors += 1;
-        }
-      }
-      if (s && s.highPointRiver) {
-        possibilities = riverReplace(possibilities, ["2", "7", "8", "9"])
-        if (s.highPointRiver) {
-          drawableNeighbors += 1;
-        }
-      }
-    }
-    */
-  
-    
     if (cell.comingFrom) {
       
       if (cell.comingFrom === "S") {
