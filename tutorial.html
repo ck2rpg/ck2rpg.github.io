@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using the CK3 Map Editor: A Step-by-Step Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .content h2 {
+            font-size: 1.8em;
+            color: #555;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+        .content h2:hover {
+            color: #333;
+            border-bottom: 2px solid #999;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        code {
+            background: #e0e0e0;
+            color: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .note {
+            background: #f9f9f9;
+            color: #333;
+            padding: 15px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background: #fff;
+            color: #777;
+            border-top: 1px solid #ddd;
+            margin-top: 40px;
+        }
+        footer p {
+            margin: 0;
+        }
+        .step-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 20px;
+        }
+        .step-list li {
+            background: #f0f0f0;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.3s;
+        }
+        .step-list li:hover {
+            background: #e0e0e0;
+            transform: translateX(5px);
+        }
+         /* Header */
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 10px;
+            min-height: 70px;
+            border-bottom: #F8F4E3 3px solid;
+            font-size: 0.8em;
+        }
+        
+        header a {
+            color: #fff;
+        }
+        
+        header ul {
+            display: flex;
+            list-style: none;
+            justify-content: flex-end;
+        }
+        
+        header ul li {
+            margin: 0 20px;
+        }
+        
+        header h1 {
+            float: left;
+            margin: 0;
+        }
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: #fff;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .hamburger {
+            display: block;
+            }
+        
+            #nav-links {
+            width: 100%;
+            background: #333;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            }
+        
+            #nav-links li {
+            margin: 15px 0;
+            }
+        
+            #nav-links li a {
+            color: #fff;
+            }
+        
+            #nav-links.active {
+            display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="header-byline">CK3 Procedural Map Generator</h1>
+        <nav>
+        <ul id="nav-links">
+            <li><a href="https://ck2rpg.github.io">About</a></li>
+            <li><a href="https://ck2rpg.github.io/index.html#mods">Examples</a></li>
+            <li><a href="https://ck2rpg.github.io/index.html#roadmap">Roadmap</a></li>
+            <li><a href="https://ck2rpg.github.io/tutorial.html">Tutorial</a></li>
+            <li><a href="https://ck2rpg.github.io/index.html#collaborations">Team</a></li>
+            <li><a href="https://ck2rpg.github.io/index.html#skills">Join Us</a></li>
+        </ul>
+        </nav>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+    <h1>Using the CK3 Map Editor: A Step-by-Step Guide</h1>
+    <div class="container">
+        <div class="content">
+            <h2>Introduction</h2>
+            <p>This guide will walk you through the process of setting up and using the CK3 Map Editor. Follow the steps carefully to ensure a smooth experience.</p>
+
+            <h2>Step 1: Create a Mod Folder</h2>
+            <ul class="step-list">
+                <li>Open the CK3 launcher.</li>
+                <li>Create a new mod folder.</li>
+            </ul>
+
+            <h2>Step 2: Copy Required Files</h2>
+            <ul class="step-list">
+                <li>Copy the necessary files from the latest WG to your mod folder.</li>
+                <li class="note"><strong>Note:</strong> The generator does not currently create folder structures, so this step is necessary.</li>
+            </ul>
+
+            <h2>Step 3: Create a "Replacers" Folder</h2>
+            <ul class="step-list">
+                <li>In the top-level folder of your new mod folder, create a folder named <code>replacers</code>.</li>
+            </ul>
+
+            <h2>Step 4: Access the Generator</h2>
+            <ul class="step-list">
+                <li>Go to CK2 RPG.</li>
+                <li>Click on the "Go to Generator" button.</li>
+                <li class="note"><strong>Recommended Browser:</strong> Use Microsoft Edge. While I prefer other browsers, Edge currently performs better for this tool.</li>
+            </ul>
+
+            <h2>Step 5: Bypass the Settings Page</h2>
+            <ul class="step-list">
+                <li>On the settings page, simply click "Save Settings" as it is not yet functional.</li>
+            </ul>
+
+            <h2>Step 6: Generate a New World</h2>
+            <ul class="step-list">
+                <li>Click on "Generate Provinces" (this will take some time).</li>
+                <li class="note">The progress will be logged in the console (right-click, inspect, then click on the console tab).</li>
+            </ul>
+
+            <h2>Step 7: Save the Province Map</h2>
+            <ul class="step-list">
+                <li>Once the province map is generated, right click on the image and save it to the <code>replacers</code> folder.</li>
+            </ul>
+
+            <h2>Step 8: Configure Browser Downloads</h2>
+            <ul class="step-list">
+                <li>Set your default download folder to the <code>replacers</code> folder in your browser's settings.</li>
+            </ul>
+
+            <h2>Step 9: Download Image Files</h2>
+            <ul class="step-list">
+                <li>Click on the "Downloads Menu."</li>
+                <li>Select "Download Image Files."</li>
+                <li class="note">Allow multiple downloads if prompted. Edge handles this process more efficiently than Chrome or Firefox.</li>
+            </ul>
+
+            <h2>Step 10: Download Text Files</h2>
+            <ul class="step-list">
+                <li>Click "Download Text Files."</li>
+            </ul>
+
+            <h2>Step 11: Download Palettes (Optional)</h2>
+            <ul class="step-list">
+                <li>For eye/skin/hair palettes, click "Download Palettes."</li>
+                <li>For clothing palettes, click "Download Clothing Palettes" (not recommended at this stage).</li>
+            </ul>
+
+            <h2>Step 12: Post-Processing with Gimp</h2>
+            <ul class="step-list">
+                <li>Go to the Gimp Script and copy it.</li>
+                <li>Open Gimp and navigate to Filters > Python-Fu > Console.</li>
+                <li>In the console, locate the <code>process_folder</code> method and replace the placeholder path with the actual path to your <code>replacers</code> folder.</li>
+                <li>Paste the edited script into the Python-Fu console and press Enter.</li>
+                <li class="note">This script applies a Gaussian blur, formats files, and places them in the correct folders.</li>
+            </ul>
+
+            <h2>Step 13: Move Files to the Correct Locations</h2>
+            <ul class="step-list">
+                <li>Open the <code>movetomapobjectdata</code> folder in the copied WG structure.</li>
+                <li>Copy all files and paste them into <code>modname/gfx/map/map_object_data</code> to overwrite existing files.</li>
+            </ul>
+
+            <h2>Step 14: Handle Rivers File Manually</h2>
+            <ul class="step-list">
+                <li>Open <code>rivers.png</code> in Gimp from the <code>replacers</code> folder.</li>
+                <li>Copy and paste it over the existing <code>rivers.png</code> in the <code>map_data</code> folder.</li>
+                <li>Overwrite the file in Gimp to ensure proper indexing.</li>
+            </ul>
+
+            <h2>Step 15: Process Papermaps</h2>
+            <ul class="step-list">
+                <li>Open the <code>papyrus.png</code> file in the <code>replacers</code> folder.</li>
+                <li>Adjust brightness and apply a sepia filter if desired.</li>
+                <li>Apply a Gaussian blur with a radius of 7.5.</li>
+                <li>Overwrite the <code>flatmap.dds</code> file in <code>gfx/map/terrain/</code>.</li>
+            </ul>
+
+            <h2>Step 16: Finalize in the Map Editor</h2>
+            <ul class="step-list">
+                <li>Open the map editor (right-click Crusader Kings 3 in Steam, click properties, and set launch options to <code>-mapeditor</code>).</li>
+                <li>In the map editor, select Content Object Editor and mark all as modified.</li>
+                <li>Repack the map and save it to your mod folder.</li>
+                    <li>Change launch options to <code>-debug_mode</code> and start the game.</li>
+                    <li>Copy the generated locators from <code>documents/paradox interactive/crusader kings 3/generated</code> to <code>gfx/map/map_object/data</code>.</li>
+                </ul>
+    
+                <h2>Conclusion</h2>
+                <p>By following these steps, you should have a working generated world in Crusader Kings III.</p>
+            </div>
+        </div>
+        <footer>
+            
+        </footer>
+        <script src="js/interface/index.js"></script>
+    </body>
+    </html>
