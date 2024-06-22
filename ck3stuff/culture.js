@@ -155,6 +155,7 @@ function createRandomEthnicity(culture) {
         }
     }
     //beast
+    /*
     let rand = getRandomInt(1, 10);
     if (rand === 5) {
         let low = getRandomInt(0, 8);
@@ -165,6 +166,7 @@ function createRandomEthnicity(culture) {
         t += `\t\t10 = { name = ${hs} range = { 0.${low} 0.${high} } }\n`
         t += `\t}\n`
     }
+        */
 
     t += `}\n`
     return t;
