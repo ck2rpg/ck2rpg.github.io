@@ -80,7 +80,22 @@ function createProvinces() {
     assignAdjacenciesToProvinces();
     console.log("Flattening adjacency arrays")
     flattenAdjacencyArrays();
-    console.log("creating province definitions")
+    console.log("creating province terrain")
+    createProvinceTerrain()
+
+    console.log("identifying waterbodies")
+    floodFillWaterProvinces()
+
+    
+    clearFloodFillProvinces();
+    console.log("identifying continents")
+    floodFillContinents()
+    console.log("mapping provinces to continents")
+    mapProvincesToContinents()
+    console.log("mapping the province's place in the world")
+    setProvinceDirections()
+
+
     //here is where you would intercept with different code after province generation
     world.counties = createCounties(world)
     world.duchies = createDuchies(world.counties, world) // duchies are later changed in createMyKingdoms function. Not ideal, but was a quick patch
@@ -92,6 +107,78 @@ function createProvinces() {
     religionGenerator()
     console.log("Drawing province map")
     drawProvinceMap()
+}
+
+function createSmallMap() { 
+    let count = 0;
+    world.smallMap = []
+    world.landCells = [];
+    for (let i = 0; i < settings.height; i++) {
+        world.smallMap[i] = [];
+        for (let j = 0; j < settings.width; j++) {
+            let bigX = Math.floor(j / settings.pixelSize)
+            let bigY = Math.floor(i / settings.pixelSize)
+            let bigCell = xy(bigX, bigY);
+            if (bigCell.elevation > limits.seaLevel.upper) {
+                count += 1;
+                let cell = {};
+                cell.x = j;
+                cell.y = i;
+                cell.bigCell = bigCell
+                world.smallMap[i][j] = cell
+                world.landCells.push(cell)
+            } else {
+                let cell = {};
+                cell.x = j;
+                cell.y = i;
+                cell.bigCell = bigCell
+                world.smallMap[i][j] = cell
+                world.waterCells += 1;
+            }
+        }
+    }
+}
+
+function createRealCounties() {
+    let countyArr = []
+    for (let i = 0; i < world.duchies.length; i++) {
+        let duchy = world.duchies[i]
+        for (let j = 0; j < duchy.counties.length; j++) {
+            let county = duchy.counties[j]
+            let c = {};
+            c.provinces = []
+            for (let n = 0; n < county.length; n++) {
+                c.provinces.push(world.provinces[county[n]])
+            }
+            duchy.counties[j] = c
+            countyArr.push(c)
+        }
+    }
+    world.counties = countyArr
+}
+
+function isOnContinent(x, y, continent) {
+    let pixelCell = world.smallMap[y][x];
+    for (let i = 0; i < continent.cells.length; i++) {
+        if (pixelCell.bigCell.continentId === continent.id) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+function mapProvincesToContinents() {
+    for (let i = 0; i < world.provinces.length; i++) {
+        let province = world.provinces[i]
+        for (let j = 0; j < world.continents.length; j++) {
+            let continent = world.continents[j]
+            if (isOnContinent(province.x, province.y, continent)) {
+                continent.provinces.push(province)
+                province.continent = continent.id
+            }
+        }
+    }
 }
 
 function fillIn() {
@@ -111,9 +198,9 @@ function fillIn() {
 
 function bruteFillIn() {
     console.log("Starting brute fill")
-    for (let i = 0; i < 4096; i++) {
+    for (let i = 0; i < settings.height; i++) {
         let last = {};
-        for (let j = 0; j < 8192; j++) {
+        for (let j = 0; j < settings.width; j++) {
             let cell = world.smallMap[i][j]
             if (cell.colorR) {
 
@@ -175,8 +262,10 @@ function addWaterProvinces() {
 }
 
 function seedAndGrowWaterCell() {
-    let randomY = getRandomInt(0, 4095);
-    let randomX = getRandomInt(0, 8191);
+    let cH = settings.height - 1
+    let cW = settings.width - 1
+    let randomY = getRandomInt(0, cH);
+    let randomX = getRandomInt(0, cW);
     let cell = world.smallMap[randomY][randomX]
     if (cell.colorR || cell.bigCell.elevation > limits.seaLevel.upper) {
         //do nothing if province already applied or land
@@ -226,7 +315,6 @@ function growWaterCell(cell) {
         if (randomNeighbor) {
             randomNeighbor.elevation = cell.bigCell.elevation;
         }
-        
         if (randomNeighbor && randomNeighbor.colorR) {
             //do nothing if assigned - look later to see if wwe need to check elevation - shouldn't have to because it should be assigned.
         } else {
@@ -312,8 +400,8 @@ function seedCell(x, y, landWater) {
 }
 
 function setWestEastAdjacency() {
-    for (let i = 0; i < 8192; i++) {
-        for (let j = 0; j < 4096; j++) {
+    for (let i = 0; i < settings.width; i++) {
+        for (let j = 0; j < settings.height; j++) {
             let cell1 = world.smallMap[j][i];
             if (cell1 && cell1.province) {
                 let east = i + 1;
@@ -331,8 +419,8 @@ function setWestEastAdjacency() {
 }
 
 function setNorthSouthAdjacency() {
-    for (let i = 0; i < 8192; i++) {
-        for (let j = 0; j < 4096; j++) {
+    for (let i = 0; i < settings.width; i++) {
+        for (let j = 0; j < settings.height; j++) {
             let cell1 = world.smallMap[j][i];
             if (cell1 && cell1.province) {
                 let north = j + 1; 
@@ -368,7 +456,7 @@ function flattenAdjacencyArrays() {
     }
 }
 
-function growCell(cell) {
+function growCell(cell) {    
     //I have to stuff a bunch of unrelated province explainer logic into growcell to avoid another pass since province definition is one of the only times we iterate over small cells for performance reasons.
     let randX = 0;
     let randY = 0;
@@ -487,7 +575,7 @@ function growCell(cell) {
 function deleteSmallProvinces() {
     for (let i = 0; i < world.seedCells.length; i++) {
         let cell = world.seedCells[i]
-        if (cell.children && cell.children.length < 900) {
+        if (cell.children && cell.children.length < settings.tooSmallProvince) { //should be 900
             cell.colorR = undefined;
             cell.colorG = undefined;
             cell.colorB = undefined;

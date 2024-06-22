@@ -13,12 +13,12 @@ function wholeImage() {
  * @returns {ImageData} The image data object containing pixel information.
  */
 function wholeCanvasImage() {
-  return ctx.getImageData(0, 0, 8192, 4096);
+  return ctx.getImageData(0, 0, settings.width, settings.height);
 }
 
 
 function wholeMapImage() {
-    let d = ctx.getImageData(0, 0, (world.width * world.pixelSize), (world.height * world.pixelSize));
+    let d = ctx.getImageData(0, 0, (world.width * settings.pixelSize), (world.height * settings.pixelSize));
     return d
 }
 

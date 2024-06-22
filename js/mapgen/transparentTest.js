@@ -355,8 +355,8 @@ function drawRiverTemplateTransparent(cell, r) {
   
   
     if (cell.tributaryMerge) {
-      console.log(`Drawing merged river at x: ${cell.x * world.pixelSize} y: ${cell.y * world.pixelSize}`)
-      ctx.drawImage(template2, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * world.pixelSize, cell.y * world.pixelSize, 16, 16)
+      console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
+      ctx.drawImage(template2, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     } else if (possibilities.length > 0 && cell.highPointRiver) {
       let n1 = sideNeighbors[0]
@@ -387,7 +387,7 @@ function drawRiverTemplateTransparent(cell, r) {
           tempY = 2000
         }
       }
-      ctx.drawImage(template2, tempX, tempY, 16, 16, cell.x * world.pixelSize, cell.y * world.pixelSize, 16, 16)
+      ctx.drawImage(template2, tempX, tempY, 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     } 
 

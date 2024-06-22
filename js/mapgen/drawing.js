@@ -10,7 +10,7 @@ function drawSmallPixel(context, x, y, color) {
     const roundedX = Math.round(x);
     const roundedY = Math.round(y);
     context.fillStyle = color || '#000';
-    context.fillRect(roundedX * world.pixelSize, roundedY * world.pixelSize, world.pixelSize, world.pixelSize);
+    context.fillRect(roundedX * settings.pixelSize, roundedY * settings.pixelSize, settings.pixelSize, settings.pixelSize);
   }
   
   /**
@@ -107,7 +107,7 @@ function drawCell(x, y) {
     if (cell.text) {
       ctx.fillStyle = cell.rgb;
       ctx.font = "32px serif";
-      ctx.fillText(cell.text, cell.x * world.pixelSize, cell.y * world.pixelSize);
+      ctx.fillText(cell.text, cell.x * settings.pixelSize, cell.y * settings.pixelSize);
     }
   }
   
@@ -154,7 +154,7 @@ function drawCell(x, y) {
       drawInkMarsh(cell);
     } else if (cellBiome === "river" || cellBiome === "lake" || cellBiome === "ocean") {
       cell.rgb = `rgb(200, 200, 200)`;
-      mapOutline(ctx, cell.x * world.pixelSize, cell.y * world.pixelSize, cell.rgb, cell);
+      mapOutline(ctx, cell.x * settings.pixelSize, cell.y * settings.pixelSize, cell.rgb, cell);
     } else if (cellBiome === "mountain") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawInkMountain(cell);
@@ -408,7 +408,7 @@ function drawInkTree(cell) {
     const roundedY = Math.round(cell.y);
     const img = GID(`tree${getRandomInt(1, 4)}`);
     console.log("DRAWING INK TREE");
-    ctx.drawImage(img, roundedX * world.pixelSize, roundedY * world.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
   }
   
   /**
@@ -420,7 +420,7 @@ function drawInkTree(cell) {
     const roundedX = Math.round(cell.x);
     const roundedY = Math.round(cell.y);
     const img = GID('marsh1');
-    ctx.drawImage(img, roundedX * world.pixelSize, roundedY * world.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
   }
   
   /**
@@ -452,7 +452,7 @@ function drawInkTree(cell) {
       img = GID("mountain1");
     }
   
-    ctx.drawImage(img, roundedX * world.pixelSize, roundedY * world.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
   }
   
 
@@ -507,11 +507,11 @@ function getCorrectedColor(cell) {
 function drawHeightmapFromScratch() {
   if (world.smallMap) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.rect(0, 0, 8192, 4096);
+    ctx.rect(0, 0, settings.width, settings.height);
     ctx.fillStyle = "rgb(75, 75, 75)";
     ctx.fill();
-    for (let i = 0; i < 4096; i++) {
-      for (let j = 0; j < 8192; j++) {
+    for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
         drawHeightmapCell(j, i);
       }
     }
@@ -527,11 +527,11 @@ function drawRiverMapFromScratch() {
   /*
   if (world.smallMap) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.rect(0, 0, 8192, 4096);
+    ctx.rect(0, 0, settings.width, settings.height);
     ctx.fillStyle = "#ff0080"
     ctx.fill();
-    for (let i = 0; i < 4096; i++) {
-      for (let j = 0; j < 8192; j++) {
+    for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
         let cell = world.smallMap[i][j];
         if (cell.elevation >= limits.seaLevel.upper) {
           drawTinyPixel(ctx, j, i, "#ffffff");
@@ -568,8 +568,8 @@ function drawWorld() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
   // Set the canvas dimensions based on the world's size and pixel size
-  canvas.width = world.width * world.pixelSize;
-  canvas.height = world.height * world.pixelSize;
+  canvas.width = world.width * settings.pixelSize;
+  canvas.height = world.height * settings.pixelSize;
   
   // Iterate over each cell in the world and draw it
   for (let y = 0; y < world.height; y++) {
@@ -610,5 +610,31 @@ function drawWorld() {
     drawTinyPixel(ctx, x, y, `rgb(${c}, ${c}, ${c})`)
   }
 
-
+function drawProvinceMap() {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(75, 75, 75)"
+  ctx.fill();
+  let pixels = wholeMapImage()
+  for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
+          let c = world.smallMap[i][j]
+          if (c && c.colorR) {
+              pixels.data[count] = c.colorR //r
+              count += 1;
+              pixels.data[count] = c.colorG //g 
+              count += 1;
+              pixels.data[count] = c.colorB //b
+              count += 2;
+          } else {
+              count += 4;
+          }
+      }
+  }
+  console.log(pixels)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  alert("done")
+}
 

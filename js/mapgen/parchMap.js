@@ -35,10 +35,10 @@ function drawParchmentMap() {
 
           } else {
             if (biome(bn[i]) === "beach") {
-              let cx = cell.x * world.pixelSize + (world.pixelSize / 2);
-              let cy = cell.y * world.pixelSize + (world.pixelSize / 2);
-              let bx = bn[i].x * world.pixelSize + (world.pixelSize / 2);
-              let by = bn[i].y * world.pixelSize + (world.pixelSize / 2);
+              let cx = cell.x * settings.pixelSize + (settings.pixelSize / 2);
+              let cy = cell.y * settings.pixelSize + (settings.pixelSize / 2);
+              let bx = bn[i].x * settings.pixelSize + (settings.pixelSize / 2);
+              let by = bn[i].y * settings.pixelSize + (settings.pixelSize / 2);
               //let cx = cell.x
               //let cy = cell.y
               //let bx = bn[i].x

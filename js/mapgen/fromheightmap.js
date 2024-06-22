@@ -7,10 +7,10 @@ function createSmallMapFromHeightMap() {
     world.smallMap = []
     world.landCells = [];
     world.waterCells = 0
-    canvas.width = 8192;
-    canvas.height = 4096;
+    canvas.width = settings.width;
+    canvas.height = settings.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.rect(0, 0, 8192, 4096);
+    ctx.rect(0, 0, settings.width, settings.height);
     let img = GID("heightmapImg")
     console.log(img)
     img.onclick = function() {
@@ -18,9 +18,9 @@ function createSmallMapFromHeightMap() {
     }
     ctx.drawImage(img, 0, 0)
     let pixels = wholeCanvasImage()
-    for (let i = 0; i < 4096; i++) {
+    for (let i = 0; i < settings.height; i++) {
         world.smallMap[i] = []
-        for (let j = 0; j < 8192; j++) {
+        for (let j = 0; j < settings.width; j++) {
             let cell = {};
             cell.x = j;
             cell.y = i
@@ -117,7 +117,7 @@ function heightMapCivProcess() {
 }
 
 function getGreyscalePixelAt(pixels, x, y) {
-    let yMult = y * 8192 * 4;
+    let yMult = y * settings.width * 4;
     let xMult = x * 4
     let total =  yMult + xMult
     return pixels.data[total]

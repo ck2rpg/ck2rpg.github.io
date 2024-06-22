@@ -1,6 +1,11 @@
 let bookText = aliceText.split("");
 let currentBookPosition = 0;
 
+let settings = {}
+settings.width = 8192
+settings.height = 4096
+settings.tooSmallProvince = 900 // 900 was my default before
+
 let limits = {}
 limits.pineTree = {
   lower: 10,

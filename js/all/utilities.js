@@ -170,8 +170,8 @@ function getDistance(x1, y1, x2, y2) {
 function getMousePos(canvas, evt) {
     let rect = canvas.getBoundingClientRect();
     return {
-        x: Math.floor(((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width) / world.pixelSize),
-        y: Math.floor(((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height) / world.pixelSize),
+        x: Math.floor(((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width) / settings.pixelSize),
+        y: Math.floor(((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height) / settings.pixelSize),
     };
 }
 
@@ -193,3 +193,40 @@ function copyCell(cell) {
   return c
 }
 
+/**
+ * Generates a sequential color object with unique RGB values.
+ * 
+ * The function increments the blue color value (`bCount`) each time it's called.
+ * When `bCount` reaches 256, it resets to 0, and the green color value (`gCount`) is incremented.
+ * This ensures a sequential generation of unique RGB color values.
+ * 
+ * @returns {Object} An object containing the RGB color values.
+ * @returns {number} return.r - The red color value, always set to 0.
+ * @returns {number} return.g - The green color value, incremented after blue reaches 256.
+ * @returns {number} return.b - The blue color value, incremented on each call until it reaches 256.
+ */
+function getRandomSequentialColorObject() {
+  bCount += 1; 
+  if (bCount === 256) {
+      bCount = 0;
+      gCount += 1;
+  }
+  let o = {};
+  o.r = 0;
+  o.g = gCount;
+  o.b = bCount;
+  return o;
+}
+
+function onlyUnique(value, index, array) {
+  return array.indexOf(value) === index
+}
+
+function getColorObjectFromString(string) {
+  let colors = string.match(/(\d+)\,\s(\d+)\,\s(\d+)/)
+  let o = {};
+  o.r = colors[1];
+  o.g = colors[2];
+  o.b = colors[3]
+  return o;
+}

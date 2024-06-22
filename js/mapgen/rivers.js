@@ -672,7 +672,7 @@ function drawRiver(x, y) {
           tempY = 2000
         }
       }
-      ctx.drawImage(template, tempX, tempY, 16, 16, cell.x * world.pixelSize, cell.y * world.pixelSize, 16, 16)
+      ctx.drawImage(template, tempX, tempY, 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     } else {
       let color = "white";
@@ -680,8 +680,8 @@ function drawRiver(x, y) {
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb)
     }
     if (cell.tributaryMerge) {
-      console.log(`Drawing merged river at x: ${cell.x * world.pixelSize} y: ${cell.y * world.pixelSize}`)
-      ctx.drawImage(template, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * world.pixelSize, cell.y * world.pixelSize, 16, 16)
+      console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
+      ctx.drawImage(template, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     }
   

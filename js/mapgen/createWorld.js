@@ -28,10 +28,10 @@ function createWorld() {
    */
   function initializeWorldSettings() {
     world.drawingType = "colorful";
-    world.pixelSize = 16;
     world.tectonics = { spreadingCenters: [] };
     world.height = world.height || 256;
     world.width = world.width || 512;
+    settings.pixelSize = settings.height / world.height
   }
   
   /**
@@ -92,8 +92,8 @@ function createWorld() {
     return {
       x: x,
       y: y,
-      ckX: x * world.pixelSize, // top left corner of extended square
-      ckY: 4096 - (y * world.pixelSize), // top left corner of extended square
+      ckX: x * settings.pixelSize, // top left corner of extended square
+      ckY: settings.height - (y * settings.pixelSize), // top left corner of extended square
       tree: false,
       elevation: getRandomInt(-254, -200),
       magma: 0,

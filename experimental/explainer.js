@@ -131,6 +131,9 @@ function setProvinceDirections() {
                 o.attractiveness = (o.elevationChange * -1) - o.distance / terrainPenalty(p.terrain, neighbor.terrain)
                 p.placeInWorld.landNeighbors += 1;
             } else {
+                if (p.land) {
+                    neighbor.seaType = "coastal_sea"
+                }
                 o.attractiveness = -1
                 o.water
                 p.placeInWorld.waterNeighbors += 1;

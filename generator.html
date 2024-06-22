@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>CK3 Procedural Map Generator</title>
-    <link rel="stylesheet" href="bs.css"></link>
+    <link rel="stylesheet" href="css/bs.css"></link>
   </head>
   <body>
     <canvas id="canvas"></canvas>
@@ -227,8 +227,8 @@
       <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
     </div>
     <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
-    <img id="rivertemp" src="rivertemp.png" style="display: none"/>
-    <img id="river-temp-trans" src="riverTransTemp.png" style="display: none"/>
+    <img id="rivertemp" src="images/river_templates/rivertemp.png" style="display: none"/>
+    <img id="river-temp-trans" src="images/river_templates/riverTransTemp.png" style="display: none"/>
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
     <script src="js/langgen/alice.js"></script>
     <script src="js/external_libraries/simplex-noise.js"></script>
@@ -281,18 +281,26 @@
     <script src="js/mapgen/parchMap.js"></script>
     <script src="js/langgen/lang2.js"></script>
     <script src="worldhistory.js"></script>
-    <script src="ck3.js"></script>
     <script src="js/mapgen/createProvinces.js"></script>
+    <script src="js/mapgen/createProvinceTerrain.js"></script>
     <script src="js/mapgen/fromheightmap.js"></script>
     <script src="ck3stuff/culture.js"></script>
     <script src="ck3stuff/religion.js"></script>
     <script src="ck3stuff/simplehistory.js"></script>
-    <script src="clothingtextures.js"></script>
-    <script src="eyeskinhair.js"></script>
+    <script src="js/palettes/clothingtextures.js"></script>
+    <script src="js/palettes/eyeskinhair.js"></script>
     <script src="experimental/explainer.js"></script>
     <script src="experimental/explainerHistory.js"></script>
     <script src="js/mapgen/maskButtons.js"></script>
     <script src="js/mapgen/startup.js"></script>
+    <script src="js/textFileWriters/writeProvinceDefinitions.js"></script>
+    <script src="js/textFileWriters/writeBookmark.js"></script>
+    <script src="js/textFileWriters/writeCultureLocalization.js"></script>
+    <script src="js/textFileWriters/writeDefaultMap.js"></script>
+    <script src="js/textFileWriters/writeDynastyLocalization.js"></script>
+    <script src="js/textFileWriters/writeLandedTitles.js"></script>
+    <script src="js/textFileWriters/writeLocators.js"></script>
+    <script src="js/textFileWriters/writeTitleLocalization.js"></script>
     <script src="js/interface/clickables.js"></script>
     
   </body>
