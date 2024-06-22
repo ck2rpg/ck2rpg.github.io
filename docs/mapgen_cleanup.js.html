@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: mapgen/cleanup.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: mapgen/cleanup.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Performs a comprehensive cleanup of the world map in a single loop.
+ * Removes stray land, mountain, and water cells by adjusting their elevation
+ * based on the number of neighboring cells of the same type.
+ */
+function cleanupWorld() {
+  let removedCoasts = 0;
+  let removedWater = 0;
+  let removedMountains = 0;
+
+  for (let i = 0; i &lt; world.height; i++) {
+    for (let j = 0; j &lt; world.width; j++) {
+      let cell = xy(j, i);
+
+      // Clean up stray coasts
+      if (cell.elevation >= limits.seaLevel.upper) {
+        removedCoasts += cleanupStrayCells(cell, limits.seaLevel.upper, -1, false);
+      }
+
+      // Clean up stray water
+      if (cell.elevation &lt; limits.seaLevel.upper) {
+        removedWater += cleanupStrayCells(cell, limits.seaLevel.upper, limits.seaLevel.upper + 1, true);
+      }
+
+      // Clean up stray mountains
+      if (cell.elevation >= limits.mountains.lower) {
+        removedMountains += cleanupStrayCells(cell, limits.mountains.lower, limits.mountains.lower - 1, false);
+      }
+    }
+  }
+  
+  console.log(`${removedCoasts} coasts removed`);
+  console.log(`${removedWater} water cells removed`);
+  console.log(`${removedMountains} mountains removed`);
+}
+
+/**
+ * Cleans up stray cells by adjusting their elevation based on the number of neighboring cells.
+ *
+ * @param {Object} cell - The cell to check and potentially adjust.
+ * @param {number} limit - The elevation limit to compare against.
+ * @param {number} newElevation - The new elevation to set if the cell is determined to be stray.
+ * @param {boolean} isWater - Whether the cleanup is for water cells.
+ * @returns {number} The number of cells removed (1 if the cell was adjusted, otherwise 0).
+ */
+function cleanupStrayCells(cell, limit, newElevation, isWater) {
+  try {
+    let neighbors = getNeighbors(cell.x, cell.y);
+    let similarNeighbors = 0;
+    for (let n = 0; n &lt; neighbors.length; n++) {
+      if (isWater &amp;&amp; neighbors[n].elevation &lt; limit) {
+        similarNeighbors += 1;
+      } else if (!isWater &amp;&amp; neighbors[n].elevation >= limit) {
+        similarNeighbors += 1;
+      }
+    }
+
+    if (similarNeighbors &lt; 3) {
+      cell.elevation = newElevation;
+      if (newElevation === -1) cell.beach = false;
+      return 1;
+    }
+  } catch {
+    // Handle potential errors, e.g., accessing undefined neighbors
+  }
+  return 0;
+}
+
+
+/**
+ * Performs a comprehensive cleanup of the world by calling specific cleanup functions.
+ * 
+ * This function performs the following steps:
+ * 1. Cleans up the world by calling the `cleanupWorld` function.
+ * 2. Identifies and processes beach areas by calling the `getBeaches` function.
+ */
+function cleanupAll() {
+    cleanupWorld();
+    getBeaches();
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#adjustCloudForElevation">adjustCloudForElevation</a></li><li><a href="global.html#adjustCloudForMountains">adjustCloudForMountains</a></li><li><a href="global.html#applyBrush">applyBrush</a></li><li><a href="global.html#asteroidStorm">asteroidStorm</a></li><li><a href="global.html#beachable">beachable</a></li><li><a href="global.html#biome">biome</a></li><li><a href="global.html#cleanupAll">cleanupAll</a></li><li><a href="global.html#cleanupStrayCells">cleanupStrayCells</a></li><li><a href="global.html#cleanupWorld">cleanupWorld</a></li><li><a href="global.html#createAsteroid">createAsteroid</a></li><li><a href="global.html#createBlankWorld">createBlankWorld</a></li><li><a href="global.html#createCell">createCell</a></li><li><a href="global.html#createHSpreadLine">createHSpreadLine</a></li><li><a href="global.html#createProvinceTerrain">createProvinceTerrain</a></li><li><a href="global.html#createSpreadingCenters">createSpreadingCenters</a></li><li><a href="global.html#createSpreadingLine">createSpreadingLine</a></li><li><a href="global.html#createWinterSeverity">createWinterSeverity</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#drawArctic">drawArctic</a></li><li><a href="global.html#drawBeach">drawBeach</a></li><li><a href="global.html#drawBookType">drawBookType</a></li><li><a href="global.html#drawCell">drawCell</a></li><li><a href="global.html#drawColorfulType">drawColorfulType</a></li><li><a href="global.html#drawDesert">drawDesert</a></li><li><a href="global.html#drawGrass">drawGrass</a></li><li><a href="global.html#drawGrassBookType">drawGrassBookType</a></li><li><a href="global.html#drawHeightmapCell">drawHeightmapCell</a></li><li><a href="global.html#drawHeightmapFromScratch">drawHeightmapFromScratch</a></li><li><a href="global.html#drawHeightmapType">drawHeightmapType</a></li><li><a href="global.html#drawInkMarsh">drawInkMarsh</a></li><li><a href="global.html#drawInkMountain">drawInkMountain</a></li><li><a href="global.html#drawInkTree">drawInkTree</a></li><li><a href="global.html#drawLake">drawLake</a></li><li><a href="global.html#drawMountain">drawMountain</a></li><li><a href="global.html#drawName">drawName</a></li><li><a href="global.html#drawOcean">drawOcean</a></li><li><a href="global.html#drawPaperType">drawPaperType</a></li><li><a href="global.html#drawPapyrusType">drawPapyrusType</a></li><li><a href="global.html#drawParchmentType">drawParchmentType</a></li><li><a href="global.html#drawRivermapType">drawRivermapType</a></li><li><a href="global.html#drawSmallPixel">drawSmallPixel</a></li><li><a href="global.html#drawSpecialType">drawSpecialType</a></li><li><a href="global.html#drawTinyPixel">drawTinyPixel</a></li><li><a href="global.html#drawTree">drawTree</a></li><li><a href="global.html#drawWorld">drawWorld</a></li><li><a href="global.html#getCorrectedColor">getCorrectedColor</a></li><li><a href="global.html#getDistance">getDistance</a></li><li><a href="global.html#getRGB">getRGB</a></li><li><a href="global.html#getRGBFromElevation">getRGBFromElevation</a></li><li><a href="global.html#getRandomSequentialColorObject">getRandomSequentialColorObject</a></li><li><a href="global.html#initializeCloud">initializeCloud</a></li><li><a href="global.html#initializeFeatureArrays">initializeFeatureArrays</a></li><li><a href="global.html#initializeWorldSettings">initializeWorldSettings</a></li><li><a href="global.html#mapOutline">mapOutline</a></li><li><a href="global.html#markDesertAreas">markDesertAreas</a></li><li><a href="global.html#normalizeTypedArray">normalizeTypedArray</a></li><li><a href="global.html#populateWorldMap">populateWorldMap</a></li><li><a href="global.html#rollMagma">rollMagma</a></li><li><a href="global.html#setGeographicalPoints">setGeographicalPoints</a></li><li><a href="global.html#setMoisture">setMoisture</a></li><li><a href="global.html#spread">spread</a></li><li><a href="global.html#spreadProcess">spreadProcess</a></li><li><a href="global.html#spreadingCenterEmits">spreadingCenterEmits</a></li><li><a href="global.html#spreadingCenterEmitsSmall">spreadingCenterEmitsSmall</a></li><li><a href="global.html#updateMoisture">updateMoisture</a></li><li><a href="global.html#wholeCanvasImage">wholeCanvasImage</a></li><li><a href="global.html#wholeImage">wholeImage</a></li><li><a href="global.html#writeLandedTitles">writeLandedTitles</a></li><li><a href="global.html#writeProvinceDefinitions">writeProvinceDefinitions</a></li><li><a href="global.html#writeProvinceTerrain">writeProvinceTerrain</a></li><li><a href="global.html#writeTitleLocalization">writeTitleLocalization</a></li><li><a href="global.html#writeWinterSeverity">writeWinterSeverity</a></li><li><a href="global.html#xy">xy</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Fri Jun 21 2024 22:50:58 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: mapgen/moisture.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: mapgen/moisture.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Simulates the distribution of moisture across a world map.
+ * Iterates through each row of the map, simulating the movement of a cloud that adjusts its moisture level based on the elevation of the cells it encounters.
+ * The cloud's moisture level decreases when moving uphill and increases when moving downhill or over sea-level cells.
+ * Tracks the number of mountains crossed and sets desert properties on cells based on moisture levels and position.
+ */
+function setMoisture() {
+    for (let y = 0; y &lt; world.height; y++) {
+      let cloud = initializeCloud(y);
+  
+      while (cloud.x &lt; world.width - 1) {
+        let currentCell = xy(cloud.x, cloud.y);
+        let nextCell = xy(cloud.x + 1, cloud.y);
+  
+        updateMoisture(cloud, currentCell, nextCell);
+        adjustCloudForElevation(cloud, currentCell, nextCell);
+        adjustCloudForMountains(cloud, currentCell, nextCell);
+        markDesertAreas(cloud, nextCell);
+  
+        cloud.x += 1;
+      }
+    }
+  }
+  
+  /**
+   * Initializes a cloud object with initial properties.
+   * 
+   * @param {number} y - The y-coordinate of the row being processed.
+   * @returns {Object} The initialized cloud object.
+   */
+  function initializeCloud(y) {
+    return {
+      x: 0,
+      y: y,
+      moisture: 50,
+      mountainCount: 0
+    };
+  }
+  
+  /**
+   * Updates the moisture level of the cloud based on the elevation difference between the current and next cell.
+   * 
+   * @param {Object} cloud - The cloud object.
+   * @param {Object} currentCell - The current cell being processed.
+   * @param {Object} nextCell - The next cell to be processed.
+   */
+  function updateMoisture(cloud, currentCell, nextCell) {
+    currentCell.moisture = cloud.moisture;
+    let elevationDiff = Math.floor(nextCell.elevation - currentCell.elevation);
+  
+    if (elevationDiff > 10) {
+      cloud.moisture = Math.max(cloud.moisture - 1, 0);
+    }
+  
+    if (nextCell.elevation &lt;= limits.seaLevel.upper) {
+      cloud.moisture += 1;
+    }
+  }
+  
+  /**
+   * Adjusts the cloud's moisture level and mountain count based on the elevation of the current and next cell.
+   * 
+   * @param {Object} cloud - The cloud object.
+   * @param {Object} currentCell - The current cell being processed.
+   * @param {Object} nextCell - The next cell to be processed.
+   */
+  function adjustCloudForElevation(cloud, currentCell, nextCell) {
+    let elevationDiff = Math.floor(nextCell.elevation - currentCell.elevation);
+  
+    if (nextCell.elevation > limits.mountains.lower) {
+      cloud.mountainCount += 1;
+      if (elevationDiff > 0) {
+        cloud.moisture = Math.max(cloud.moisture - 1, 0);
+        nextCell.moisture = cloud.moisture;
+      }
+    } else {
+      cloud.mountainCount = Math.max(cloud.mountainCount - 1, 0);
+    }
+  }
+  
+  /**
+   * Sets desert properties on cells based on the cloud's mountain count and the next cell's elevation.
+   * 
+   * @param {Object} cloud - The cloud object.
+   * @param {Object} currentCell - The current cell being processed.
+   * @param {Object} nextCell - The next cell to be processed.
+   */
+  function adjustCloudForMountains(cloud, currentCell, nextCell) {
+    if (cloud.mountainCount > 0 &amp;&amp; nextCell.elevation &lt; limits.mountains.lower) {
+      nextCell.desert = true;
+    }
+  }
+  
+  /**
+   * Marks areas as desert based on the cloud's moisture level and position within the desert points.
+   * 
+   * @param {Object} cloud - The cloud object.
+   * @param {Object} nextCell - The next cell to be processed.
+   */
+  function markDesertAreas(cloud, nextCell) {
+    if (cloud.y > world.desertPointBottom + getRandomInt(1, 10) &amp;&amp; 
+        cloud.y &lt; world.desertPointTop + getRandomInt(1, 10) &amp;&amp; 
+        cloud.moisture &lt; 50) {
+      nextCell.desert = true;
+    } else {
+      nextCell.desert = false;
+    }
+  }
+  </code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#adjustCloudForElevation">adjustCloudForElevation</a></li><li><a href="global.html#adjustCloudForMountains">adjustCloudForMountains</a></li><li><a href="global.html#applyBrush">applyBrush</a></li><li><a href="global.html#asteroidStorm">asteroidStorm</a></li><li><a href="global.html#beachable">beachable</a></li><li><a href="global.html#biome">biome</a></li><li><a href="global.html#cleanupAll">cleanupAll</a></li><li><a href="global.html#cleanupStrayCells">cleanupStrayCells</a></li><li><a href="global.html#cleanupWorld">cleanupWorld</a></li><li><a href="global.html#createAsteroid">createAsteroid</a></li><li><a href="global.html#createBlankWorld">createBlankWorld</a></li><li><a href="global.html#createCell">createCell</a></li><li><a href="global.html#createHSpreadLine">createHSpreadLine</a></li><li><a href="global.html#createProvinceTerrain">createProvinceTerrain</a></li><li><a href="global.html#createSpreadingCenters">createSpreadingCenters</a></li><li><a href="global.html#createSpreadingLine">createSpreadingLine</a></li><li><a href="global.html#createWinterSeverity">createWinterSeverity</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#drawArctic">drawArctic</a></li><li><a href="global.html#drawBeach">drawBeach</a></li><li><a href="global.html#drawBookType">drawBookType</a></li><li><a href="global.html#drawCell">drawCell</a></li><li><a href="global.html#drawColorfulType">drawColorfulType</a></li><li><a href="global.html#drawDesert">drawDesert</a></li><li><a href="global.html#drawGrass">drawGrass</a></li><li><a href="global.html#drawGrassBookType">drawGrassBookType</a></li><li><a href="global.html#drawHeightmapCell">drawHeightmapCell</a></li><li><a href="global.html#drawHeightmapFromScratch">drawHeightmapFromScratch</a></li><li><a href="global.html#drawHeightmapType">drawHeightmapType</a></li><li><a href="global.html#drawInkMarsh">drawInkMarsh</a></li><li><a href="global.html#drawInkMountain">drawInkMountain</a></li><li><a href="global.html#drawInkTree">drawInkTree</a></li><li><a href="global.html#drawLake">drawLake</a></li><li><a href="global.html#drawMountain">drawMountain</a></li><li><a href="global.html#drawName">drawName</a></li><li><a href="global.html#drawOcean">drawOcean</a></li><li><a href="global.html#drawPaperType">drawPaperType</a></li><li><a href="global.html#drawPapyrusType">drawPapyrusType</a></li><li><a href="global.html#drawParchmentType">drawParchmentType</a></li><li><a href="global.html#drawRivermapType">drawRivermapType</a></li><li><a href="global.html#drawSmallPixel">drawSmallPixel</a></li><li><a href="global.html#drawSpecialType">drawSpecialType</a></li><li><a href="global.html#drawTinyPixel">drawTinyPixel</a></li><li><a href="global.html#drawTree">drawTree</a></li><li><a href="global.html#drawWorld">drawWorld</a></li><li><a href="global.html#getCorrectedColor">getCorrectedColor</a></li><li><a href="global.html#getDistance">getDistance</a></li><li><a href="global.html#getRGB">getRGB</a></li><li><a href="global.html#getRGBFromElevation">getRGBFromElevation</a></li><li><a href="global.html#getRandomSequentialColorObject">getRandomSequentialColorObject</a></li><li><a href="global.html#initializeCloud">initializeCloud</a></li><li><a href="global.html#initializeFeatureArrays">initializeFeatureArrays</a></li><li><a href="global.html#initializeWorldSettings">initializeWorldSettings</a></li><li><a href="global.html#mapOutline">mapOutline</a></li><li><a href="global.html#markDesertAreas">markDesertAreas</a></li><li><a href="global.html#normalizeTypedArray">normalizeTypedArray</a></li><li><a href="global.html#populateWorldMap">populateWorldMap</a></li><li><a href="global.html#rollMagma">rollMagma</a></li><li><a href="global.html#setGeographicalPoints">setGeographicalPoints</a></li><li><a href="global.html#setMoisture">setMoisture</a></li><li><a href="global.html#spread">spread</a></li><li><a href="global.html#spreadProcess">spreadProcess</a></li><li><a href="global.html#spreadingCenterEmits">spreadingCenterEmits</a></li><li><a href="global.html#spreadingCenterEmitsSmall">spreadingCenterEmitsSmall</a></li><li><a href="global.html#updateMoisture">updateMoisture</a></li><li><a href="global.html#wholeCanvasImage">wholeCanvasImage</a></li><li><a href="global.html#wholeImage">wholeImage</a></li><li><a href="global.html#writeLandedTitles">writeLandedTitles</a></li><li><a href="global.html#writeProvinceDefinitions">writeProvinceDefinitions</a></li><li><a href="global.html#writeProvinceTerrain">writeProvinceTerrain</a></li><li><a href="global.html#writeTitleLocalization">writeTitleLocalization</a></li><li><a href="global.html#writeWinterSeverity">writeWinterSeverity</a></li><li><a href="global.html#xy">xy</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Fri Jun 21 2024 22:50:58 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -104,16 +104,3 @@ function getRivers() {
   }
   return arr;
 }
-
-function getLakes() {
-  let arr = [];
-  for (let i = 0; i < world.height; i++) {
-    for (let j = 0; j < world.width; j++) {
-      let cell = xy(j, i);
-      if (cell.lake) {
-        arr.push(cell)
-      }
-    }
-  }
-  return arr
-}

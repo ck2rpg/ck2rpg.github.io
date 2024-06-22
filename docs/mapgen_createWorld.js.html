@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: mapgen/createWorld.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: mapgen/createWorld.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the world by initializing a blank world, setting up spreading centers,
+ * creating spreading lines, and generating horizontal spreading lines.
+ */
+function createWorld() {
+    createBlankWorld();
+    createSpreadingCenters();
+    world.tectonics.spreadingCenters.forEach(center => {
+      createSpreadingLine(center);
+    });
+    createHSpreadLine();
+  }
+  
+  /**
+   * Initializes a blank world with default settings, geographical points,
+   * feature arrays, and populates the world map with cells.
+   */
+  function createBlankWorld() {
+    initializeWorldSettings();
+    setGeographicalPoints();
+    initializeFeatureArrays();
+    populateWorldMap();
+  }
+  
+  /**
+   * Initializes the world settings such as drawing type, pixel size, tectonics,
+   * height, and width.
+   */
+  function initializeWorldSettings() {
+    world.drawingType = "colorful";
+    world.tectonics = { spreadingCenters: [] };
+    world.height = world.height || 256;
+    world.width = world.width || 512;
+    settings.pixelSize = settings.height / world.height
+  }
+  
+  /**
+   * Sets geographical points such as the equator, steppe top and bottom,
+   * frost points, and desert points based on the world's height.
+   */
+  function setGeographicalPoints() {
+    world.equator = Math.floor(world.height / 2);
+    world.steppeTop = world.equator + Math.floor(world.height / 8);
+    world.steppeBottom = world.equator - Math.floor(world.height / 8);
+    world.frostPointBottom = Math.floor(world.height / 10);
+    world.frostPointTop = world.height - world.frostPointBottom;
+    world.desertPointTop = Math.floor(world.height / 2) + Math.floor(world.height / 10);
+    world.desertPointBottom = Math.floor(world.height / 2) - Math.floor(world.height / 10);
+  }
+  
+  /**
+   * Initializes arrays to hold various features of the world such as maps, rivers,
+   * mountains, forests, and other geographical and cultural elements.
+   */
+  function initializeFeatureArrays() {
+    world.map = [];
+    world.rivers = [];
+    world.mountains = [];
+    world.forests = [];
+    world.riverIds = [];
+    world.religions = [];
+    world.asteroids = [];
+    world.trees = [];
+    world.continents = [];
+    world.continentsByProvince = [];
+    world.landCells = [];
+    world.populatedCells = [];
+    world.provinces = [];
+  }
+  
+  /**
+   * Populates the world map with cells. Each cell is initialized with default properties.
+   */
+  function populateWorldMap() {
+    for (let y = 0; y &lt; world.height; y++) {
+      const row = [];
+      for (let x = 0; x &lt; world.width; x++) {
+        row.push(createCell(x, y));
+      }
+      world.map.push(row);
+    }
+  }
+  
+  /**
+   * Creates a cell at the specified coordinates and initializes its properties.
+   *
+   * @param {number} x - The x-coordinate of the cell.
+   * @param {number} y - The y-coordinate of the cell.
+   * @returns {object} The created cell with initialized properties.
+   */
+  function createCell(x, y) {
+    return {
+      x: x,
+      y: y,
+      ckX: x * settings.pixelSize, // top left corner of extended square
+      ckY: settings.height - (y * settings.pixelSize), // top left corner of extended square
+      tree: false,
+      elevation: getRandomInt(-254, -200),
+      magma: 0,
+      asteroidNames: [],
+      river: false,
+      lake: false,
+      beach: false,
+      population: 0,
+      raindrops: 0,
+      floodFilled: false,
+      dropToWater: false
+    };
+  }
+  
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#adjustCloudForElevation">adjustCloudForElevation</a></li><li><a href="global.html#adjustCloudForMountains">adjustCloudForMountains</a></li><li><a href="global.html#applyBrush">applyBrush</a></li><li><a href="global.html#asteroidStorm">asteroidStorm</a></li><li><a href="global.html#beachable">beachable</a></li><li><a href="global.html#biome">biome</a></li><li><a href="global.html#cleanupAll">cleanupAll</a></li><li><a href="global.html#cleanupStrayCells">cleanupStrayCells</a></li><li><a href="global.html#cleanupWorld">cleanupWorld</a></li><li><a href="global.html#createAsteroid">createAsteroid</a></li><li><a href="global.html#createBlankWorld">createBlankWorld</a></li><li><a href="global.html#createCell">createCell</a></li><li><a href="global.html#createHSpreadLine">createHSpreadLine</a></li><li><a href="global.html#createProvinceTerrain">createProvinceTerrain</a></li><li><a href="global.html#createSpreadingCenters">createSpreadingCenters</a></li><li><a href="global.html#createSpreadingLine">createSpreadingLine</a></li><li><a href="global.html#createWinterSeverity">createWinterSeverity</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#drawArctic">drawArctic</a></li><li><a href="global.html#drawBeach">drawBeach</a></li><li><a href="global.html#drawBookType">drawBookType</a></li><li><a href="global.html#drawCell">drawCell</a></li><li><a href="global.html#drawColorfulType">drawColorfulType</a></li><li><a href="global.html#drawDesert">drawDesert</a></li><li><a href="global.html#drawGrass">drawGrass</a></li><li><a href="global.html#drawGrassBookType">drawGrassBookType</a></li><li><a href="global.html#drawHeightmapCell">drawHeightmapCell</a></li><li><a href="global.html#drawHeightmapFromScratch">drawHeightmapFromScratch</a></li><li><a href="global.html#drawHeightmapType">drawHeightmapType</a></li><li><a href="global.html#drawInkMarsh">drawInkMarsh</a></li><li><a href="global.html#drawInkMountain">drawInkMountain</a></li><li><a href="global.html#drawInkTree">drawInkTree</a></li><li><a href="global.html#drawLake">drawLake</a></li><li><a href="global.html#drawMountain">drawMountain</a></li><li><a href="global.html#drawName">drawName</a></li><li><a href="global.html#drawOcean">drawOcean</a></li><li><a href="global.html#drawPaperType">drawPaperType</a></li><li><a href="global.html#drawPapyrusType">drawPapyrusType</a></li><li><a href="global.html#drawParchmentType">drawParchmentType</a></li><li><a href="global.html#drawRivermapType">drawRivermapType</a></li><li><a href="global.html#drawSmallPixel">drawSmallPixel</a></li><li><a href="global.html#drawSpecialType">drawSpecialType</a></li><li><a href="global.html#drawTinyPixel">drawTinyPixel</a></li><li><a href="global.html#drawTree">drawTree</a></li><li><a href="global.html#drawWorld">drawWorld</a></li><li><a href="global.html#getCorrectedColor">getCorrectedColor</a></li><li><a href="global.html#getDistance">getDistance</a></li><li><a href="global.html#getRGB">getRGB</a></li><li><a href="global.html#getRGBFromElevation">getRGBFromElevation</a></li><li><a href="global.html#getRandomSequentialColorObject">getRandomSequentialColorObject</a></li><li><a href="global.html#initializeCloud">initializeCloud</a></li><li><a href="global.html#initializeFeatureArrays">initializeFeatureArrays</a></li><li><a href="global.html#initializeWorldSettings">initializeWorldSettings</a></li><li><a href="global.html#mapOutline">mapOutline</a></li><li><a href="global.html#markDesertAreas">markDesertAreas</a></li><li><a href="global.html#normalizeTypedArray">normalizeTypedArray</a></li><li><a href="global.html#populateWorldMap">populateWorldMap</a></li><li><a href="global.html#rollMagma">rollMagma</a></li><li><a href="global.html#setGeographicalPoints">setGeographicalPoints</a></li><li><a href="global.html#setMoisture">setMoisture</a></li><li><a href="global.html#spread">spread</a></li><li><a href="global.html#spreadProcess">spreadProcess</a></li><li><a href="global.html#spreadingCenterEmits">spreadingCenterEmits</a></li><li><a href="global.html#spreadingCenterEmitsSmall">spreadingCenterEmitsSmall</a></li><li><a href="global.html#updateMoisture">updateMoisture</a></li><li><a href="global.html#wholeCanvasImage">wholeCanvasImage</a></li><li><a href="global.html#wholeImage">wholeImage</a></li><li><a href="global.html#writeLandedTitles">writeLandedTitles</a></li><li><a href="global.html#writeProvinceDefinitions">writeProvinceDefinitions</a></li><li><a href="global.html#writeProvinceTerrain">writeProvinceTerrain</a></li><li><a href="global.html#writeTitleLocalization">writeTitleLocalization</a></li><li><a href="global.html#writeWinterSeverity">writeWinterSeverity</a></li><li><a href="global.html#xy">xy</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Fri Jun 21 2024 22:50:58 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

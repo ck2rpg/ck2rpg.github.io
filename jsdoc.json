@@ -1,0 +1,11 @@
+{
+    "source": {
+        "include": ["./js"],
+        "excludePattern": "(./js/external_libraries/.*)"
+    },
+    "opts": {
+      "destination": "./docs",
+      "recurse": true
+    }
+  }
+  
