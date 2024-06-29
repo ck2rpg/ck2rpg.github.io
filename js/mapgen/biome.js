@@ -25,9 +25,7 @@ function biome(cell) {
       return "river";
   } else if (el > limits.mountains.lower) {
       return "mountain";
-  } else if (el >= limits.seaLevel.upper && el <= 255 && 
-             (distanceBottom + getRandomInt(1, 10) < 300 || distanceTop + getRandomInt(1, 10) < 300) && 
-             (cell.y < world.frostPointBottom + getRandomInt(1, 10) || cell.y > world.frostPointTop + getRandomInt(1, 10))) {
+  } else if (el >= limits.seaLevel.upper && el <= 255 && isCold(cell.y * settings.pixelSize)) {
       return "arctic";
   } else if ((cell.moisture < 50 && el > limits.seaLevel.lower) || (el >= limits.seaLevel.upper && el <= 255 && cell.desert)) {
       return "desert";

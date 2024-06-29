@@ -97,20 +97,275 @@ table {
 }
 
 #main-sidebar {
+  font-size: 0.6em;
   width: 15vw;
-  height: 100vh;
-  overflow-y: scroll;
   position: absolute;
-  left: 0px;
-  top: 0px;
-  background: white;
+  left: 15px;
+  top: 15px;
+  background: #3b3b3b;
+  color: #dddddd;
+  box-shadow: 1px 1px 1px #5b5b5b;
+  
+}
+
+.gen-icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  display: inline;
+}
+
+.gen-icon .tooltip {
+  visibility: hidden;
+  width: 120px;
+  background-color: rgba(0, 0, 0, 0.8); /* Dark grey with half opacity */
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 20000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#startup:hover ~ #tooltip1 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#magnify:hover ~ #tooltip2 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#droptowater:hover ~ #tooltip3 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#colorswatch:hover ~ #tooltip4 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#color-map-icon:hover ~ #tooltip5 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#river-map-icon:hover ~ #tooltip6 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#papyrus-map-icon:hover ~ #tooltip7 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#heightmap-icon:hover ~ #tooltip8 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#broom:hover ~ #tooltip9 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#increase-elevation-icon:hover ~ #tooltip10 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#decrease-elevation-icon:hover ~ #tooltip11 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#raise-mountains-icon:hover ~ #tooltip12 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#lower-mountains-icon:hover ~ #tooltip13 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#spread-icon:hover ~ #tooltip14 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#rerun-rivers-icon:hover ~ #tooltip15 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#soften-spread-icon:hover ~ #tooltip16 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+} 
+
+#paint-increase-elevation:hover ~ #tooltip17 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#paint-decrease-elevation:hover ~ #tooltip18 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#all-to-sea-level:hover ~ #tooltip19 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#water-to-sea-level:hover ~ #tooltip20 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+
+
+
+
+.small-icon-button {
+  border: 1px solid #dddddd;
+}
+
+.small-icon-button:hover {
+  cursor: pointer;
+}
+
+.img-icon:hover {
+  cursor: pointer
+}
+
+.gen-icon img {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.color-swatches {
+  background: #454545;
+  border: 1px solid #dddddd;
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+}
+
+#image-download-settings {
+  display: none;
+  background: #454545;
+  color: #dddddd;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  padding-top: 50px;
+}
+
+#text-download-settings {
+  display: none;
+  background: #454545;
+  color: #dddddd;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  padding-top: 50px;
+}
+
+#province-creation-screen {
+  display: none;
+  background: #454545;
+  color: #dddddd;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  padding-top: 50px;
+}
+
+
+#main-sidebar-top {
+  color: #dddddd;
+  background: #454545;
+  padding: 10px;
+  text-align: center;
+}
+
+#main-sidebar-top:hover {
+  cursor: pointer;
 }
 
 .sbtn {
   padding: 10px;
-  width: 100%;
   text-align: center;
-  border: 1px solid black;
 }
 
 .sbtn:hover {
@@ -121,9 +376,105 @@ table {
 
 #canvas {
   position: absolute;
-  left: 15vw;
+  left: 0px;
   top: 0px;
 }
+
+#province-drawn-proceed {
+  position: absolute;
+  left: 40vw;
+  top: 40vh;
+  height: 20vh;
+  width: 20vw;
+  border: 1px solid black;
+  background: white;
+  color: black;
+  padding: 2vh;
+  z-index: 10000;
+  display: none;
+}
+
+#done-done {
+  z-index: 15000;
+  display: none;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  color: #333;
+}
+
+#done-done p {
+  font-size: 1.2em;
+  line-height: 1.6;
+}
+
+#done-done ol {
+  padding-left: 20px;
+}
+
+#done-done ol li {
+  margin-bottom: 10px;
+  padding-left: 10px;
+  list-style-type: decimal;
+  font-size: 1em;
+}
+
+#done-done ol li a {
+  color: #007BFF;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+#done-done ol li a:hover {
+  color: #0056b3;
+}
+
+#done-done a {
+  color: #007BFF;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+#done-done a:hover {
+  color: #0056b3;
+}
+
+#done-done ol li::marker {
+  font-weight: bold;
+  color: #333;
+}
+
+.download-buttons {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  background: rgb(111, 160, 119);
+  color: #3b3b3b;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.download-buttons:hover {
+  background-color: rgb(37, 92, 58);
+  transform: scale(1.05);
+}
+
+.download-buttons:active {
+  background-color: rgb(37, 92, 58);
+  transform: scale(1);
+}
+
 
 #loading-screen {
   position: absolute;
@@ -245,4 +596,120 @@ button[type="submit"]:hover {
 
 #buttons {
   display: none;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  background-color: #3a3a3a;
+  padding: 5px;
+  border: 1px solid #4a4a4a;
+}
+
+.slider-label {
+  color: white;
+  margin-right: 10px;
+}
+
+.slider {
+  width: 80%;
+  height: 6px;
+  background: #ddd;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.outset-text {
+  margin-top: 8px;
+  margin-left: 8px;
+  margin-bottom: 8px;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #4a4a4a;
+  cursor: pointer;
+  border: 1px solid #4a4a4a;
+}
+
+.slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #4a4a4a;
+  cursor: pointer;
+  border: 1px solid #4a4a4a;
+}
+
+.slider-value {
+  width: 60px;
+  margin-left: 10px;
+  background-color: #3a3a3a;
+  color: white;
+  border: 1px solid #4a4a4a;
+  text-align: right;
+  padding-right: 5px;
+}
+
+.color-box {
+  margin-left: 2px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #4a4a4a;
+  position: relative;
+  cursor: pointer;
+  background-color: rgb(204, 163, 102);
+  display: inline-block;
+}
+
+
+
+.color-picker {
+  display: none;
+  position: absolute;
+  left: 45vw;
+  top: 45vh;
+  width: 10vw;
+  padding: 5px;
+  background-color: #222;
+  border: 1px solid #555;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+.color-option {
+  width: 20px;
+  height: 20px;
+  margin: 2px;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+.color-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+  padding: 5px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1001;
+}
+.color-option:hover .color-tooltip {
+  display: block;
+}
+
+#create-provinces {
+  background: rgb(111, 160, 119);
+  color: #3b3b3b;
 }

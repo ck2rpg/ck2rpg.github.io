@@ -6,6 +6,148 @@
     <link rel="stylesheet" href="css/bs.css"></link>
   </head>
   <body>
+    <div id="done-done">
+      <p>Woohoo! You are done with the browser-based work. Here is what you need to do next:</p>
+      <ol>
+        <li>All of your files should be in the "replacers" folder in the template. If not, move them there.</li>
+        <li>If you do not have Gimp for image processing, download it.</li>
+        <li>Copy my <a href="https://github.com/ck2rpg/mapgenpostprocessor/blob/main/gimpscript.py">Gimp python script</a> out of this Github file.</li>
+        <li>Open Gimp and navigate to Filters > Python-Fu > Console.</li>
+        <li>In the console, locate the process_folder method and replace the placeholder path with the actual path to your replacers folder.</li>
+        <li>Paste the edited script into the Python-Fu console and press Enter. This script applies a Gaussian blur, formats files, and places them in the correct folders.</li>
+        <li>Open the "movetomapobjectdata" folder in the template. Copy all files from this folder and paste them into your "modname/gfx/map/map_object_data" to overwrite existing files.</li>
+        <li>Open rivers.png in Gimp from the replacers folder. Open the existing rivers.png in the map_data folder. Copy and paste the generated rivers over the existing rivers.png in the map_data folder.</li>
+        <li>Overwrite the template file in Gimp to ensure proper indexing.</li>
+        <li>Open the papyrus.png file from the replacers folder in Gimp. Adjust brightness and apply a sepia filter if desired. Apply a Gaussian blur with a radius of 7.5. Open "flatmap.dds" in gfx/map/terrain/. Copy and paste your blurred map over the template flatmap.</li>
+        <li>Open the map editor (right-click Crusader Kings 3 in Steam, click properties, and set launch options to -mapeditor).</li>
+        <li>In the map editor, select Content Object Editor and mark all as modified.</li>
+        <li>Repack the map and save it to your mod folder.</li>
+        <li>Close the map editor.</li>
+        <li>Delete all files from documents/paradox interactive/crusader kings 3/generated to gfx/map/map_object/data</li>
+        <li>Change launch options to -debug_mode and start the game. Start as a ruler.</li>
+        <li>Close the game to generate locators.</li>
+        <li>Copy the generated locators from documents/paradox interactive/crusader kings 3/generated to gfx/map/map_object/data.</li>
+        <li>You now should have a basic working map. Congratulations!</li>
+      </ol>
+      <p>Any questions? Join the <a href="https://discord.gg/eemRxbCUX3">Discord</a>, and we'll do our best to answer.</p>
+    </div>
+    <div id="province-drawn-proceed">
+      Your province map has been downloaded. Click here to proceed to text file generation.
+    </div>
+    <div class="downloads-menus" id="image-download-settings">
+      <p>Now it is time to download the image files. Click below to choose the files to download. Do not move away from this page until your heightmap has downloaded. This may take some time, but the page will automatically redirect to further instructions when it is finished.<br><br></p>
+      <label><input type="checkbox" id="colorfulCheckbox" checked> Colorful</label><br>
+      <label><input type="checkbox" id="paperCheckbox" checked> Paper</label><br>
+      <label><input type="checkbox" id="papyrusCheckbox" checked> Papyrus</label><br>
+      <label><input type="checkbox" id="beach02MaskCheckbox" checked> Beach 02 Mask</label><br>
+      <label><input type="checkbox" id="beach02MediterraneanMaskCheckbox" checked> Beach 02 Mediterranean Mask</label><br>
+      <label><input type="checkbox" id="beach02PebblesMaskCheckbox" checked> Beach 02 Pebbles Mask</label><br>
+      <label><input type="checkbox" id="coastlineCliffBrownMaskCheckbox" checked> Coastline Cliff Brown Mask</label><br>
+      <label><input type="checkbox" id="coastlineCliffDesertMaskCheckbox" checked> Coastline Cliff Desert Mask</label><br>
+      <label><input type="checkbox" id="coastlineCliffGreyMaskCheckbox" checked> Coastline Cliff Grey Mask</label><br>
+      <label><input type="checkbox" id="desert01MaskCheckbox" checked> Desert 01 Mask</label><br>
+      <label><input type="checkbox" id="desert02MaskCheckbox" checked> Desert 02 Mask</label><br>
+      <label><input type="checkbox" id="desertCrackedMaskCheckbox" checked> Desert Cracked Mask</label><br>
+      <label><input type="checkbox" id="desertFlat01MaskCheckbox" checked> Desert Flat 01 Mask</label><br>
+      <label><input type="checkbox" id="desertRockyMaskCheckbox" checked> Desert Rocky Mask</label><br>
+      <label><input type="checkbox" id="desertWavy01LargerMaskCheckbox" checked> Desert Wavy 01 Larger Mask</label><br>
+      <label><input type="checkbox" id="desertWavy01MaskCheckbox" checked> Desert Wavy 01 Mask</label><br>
+      <label><input type="checkbox" id="drylands01CrackedMaskCheckbox" checked> Drylands 01 Cracked Mask</label><br>
+      <label><input type="checkbox" id="drylands01GrassyMaskCheckbox" checked> Drylands 01 Grassy Mask</label><br>
+      <label><input type="checkbox" id="drylands01MaskCheckbox" checked> Drylands 01 Mask</label><br>
+      <label><input type="checkbox" id="farmland01MaskCheckbox" checked> Farmland 01 Mask</label><br>
+      <label><input type="checkbox" id="floodplains01MaskCheckbox" checked> Floodplains 01 Mask</label><br>
+      <label><input type="checkbox" id="forestJungle01MaskCheckbox" checked> Forest Jungle 01 Mask</label><br>
+      <label><input type="checkbox" id="forestLeaf01MaskCheckbox" checked> Forest Leaf 01 Mask</label><br>
+      <label><input type="checkbox" id="forestPine01MaskCheckbox" checked> Forest Pine 01 Mask</label><br>
+      <label><input type="checkbox" id="forestfloor02MaskCheckbox" checked> Forestfloor 02 Mask</label><br>
+      <label><input type="checkbox" id="forestfloorMaskCheckbox" checked> Forestfloor Mask</label><br>
+      <label><input type="checkbox" id="hills01MaskCheckbox" checked> Hills 01 Mask</label><br>
+      <label><input type="checkbox" id="hills01RocksMaskCheckbox" checked> Hills 01 Rocks Mask</label><br>
+      <label><input type="checkbox" id="hills01RocksMediMaskCheckbox" checked> Hills 01 Rocks Medi Mask</label><br>
+      <label><input type="checkbox" id="hills01RocksSmallMaskCheckbox" checked> Hills 01 Rocks Small Mask</label><br>
+      <label><input type="checkbox" id="indiaFarmlandsMaskCheckbox" checked> India Farmlands Mask</label><br>
+      <label><input type="checkbox" id="mediDryMudMaskCheckbox" checked> Medi Dry Mud Mask</label><br>
+      <label><input type="checkbox" id="mediFarmlandsMaskCheckbox" checked> Medi Farmlands Mask</label><br>
+      <label><input type="checkbox" id="mediGrass01MaskCheckbox" checked> Medi Grass 01 Mask</label><br>
+      <label><input type="checkbox" id="mediGrass02MaskCheckbox" checked> Medi Grass 02 Mask</label><br>
+      <label><input type="checkbox" id="mediHills01MaskCheckbox" checked> Medi Hills 01 Mask</label><br>
+      <label><input type="checkbox" id="mediLumpyGrassMaskCheckbox" checked> Medi Lumpy Grass Mask</label><br>
+      <label><input type="checkbox" id="mediNoisyGrassMaskCheckbox" checked> Medi Noisy Grass Mask</label><br>
+      <label><input type="checkbox" id="mountain02BMaskCheckbox" checked> Mountain 02 B Mask</label><br>
+      <label><input type="checkbox" id="mountain02CMaskCheckbox" checked> Mountain 02 C Mask</label><br>
+      <label><input type="checkbox" id="mountain02CSnowMaskCheckbox" checked> Mountain 02 C Snow Mask</label><br>
+      <label><input type="checkbox" id="mountain02DDesertMaskCheckbox" checked> Mountain 02 D Desert Mask</label><br>
+      <label><input type="checkbox" id="mountain02DMaskCheckbox" checked> Mountain 02 D Mask</label><br>
+      <label><input type="checkbox" id="mountain02DSnowMaskCheckbox" checked> Mountain 02 D Snow Mask</label><br>
+      <label><input type="checkbox" id="mountain02DValleysMaskCheckbox" checked> Mountain 02 D Valleys Mask</label><br>
+      <label><input type="checkbox" id="mountain02DesertCMaskCheckbox" checked> Mountain 02 Desert C Mask</label><br>
+      <label><input type="checkbox" id="mountain02DesertMaskCheckbox" checked> Mountain 02 Desert Mask</label><br>
+      <label><input type="checkbox" id="mountain02MaskCheckbox" checked> Mountain 02 Mask</label><br>
+      <label><input type="checkbox" id="mountain02SnowMaskCheckbox" checked> Mountain 02 Snow Mask</label><br>
+      <label><input type="checkbox" id="mudWet01MaskCheckbox" checked> Mud Wet 01 Mask</label><br>
+      <label><input type="checkbox" id="northernHills01MaskCheckbox" checked> Northern Hills 01 Mask</label><br>
+      <label><input type="checkbox" id="northernPlains01MaskCheckbox" checked> Northern Plains 01 Mask</label><br>
+      <label><input type="checkbox" id="oasisMaskCheckbox" checked> Oasis Mask</label><br>
+      <label><input type="checkbox" id="plains01DesatMaskCheckbox" checked> Plains 01 Desat Mask</label><br>
+      <label><input type="checkbox" id="plains01DryMaskCheckbox" checked> Plains 01 Dry Mask</label><br>
+      <label><input type="checkbox" id="plains01MaskCheckbox" checked> Plains 01 Mask</label><br>
+      <label><input type="checkbox" id="plains01NoisyMaskCheckbox" checked> Plains 01 Noisy Mask</label><br>
+      <label><input type="checkbox" id="plains01RoughMaskCheckbox" checked> Plains 01 Rough Mask</label><br>
+      <label><input type="checkbox" id="snowMaskCheckbox" checked> Snow Mask</label><br>
+      <label><input type="checkbox" id="steppe01MaskCheckbox" checked> Steppe 01 Mask</label><br>
+      <label><input type="checkbox" id="steppeBushesMaskCheckbox" checked> Steppe Bushes Mask</label><br>
+      <label><input type="checkbox" id="steppeRocksMaskCheckbox" checked> Steppe Rocks Mask</label><br>
+      <label><input type="checkbox" id="wetlands02MaskCheckbox" checked> Wetlands 02 Mask</label><br>
+      <label><input type="checkbox" id="wetlands02MudMaskCheckbox" checked> Wetlands 02 Mud Mask</label><br>
+      <label><input type="checkbox" id="bookCheckbox" checked> Book</label><br>
+      <label><input type="checkbox" id="rivermapCheckbox" checked> Rivermap</label><br>
+      <label><input type="checkbox" id="heightmapCheckbox" checked> Heightmap</label><br>
+      <div class="download-buttons" id="download-all-checked-images">
+        Download Image Files
+      </div>
+    </div>
+    <div class="downloads-menus" id="text-download-settings">
+      Now it is time to download the text files. Click below to choose the files to download.<br><br>
+      <div id="text-generation-settings">
+        <label><input type="checkbox" id="provinceDefinitionsCheckbox" checked> Province Definitions</label><br>
+        <label><input type="checkbox" id="landedTitlesCheckbox" checked> Landed Titles</label><br>
+        <label><input type="checkbox" id="locatorsBuildingsCheckbox" checked> Locators (Buildings)</label><br>
+        <label><input type="checkbox" id="locatorsSpecialBuildingCheckbox" checked> Locators (Special Building)</label><br>
+        <label><input type="checkbox" id="locatorsCombatCheckbox" checked> Locators (Combat)</label><br>
+        <label><input type="checkbox" id="locatorsSiegeCheckbox" checked> Locators (Siege)</label><br>
+        <label><input type="checkbox" id="locatorsUnitStackCheckbox" checked> Locators (Unit Stack)</label><br>
+        <label><input type="checkbox" id="locatorsUnitStackPlayerOwnedCheckbox" checked> Locators (Unit Stack Player Owned)</label><br>
+        <label><input type="checkbox" id="locatorsUnitStackOtherOwnerCheckbox" checked> Locators (Unit Stack Other Owner)</label><br>
+        <label><input type="checkbox" id="defaultMapCheckbox" checked> Default Map</label><br>
+        <label><input type="checkbox" id="culturesCheckbox" checked> Cultures</label><br>
+        <label><input type="checkbox" id="simpleHistoryCheckbox" checked> Simple History</label><br>
+        <label><input type="checkbox" id="charactersCheckbox" checked> Characters</label><br>
+        <label><input type="checkbox" id="historyCheckbox" checked> History</label><br>
+        <label><input type="checkbox" id="titleLocalizationCheckbox" checked> Title Localization</label><br>
+        <label><input type="checkbox" id="cultureLocalizationCheckbox" checked> Culture Localization</label><br>
+        <label><input type="checkbox" id="nameListsCheckbox" checked> Name Lists</label><br>
+        <label><input type="checkbox" id="ethnicitiesCheckbox" checked> Ethnicities</label><br>
+        <label><input type="checkbox" id="languagesCheckbox" checked> Languages</label><br>
+        <label><input type="checkbox" id="heritagesCheckbox" checked> Heritages</label><br>
+        <label><input type="checkbox" id="provinceTerrainCheckbox" checked> Province Terrain</label><br>
+        <label><input type="checkbox" id="heritageLocalizationCheckbox" checked> Heritage Localization</label><br>
+        <label><input type="checkbox" id="languagesLocalizationCheckbox" checked> Languages Localization</label><br>
+        <label><input type="checkbox" id="dynastyLocalizationCheckbox" checked> Dynasty Localization</label><br>
+        <label><input type="checkbox" id="bookmarkCheckbox" checked> Bookmark</label><br>
+        <label><input type="checkbox" id="bookmarkGroupCheckbox" checked> Bookmark Group</label><br>
+        <label><input type="checkbox" id="religionOutputCheckbox" checked> Religion Output</label><br>
+        <label><input type="checkbox" id="winterSeverityCheckbox" checked> Write Winter Severity</label><br>
+      </div>
+
+      <div class="download-buttons" id="write-all-checked-texts-button">
+        Download Text Files
+      </div>
+    </div>
+    <div id="province-creation-screen">
+      Be patient, your provinces are creating.
+    </div>
+    <div id="main-generator-div">
     <canvas id="canvas"></canvas>
     <canvas id="texture-canvas"></canvas>
     <canvas id="gradientCanvas"></canvas>
@@ -123,112 +265,275 @@
     <div id="loading-screen">
       <h1 class="loading">Generating a New World</h1>
     </div>
-    <div id="main-sidebar">
-      <div class="sbtn" id="open-editor-menu">Map Previewer</div>
-      <div class="sbtn" id="create-provinces">Generate Provinces (Long Wait)</div>
-      <div class="sbtn" id="open-download-menu">Downloads Menu</div>
-      <div class="sbtn" id="raisebrush">Raise Land Brush</div>
-      <div class="sbtn" id="lowerbrush">Lower Land Brush</div>
-      <div class="sbtn" id="increasebrushsize">Increase Brush Size</div>
-      <div class="sbtn" id="decreasebrushsize">Decrease Brush Size</div>
-      <div class="sbtn" id="increasebrushhardness">Increase Brush Hardness</div>
-      <div class="sbtn" id="decreasebrushhardness">Decrease Brush Hardness</div>
-      <div class="sbtn" id="startup">Startup</div>
-      <!--<div class="sbtn" id="add-downloads">Add Downloads</div>-->
-      
-      <div class="sbtn" id="spread">Spread</div>
-      <div class="sbtn" id="cleanup">Cleanup</div>
-      <div class="sbtn" id="softenMountains">Soften Mountains And Emit</div>
-      <div class="sbtn" id="rainErosion">Rain Erosion</div>
-      <div class="sbtn" id="lowerMountains">Lower Mountains</div>
-      <div class="sbtn" id="raiseMountains">Raise Mountains</div>
-      <div class="sbtn" id="raiseElevation">Raise Elevation</div>
-      <div class="sbtn" id="lowerElevation">Lower Elevation</div>
-      <div class="sbtn" id="rerunRivers">Rerun Rivers</div>
+    <div id="sidebars">
+      <div id="main-sidebar">
+        <div id="main-sidebar-top">
+          CK3 Map Generator
+        </div>
+        <div class="gen-icon">
+          <p class="outset-text">Map Preview Modes:</p>
+          <img class="small-icon-button" id="colorswatch" src="icons/terrainmap.png">
+          <div class="tooltip" id="tooltip4">Terrain Map Preview</div>
+          <img class="small-icon-button" id="color-map-icon" src="icons/colormapicon.png">
+          <div class="tooltip" id="tooltip5">Color Map Preview</div>
+          <img class="small-icon-button" id="river-map-icon" src="icons/river-icon.png">
+          <div class="tooltip" id="tooltip6">River Map Preview</div>
+          <img class="small-icon-button" id="papyrus-map-icon" src="icons/papyrus-icon.png">
+          <div class="tooltip" id="tooltip7">Flat Map Preview</div>
+          <img class="small-icon-button" id="heightmap-icon" src="icons/heightmap-icon.png">
+          <div class="tooltip" id="tooltip8">Height Map Preview</div>
+          <p class="outset-text">Mass Change:</p>
+          <img class="img-icon" id="startup" src="icons/newmap.png">
+          <div class="tooltip" id="tooltip1">Create a New Map</div>
+          <img  class="img-icon" id="magnify" src="icons/magnifyingglass.png">
+          <div class="tooltip" id="tooltip2">Inspect Cell</div>
+          <img  class="img-icon" id="droptowater" src="icons/droptowater.png">
+          <div class="tooltip" id="tooltip3">Drop All Cells to Ocean</div>
+          <img class="img-icon" id="broom" src="icons/broom.png">
+          <div class="tooltip" id="tooltip9">Clean Up Single Cells</div>
+          <img class="img-icon" id="spread-icon" src="icons/spread-icon.png">
+          <div class="tooltip" id="tooltip14">Spread Elevation from Spreading Centers</div>
+          <img class="img-icon" id="soften-spread-icon" src="icons/soften-spread-icon.png">
+          <div class="tooltip" id="tooltip16">Soften and Spread</div>
+          <img class="img-icon" id="increase-elevation-icon" src="icons/increase-elevation-icon.png">
+          <div class="tooltip" id="tooltip10">Increase Elevation Everywhere</div>
+          <img class="img-icon"  id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png">
+          <div class="tooltip" id="tooltip11">Decrease Elevation Everywhere</div>
+          <img class="img-icon"  id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png">
+          <div class="tooltip" id="tooltip15">Rerun Rivers</div>
+          <img class="img-icon"  id="raise-mountains-icon" src="icons/raise-mountains.png">
+          <div class="tooltip" id="tooltip12">Raise Mountains</div>
+          <img class="img-icon"  id="lower-mountains-icon" src="icons/lower-mountains.png">
+          <div class="tooltip" id="tooltip13">Lower Mountains</div>
+
+          <img class="img-icon"  id="all-to-sea-level" src="icons/all-to-sea-level.png">
+          <div class="tooltip" id="tooltip19">All to Sea Level</div>
+
+          <img class="img-icon"  id="water-to-sea-level" src="icons/water-to-sea-level.png">
+          <div class="tooltip" id="tooltip20">Water to Sea Level</div>
+
+          <p class="outset-text">Brushes:</p>
+
+          <img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png">
+          <div class="tooltip" id="tooltip17">Raise Elevation Brush</div>
+          <img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png">
+          <div class="tooltip" id="tooltip18">Lower Elevation Brush</div>
 
 
+          <div class="color-box" id="selected-color">
+            <div class="color-tooltip" id="selected-tooltip">Select Color</div>
+          </div>
+
+          <div class="color-picker" id="color-picker">
+            <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
+              <div class="color-tooltip">Sea Level</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
+              <div class="color-tooltip">Plains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
+              <div class="color-tooltip">Desert</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
+              <div class="color-tooltip">Drylands</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
+              <div class="color-tooltip">Floodplains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
+              <div class="color-tooltip">Hills</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
+              <div class="color-tooltip">Mountains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
+              <div class="color-tooltip">Taiga</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
+              <div class="color-tooltip">Desert Mountains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
+              <div class="color-tooltip">Farmlands</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
+              <div class="color-tooltip">Forest</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
+              <div class="color-tooltip">Jungle</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
+              <div class="color-tooltip">Oasis</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
+              <div class="color-tooltip">Steppe</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
+              <div class="color-tooltip">Wetlands</div>
+            </div>
+          </div>
+
+          <p class="outset-text">Brush Settings:</p>
+          <div class="slider-container">
+            <label for="sizeSlider" class="slider-label">Size</label>
+            <input type="range" id="sizeSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updateSliderValue(this.value)">
+            <!--<input type="number" id="sizeValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updateSlider(this.value)">-->
+          </div>
+          <div class="slider-container">
+            <label for="powerSlider" class="slider-label">Power</label>
+            <input type="range" id="powerSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
+              <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
+          </div>
+
+          <br>
+        </div>
+        <p class="outset-text">Map Settings:</p>
+        <div class="slider-container">
+          <label for="equatorSlider" class="slider-label">Equator</label>
+          <input type="range" id="equatorSlider" class="slider" min="3600" max="8000" value="100" step="1" oninput="updateEquatorValue(this.value)">
+          <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
+      </div>
+      <!--
+      <div class="slider-container">
+        <label for="seaLevelSlider" class="slider-label">Sea Level</label>
+        <input type="range" id="seaLevelSlider" class="slider" min="5" max="508" value="37" step="1" oninput="updateSeaLevelValue(this.value)">
+    </div>-->
+      <div class="slider-container">
+        <label for="riversSlider" class="slider-label">Rivers</label>
+        <input type="range" id="riversSlider" class="slider" min="3" max="30" value="27" step="1" oninput="updateRiversValue(this.value)">
+        <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
     </div>
-    <div id="downloads-sidebar">
-      <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
-      <div class="sbtn" id="downloadallbtn">Download Image Files</div>
-      <div class="sbtn" id="add-downloads">Download Text Files</div>
-      <div class="sbtn" id="download-palettes">Download Palettes</div>
-      <div class="sbtn" id="download-clothing-palettes">Download Clothing Palettes</div>
+    <!--
+    <p class="outset-text">Climate Bands:</p>
+      <div class="slider-container">
+          <label for="tropicsSlider" class="slider-label">Tropics</label>
+          <input type="range" id="tropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTropicsValue(this.value)">
+      </div>
+      <div class="slider-container">
+        <label for="subtropicsSlider" class="slider-label">Subtropics</label>
+        <input type="range" id="subtropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateSubtropicsValue(this.value)">
     </div>
-    <div id="sidebar">
-      <div class="sbtn" id="back-to-main-menu-editor">Back to Main Menu</div>
-      <div class="sbtn" id="previewmap">Preview Map</div>
-      <div class="sbtn" id="heightmap">Height Map</div>
-      <div class="sbtn" id="provinceMap">Province Map</div>
-      <div class="sbtn" id="rivermap">River Map</div>
-      <div class="sbtn" id="paper-map">Paper Map</div>
-      <div class="sbtn" id="papyrus-map">Papyrus Map</div>
-      <div class="sbtn" id="beach_02_mask">beach_02_mask</div>
-      <div class="sbtn" id="beach_02_mediterranean_mask">beach_02_mediterranean_mask</div>
-      <div class="sbtn" id="beach_02_pebbles_mask">beach_02_pebbles_mask</div>
-      <div class="sbtn" id="coastline_cliff_brown_mask">coastline_cliff_brown_mask</div>
-      <div class="sbtn" id="coastline_cliff_desert_mask">coastline_cliff_desert_mask</div>
-      <div class="sbtn" id="coastline_cliff_grey_mask">coastline_cliff_grey_mask</div>
-      <div class="sbtn" id="desert_01_mask">desert_01_mask</div>
-      <div class="sbtn" id="desert_02_mask">desert_02_mask</div>
-      <div class="sbtn" id="desert_cracked_mask">desert_cracked_mask</div>
-      <div class="sbtn" id="desert_flat_01_mask">desert_flat_01_mask</div>
-      <div class="sbtn" id="desert_rocky_mask">desert_rocky_mask</div>
-      <div class="sbtn" id="desert_wavy_01_larger_mask">desert_wavy_01_larger_mask</div>
-      <div class="sbtn" id="desert_wavy_01_mask">desert_wavy_01_mask</div>
-      <div class="sbtn" id="drylands_01_cracked_mask">drylands_01_cracked_mask</div>
-      <div class="sbtn" id="drylands_01_grassy_mask">drylands_01_grassy_mask</div>
-      <div class="sbtn" id="drylands_01_mask">drylands_01_mask</div>
-      <div class="sbtn" id="farmland_01_mask">farmland_01_mask</div>
-      <div class="sbtn" id="floodplains_01_mask">floodplains_01_mask</div>
-      <div class="sbtn" id="forest_jungle_01_mask">forest_jungle_01_mask</div>
-      <div class="sbtn" id="forest_leaf_01_mask">forest_leaf_01_mask</div>
-      <div class="sbtn" id="forest_pine_01_mask">forest_pine_01_mask</div>
-      <div class="sbtn" id="forestfloor_02_mask">forestfloor_02_mask</div>
-      <div class="sbtn" id="forestfloor_mask">forestfloor_mask</div>
-      <div class="sbtn" id="hills_01_mask">hills_01_mask</div>
-      <div class="sbtn" id="hills_01_rocks_mask">hills_01_rocks_mask</div>
-      <div class="sbtn" id="hills_01_rocks_medi_mask">hills_01_rocks_medi_mask</div>
-      <div class="sbtn" id="hills_01_rocks_small_mask">hills_01_rocks_small_mask</div>
-      <div class="sbtn" id="india_farmlands_mask">india_farmlands_mask</div>
-      <div class="sbtn" id="medi_dry_mud_mask">medi_dry_mud_mask</div>
-      <div class="sbtn" id="medi_farmlands_mask">medi_farmlands_mask</div>
-      <div class="sbtn" id="medi_grass_01_mask">medi_grass_01_mask</div>
-      <div class="sbtn" id="medi_grass_02_mask">medi_grass_02_mask</div>
-      <div class="sbtn" id="medi_hills_01_mask">medi_hills_01_mask</div>
-      <div class="sbtn" id="medi_lumpy_grass_mask">medi_lumpy_grass_mask</div>
-      <div class="sbtn" id="medi_noisy_grass_mask">medi_noisy_grass_mask</div>
-      <div class="sbtn" id="mountain_02_b_mask">mountain_02_b_mask</div>
-      <div class="sbtn" id="mountain_02_c_mask">mountain_02_c_mask</div>
-      <div class="sbtn" id="mountain_02_c_snow_mask">mountain_02_c_snow_mask</div>
-      <div class="sbtn" id="mountain_02_d_desert_mask">mountain_02_d_desert_mask</div>
-      <div class="sbtn" id="mountain_02_d_mask">mountain_02_d_mask</div>
-      <div class="sbtn" id="mountain_02_d_snow_mask">mountain_02_d_snow_mask</div>
-      <div class="sbtn" id="mountain_02_d_valleys_mask">mountain_02_d_valleys_mask</div>
-      <div class="sbtn" id="mountain_02_desert_c_mask">mountain_02_desert_c_mask</div>
-      <div class="sbtn" id="mountain_02_desert_mask">mountain-02_desert_mask</div>
-      <div class="sbtn" id="mountain_02_mask">mountain_02_mask</div>
-      <div class="sbtn" id="mountain_02_snow_mask">mountain_02_snow_mask</div>
-      <div class="sbtn" id="mud_wet_01_mask">mud_wet_01_mask</div>
-      <div class="sbtn" id="northern_hills_01_mask">northern_hills_01_mask</div>
-      <div class="sbtn" id="northern_plains_01_mask">northern_plains_01_mask</div>
-      <div class="sbtn" id="oasis_mask">oasis_mask</div>
-      <div class="sbtn" id="plains_01_desat_mask">plains_01_desat_mask</div>
-      <div class="sbtn" id="plains_01_dry_mask">plains_01_dry_mask</div>
-      <div class="sbtn" id="plains_01_dry_mud_mask">plains_01_dry_mud_mask</div>
-      <div class="sbtn" id="plains_01_mask">plains_01_mask</div>
-      <div class="sbtn" id="plains_01_noisy_mask">plains_01_noisy_mask</div>
-      <div class="sbtn" id="plains_01_rough_mask">plains_01_rough_mask</div>
-      <div class="sbtn" id="snow_mask">snow_mask</div>
-      <div class="sbtn" id="steppe_01_mask">steppe_01_mask</div>
-      <div class="sbtn" id="steppe_bushes_mask">steppe_bushes_mask</div>
-      <div class="sbtn" id="steppe_rocks_mask">steppe_rocks_mask</div>
-      <div class="sbtn" id="wetlands_02_mask">wetlands_02_mask</div>
-      <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
+    <div class="slider-container">
+        <label for="temperateSlider" class="slider-label">Temperate</label>
+        <input type="range" id="temperateSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTemperateValue(this.value)">
     </div>
+    <div class="slider-container">
+        <label for="coldSlider" class="slider-label">Cold</label>
+        <input type="range" id="coldSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateColdValue(this.value)">
+    </div>
+  
+    <p class="outset-text">Elevation Limits:</p>
+    <div class="slider-container">
+        <label for="hillsSlider" class="slider-label">Hills</label>
+        <input type="range" id="hillsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateHillsValue(this.value)">
+
+    </div>
+      <div class="slider-container">
+        <label for="mountainsSlider" class="slider-label">Mountains</label>
+        <input type="range" id="mountainsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateMountainsValue(this.value)">
+
+    </div>
+
+    <div class="slider-container">
+      <label for="provinceSlider" class="slider-label">Province</label>
+      <input type="range" id="provinceSlider" class="slider" min="300" max="3000" value="900" step="100" oninput="updateProvinceSliderValue(this.value)">
+
+  </div>
+-->
+
+        
+        <div class="sbtn" id="create-provinces">Generate Provinces</div>
+        
+        <!--<div class="sbtn" id="rainErosion">Rain Erosion</div>-->
+      </div>
+      <div id="downloads-sidebar">
+        <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
+        <div class="sbtn" id="downloadallbtn">Download Image Files</div>
+        <div class="sbtn" id="add-downloads">Download Text Files</div>
+        <div class="sbtn" id="download-palettes">Download Palettes</div>
+        <div class="sbtn" id="download-clothing-palettes">Download Clothing Palettes</div>
+      </div>
+      <div id="sidebar">
+        <div class="sbtn" id="back-to-main-menu-editor">Back to Main Menu</div>
+        <div class="sbtn" id="previewmap">Preview Map</div>
+        <div class="sbtn" id="heightmap">Height Map</div>
+        <div class="sbtn" id="provinceMap">Province Map</div>
+        <div class="sbtn" id="rivermap">River Map</div>
+        <div class="sbtn" id="paper-map">Paper Map</div>
+        <div class="sbtn" id="papyrus-map">Papyrus Map</div>
+        <div class="sbtn" id="beach_02_mask">beach_02_mask</div>
+        <div class="sbtn" id="beach_02_mediterranean_mask">beach_02_mediterranean_mask</div>
+        <div class="sbtn" id="beach_02_pebbles_mask">beach_02_pebbles_mask</div>
+        <div class="sbtn" id="coastline_cliff_brown_mask">coastline_cliff_brown_mask</div>
+        <div class="sbtn" id="coastline_cliff_desert_mask">coastline_cliff_desert_mask</div>
+        <div class="sbtn" id="coastline_cliff_grey_mask">coastline_cliff_grey_mask</div>
+        <div class="sbtn" id="desert_01_mask">desert_01_mask</div>
+        <div class="sbtn" id="desert_02_mask">desert_02_mask</div>
+        <div class="sbtn" id="desert_cracked_mask">desert_cracked_mask</div>
+        <div class="sbtn" id="desert_flat_01_mask">desert_flat_01_mask</div>
+        <div class="sbtn" id="desert_rocky_mask">desert_rocky_mask</div>
+        <div class="sbtn" id="desert_wavy_01_larger_mask">desert_wavy_01_larger_mask</div>
+        <div class="sbtn" id="desert_wavy_01_mask">desert_wavy_01_mask</div>
+        <div class="sbtn" id="drylands_01_cracked_mask">drylands_01_cracked_mask</div>
+        <div class="sbtn" id="drylands_01_grassy_mask">drylands_01_grassy_mask</div>
+        <div class="sbtn" id="drylands_01_mask">drylands_01_mask</div>
+        <div class="sbtn" id="farmland_01_mask">farmland_01_mask</div>
+        <div class="sbtn" id="floodplains_01_mask">floodplains_01_mask</div>
+        <div class="sbtn" id="forest_jungle_01_mask">forest_jungle_01_mask</div>
+        <div class="sbtn" id="forest_leaf_01_mask">forest_leaf_01_mask</div>
+        <div class="sbtn" id="forest_pine_01_mask">forest_pine_01_mask</div>
+        <div class="sbtn" id="forestfloor_02_mask">forestfloor_02_mask</div>
+        <div class="sbtn" id="forestfloor_mask">forestfloor_mask</div>
+        <div class="sbtn" id="hills_01_mask">hills_01_mask</div>
+        <div class="sbtn" id="hills_01_rocks_mask">hills_01_rocks_mask</div>
+        <div class="sbtn" id="hills_01_rocks_medi_mask">hills_01_rocks_medi_mask</div>
+        <div class="sbtn" id="hills_01_rocks_small_mask">hills_01_rocks_small_mask</div>
+        <div class="sbtn" id="india_farmlands_mask">india_farmlands_mask</div>
+        <div class="sbtn" id="medi_dry_mud_mask">medi_dry_mud_mask</div>
+        <div class="sbtn" id="medi_farmlands_mask">medi_farmlands_mask</div>
+        <div class="sbtn" id="medi_grass_01_mask">medi_grass_01_mask</div>
+        <div class="sbtn" id="medi_grass_02_mask">medi_grass_02_mask</div>
+        <div class="sbtn" id="medi_hills_01_mask">medi_hills_01_mask</div>
+        <div class="sbtn" id="medi_lumpy_grass_mask">medi_lumpy_grass_mask</div>
+        <div class="sbtn" id="medi_noisy_grass_mask">medi_noisy_grass_mask</div>
+        <div class="sbtn" id="mountain_02_b_mask">mountain_02_b_mask</div>
+        <div class="sbtn" id="mountain_02_c_mask">mountain_02_c_mask</div>
+        <div class="sbtn" id="mountain_02_c_snow_mask">mountain_02_c_snow_mask</div>
+        <div class="sbtn" id="mountain_02_d_desert_mask">mountain_02_d_desert_mask</div>
+        <div class="sbtn" id="mountain_02_d_mask">mountain_02_d_mask</div>
+        <div class="sbtn" id="mountain_02_d_snow_mask">mountain_02_d_snow_mask</div>
+        <div class="sbtn" id="mountain_02_d_valleys_mask">mountain_02_d_valleys_mask</div>
+        <div class="sbtn" id="mountain_02_desert_c_mask">mountain_02_desert_c_mask</div>
+        <div class="sbtn" id="mountain_02_desert_mask">mountain-02_desert_mask</div>
+        <div class="sbtn" id="mountain_02_mask">mountain_02_mask</div>
+        <div class="sbtn" id="mountain_02_snow_mask">mountain_02_snow_mask</div>
+        <div class="sbtn" id="mud_wet_01_mask">mud_wet_01_mask</div>
+        <div class="sbtn" id="northern_hills_01_mask">northern_hills_01_mask</div>
+        <div class="sbtn" id="northern_plains_01_mask">northern_plains_01_mask</div>
+        <div class="sbtn" id="oasis_mask">oasis_mask</div>
+        <div class="sbtn" id="plains_01_desat_mask">plains_01_desat_mask</div>
+        <div class="sbtn" id="plains_01_dry_mask">plains_01_dry_mask</div>
+        <div class="sbtn" id="plains_01_dry_mud_mask">plains_01_dry_mud_mask</div>
+        <div class="sbtn" id="plains_01_mask">plains_01_mask</div>
+        <div class="sbtn" id="plains_01_noisy_mask">plains_01_noisy_mask</div>
+        <div class="sbtn" id="plains_01_rough_mask">plains_01_rough_mask</div>
+        <div class="sbtn" id="snow_mask">snow_mask</div>
+        <div class="sbtn" id="steppe_01_mask">steppe_01_mask</div>
+        <div class="sbtn" id="steppe_bushes_mask">steppe_bushes_mask</div>
+        <div class="sbtn" id="steppe_rocks_mask">steppe_rocks_mask</div>
+        <div class="sbtn" id="wetlands_02_mask">wetlands_02_mask</div>
+        <div class="sbtn" id="wetlands_02_mud_mask">wetlands_02_mud_mask</div>
+      </div>
+    </div>
+
+    
+    
     <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
     <img id="rivertemp" src="images/river_templates/rivertemp.png" style="display: none"/>
     <img id="river-temp-trans" src="images/river_templates/riverTransTemp.png" style="display: none"/>
+    </div>
+    <div id="testing-div">
+
+    </div>
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
     <script src="js/langgen/alice.js"></script>
     <script src="js/external_libraries/simplex-noise.js"></script>
@@ -302,6 +607,23 @@
     <script src="js/textFileWriters/writeLocators.js"></script>
     <script src="js/textFileWriters/writeTitleLocalization.js"></script>
     <script src="js/interface/clickables.js"></script>
-    
+    <script src="js/loregen/koppenClimate.js"></script>
+    <script src="js/loregen/agriculturalProductivity.js"></script>
+    <script src="js/loregen/miningSuitability.js"></script>
+    <script src="js/loregen/livestockSuitability.js"></script>
+    <script src="js/loregen/determineBuildingMaterials.js"></script>
+    <script src="js/loregen/canProvinceProduce.js"></script>
+    <script src="js/loregen/geographical_regions/materials.js"></script>
+    <script src="js/loregen/geographical_regions/analyzeRegion.js"></script>
+    <script src="js/loregen/geographical_regions/assignGraphicsPossibilities.js"></script>
+    <script src="js/loregen/tribalCreationMyth.js"></script>
+    <script src="js/loregen/evaluateExpansionFavorability.js"></script>
+    <script src="js/loregen/calculateDaylight.js"></script>
+    <script src="js/climate/isClimateTransitionZone.js"></script>
+    <script src="js/climate/calculateFloodRisk.js"></script>
+    <script src="js/testing/createDummyProvinces.js"></script>
+    <script src="js/testing/createdDummyProvinces.js"></script>
+    <script src="js/testing/createDummyWorld.js"></script>
+    <script src="js/testing/test.js"></script>
   </body>
 </html>

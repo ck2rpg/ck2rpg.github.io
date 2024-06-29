@@ -21,14 +21,51 @@ function xy(x, y) {
    * and distributes them across the width of the world.
    */
   function createSpreadingCenters() {
-    const numCenters = getRandomInt(5, 45); // Random number of spreading centers
-    const spacing = Math.floor(world.width / numCenters);
+    let numCenters;
+    let spacing;
+    if (settings.verticalSpread) {
+      numCenters = getRandomInt(5, 45)
+      spacing = Math.floor(world.width / numCenters);
+    }
+    if (settings.horizontalSpread) {
+
+      numCenters = getRandomInt(500, 512);
+      spacing = 1
+    }
   
     for (let i = 0; i < numCenters; i++) {
       world.tectonics.spreadingCenters.push(spacing * i);
     }
   
     world.tectonics.spreadingLine = [];
+  }
+
+  function addSpreadingCenters(num) {
+    for (let i = 0; i < num; i++) {
+      let x = getRandomInt(1, world.height - 1)
+      let y = getRandomInt(1, world.width - 1);
+      let cell = xy(x, y);
+      cell.spreading = true;
+      world.tectonics.spreadingLine.push(cell)
+    }
+  }
+
+  function resetSpreadingCenters() {
+    for (let i = 0; i < world.tectonics.spreadingCenters.length; i++) {
+      let cell = world.tectonics.spreadingCenters[i]
+      cell.spreading = false;
+    }
+    for (let i = 0; i < world.tectonics.spreadingLine.length; i++) {
+      let cell = world.tectonics.spreadingLine[i]
+      cell.spreading = false;
+    }
+    world.tectonics.spreadingLine = [];
+    world.tectonics.spreadingCenters = []
+    createSpreadingCenters();
+    world.tectonics.spreadingCenters.forEach(center => {
+      createSpreadingLine(center);
+    });
+    createHSpreadLine();
   }
   
   
@@ -43,24 +80,52 @@ function xy(x, y) {
   function createSpreadingLine(center) {
     const verticalAdjuster = Math.floor(world.height / getRandomInt(1, 15));
     const horizontalAdjuster = Math.floor(world.height / getRandomInt(1, 15));
-    const start = verticalAdjuster;
-    const end = world.height - verticalAdjuster;
+    let start, end;
+    if (settings.horizontalspread) {
+      start = horizontalAdjuster;
+      end = world.width - horizontalAdjuster
+    }
+    if (settings.verticalSpread) {
+      start = verticalAdjuster
+      end = world.height - verticalAdjuster
+    }
     const widthStart = horizontalAdjuster;
     const widthEnd = world.width - horizontalAdjuster;
-  
-    for (let y = start; y < end; y++) {
-      const direction = getRandomInt(0, 100) < 50 ? -1 : 1;
-      center += direction * getRandomInt(1, 20);
-  
-      if (center < widthStart) {
-        center = widthStart + getRandomInt(1, 50);
-      } else if (center >= widthEnd) {
-        center = widthEnd - 1 - getRandomInt(1, 50);
+
+    const heightStart = verticalAdjuster;
+    const heightEnd = world.height - verticalAdjuster;
+    if (settings.verticalSpread) { // original
+      for (let y = start; y < end; y++) {
+        const direction = getRandomInt(0, 100) < 50 ? -1 : 1;
+        center += direction * getRandomInt(1, 20);
+    
+        if (center < widthStart) {
+          center = widthStart + getRandomInt(1, 50);
+        } else if (center >= widthEnd) {
+          center = widthEnd - 1 - getRandomInt(1, 50);
+        }
+    
+        const cell = xy(center, y);
+        cell.spreading = true;
+        world.tectonics.spreadingLine.push(cell);
       }
-  
-      const cell = xy(center, y);
-      cell.spreading = true;
-      world.tectonics.spreadingLine.push(cell);
+    }
+
+    if (settings.horizontalSpread) {
+      for (let x = start; x < end; x++) {
+        const direction = getRandomInt(0, 100) < 50 ? -1 : 1;
+        center += direction * getRandomInt(1, 20); 
+    
+        if (center < heightStart) {
+          center = heightStart + getRandomInt(1, 50);
+        } else if (center >= heightEnd) {
+          center = heightEnd - 1 - getRandomInt(1, 50);
+        }
+    
+        const cell = xy(x, center);
+        cell.spreading = true;
+        world.tectonics.spreadingLine.push(cell);
+      }
     }
   }
   

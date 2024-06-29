@@ -115,6 +115,7 @@ function setProvinceDirections() {
         p.placeInWorld.waterNeighbors = 0;
         p.placeInWorld.landNeighbors = 0;
         p.neighborTerrains = [];
+        p.neighbors = []
         for (let n = 0; n < p.adjacencies.length; n++) {
             let adj = parseInt(p.adjacencies[n])
             let neighbor = world.provinces[adj]
@@ -139,29 +140,59 @@ function setProvinceDirections() {
                 p.placeInWorld.waterNeighbors += 1;
             }
             p.neighborTerrains.push(neighbor.terrain)
+            p.neighbors.push(neighbor)
             p.placeInWorld.neighbors.push(o)
         }
         if (p.land && p.placeInWorld.landNeighbors === 0) {
             p.placeInWorld.island = true
             geo.island +=1 ;
+        } else {
+            p.placeInWorld.island = false
         }
         if (p.land === false && p.placeInWorld.waterNeighbors === 0) {
             p.placeInWorld.lake = true
             geo.lake += 1;
+        } else {
+            p.placeInWorld.lake = false
         }
         if (p.land === false && p.placeInWorld.waterNeighbors === 1 && p.placeInWorld.landNeighbors > 1) {
             p.placeInWorld.bay = true
             geo.bay += 1
+        } else {
+            p.placeInWorld.bay = false
         }
     }
+}
+
+function overloadProvinceProperties() {
+    for (let i = 0; i < world.provinces.length; i++) {
+        let p = world.provinces[i];
+        if (p.elevation >= 37) {
+            p.squareMiles = Math.floor(p.cells / 10)
+            p.climate = getKoppenClimateClassification(p)
+            p.agriculturalProductivity = calculateAgriculturalProductivity(p)
+            p.miningSuitability = calculateMiningSuitability(p).evaluation
+            p.livestockSuitability = calculateLivestockSuitability(p)
+            p.buildingMaterials = determineBuildingMaterials(p)
+            setProduction(p)
+            assignMaterialRegions(p)
+            p.graphicsPossibilities = assignGraphicsPossibilities(p)
+            evaluateExpansionFavorability(p)
+        }
+    }
+    analyzeAllRegions()
 }
 
 function explain() {
     floodFillWaterProvinces()
     clearFloodFillProvinces();
+    /* necessary? done earlier
     floodFillContinents()
     mapProvincesToContinents()
+    */
     setProvinceDirections()
+
+    overloadProvinceProperties()
     //mountains and rivers are taken care of in growCell function
 
     let t = ``
@@ -201,7 +232,7 @@ function explain() {
         } else {
             t += `Terrain: Water\n`
         }
-        if (p.adjacentToWater) {
+        if (p.adjacentToWater.length > 0) {
             t += `Adjacent to Water: `
             for (let z = 0; z < p.adjacentToWater.length; z++) {
                 t += `${p.adjacentToWater[z]};`

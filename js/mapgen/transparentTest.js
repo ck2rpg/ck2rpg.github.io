@@ -355,7 +355,7 @@ function drawRiverTemplateTransparent(cell, r) {
   
   
     if (cell.tributaryMerge) {
-      console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
+      //console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
       ctx.drawImage(template2, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     } else if (possibilities.length > 0 && cell.highPointRiver) {

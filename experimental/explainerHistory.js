@@ -8,7 +8,7 @@ migration, settlement, continent jumping
 */
 let hist = {};
 hist.heritages = 0;
-hist.year = 81
+hist.year = getRandomInt(81, 300)
 hist.month = 1
 hist.day = 1;
 hist.religions = []
@@ -63,12 +63,6 @@ function scribe(t) {
     hist.log.push(`${t}\n`)
 }
 
-function historyTick() {
-    for (let i = 0; i < hist.tribes.length; i++) {
-
-    }
-}
-
 
 function addPopulatedProvince(p) {
     //general count with no additional information or checks
@@ -85,18 +79,38 @@ function generateHistory() {
     setLandProvinces()
     floodFillContinentsByProvince()
     seedEachContinentWithATribe()
-    generatePrehistory() 
 }
 
+
 function generatePrehistory() {
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 10; i++) {
         for (let n = 0; n < hist.populatedProvinces.length; n++) {
             let p = hist.populatedProvinces[n]
-            //ADD HERE
+            expandFromProvince(p)
         }
     }
 }
 
+function expandTribe(p1, p2) {
+    p1.tribe.provinces.push(p2);
+    p2.tribe = p1.tribe;
+    p2.culture = p1.culture;
+    p2.religion = p1.religion;
+    p2.settled = true;
+    scribe(`A tribe from ${p1.localizedTitle} settles in ${p2.localizedTitle}.`)
+}
+
+function expandFromProvince(p) {
+    let n = p.neighbors;
+    if (n) {
+        n.sort((a, b) => (a.expansionFavorability > b.expansionFavorability) ? 1 : - 1)
+        if (n.tribe) {
+
+        } else {
+            expandTribe(p, n)
+        }
+    }
+}
 
 
 function setLandProvinces() {
@@ -110,6 +124,29 @@ function setLandProvinces() {
     hist.unpopulatedProvinces = land.length
 }
 
+function createRandomChief(culture, faith, dynasty) {
+    let o = {};
+    o.history = []
+    o.gender = pickFrom(["male", "female"])
+    o.age = getRandomInt(16, 80)
+    o.birth = `${hist.year - o.age}.1.1`
+    o.id = `gen_${world.personCounter}`
+    o.dyn = `dynn_gen_${world.dynastyCounter}`
+    o.culture = culture;
+    o.religion = faith;
+    if (o.gender === "male") {
+        //o.name = pickFrom(culture.maleNames)
+        o.name = generateWordFromTrigrams(maleNameTrigrams, maleNames)
+    } else {
+        o.name = generateWordFromTrigrams(femaleNameTrigrams, femaleNames)
+        //o.name = pickFrom(culture.femaleNames)
+    }
+    world.characters.push(o)
+    world.personCounter += 1
+    world.dynastyCounter += 1;
+    return o;
+}
+
 function seedEachContinentWithATribe() {
     for (let i = 0; i < world.continentsByProvince.length; i++) {
         let favorable = []
@@ -117,7 +154,7 @@ function seedEachContinentWithATribe() {
         let continent = world.continentsByProvince[i]
         for (let n = 0; n < continent.provinces.length; n++) {
             let p = continent.provinces[n]
-            if (p.rivers && p.adjacentToWater) {
+            if (p.rivers && p.rivers.length > 0 && p.adjacentToWater && p.adjacentToWater.length > 0) {
                 favorable.push(p);
             }
         }
@@ -127,6 +164,8 @@ function seedEachContinentWithATribe() {
             eden = pickFrom(continent.provinces)
         }
         let t1 = {}
+        t1.holders = []
+        t1.history = []
         t1.capital = eden
         t1.provinces = [eden];
         eden.owner = t1;
@@ -140,6 +179,8 @@ function seedEachContinentWithATribe() {
         eden.tribe = t1;
         eden.culture = c1;
         eden.religion = r1;
+        eden.holders = []
+        eden.settled = true
         addPopulatedProvince(eden)
         setTraditionPossibilities(c1)
         c1.traditions.push(pickFrom(c1.possibleTraditions))
@@ -147,6 +188,12 @@ function seedEachContinentWithATribe() {
         t1.culture = c1;
         t1.faith = r1.faiths[0];
         t1.faith.holySites.push(eden)
+        eden.faith = t1.faith;
+        let chief = createRandomChief(c1, r1)
+        t1.history.push(pickFrom(tribalCreationMyth))
+        chief.history.push(tribalCreationMyth)
+        t1.holders.push(chief)
+        eden.holders.push(chief)
         hist.tribes.push(t1)
     }
 }
@@ -192,6 +239,7 @@ function getContinentByColor(c) {
 
 function setTraditionPossibilities(c) {
     let possible = []
+    let pr = []
     //iterate through each province, push stats for each that will help determine tradition
     let elevations = [];
     let distancesFromEquator = []
@@ -207,7 +255,7 @@ function setTraditionPossibilities(c) {
         let p = c.provinces[i]
         let provincialContinent = getContinentByColor(p.continent)
         elevations.push(p.elevation);
-        distancesFromEquator.push(Math.abs(p.y - 2048))
+        distancesFromEquator.push(p.distanceFromEquator)
         terrains.push(p.terrain);
         if (p.adjacentToWater) { //you have to check for these two because not set on a province without adjacencies or rivers
             adjacentWaterProvinces.push(p.adjacentToWater.length);

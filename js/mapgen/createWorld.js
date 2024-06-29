@@ -66,6 +66,7 @@ function createWorld() {
     world.landCells = [];
     world.populatedCells = [];
     world.provinces = [];
+    world.clothingTypes = {}
   }
   
   /**
@@ -104,7 +105,8 @@ function createWorld() {
       population: 0,
       raindrops: 0,
       floodFilled: false,
-      dropToWater: false
+      dropToWater: false,
+      adjacentToWater: [],
     };
   }
   

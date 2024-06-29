@@ -5,52 +5,25 @@
 function createWinterSeverity() {
     world.provinces.forEach(p => {
       let y = p.y;
-      let bigY = p.bigCell.y;
-  
-      if (p.land) {
-        if (bigY < world.steppeTop && bigY > world.steppeBottom) {
-          p.severity = `0.0`;
-        } else if (y > 3800) {
-          p.severity = `0.9`;
-        } else if (y > 3600) {
-          p.severity = `0.8`;
-        } else if (y > 3400) {
-          p.severity = `0.7`;
-        } else if (y > 3200) {
-          p.severity = `0.6`;
-        } else if (y > 3000) {
-          p.severity = `0.5`;
-        } else if (y > 2800) {
-          p.severity = `0.4`;
-        } else if (y > 2700) {
-          p.severity = `0.3`;
-        } else if (y > 2600) {
-          p.severity = `0.2`;
-        } else if (y > 2500) {
-          p.severity = `0.1`;
-        } else if (y < 1500) {
-          p.severity = `0.1`;
-        } else if (y < 1400) {
-          p.severity = `0.2`;
-        } else if (y < 1300) {
-          p.severity = `0.3`;
-        } else if (y < 1200) {
-          p.severity = `0.4`;
-        } else if (y < 1000) {
-          p.severity = `0.5`;
-        } else if (y < 800) {
-          p.severity = `0.6`;
-        } else if (y < 600) {
-          p.severity = `0.7`;
-        } else if (y < 400) {
-          p.severity = `0.8`;
-        } else if (y < 200) {
-          p.severity = `0.9`;
-        } else {
-          p.severity = `0.0`;
-        }
+      let dist = eqDist(y);
+      if (dist < 1022) {
+        p.severity = 0.1
+      } else if (dist < 1700) {
+        p.severity = 0.2
+      } else if (dist < 1900) {
+        p.severity = 0.3
+      } else if (dist < 2047) {
+        p.severity = 0.4
+      } else if (dist < 2200) {
+        p.severity = 0.5
+      } else if (dist < 2400) {
+        p.severity = 0.6
+      } else if (dist < 2600) {
+        p.severity = 0.7
+      } else if (dist < 3070) {
+        p.severity = 0.8
       } else {
-        p.severity = `0.0`;
+        p.severity = 0.9
       }
     });
   }

@@ -115,7 +115,7 @@ function drawRiver(x, y) {
               running = false;
             }
           }
-          if ((reachedOcean && oceanCounter > 5) || count > 10000) {
+          if ((reachedOcean && oceanCounter > 1) || count > 10000) {
             running = false
           }
         } catch {
@@ -182,10 +182,11 @@ function drawRiver(x, y) {
     for (let i = 0; i < arr.length; i++) {
   
       let tooClose = false
+      let wet = arr[i].moisture > 100 ? true : false
       for (let n = 0; n < world.rivers.length; n++) {
         try {
           let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
-          if (dist < 5) {
+          if (dist < settings.riversDistance) {
             tooClose = true
           }
         } catch {
@@ -193,7 +194,7 @@ function drawRiver(x, y) {
         }
   
       }
-      if (tooClose === false) {
+      if (tooClose === false && wet) {
         let cell = xy(arr[i].x, arr[i].y)
         if (cell.elevation < limits.seaLevel.upper) {
   
@@ -680,7 +681,7 @@ function drawRiver(x, y) {
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb)
     }
     if (cell.tributaryMerge) {
-      console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
+      //console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
       ctx.drawImage(template, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     }

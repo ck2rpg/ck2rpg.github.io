@@ -2,6 +2,26 @@ function GID(el) {
   return document.getElementById(el);
 }
 
+function eqDist(y) {
+  const mapHeight = settings.height; // The height of the map
+  const equatorY = settings.equator; // The y-coordinate of the equator
+
+  // Calculate the distance from the equator
+  const distanceFromEquator = Math.abs(y - equatorY);
+
+  return distanceFromEquator;
+}
+
+function calculateDistanceFromEquator(province) {
+  const mapHeight = settings.height; // The height of the map
+  const equatorY = mapHeight / 2; // The y-coordinate of the equator
+
+  // Calculate the distance from the equator
+  const distanceFromEquator = Math.abs(province.y - equatorY);
+
+  return distanceFromEquator;
+}
+
 function getRandomColor() {
   return `rgb(${getRandomInt(0, 255)}, ${getRandomInt(0, 255)}, ${getRandomInt(0, 255)})`
 }

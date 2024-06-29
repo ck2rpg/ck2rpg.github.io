@@ -231,13 +231,21 @@ function drawCell(x, y) {
       drawBeach(cell);
     } else if (cell.elevation >= limits.mountains.lower) {
       drawMountain(cell);
-    } else if (cellBiome === "arctic") {
+    } else if (cell.terrain === "taiga" || (cell.climateCategory === "cold" && cell.terrain === "hills")) {
       drawArctic(cell);
-    } else if (cellBiome === "desert") {
+    } else if (cell.terrain === "jungle") {
+      drawJungle(cell)
+    } else if (cell.climateCategory === "tropical" && cell.terrain === "hills") {
+      drawJungle(cell)
+    } else if (cell.terrain === "drylands") {
+      drawDrylands(cell)
+    } else if (cell.terrain === "steppe") {
+      drawSteppe(cell)
+    } else if (cell.terrain === "desert" || cell.terrain === "drylands") {
       drawDesert(cell);
-    } else if (cellBiome === "grass") {
+    } else if (cell.terrain === "plains" || cell.terrain === "farmlands" || cell.terrain === "hills" || cell.terrain === "wetlands" || cell.terrain === "floodplains") {
       drawGrass(cell);
-    } else if (cellBiome === "ocean") {
+    } else if (cellBiome === "ocean" || cell.terrain === "oasis") {
       cell.rgb = `rgb(${100 + Math.floor(cell.elevation / 5)}, ${120 + Math.floor(cell.elevation / 5)}, ${140 + Math.floor(cell.elevation / 5)})`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
     } else {
@@ -368,6 +376,25 @@ function drawName(name, x, y) {
    *
    * @param {Object} cell - The cell to be drawn.
    */
+
+  function drawSteppe(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+    let grassAlpha;
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 3);
+      grass -= Math.floor(diff / 2.5);
+      const m = Math.max(1, Math.floor(cell.elevation / 25));
+      grassAlpha = `0.${m}`;
+    }
+    drawSmallPixel(ctx, cell.x, cell.y, `rgba(${grassAccent2}, ${grass}, ${grassAccent})`);
+  }
+
   function drawGrass(cell) {
     const correctedColor = getCorrectedColor(cell);
     let grassAccent = 0;
@@ -378,6 +405,42 @@ function drawName(name, x, y) {
     if (grass > 100) {
       const diff = Math.floor(grass - 100);
       grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 1.3);
+      grass -= Math.floor(diff / 2.5);
+      const m = Math.max(1, Math.floor(cell.elevation / 25));
+      grassAlpha = `0.${m}`;
+    }
+    drawSmallPixel(ctx, cell.x, cell.y, `rgba(${grassAccent2}, ${grass}, ${grassAccent})`);
+  }
+
+  function drawJungle(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = Math.floor(correctedColor / 5);
+    let grassAlpha;
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 3);
+      grass -= Math.floor(diff / 2.5);
+      const m = Math.max(1, Math.floor(cell.elevation / 25));
+      grassAlpha = `0.${m}`;
+    }
+    drawSmallPixel(ctx, cell.x, cell.y, `rgba(${grassAccent2}, ${grass}, ${grassAccent})`);
+  }
+
+  function drawDrylands(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+    let grassAlpha;
+  
+    if (grass > 50) {
+      const diff = Math.floor(grass - 49);
+      grassAccent = grass - 49;
       grassAccent2 = Math.floor(grassAccent * 1.3);
       grass -= Math.floor(diff / 2.5);
       const m = Math.max(1, Math.floor(cell.elevation / 25));
@@ -572,11 +635,17 @@ function drawWorld() {
   canvas.height = world.height * settings.pixelSize;
   
   // Iterate over each cell in the world and draw it
-  for (let y = 0; y < world.height; y++) {
-    for (let x = 0; x < world.width; x++) {
-      drawCell(x, y);
+  createCellTerrains()
+  if (world.drawingType === "terrainMap") {
+    drawTerrainSmallMap();
+  } else {
+    for (let y = 0; y < world.height; y++) {
+      for (let x = 0; x < world.width; x++) {
+        drawCell(x, y);
+      }
     }
   }
+
 }
 
   /**
@@ -635,6 +704,156 @@ function drawProvinceMap() {
   console.log(pixels)
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
+}
+
+function drawTerrainSmallMap() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(255, 255, 255)"
+  ctx.fill();
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = world.map[i][j]
+      if (cell.elevation <= limits.seaLevel.upper) {
+        color = `rgb(97, 170, 229)`
+      } else {
+        if (cell.terrain === "plains") {
+          color = `rgb(204, 163, 102)`
+        } else if (cell.terrain === "desert") {
+          color = `rgb(255, 230, 0)`
+        } else if (cell.terrain === "drylands") {
+          color = `rgb(220, 45, 120)`
+        } else if (cell.terrain === "floodplains") {
+          color = `rgb(55, 31, 153)`
+        } else if (cell.terrain === `hills`) {
+          color = `rgb(90, 50, 12)`
+        } else if (cell.terrain === "mountains") {
+          color = `rgb(100, 100, 100)`
+        } else if (cell.terrain === "taiga") {
+          color = `rgb(46, 153, 89)`
+        } else if (cell.terrain === "desert_mountains") {
+          color = `rgb(23, 19, 38)`
+        } else if (cell.terrain === "farmlands") {
+          color = `rgb(255, 0, 0)`
+        } else if (cell.terrain === "forest") {
+          color = `rgb(71, 179, 45)`
+        } else if (cell.terrain === "jungle") {
+          color = `rgb(10, 60, 35)`
+        } else if (cell.terrain === "oasis") {
+          color = `rgb(155, 143, 204)`
+        } else if (cell.terrain === "steppe") {
+          color = `rgb(200, 100, 25)`
+        } else if (cell.terrain === "wetlands") {
+          color = `rgb(77, 153, 153)`
+        }
+      }
+      drawSmallPixel(ctx, j, i, color)
+    }
+  }
+}
+
+function drawTerrainDotMap() {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(0, 0, 0)"
+  ctx.fill();
+  for (let i = 0; i < world.provinces.length; i++) {
+    let color;
+    let province = world.provinces[i]
+    if (province.terrain === "plains") {
+      color = `rgb(204, 163, 102)`
+    } else if (province.terrain === "desert") {
+      color = `rgb(255, 230, 0)`
+    } else if (province.terrain === "drylands") {
+      color = `rgb(220, 45, 120)`
+    } else if (province.terrain === "floodplains") {
+      color = `rgb(55, 31, 153)`
+    } else if (province.terrain === `hills`) {
+      color = `rgb(90, 50, 12)`
+    } else if (province.terrain === "mountains") {
+      color = `rgb(100, 100, 100)`
+    } else if (province.terrain === "taiga") {
+      color = `rgb(46, 153, 89)`
+    } else if (province.terrain === "desert_mountains") {
+      color = `rgb(23, 19, 38)`
+    } else if (province.terrain === "farmlands") {
+      color = `rgb(255, 0, 0)`
+    } else if (province.terrain === "forest") {
+      color = `rgb(71, 179, 45)`
+    } else if (province.terrain === "jungle") {
+      color = `rgb(10, 60, 35)`
+    } else if (province.terrain === "oasis") {
+      color = `rgb(155, 143, 204)`
+    } else if (province.terrain === "steppe") {
+      color = `rgb(200, 100, 25)`
+    } else if (province.terrain === "wetlands") {
+      color = `rgb(77, 153, 153)`
+    } else {
+      //water
+      color = `rgb(97, 170, 229)`
+    }
+    drawTinyPixel(ctx, province.x, province.y, color)
+  }
+  /*ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  */
   alert("done")
 }
 
+function drawTerrainDotMapBlackBig() {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(0, 0, 0)"
+  ctx.fill();
+  for (let i = 0; i < world.provinces.length; i++) {
+    let color;
+    let province = world.provinces[i]
+    if (province.terrain === "plains") {
+      color = `rgb(204, 163, 102)`
+    } else if (province.terrain === "desert") {
+      color = `rgb(255, 230, 0)`
+    } else if (province.terrain === "drylands") {
+      color = `rgb(220, 45, 120)`
+    } else if (province.terrain === "floodplains") {
+      color = `rgb(55, 31, 153)`
+    } else if (province.terrain === `hills`) {
+      color = `rgb(90, 50, 12)`
+    } else if (province.terrain === "mountains") {
+      color = `rgb(100, 100, 100)`
+    } else if (province.terrain === "taiga") {
+      color = `rgb(46, 153, 89)`
+    } else if (province.terrain === "desert_mountains") {
+      color = `rgb(23, 19, 38)`
+    } else if (province.terrain === "farmlands") {
+      color = `rgb(255, 0, 0)`
+    } else if (province.terrain === "forest") {
+      color = `rgb(71, 179, 45)`
+    } else if (province.terrain === "jungle") {
+      color = `rgb(10, 60, 35)`
+    } else if (province.terrain === "oasis") {
+      color = `rgb(155, 143, 204)`
+    } else if (province.terrain === "steppe") {
+      color = `rgb(200, 100, 25)`
+    } else if (province.terrain === "wetlands") {
+      color = `rgb(77, 153, 153)`
+    } else {
+      //water
+      color = `rgb(97, 170, 229)`
+    }
+    drawTinyPixel(ctx, province.x, province.y, color)
+      drawTinyPixel(ctx, province.x - 1, province.y, color)
+      drawTinyPixel(ctx, province.x + 1, province.y, color)
+      drawTinyPixel(ctx, province.x, province.y + 1, color)
+      drawTinyPixel(ctx, province.x, province.y - 1, color)
+      drawTinyPixel(ctx, province.x + 1, province.y + 1, color)
+      drawTinyPixel(ctx, province.x - 1, province.y + 1, color)
+      drawTinyPixel(ctx, province.x - 1, province.y - 1, color)
+      drawTinyPixel(ctx, province.x + 1, province.y - 1, color)
+  }
+  /*ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  */
+  alert("done")
+}
