@@ -22,6 +22,11 @@ function startup() {
 }
 
 window.onload = function() {
-  document.getElementById("loading-screen").style.display = "none"
-  document.getElementById("settings-box").style.display = "block"
+  GID("landing-screen").style.display = "block"
+  //startup()
 };
+
+GID("start-generator-button").onclick = function() {
+  GID("landing-screen").style.display = "none"
+  startup()
+}

@@ -302,11 +302,6 @@ GID("create-provinces").onclick = function() {
   }, 0); // A delay of 0ms still allows the browser to update the DOM first
 }
 
-GID("save-settings").onclick = function() {
-  GID("settings-box").style.display = "none"
-  GID("loading-screen").style.display = "block"
-  startup()
-}
 
 GID("rerun-rivers-icon").onclick = function() {
   rerunRivers() 

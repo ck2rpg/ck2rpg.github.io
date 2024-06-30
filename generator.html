@@ -151,116 +151,44 @@
     <canvas id="canvas"></canvas>
     <canvas id="texture-canvas"></canvas>
     <canvas id="gradientCanvas"></canvas>
-    <div id="settings-box">
-      <!--
-      <div class="settings-container">
-        <h2 class="centered-text bold-text large-text">Settings</h2>
-        <div class="settings-columns">
-            <div class="settings-column">
-                <div class="setting">
-                  <label for="modname">Mod Name</label>
-                  <input type="text" id="modname" placeholder="Enter your mod name">
-                </div>
 
-                <div class="setting">
-                  <label for="map-dimension-settings">Map Dimensions</label>
-                  <select id="map-dimension-settings">
-                      <option value="defaultDimensions">8192x4096</option>
-                      <option value="smallestDimensions">2048x1024</option>
-                      <option value="smallerDimensions">4096x2048</option>
-                      <option value="largestDimensions">16384x8192</option>
-                      
-                  </select>
-              </div>
-          
-                <div class="setting">
-                    <label for="paper-map-settings">Paper Map Type</label>
-                    <select id="paper-map-settings">
-                        <option value="colorPaperMap">Color</option>
-                        <option value="papyrusPaperMap">Papyrus</option>
-                    </select>
-                </div>
-                <div class="setting">
-                  <label for="generate-skin-palettes">Generate Skin Palettes</label>
-                  <select id="generate-skin-palettes">
-                      <option value="yesSkin">Yes</option>
-                      <option value="noSkin">No</option>
-                  </select>
-                </div>
+    <div id="landing-screen">
+      <h1 class="landing-header">Crusader Kings 3 Procedural Map Generator</h1>
+      <div id="landing-text">
+        <p class="text-intro">Alpha 0.1 Release</p>
+        <p class="main-landing-text">We are thrilled to announce the first alpha release of the Procedural Map Generator for Crusader Kings 3. As we take this initial step into creating dynamic and unique maps for your gameplay experience, we want to set clear expectations regarding the current state of the generator and its capabilities. Your feedback and support are invaluable as we continue to develop and refine this tool.</p>
 
-                <div class="setting">
-                  <label for="generate-hair-palettes">Generate Hair Palettes</label>
-                  <select id="generate-hair-palettes">
-                      <option value="yesHair">Yes</option>
-                      <option value="noHair">No</option>
-                  </select>
-                </div>
-          
-                <div class="setting">
-                  <label for="generate-eye-palettes">Generate Eye Palettes</label>
-                  <select id="generate-eye-palettes">
-                      <option value="yesEyes">Yes</option>
-                      <option value="noEyes">No</option>
-                  </select>
-                </div>
+        <p class="main-landing-heading">Current State of the Generator</p>
 
-                <div class="setting">
-                  <label for="generate-clothing-palettes">Generate Clothing Palettes</label>
-                  <select id="generate-clothing-palettes">
-                      <option value="yesClothing">Yes</option>
-                      <option value="noClothing">No</option>
-                  </select>
-                </div>
+        <p class="main-landing-text">1. Basic Procedural Map Generation: The generator creates the basic files you need to get a map up and running. This is our first iteration, focusing on creating a functional and stable base for future enhancements.</p>
 
-                <div class="setting">
-                  <label for="language-generator-select">Name Generation</label>
-                  <select id="language-generator-select">
-                      <option value="yesClothing">Markov</option>
-                      <option value="noClothing">Conlang</option>
-                  </select>
-                </div>
-            </div>
+        <p class="main-landing-text">2. Limited User Interface: Interact with a simplified UI designed for ease of use. While the design is minimalist, it provides all necessary controls to begin experimenting with map generation.</p>
 
-            <div class="settings-column">
-                <div class="setting">
-                  <label for="range">Arctic Range</label>
-                  <input type="range" id="frostRange" min="0" max="100">
-                </div>
-          
-                <div class="setting">
-                  <label for="range">Desert Range</label>
-                  <input type="range" id="desertRange" min="0" max="100">
-                </div>
-          
-                <div class="setting">
-                  <label for="range">Tree Prevalence</label>
-                  <input type="range" id="treePrevalence" min="0" max="100">
-                </div>
+        <p class="main-landing-text">3. Rough Edges: Both the generator and generated maps have many rough edges and visible seams. 
+        </p>
 
-                <div class="setting">
-                  <label for="range">Spreading Centers</label>
-                  <input type="range" id="spreadingCentersToggle" min="5" max="45">
-                </div>
+        <p class="main-landing-text">4. Bugs and Errors: Don't be surprised if you encounter bugs and errors in the generator or in game. Help us by reporting those bugs to the discord or on Github. For example, we had greatly reduced the error log before Legends of the Dead was released, but we have not had time to address the growth following release.
+        </p>
 
-                <div class="setting">
-                  <label for="range">Random Lower Elevation Limit</label>
-                  <input type="range" id="spreadingCentersToggle" min="-254" max="-100">
-                </div>
+        <p class="main-landing-text">5. Random Generation: Our goal is to create a generator that allows deep generation of history and lore to provide something more than a map to play on and randomly generated cultures and titles to play with. We've made great progress on this goal recently, but those developments are not camera-ready for this initial Alpha release. Alpha 0.1 maintains the mostly random distributions you might have seen in previous map releases.</p>
 
-                <div class="setting">
-                  <label for="range">Random Upper Elevation Limit</label>
-                  <input type="range" id="spreadingCentersToggle" min="-99" max="36">
-                </div>
+        <p class="main-landing-heading">Looking Ahead to the Next Release</p>
+        <p class="main-landing-text">The next release will focus on: (1) improvements to terrain assignment and masking and (2) history and lore generation.</p>
 
-            </div>
-        </div>
-      -->
-        <button type="submit" id="save-settings">Generate World</button>
+        <p class="main-landing-heading">How You Can Help</p>
+        <p class="main-landing-text">We invite you to join the community on <a href="https://discord.gg/eemRxbCUX3">Discord</a>, share suggestions, report bugs, and contribute to development either through Discord or <a href="https://github.com/ck2rpg/ck2rpg.github.io">Github</a>.</p>
+
+        <p class="main-landing-text">Thank you for being a part of this early stage of the Procedural Map Generator. We are committed to creating a robust tool that enhances your Crusader Kings 3 experience. Stay tuned for updates.</p>
+
+        <p class="main-landing-text">Happy mapping!</p>
+
+        <img class="avatar" src="icons/ck2rpg.png">
+        <p class="main-landing-text">-ck2rpg, 6/29/24</p>
+        <div id="start-generator-button">Generate a New World</div>
       </div>
+      
+      
     </div>
-    
-  
-
 
     <div id="loading-screen">
       <h1 class="loading">Generating a New World</h1>
