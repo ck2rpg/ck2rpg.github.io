@@ -8,16 +8,20 @@ function writeDefaultMap() {
     t += `adjacencies = "adjacencies.csv"\n`
     t += `island_region = "island_region.txt"\n`
     t += `seasons = "seasons.txt"\n`
-    t += `sea_zones = RANGE {`
+    t += `sea_zones = LIST { ` //come back and reimplement ranges at some point
     let first = 1
     let last = world.provinces.length + 1; //this takes care of the placeholder province
+    let arr = [];
     for (let i = 0; i < world.provinces.length; i++) {
-        if (world.provinces[i].land !== true) {
-            first = i + 1;
-            break;
+        let province = world.provinces[i];
+        /*if (province.cells > 0 && (province.terrain === "sea" || province.terrain === "coastal_sea")) {
+            t == `${province.id} `
+        }*/
+        if (province.waterId) {
+            t += `${province.id} `
         }
     }
-    t += `${first} ${last} }\n`
+    t += ` }\n`
     var data = new Blob([t], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="default-download-link" download="default.map" href="">Download default.map</a><br>`

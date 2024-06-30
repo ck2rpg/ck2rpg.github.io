@@ -178,7 +178,6 @@ GID("write-all-checked-texts-button").onclick = function() {
   if (document.getElementById('locatorsUnitStackCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack"));
   if (document.getElementById('locatorsUnitStackPlayerOwnedCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_player_owned"));
   if (document.getElementById('locatorsUnitStackOtherOwnerCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_other_owner"));
-  if (document.getElementById('defaultMapCheckbox').checked) functionsToExecute.push(() => writeDefaultMap());
   if (document.getElementById('culturesCheckbox').checked) functionsToExecute.push(() => outputCultures());
   if (document.getElementById('simpleHistoryCheckbox').checked) functionsToExecute.push(() => makeSimpleHistory());
   if (document.getElementById('charactersCheckbox').checked) functionsToExecute.push(() => outputCharacters());
@@ -197,6 +196,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   if (document.getElementById('bookmarkCheckbox').checked) functionsToExecute.push(() => writeBookmark());
   if (document.getElementById('bookmarkGroupCheckbox').checked) functionsToExecute.push(() => writeBookmarkGroup());
   if (document.getElementById('religionOutputCheckbox').checked) functionsToExecute.push(() => religionOutputter());
+  if (document.getElementById('defaultMapCheckbox').checked) functionsToExecute.push(() => writeDefaultMap());
   if (document.getElementById('winterSeverityCheckbox').checked) {
     functionsToExecute.push(() => createWinterSeverity());
     functionsToExecute.push(() => writeWinterSeverity());

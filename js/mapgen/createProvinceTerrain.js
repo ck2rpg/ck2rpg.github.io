@@ -8,8 +8,24 @@ function createProvinceTerrainNew() {
 
     for (let i = 0; i < world.provinces.length; i++) {
         let p = world.provinces[i];
-        let cell = xy(p.x, p.y);
-        p.terrain = cell.terrain;
+        if (p.cells > 0) {
+            let y = p.y;
+            let x = p.bigCell.x
+            if (p.elevation > limits.seaLevel.upper) {
+                if (isTropical(y, x)) {
+                    assignTropicalTerrain(p)
+                } else if (isSubTropical(y, x)) {
+                    assignSubTropicalTerrain(p)
+                } else if (isTemperate(y, x)) {
+                    assignTemperateTerrain(p);
+                } else if (isCold(y, x)) {
+                    assignColdTerrain(p)
+                }
+              } else {
+                p.terrain= "sea"
+              }
+        }
+        
         /*
         if (p.cells > 0) {
             count += 1;
@@ -310,7 +326,7 @@ function writeProvinceTerrain() {
 
     for (let i = 0; i < world.provinces.length; i++) {
         let p = world.provinces[i];
-        if (p.terrain !== "sea" && p.cells > 0) {
+        if (p.terrain !== "sea" && p.cells > 0 && p.terrain !== "coastal_sea") {
             count += 1;
             t += `${count}=${p.terrain}\n`;
         }
