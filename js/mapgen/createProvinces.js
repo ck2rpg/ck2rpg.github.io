@@ -295,7 +295,7 @@ async function createProvinces() {
     flattenAdjacencyArrays();
     await updateDOM("Flattening Adjacency Arrays", 9);
 
-    resetLand(world);
+    //resetLand(world);
     createProvinceTerrainNew();
     await updateDOM("Creating Province Terrain", 10);
 

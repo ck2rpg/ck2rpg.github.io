@@ -22,7 +22,7 @@ Open an issue or contact us on [discord](https://discord.gg/eemRxbCUX3).
 
 ## Credit
 
-The Crusader Kings 3 Proceudral Map Generator project is licensed under the Unlicense. I ask but do not require one thing: if you use the map generator to create a mod, please include a note that ck2rpg's CK3 Procedural Map Generator was used in the creation of the mod to raise awarness of the tool. Thanks and happy generating!
+The Crusader Kings 3 Procedural Map Generator project is licensed under the Unlicense. I ask but do not require one thing: if you use the map generator to create a mod, please include a note that ck2rpg's CK3 Procedural Map Generator was used in the creation of the mod to raise awarness of the tool. Thanks and happy generating!
 
 ## Contact
 

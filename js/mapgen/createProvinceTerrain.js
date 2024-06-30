@@ -11,7 +11,7 @@ function createProvinceTerrainNew() {
         if (p.cells > 0) {
             let y = p.y;
             let x = p.bigCell.x
-            if (p.elevation > limits.seaLevel.upper) {
+            if (p.land) {
                 if (isTropical(y, x)) {
                     assignTropicalTerrain(p)
                 } else if (isSubTropical(y, x)) {
@@ -23,6 +23,7 @@ function createProvinceTerrainNew() {
                 }
               } else {
                 p.terrain= "sea"
+                p.seaType = "sea"
               }
         }
         
