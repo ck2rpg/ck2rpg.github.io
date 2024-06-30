@@ -327,6 +327,7 @@ table {
   color: #dddddd;
   width: 100vw;
   height: 100vh;
+  overflow: scroll;
   text-align: center;
   padding-top: 50px;
 }
@@ -339,6 +340,7 @@ table {
   height: 100vh;
   text-align: center;
   padding-top: 50px;
+  overflow: scroll;
 }
 
 #province-creation-screen {
