@@ -375,6 +375,7 @@ GID("province-drawn-proceed").onclick = function() {
   GID("text-download-settings").style.display = "block"
 }
 
+/*
 //color picker
 
 const colorBox = document.getElementById('selected-color');
@@ -401,7 +402,7 @@ document.addEventListener('click', (e) => {
     colorPicker.style.display = 'none';
   }
 });
-
+*/
 
 
 
