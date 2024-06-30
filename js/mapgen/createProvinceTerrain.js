@@ -155,11 +155,13 @@ function assignColdTerrain(p) {
     } else if (p.adjacentToWater.length === 0) {
         p.terrain = "taiga"
     } else if (p.adjacentToWater.length > 0) {
-        if (isBelowPlainsLimit(p.y)) {
+        p.terrain = "taiga" // come back to this issue later. THe masking is weird with the below
+        /*if (isBelowPlainsLimit(p.y)) {
             p.terrain = "plains"
         } else {
             p.terrain = "taiga"
         }
+        */
     } else {
         p.terrain = "taiga"
     }
