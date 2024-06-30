@@ -188,6 +188,11 @@
             <h2>Introduction</h2>
             <p>This guide will walk you through the process of setting up and using the CK3 Procedural Map Generator. Follow the steps carefully to ensure a smooth experience.</p>
 
+            <h2>Step 0: Set Browser Options</h2>
+            <ul class="step-list">
+                <li>You need to set two options in your browser settings. First, set the download options to save files to your replacer folder (see Step 3). Second, ensure that you have allowed multiple downloads because the program will be saving multiple files at once. If you do not set this, it sometimes can fail silently and cause major headaches for you.</li>
+            </ul>
+
             <h2>Step 1: Create a Mod Folder</h2>
             <ul class="step-list">
                 <li>Open the CK3 launcher.</li>
@@ -214,45 +219,26 @@
 
             <h2>Step 5: Generate World</h2>
             <ul class="step-list">
-                <li>Click the "Generate World" button that appears at the top of your screen.</li>
+                <li>Click the "Generate World" button that appears at the top of your screen. Edit it as you see fit using the tools in the toolbox that appears.</li>
             </ul>
 
             <h2>Step 6: Generate Provinces</h2>
             <ul class="step-list">
-                <li>Right click, select inspect, and click on the console tab.</li>
-                <li>Click on "Generate Provinces" (this will take some time).</li>
-                <li class="note">The progress will be logged in the console (right-click, inspect, then click on the console tab).</li>
+                <li>Click on "Generate Provinces".</li>
+                <li class="note">This will take approximately two and a half minutes. A tracker tracks the progress. The generated file will save immediately upon completion.</li>
             </ul>
 
-            <h2>Step 7: Save the Province Map</h2>
+            <h2>Step 7: Download Text Files</h2>
             <ul class="step-list">
-                <li>Once the province map is generated, right click on the image and save it to the <code>replacers</code> folder.</li>
+                <li>The next screen will ask you which text files you want to download. Click the files you desire (suggested and default is all). When you click download, you will see multiple files downloading.</li>
             </ul>
 
-            <h2>Step 8: Configure Browser Downloads</h2>
+            <h2>Step 8: Download Image Files</h2>
             <ul class="step-list">
-                <li>Set your default download folder to the <code>replacers</code> folder in your browser's settings.</li>
+                <li>Now you will have the opportunity to select image files to download. For now, keep the default selection of all.</li>
             </ul>
 
-            <h2>Step 9: Download Image Files</h2>
-            <ul class="step-list">
-                <li>Click on the "Downloads Menu."</li>
-                <li>Select "Download Image Files."</li>
-                <li class="note">Allow multiple downloads if prompted. Edge handles this process more efficiently than Chrome or Firefox.</li>
-            </ul>
-
-            <h2>Step 10: Download Text Files</h2>
-            <ul class="step-list">
-                <li>Click "Download Text Files."</li>
-            </ul>
-
-            <h2>Step 11: Download Palettes (Optional)</h2>
-            <ul class="step-list">
-                <li>For eye/skin/hair palettes, click "Download Palettes."</li>
-                <li>For clothing palettes, click "Download Clothing Palettes" (not recommended at this stage).</li>
-            </ul>
-
-            <h2>Step 12: Post-Processing with Gimp</h2>
+            <h2>Step 9: Post-Processing with Gimp</h2>
             <ul class="step-list">
                 <li>Go to the <a href="https://github.com/ck2rpg/mapgenpostprocessor/blob/main/gimpscript.py">Gimp Post-Processing Script</a> and copy it.</li>
                 <li>Open Gimp and navigate to Filters > Python-Fu > Console.</li>
@@ -261,33 +247,31 @@
                 <li class="note">This script applies a Gaussian blur, formats files, and places them in the correct folders.</li>
             </ul>
 
-            <h2>Step 13: Move Files to the Correct Locations</h2>
+            <h2>Step 10: Move Files to the Correct Locations</h2>
             <ul class="step-list">
                 <li>Open the <code>movetomapobjectdata</code> folder in the copied generated world structure.</li>
                 <li>Copy all files and paste them into <code>modname/gfx/map/map_object_data</code> to overwrite existing files.</li>
             </ul>
 
-            <h2>Step 14: Handle Rivers File Manually</h2>
+            <h2>Step 11: Handle Rivers File Manually</h2>
             <ul class="step-list">
-                <li>Open <code>rivers.png</code> in Gimp from the <code>replacers</code> folder.</li>
-                <li>Copy and paste it over the existing <code>rivers.png</code> in the <code>map_data</code> folder.</li>
-                <li>Overwrite the file in Gimp to ensure proper indexing.</li>
+                <li>Open rivers.png in Gimp from the replacers folder. Open the existing rivers.png in the map_data folder. Copy and paste the generated rivers.png over the existing rivers.png in the map_data folder. Ensure you overwrite the template file in Gimp to ensure proper indexing.</li>
             </ul>
 
-            <h2>Step 15: Process Papermaps</h2>
+            <h2>Step 12: Process Papermaps</h2>
             <ul class="step-list">
                 <li>Open the <code>papyrus.png</code> file in the <code>replacers</code> folder.</li>
                 <li>Adjust brightness and apply a sepia filter if desired.</li>
                 <li>Apply a Gaussian blur with a radius of 7.5.</li>
-                <li>Overwrite the <code>flatmap.dds</code> file in <code>gfx/map/terrain/</code>.</li>
+                <li>Paste it over and overwrite the <code>flatmap.dds</code> file in <code>gfx/map/terrain/</code>.</li>
             </ul>
 
-            <h2>Step 16: Finalize in the Map Editor</h2>
+            <h2>Step 13: Finalize in the Map Editor and Debug mode.</h2>
             <ul class="step-list">
                 <li>Open the map editor (right-click Crusader Kings 3 in Steam, click properties, and set launch options to <code>-mapeditor</code>).</li>
-                <li>In the map editor, select Content Object Editor and mark all as modified.</li>
                 <li>Repack the map and save it to your mod folder.</li>
-                    <li>Change launch options to <code>-debug_mode</code> and start the game.</li>
+                <li>Delete any files at documents/paradox interactive/crusader kings 3/generated.</li>    
+                <li>Change launch options to <code>-debug_mode</code> and start the game. Pick a ruler and start. Then close the game to generate locators.</li>
                     <li>Copy the generated locators from <code>documents/paradox interactive/crusader kings 3/generated</code> to <code>gfx/map/map_object/data</code>.</li>
                 </ul>
     
