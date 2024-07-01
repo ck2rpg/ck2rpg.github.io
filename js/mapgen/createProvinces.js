@@ -237,6 +237,40 @@ function updateDOM(message) {
 
 */
 
+/**
+ * Determines the dominant terrain for each province based on terrain counts.
+ * Excludes "sea" from the count.
+ */
+
+function getDominantTerrain(provinces) {
+    // List of terrains to consider, excluding "sea"
+    const terrainTypes = ["desert", "drylands", "floodplains", "hills", "mountains", "plains", "taiga", "desert_mountains", "farmlands", "forest", "jungle", "oasis", "steppe", "wetlands"];
+    
+    // Iterate through each province
+    provinces.forEach(province => {
+        let maxTerrain = null;
+        let maxCount = -1;
+        if (province.land) {
+            // Iterate through each terrain type and find the one with the highest count
+            terrainTypes.forEach(terrain => {
+                if (province.terrainCount[terrain] > maxCount) {
+                    maxCount = province.terrainCount[terrain];
+                    maxTerrain = terrain;
+                }
+            });
+            
+            // Add a property to the province object for the dominant terrain
+            province.dominantTerrain = maxTerrain;
+            province.terrain = maxTerrain
+        } else {
+            province.dominantTerrain = "sea"
+            province.terrain = "sea"
+        }
+        
+
+    });
+}
+
 async function createProvinces() {
     // Initialize all messages
     initializeMessages();
@@ -296,7 +330,8 @@ async function createProvinces() {
     await updateDOM("Flattening Adjacency Arrays", 9);
 
     //resetLand(world);
-    createProvinceTerrainNew();
+    //createProvinceTerrainNew();
+    getDominantTerrain(world.provinces)
     await updateDOM("Creating Province Terrain", 10);
 
     floodFillWaterProvinces();
