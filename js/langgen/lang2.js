@@ -2474,18 +2474,6 @@ function vso(termsArr, lang) {
     return sentence
 }
 
-function translateText(lang, text) {
-    let doc = nlp(text)
-    let terms = doc.terms().document;
-
-    let newText = ``
-    let arr = text.split(" ");
-    for (let i = 0; i < arr.length; i++) {
-        newText += `${translate(lang, arr[i])} `
-    }
-    return newText
-}
-
 function placeName(lang) {
   let prefix = pickFrom(placeNamePrefixes)
   let suffix = pickFrom(placeNameSuffixes)
@@ -2719,15 +2707,6 @@ function romanizeText(t) {
   return t;
 }
 
-function test() {
-    let doc = nlp("The next day I decided to eat.")
-    let terms = doc.terms().document
-    let b = createLanguage()
-    b.adjectives = "after noun"
-    vso(terms, b)
-}
-test()
-
 function romanizeDictionary(d) {
   for (let p in d) {
     d[p] = romanizeText(d[p])
@@ -2803,9 +2782,6 @@ const maleNameTrigrams = {};
 const femaleNameTrigrams = {}
 const britishPlacesTrigrams = {}
 const religionNamesTrigrams = {}
-const spanishFemaleNameTrigrams = {}
-const spanishMaleNameTrigrams = {}
-const spanishSurnameTrigrams = {}
 
 // Example usage
 setTrigrams(parsedSurnames, surnameTrigrams)
@@ -2813,26 +2789,12 @@ setTrigrams(maleNames, maleNameTrigrams)
 setTrigrams(femaleNames, femaleNameTrigrams)
 setTrigrams(britishPlaces, britishPlacesTrigrams)
 setTrigrams(religionNamesList, religionNamesTrigrams)
-setTrigrams(spanishFemaleNames, spanishFemaleNameTrigrams)
-setTrigrams(spanishMaleNames, spanishMaleNameTrigrams)
-setTrigrams(spanishSurnames, spanishSurnameTrigrams)
-const newWords = generateWordsFromTrigrams(surnameTrigrams, parsedSurnames);
-console.log(newWords);
 
 function gg() {
   let t = ``
   t += generateWordFromTrigrams(maleNameTrigrams, maleNames);
   t += ` ${generateWordFromTrigrams(surnameTrigrams, parsedSurnames)}`
   t += ` of ${generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)} is marrying ${generateWordFromTrigrams(femaleNameTrigrams, femaleNames)} ${generateWordFromTrigrams(surnameTrigrams, parsedSurnames)} of ${generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)}. They are both followers of ${generateWordFromTrigrams(religionNamesTrigrams, religionNamesList)}`
-  console.log(t)
-}
-
-function spanishFemaleTest() {
-  let t = ``
-  for (let i = 0; i < 1000; i++) {
-    t += `${generateWordFromTrigrams(spanishMaleNameTrigrams, spanishMaleNames)} ${generateWordFromTrigrams(spanishSurnameTrigrams, spanishSurnames)} of ${generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)} married ${generateWordFromTrigrams(spanishFemaleNameTrigrams, spanishFemaleNames)} ${generateWordFromTrigrams(spanishSurnameTrigrams, spanishSurnames)} of ${generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)} in a small ceremony in ${generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)}.`
- 
-  }
   console.log(t)
 }
 
@@ -2900,6 +2862,3 @@ function nameChecks() {
   }
   console.log(t)
 }
-
-const newNames = generateNamesBasedOnBigram(religionNamesList, 5);
-console.log(newNames);

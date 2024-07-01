@@ -194,7 +194,6 @@ let faithMAAS = [
 ]
 
 function createReligion(empire) {
-    console.log("starting religion")
     let r = {};
     //r.empire = empire;
     //empire.religion = r;
@@ -236,7 +235,6 @@ function createReligion(empire) {
     r.holy_order_maa = pickFrom(faithMAAS)
     r.faiths = [];
     for (let n = 0; n < empire.kingdoms.length; n++) {
-        console.log("starting faith")
         //create faiths
         let kingdom = empire.kingdoms[n]
         let language = kingdom.culture.language;

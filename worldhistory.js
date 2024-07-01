@@ -308,7 +308,6 @@ function createEmpires(world) {
 
     for (let i = 0; i < kArr.length; i++) {
         let k1 = kArr[i]
-        console.log(k1)
         if (k1.empire) {
 
         } else {

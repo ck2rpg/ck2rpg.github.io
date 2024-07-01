@@ -70,7 +70,6 @@ function drawRiver(x, y) {
               
             } else {
               tributaryMerge(next, arr[0])
-              console.log(arr[0].riverRun)
             }
             if (arr[0].riverRun) {
               arr[0].riverRun += next.riverRun
@@ -681,7 +680,6 @@ function drawRiver(x, y) {
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb)
     }
     if (cell.tributaryMerge) {
-      //console.log(`Drawing merged river at x: ${cell.x * settings.pixelSize} y: ${cell.y * settings.pixelSize}`)
       ctx.drawImage(template, cell.tributaryMerge[0], cell.tributaryMerge[1], 16, 16, cell.x * settings.pixelSize, cell.y * settings.pixelSize, 16, 16)
       cell.riverDrawn = true;
     }
@@ -741,32 +739,24 @@ function drawRiver(x, y) {
       //This is a situation where an incoming tributary joins a river from the north (i.e., tributary heading south), so next would not be coming from north. We look therefore to a joined river coming from east, west, and south and don't need to check whether it is flowing north
       if ((next.comingFrom === "S" && next.headingTo === "W") || (next.comingFrom === "W" && next.headingTo === "S")) {
         next.tributaryMerge = [32, 624]
-        console.log("MERGE")
       } else if (next.comingFrom === "S" && next.headingTo === "E") {
         next.tributaryMerge = [0, 624]
-        console.log("MERGE")
       } else if ((next.comingFrom === "E" && next.headingTo === "W") || (next.comingFrom === "W" && next.headingTo === "E")) {
         next.tributaryMerge = [16, 624]
-        console.log("MERGE")
       } else if (next.comingFrom === "E" && next.headingTo === "S") {
         next.tributaryMerge = [0, 624]
-        console.log("MERGE")
       } else if (next.comingFrom === "W" && next.headingTo === "S") {
         next.tributaryMerge = [32, 624]
-        console.log("MERGE")
       } 
     }
     if (last.headingTo === "N") {
       //this is a situation where an incoming tributary joins a river from the south
       if ((next.comingFrom === "W" && next.headingTo === "E") || next.comingFrom === "E" && next.headingTo === "W") {
         next.tributaryMerge = [16, 656] //bottom middle template
-        console.log("MERGE")
       } else if ((next.comingFrom === "N" && next.headingTo === "W") || (next.comingFrom === "W" && next.headingTo === "N")) {
         next.tributaryMerge = [32, 656] //bottom right template
-        console.log("MERGE")
       } else if (next.comingFrom === "N" && next.headingTo === "E" || (next.comingFrom === "E" && next.headingTo === "N")) {
         next.tributaryMerge = [0, 656] //bottom left template
-        console.log("MERGE")
       } 
     }
     if (last.headingTo === "W") {
@@ -774,27 +764,21 @@ function drawRiver(x, y) {
       if ((next.comingFrom === "W" && next.headingTo === "S") || (next.comingFrom === "S" && next.headingTo === "W")) {
         //top right template
         next.tributaryMerge = [80, 624]
-        console.log("MERGE")
       } else if ((next.comingFrom === "S" && next.headingTo === "N") || (next.comingFrom === "N" && next.headingTo === "S")) {
         //middle right template
         next.tributaryMerge = [80, 640]
-        console.log("MERGE")
       } else if ((next.comingFrom === "N" && next.headingTo === "W") || (next.comingFrom === "W" && next.headingTo === "N")) {
         //bottom right template
         next.tributaryMerge = [80, 656]
-        console.log("MERGE")
       }
     }
     if (last.headingTo === "E") {
       if ((next.comingFrom === "S" && next.headingTo === "E") || (next.comingFrom === "E" && next.headingTo === "S")) {
         next.tributaryMerge = [48, 624] //top right template
-        console.log("MERGE")
       } else if ((next.comingFrom === "S" && next.headingTo === "N") || (next.comingFrom === "N" && next.headingTo === "S")) {
         next.tributaryMerge = [48, 640] //middle right template
-        console.log("MERGE")
       } else if ((next.comingFrom === "N" && next.headingTo === "E") || (next.comingFrom === "E" && next.headingTo === "W")) {
         next.tributaryMerge = [48, 656] //bottom right template
-        console.log("MERGE")
       }
     }
   }

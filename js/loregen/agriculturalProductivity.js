@@ -88,7 +88,6 @@ function calculateAgriculturalProductivity(province) {
     // Adjust for additional complex factors
     province.soilQuality = calculateSoilQuality(province)
     productivity += calculateAdditionalFactors(province);
-    console.log(productivity)
     let cp = Math.max(0, productivity) // Ensure productivity is not negative
     if (cp < 0.8) {
         return "very poor"

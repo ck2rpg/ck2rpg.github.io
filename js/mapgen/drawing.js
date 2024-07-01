@@ -701,9 +701,10 @@ function drawProvinceMap() {
           }
       }
   }
-  console.log(pixels)
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
+  pixels = null
+  world.smallMap = null
 }
 
 function drawTerrainSmallMap() {
