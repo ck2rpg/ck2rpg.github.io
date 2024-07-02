@@ -289,6 +289,23 @@ table {
   margin-left: -10px; /* Center the tooltip */
 }
 
+#undoMap:hover ~#tooltip21 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#redoMap:hover ~#tooltip22 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+
 
 
 

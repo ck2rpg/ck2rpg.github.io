@@ -96,6 +96,8 @@ limits.cold.varyRange = createVaryRange();
 let world = {};
 world.coveredWater = 0;
 world.waterCells = 0
+world.lastMaps = []
+world.lastCounter = -1
 
 var canvas = document.getElementById("canvas");
 //canvas.style.width = '95vw';  // Example display size

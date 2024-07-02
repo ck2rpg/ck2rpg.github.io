@@ -21,6 +21,30 @@ document.addEventListener('mouseup', () => {
     isDragging = false;
 });
 
+function undoMapChange() {
+  if (world.lastCounter > 0) {
+    world.lastCounter -= 1;
+    world.map = world.lastMaps[world.lastCounter]
+    drawWorld()
+  }
+}
+
+GID("undoMap").onclick = function() {
+  undoMapChange();
+}
+
+function redoMapChange() {
+  if (world.lastCounter < world.lastMaps.length - 1) {
+    world.lastCounter += 1;
+    world.map = world.lastMaps[world.lastCounter]
+    drawWorld()
+  }
+}
+
+GID("redoMap").onclick = function() {
+  redoMapChange()
+}
+
 function updateSliderValue(value) {
   paintbrushSize = value;
   //document.getElementById('sizeValue').value = value;
@@ -122,6 +146,9 @@ GID("canvas").onclick = function(e) {
     showInfo(e)
   }
   if (paintbrush !== "") {
+    let last = structuredClone(world.map)
+    world.lastMaps.push(last)
+    world.lastCounter = world.lastMaps.length - 1
     applyBrush(e, paintbrushSize, paintbrush, paintbrushHardness)
   }
 }
@@ -293,6 +320,7 @@ GID("download-clothing-palettes").onclick = function() {
 }
 
 GID("create-provinces").onclick = function() {
+  world.lastMaps = null
   GID("main-generator-div").style.display = "none";
   GID("sidebars").style.display = "none";
   GID("province-creation-screen").style.display = "block";
