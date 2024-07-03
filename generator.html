@@ -251,6 +251,12 @@
           <img class="img-icon" id="redoMap" src="icons/redo-icon.png">
           <div class="tooltip" id="tooltip22">Redo</div>
 
+          <div class="file-upload-wrapper">
+            <button class="file-upload-button">Upload Image</button>
+            <input type="file" class="sbtn" id="imageUpload" accept="image/*" />
+          </div>
+          <canvas id="heightmap-upload-canvas" width="512" height="512" style="display:none;"></canvas>
+
           <!--
           <div class="color-box" id="selected-color">
             <div class="color-tooltip" id="selected-tooltip">Select Color</div>
@@ -547,6 +553,7 @@
     <script src="js/loregen/calculateDaylight.js"></script>
     <script src="js/climate/isClimateTransitionZone.js"></script>
     <script src="js/climate/calculateFloodRisk.js"></script>
+    <script src="experimental/heightmapUpload.js"></script>
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>
     <script src="js/testing/createdDummyProvinces.js"></script>

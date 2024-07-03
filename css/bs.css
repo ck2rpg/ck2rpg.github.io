@@ -806,3 +806,35 @@ button[type="submit"]:hover {
   background: rgb(111, 160, 119);
   color: #3b3b3b;
 }
+
+.file-upload-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-upload-button {
+  border: 2px solid #555;
+  color: #3b3b3b;
+  background-color: rgb(111, 160, 119);
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.file-upload-button:hover {
+  background-color: #333;
+  border-color: #333;
+  cursor: pointer;
+}
+
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+#imageUpload:hover {
+  cursor: pointer;
+}
