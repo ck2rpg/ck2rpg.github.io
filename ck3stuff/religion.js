@@ -371,9 +371,9 @@ function createReligion(empire) {
         let f = {};
         kingdom.faith = f;
         f.language = language
-        let faithIcons = pickFrom(faithIcons);
-        f.icon = faithIcons[0]
-        f.reformed_icon = faithIcons[1]
+        let faithIcon = pickFrom(faithIcons);
+        f.icon = faithIcon[0]
+        f.reformed_icon = faithIcon[1]
         f.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`
         if (n === 0) {
             let old = capitalize(translate(language, "Old"))
