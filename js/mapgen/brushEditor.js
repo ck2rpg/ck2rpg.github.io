@@ -49,7 +49,8 @@ let touchedPositions = [];
  * @param {string} brushType - The type of brush ("dropLand" or "raiseLand").
  * @param {number} brushHardness - The hardness of the brush, affecting the degree of elevation change.
  */
-function applyBrush(pos, brushSize, brushType, brushHardness) {
+
+function applySquareBrush(pos, brushSize, brushType, brushHardness) {
   const cell = xy(pos.x, pos.y);
 
   // Calculate start and end points based on brush size
@@ -64,8 +65,10 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
       let nextCell = xy(j, i);
       if (nextCell) {
         if (brushType === "terrain") {
-          nextCell.terrain = brush.terrain;
-          nextCell.terrainMarked = true;
+          if (nextCell.elevation > limits.seaLevel.upper) {
+            nextCell.terrain = paintbrushTerrain
+            nextCell.terrainMarked = true;
+          }
         }
         if (brushType === "dropLand") {
           nextCell.elevation -= brushHardness;
@@ -83,6 +86,62 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             n = -255
           }
           nextCell.elevation += n
+        }
+      }
+    }
+  }
+}
+
+
+/**
+ * Applies a brush effect on the map based on the mouse event.
+ *
+ * @param {MouseEvent} e - The mouse event triggering the brush.
+ * @param {number} brushSize - The size of the brush.
+ * @param {string} brushType - The type of brush ("dropLand" or "raiseLand").
+ * @param {number} brushHardness - The hardness of the brush, affecting the degree of elevation change.
+ */
+function applyBrush(pos, brushSize, brushType, brushHardness) {
+  const cell = xy(pos.x, pos.y);
+  const radius = brushSize / 2;
+  const radiusSquared = radius * radius;
+
+  // Calculate start and end points based on brush size
+  const startY = Math.floor(cell.y - radius);
+  const endY = Math.ceil(cell.y + radius);
+  const startX = Math.floor(cell.x - radius);
+  const endX = Math.ceil(cell.x + radius);
+
+  for (let i = startY; i <= endY; i++) {
+    for (let j = startX; j <= endX; j++) {
+      const dx = j - cell.x;
+      const dy = i - cell.y;
+      if (dx * dx + dy * dy <= radiusSquared) {
+        let nextCell = xy(j, i);
+        if (nextCell) {
+          if (brushType === "terrain") {
+            if (nextCell.elevation > limits.seaLevel.upper) {
+              nextCell.terrain = paintbrushTerrain
+              nextCell.terrainMarked = true;
+            }
+          }
+          if (brushType === "dropLand") {
+            nextCell.elevation -= brushHardness;
+            if (nextCell.elevation < limits.seaLevel.lower) {
+              nextCell.elevation = limits.seaLevel.lower + 1;
+            }
+          } else if (brushType === "raiseLand") {
+            nextCell.elevation += parseInt(brushHardness);
+          }
+          if (brushType === "jitterRaise") {
+            let n = paintbrushLast + getRandomInt(-5, 5)
+            if (n > 510) {
+              n = 510;
+            } else if (n < -255) {
+              n = -255
+            }
+            nextCell.elevation += n
+          }
         }
       }
     }
@@ -117,9 +176,16 @@ function recordPosition(e) {
 
 function applyBrushToTouchedPositions() {
   paintbrushLast = paintbrushHardness;
-  touchedPositions.forEach(pos => {
-    applyBrush(pos, paintbrushSize, paintbrush, paintbrushHardness);
-  });
+  if (paintbrushShape === "square") {
+    touchedPositions.forEach(pos => {
+      applySquareBrush(pos, paintbrushSize, paintbrush, paintbrushHardness);
+    });
+  } else {
+    touchedPositions.forEach(pos => {
+      applyBrush(pos, paintbrushSize, paintbrush, paintbrushHardness);
+    });
+  }
+
 }
 
 // Add event listeners

@@ -97,15 +97,23 @@ table {
 }
 
 #main-sidebar {
-  font-size: 0.6em;
+  font-size: 0.9em;
   width: 15vw;
+  height: fit-content;
   position: absolute;
   left: 15px;
   top: 15px;
   background: #3b3b3b;
   color: #dddddd;
   box-shadow: 1px 1px 1px #5b5b5b;
+  opacity: 0.9;
   
+}
+
+#main-sidebar.minimized {
+  bottom: 0px;
+  left: 0px;
+  overflow: hidden;
 }
 
 .gen-icon {
@@ -289,6 +297,14 @@ table {
   margin-left: -10px; /* Center the tooltip */
 }
 
+#undoMap {
+  display: none;
+}
+
+#redoMap {
+  display: none;
+}
+
 #undoMap:hover ~#tooltip21 {
   visibility: visible;
   opacity: 1;
@@ -298,6 +314,30 @@ table {
 }
 
 #redoMap:hover ~#tooltip22 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#raiseLand:hover ~#tooltip23 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#lowerWater:hover ~#tooltip24 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+#noiseMap:hover ~#tooltip25 {
   visibility: visible;
   opacity: 1;
   top: 105%; /* Position the tooltip above the image */
@@ -802,7 +842,7 @@ button[type="submit"]:hover {
   display: block;
 }
 
-#create-provinces {
+.menu-btn {
   background: rgb(111, 160, 119);
   color: #3b3b3b;
 }
@@ -837,4 +877,24 @@ button[type="submit"]:hover {
 
 #imageUpload:hover {
   cursor: pointer;
+}
+
+#brush {
+  position: absolute;
+  width: var(--brush-size);
+  height: var(--brush-size);
+  background-color: rgba(255, 0, 0, 0.5); /* Change color and opacity as needed */
+  border-radius: 50%; /* Makes it a circle */
+  pointer-events: none; /* Allows you to interact with the map beneath */
+  transform: translate(-50%, -50%); /* Center the brush on the cursor */
+}
+
+#minimize-button {
+  display: inline-block;
+  margin: 5px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
 }

@@ -562,6 +562,7 @@ function generateReligionLocalizationBlock(r) {
         DeathDeityNamePossessive = ${r.name}_death_deity_name_possessive
         DeathDeitySheHe = CHARACTER_SHEHE_IT
         DeathDeityHerHis = CHARACTER_HERHIS_ITS
+        DeathDeityHerHim = CHARACTER_HERHIM_HER
         WitchGodName = ${r.name}_night_god_name
         WitchGodNamePossessive = ${r.name}_night_god_name_possessive
         WitchGodHerHis = CHARACTER_HERHIS_HER
@@ -623,9 +624,12 @@ function generateReligionLocalization(r) {
   ${r.name}_good_god_christ: "${highgod}"
   ${r.name}_devil_name: "${devil}"
   ${r.name}_devil_name_possessive: "${devil}'s"
+  ${r.name}_evil_god_drought: "${devil}"
   ${r.name}_evil_god_lucifer: "${devil}"
   ${r.name}_evil_god_beelzebub: "${devil}"
   ${r.name}_evil_god_mephistopheles: "${devil}"
+  ${r.name}_evil_god_decay: "${devil}"
+  ${r.name}_evil_god_decay_possessive: "${devil}'s"
   ${r.name}_death_deity_name: "${death}"
   ${r.name}_death_deity_name_possessive: "${death}'s"
   ${r.name}_house_of_worship: "${temple}"

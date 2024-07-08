@@ -7,9 +7,11 @@ settings.height = 4096
 settings.tooSmallProvince = 900 // 900 was my default before
 settings.horizontalSpread = false; // the new try, not working
 settings.verticalSpread = true; //the original I've been using
-settings.fixBlockiness = true; // setting to true will allow land provinces to override water
+settings.fixBlockiness = false; // setting to true will allow land provinces to override water
 settings.equator = (settings.height - settings.height / 10)
-settings.riversDistance = 5
+settings.riversDistance = 1000
+settings.riverIntoOcean = 1
+settings.ethnicities = "vanilla"
 
 settings.maxLandProvinces = 8000; //not implemented
 settings.maxWaterProvinces = 2000; //not implemented
@@ -109,6 +111,22 @@ let paintbrush = "raiseLand"
 let paintbrushSize = 30;
 let paintbrushHardness = 50;
 let paintbrushLast = 0
+let paintbrushShape = "circle"
+let paintbrushTerrain = "plains"
+let saveState = false;
+GID("tracking-toggle").onclick = function() {
+  if (saveState === false) {
+    saveState = true;
+    GID("undoMap").style.display = "inline-block";
+    GID("redoMap").style.display = "inline-block";
+    GID("tracking-toggle").innerHTML = "Turn Off Undo"
+  } else {
+    saveState = false;
+    GID("tracking-toggle").innerHTML = "Turn On Undo (Can Cause Crashes)"
+    GID("undoMap").style.display = "none";
+    GID("redoMap").style.display = "none";
+  }
+}
 
 let gCount = 0;
 let bCount = 0;

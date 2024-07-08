@@ -704,6 +704,43 @@ function drawProvinceMap() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
   pixels = null
+  //world.smallMap = null
+}
+
+function drawProvinceMapWithoutOceans() {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(75, 75, 75)"
+  ctx.fill();
+  let pixels = wholeMapImage()
+  for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
+          let c = world.smallMap[i][j]
+          if (c && c.elevation <= limits.seaLevel.upper) {
+            pixels.data[count] = 0 //r
+            count += 1;
+            pixels.data[count] = 0 //g 
+            count += 1;
+            pixels.data[count] = 0 //b
+            count += 2;     
+          } else {
+            if (c && c.colorR) {
+              pixels.data[count] = c.colorR //r
+              count += 1;
+              pixels.data[count] = c.colorG //g 
+              count += 1;
+              pixels.data[count] = c.colorB //b
+              count += 2;
+            } else {
+                count += 4;
+            }
+        }
+      }
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  pixels = null
   world.smallMap = null
 }
 

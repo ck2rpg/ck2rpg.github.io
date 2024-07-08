@@ -29,6 +29,62 @@ function undoMapChange() {
   }
 }
 
+GID("lowerWater").onclick = function() {
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = world.map[i][j]
+      if (cell.elevation < 36) {
+        cell.elevation -= 1;
+      }
+    }
+  }
+  drawWorld()
+}
+
+GID("raiseLand").onclick = function() {
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = world.map[i][j]
+      if (cell.elevation > 37) {
+        cell.elevation += 1;
+      } 
+    }
+  }
+  drawWorld()
+}
+
+GID("noiseMap").onclick = function() {
+  let singSimp = new SimplexNoise()
+  let singSimp2 = new SimplexNoise();
+  let singSimp3 = new SimplexNoise();
+  let min = getRandomInt(100, 300)
+  let max = getRandomInt(300, 765);
+  function singNoise(nx, ny) {
+      return singSimp.noise2D(nx, ny) / 2 + 0.5;
+  }
+  function singNoise2(nx, ny) {
+    return singSimp2.noise2D(nx, ny) / 2 + 0.5;
+  }
+  function singNoise3(nx, ny) {
+    return singSimp3.noise2D(nx, ny) / 2 + 0.5;
+  }
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = world.map[i][j]
+      let n = singNoise(j, i)
+      let n2 = singNoise3(j, i)
+      if (n < 0.3 || n2 < 0.3) {
+        n = 15
+      } else {
+        n = n * 510
+      }
+      cell.elevation = n
+    }
+  }
+  cleanupAll()
+  drawWorld()
+}
+
 GID("undoMap").onclick = function() {
   undoMapChange();
 }
@@ -146,9 +202,11 @@ GID("canvas").onclick = function(e) {
     showInfo(e)
   }
   if (paintbrush !== "") {
-    let last = structuredClone(world.map)
-    world.lastMaps.push(last)
-    world.lastCounter = world.lastMaps.length - 1
+    if (saveState === true) {
+      let last = structuredClone(world.map)
+      world.lastMaps.push(last)
+      world.lastCounter = world.lastMaps.length - 1
+    }
     applyBrush(e, paintbrushSize, paintbrush, paintbrushHardness)
   }
 }
@@ -184,8 +242,8 @@ GID("heightmap").onclick = function() {
 
 GID("rivermap").onclick = function() {
   world.drawingType = "rivermap"
+  rerunRivers()
   drawWorld();
-  drawHPRivers();
 }
 
 GID("download-all-checked-images").onclick = function() {
@@ -227,8 +285,11 @@ GID("write-all-checked-texts-button").onclick = function() {
   if (document.getElementById('winterSeverityCheckbox').checked) {
     functionsToExecute.push(() => createWinterSeverity());
     functionsToExecute.push(() => writeWinterSeverity());
-    functionsToExecute.push(() => moveToImageDownloads())
-  } 
+  }
+  functionsToExecute.push(() => moveToImageDownloads())
+  functionsToExecute.push(() => writeDescriptor());
+  functionsToExecute.push(() => writeHybridCultures()) 
+  functionsToExecute.push(() => writeHybridCulturesLocalization())
   
   const delayBetweenDownloads = 200;
   downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
@@ -262,6 +323,7 @@ GID("papyrus-map-icon").onclick = function() {
 }
 
 GID("add-downloads").onclick = function() {
+  //DON'T USE THIS ONE - old links - need to clean up and delete
   const functionsToExecute = [];
   
   if (document.getElementById('provinceDefinitionsCheckbox').checked) functionsToExecute.push(() => writeProvinceDefinitions());
@@ -403,7 +465,7 @@ GID("province-drawn-proceed").onclick = function() {
   GID("text-download-settings").style.display = "block"
 }
 
-/*
+
 //color picker
 
 const colorBox = document.getElementById('selected-color');
@@ -419,8 +481,11 @@ colorOptions.forEach(option => {
   option.addEventListener('click', () => {
     const selectedColor = option.style.backgroundColor;
     const selectedTooltip = option.dataset.tooltip;
+    console.log(option.dataset)
     colorBox.style.backgroundColor = selectedColor;
     tooltip.textContent = selectedTooltip;
+    paintbrush = "terrain"
+    paintbrushTerrain = option.dataset.tooltip.toLowerCase()
     colorPicker.style.display = 'none';
   });
 });
@@ -430,7 +495,106 @@ document.addEventListener('click', (e) => {
     colorPicker.style.display = 'none';
   }
 });
+
+
+//Minimizing
+document.getElementById('minimize-button').addEventListener('click', function() {
+  var sidebar = document.getElementById('main-sidebar');
+  if (sidebar.classList.contains('minimized')) {
+    sidebar.style.height = "fit-content"
+  }
+
+  sidebar.classList.toggle('minimized');
+  var bottomSidebar = document.getElementById("main-sidebar-bottom")
+  this.textContent = sidebar.classList.contains('minimized') ? '+' : '-';
+  bottomSidebar.style.display = sidebar.classList.contains('minimized') ? "none" : "block";
+});
+
+//BRUSH VIEW
+
+/*
+
+const bbb = document.getElementById('brush');
+const mapContainer = document.getElementById('canvas');
+
+
+
+mapContainer.addEventListener('mousemove', (event) => {
+    let correctedBrush = parseInt(paintbrushSize) * parseInt(settings.pixelSize / 2);
+    bbb.style.setProperty('--brush-size', `${correctedBrush}px`);
+    const x = event.clientX;
+    const y = event.clientY;
+
+    bbb.style.left = `${x}px`;
+    bbb.style.top = `${y}px`;
+});
+
+// Show the brush when entering the map container
+mapContainer.addEventListener('mouseenter', () => {
+  bbb.style.display = 'block';
+});
+
+// Hide the brush when leaving the map container
+mapContainer.addEventListener('mouseleave', () => {
+  bbb.style.display = 'none';
+});
+
 */
 
+// BRUSH VIEW
 
+const bbb = document.getElementById('brush');
+const mapContainer = document.getElementById('canvas');
 
+bbb.style.setProperty('--brush-size', `${paintbrushSize}px`);
+
+mapContainer.addEventListener('mousemove', (event) => {
+  if (paintbrushShape && paintbrushShape === "circle") {
+    bbb.style.borderRadius = '50%'
+    const rect = mapContainer.getBoundingClientRect();
+    const scaleX = mapContainer.width / rect.width;
+    const scaleY = mapContainer.height / rect.height;
+    
+    const x = (event.clientX - rect.left)
+    const y = (event.clientY - rect.top)
+    
+    const brushSize = paintbrushSize * 16 / scaleY; // Scaling brush size
+
+    bbb.style.width = `${brushSize}px`;  // Setting the width of the brush preview
+    bbb.style.height = `${brushSize}px`; // Setting the height of the brush preview
+    bbb.style.left = `${x}px`;
+    bbb.style.top = `${y}px`;
+  } else {
+    const rect = mapContainer.getBoundingClientRect();
+    const scaleX = mapContainer.width / rect.width;
+    const scaleY = mapContainer.height / rect.height;
+    
+    const x = (event.clientX - rect.left)
+    const y = (event.clientY - rect.top)
+    let correctedBrush = parseInt(paintbrushSize) * 16 * scaleY;
+    const brushSize = paintbrushSize * 16 / scaleY; // Scaling brush size
+    bbb.style.borderRadius = '0%'
+    bbb.style.width = `${brushSize}px`;  // Setting the width of the brush preview
+    bbb.style.height = `${brushSize}px`; // Setting the height of the brush preview
+
+    bbb.style.left = `${x}px`;
+    bbb.style.top = `${y}px`;
+  }
+
+});
+
+// Show the brush when entering the map container
+mapContainer.addEventListener('mouseenter', () => {
+    bbb.style.display = 'block';
+    console.log('Brush shown');
+});
+
+// Hide the brush when leaving the map container
+mapContainer.addEventListener('mouseleave', () => {
+    bbb.style.display = 'none';
+    console.log('Brush hidden');
+});
+
+// Initialize the brush display
+bbb.style.display = 'none';
+console.log('Brush initialized');

@@ -114,7 +114,7 @@ function drawRiver(x, y) {
               running = false;
             }
           }
-          if ((reachedOcean && oceanCounter > 5) || count > 10000) {
+          if ((reachedOcean && oceanCounter > settings.riverIntoOcean) || count > 10000) {
             running = false
           }
         } catch {
