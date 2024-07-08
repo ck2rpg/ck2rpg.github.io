@@ -1,5 +1,5 @@
 function writeLocators(type) {
-    let t = `game_object_locator={\n`
+    let t = `${daBom}game_object_locator={\n`
     t += `  name="${type}"\n`
     t += `  clamp_to_water_level=yes\n`
     t += `  render_under_water=no\n`

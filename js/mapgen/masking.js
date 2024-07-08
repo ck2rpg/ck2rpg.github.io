@@ -16,6 +16,9 @@ function assignMasks(cell) { //need to convert from percentages to actual - do w
     let el = cell.elevation;
     if (cell.terrain === "taiga") {
         cell.snow_mask = 100;
+    } else if (cell.terrain === "hills" && cell.climateCategory === "cold") {
+        cell.hills_01_rocks_mask = 50
+        cell.snow_mask = 50
     } else if (cell.terrain === "mountains") {
         if (el > limits.mountains.snowLine) {
             cell.mountain_02_c_snow_mask = getRandomInt(40, 70);
@@ -29,8 +32,13 @@ function assignMasks(cell) { //need to convert from percentages to actual - do w
     } else if (n < 0.2 && cell.maskMarked && !cell.desert) {
         cell.wetlands_02_mask = 100
     } else if (cell.terrain === "sea") { //ocean - limit was 15 before (or 10?)
-        cell.beach_02_mask = 80;
-        cell.desert_02_mask = 20;
+        if (el > 30 && el < 37) {
+            cell.coastline_cliff_grey_mask = 100
+        } else {
+            cell.beach_02_mask = 80;
+            cell.desert_02_mask = 20;
+        }
+
     } /*else if (cell.desert && cell.forceFloodplain) {
         cell.floodplains_01_mask = 100 
     } */else if (cell.terrain === "farmlands") {
@@ -106,7 +114,7 @@ function assignMasks(cell) { //need to convert from percentages to actual - do w
     } else if (cell.terrain === "drylands") {
         //drylands
         cell.drylands_01_mask = 100 
-    } else if ((cell.terrain === "desert" || cell.terrain === "drylands") && limits.mountains.lower - el < 50) {
+    } else if ((cell.climateCategory === "subtropical" || cell.terrain === "desert" || cell.terrain === "drylands") && limits.mountains.lower - el < 50) {
         //desert hill is still hill terrain but desert hill mask
         cell.desert_rocky_mask = getRandomInt(38, 65);
         remaining -= cell.desert_rocky_mask;

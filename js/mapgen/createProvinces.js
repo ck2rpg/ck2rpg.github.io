@@ -301,6 +301,7 @@ async function createProvinces() {
     addWaterProvinces();
     addWaterProvinces();
     deleteSmallProvinces();
+    
 
     await updateDOM("Deleting Too Small Provinces", 2);
 
@@ -564,6 +565,8 @@ function bruteFillIn() {
             } else {
                 if (last.colorR) {
                     cell.colorR = last.colorR
+                    cell.colorG = last.colorG;
+                    cell.colorB = last.colorB
                 }
             }
             last = cell;
@@ -946,7 +949,7 @@ function growCell(cell) {
                     cell.province.farthestWest = cell;
                 }
                 world.coveredLand += 1;
-            } else if (randomNeighbor) {
+            } else if (randomNeighbor) { //allows spread over water
                 if (settings.fixBlockiness) {
                     if (randomNeighbor.bigCell) {
                         randomNeighbor.bigCell.maskMarked = true; //mark for masking
@@ -982,7 +985,7 @@ function growCell(cell) {
                     randomNeighbor.colorG = cell.colorG
                     randomNeighbor.colorB = cell.colorB
                     randomNeighbor.parent = cell.parent;
-                    randomNeighbor.elevation = limits.seaLevel.upper + getRandomInt(1, 3)
+                    randomNeighbor.elevation = limits.seaLevel.upper + getRandomInt(15, 20) // change to higher to see if it fixes sinking provinces
                     //randomNeighbor.elevation = cell.elevation;
                     world.landCells.push(randomNeighbor)
                     randomNeighbor.province = cell.province
@@ -1009,7 +1012,6 @@ function growCell(cell) {
                         cell.province.farthestWest = cell;
                     }
                 }
-
             }
         }
     }

@@ -12,7 +12,7 @@ function startup() {
     cleanupAll()
     getBeaches();
     setMoisture();
-    hpRivers();
+    //hpRivers();
     floodFillMountains();
     drawWorld();
 

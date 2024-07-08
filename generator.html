@@ -7,29 +7,7 @@
   </head>
   <body>
     <div id="done-done">
-      <p>Woohoo! You are done with the browser-based work. Here is what you need to do next:</p>
-      <ol>
-        <li>All of your files should be in the "replacers" folder in the template. If not, move them there.</li>
-        <li>If you do not have Gimp for image processing, download it.</li>
-        <li>Copy my <a href="https://github.com/ck2rpg/mapgenpostprocessor/blob/main/gimpscript.py">Gimp python script</a> out of this Github file.</li>
-        <li>Open Gimp and navigate to Filters > Python-Fu > Console.</li>
-        <li>In the console, locate the process_folder method and replace the placeholder path with the actual path to your replacers folder.</li>
-        <li>Paste the edited script into the Python-Fu console and press Enter. This script applies a Gaussian blur, formats files, and places them in the correct folders.</li>
-        <li>Open the "movetomapobjectdata" folder in the template. Copy all files from this folder and paste them into your "modname/gfx/map/map_object_data" to overwrite existing files.</li>
-        <li>Open rivers.png in Gimp from the replacers folder. Open the existing rivers.png in the map_data folder. Copy and paste the generated rivers over the existing rivers.png in the map_data folder.</li>
-        <li>Overwrite the template file in Gimp to ensure proper indexing.</li>
-        <li>Open the papyrus.png file from the replacers folder in Gimp. Adjust brightness and apply a sepia filter if desired. Apply a Gaussian blur with a radius of 7.5. Open "flatmap.dds" in gfx/map/terrain/. Copy and paste your blurred map over the template flatmap.</li>
-        <li>Open the map editor (right-click Crusader Kings 3 in Steam, click properties, and set launch options to -mapeditor).</li>
-        <li>In the map editor, select Content Object Editor and mark all as modified.</li>
-        <li>Repack the map and save it to your mod folder.</li>
-        <li>Close the map editor.</li>
-        <li>Delete all files from documents/paradox interactive/crusader kings 3/generated to gfx/map/map_object/data</li>
-        <li>Change launch options to -debug_mode and start the game. Start as a ruler.</li>
-        <li>Close the game to generate locators.</li>
-        <li>Copy the generated locators from documents/paradox interactive/crusader kings 3/generated to gfx/map/map_object/data.</li>
-        <li>You now should have a basic working map. Congratulations!</li>
-      </ol>
-      <p>Any questions? Join the <a href="https://discord.gg/eemRxbCUX3">Discord</a>, and we'll do our best to answer.</p>
+      <p>Woohoo! You are done with the browser-based work. Please see the <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> for next steps.</p>
     </div>
     <div id="province-drawn-proceed">
       Your province map has been downloaded. Click here to proceed to text file generation.
@@ -149,14 +127,44 @@
     </div>
     <div id="main-generator-div">
     <canvas id="canvas"></canvas>
+    <div id="brush"></div>
     <canvas id="texture-canvas"></canvas>
     <canvas id="gradientCanvas"></canvas>
 
     <div id="landing-screen">
       <h1 class="landing-header">Crusader Kings 3 Procedural Map Generator</h1>
       <div id="landing-text">
-        <p class="text-intro">Alpha 0.1 Release</p>
-        <p class="main-landing-text">We are thrilled to announce the first alpha release of the Procedural Map Generator for Crusader Kings 3. As we take this initial step into creating dynamic and unique maps for your gameplay experience, we want to set clear expectations regarding the current state of the generator and its capabilities. Your feedback and support are invaluable as we continue to develop and refine this tool.</p>
+        <p class="text-intro">Alpha 0.1.1 Release</p>
+        <p class="main-landing-text">We are thrilled to announce the alpha release 0.1.1 of the Procedural Map Generator for Crusader Kings 3. A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. As we take another step into creating dynamic and unique maps for your gameplay experience, we want to set clear expectations regarding the current state of the generator and its capabilities. Your feedback and support are invaluable as we continue to develop and refine this tool.</p>
+        <div id="start-generator-button">Generate a New World</div>
+        <p class="main-landing-heading">0.1.1 Change Log</p>
+        <p class="main-landing-text">
+          Added ability to import heightmap.<br>
+          Added simple noise function.<br>
+          Stopped drawing rivers initially. Now you must choose to draw rivers because it affects elevation when you rerun rivers.<br>
+          Added undo button to map generator.<br>
+          Added redo button to map generator.<br>
+          Added toggle to allow users to avoid bug causing memory overflows due to undo/redo buttons.<br>
+          Added a button allowing you to lower elevation of water only (useful for heightmap import work)<br>
+          Added a button allowing you to raise elevation of land only (useful for heightmap import work)<br>
+          Fixed bug causing hills around desert mountains to look green.<br>
+          Fixed bug causing hills around cold climate mountains to look green.<br>
+          Deleted generated clothing palettes from template file. Clothing is vanilla palette now. Will work on palette generation at some point. Random is boring.<br>
+          Removed large ears. Will add back as optional with history/lore update.<br>
+          Added red brush overlay to show where you are on generator. <br>
+          Minimizable toolbar.<br>
+          Fixed bug preventing moving to image downloads if winter severity was not checked.<br>
+          Add generator for descriptor.mod<br>
+          Added ability to draw a land only province map <br>
+          Added square and circle brushes for map editor.<br>
+          Added indicator for paintbrush cursor.<br>
+          Fixed locator generation and made automatic. Will need to spread combat, etc. locators around province in future release.<br>
+          Added hybrid culture name generation (keyed to province of creating character).<br>
+          Added settings to use vanilla ethnicities for now. Will add back in other options with history/lore update.<br>
+          Removed asset file that was calling old files that are no longer in the mod.<br>
+          Deleted bugged line in template descriptor.mod that was causing crashes.<br>
+          Fixed missing 'DeathDeityHerHim' and decay localization for religions.<br>
+        </p>
 
         <p class="main-landing-heading">Current State of the Generator</p>
 
@@ -184,7 +192,7 @@
 
         <img class="avatar" src="icons/ck2rpg.png">
         <p class="main-landing-text">-ck2rpg, 6/29/24</p>
-        <div id="start-generator-button">Generate a New World</div>
+
       </div>
       
       
@@ -197,186 +205,209 @@
       <div id="main-sidebar">
         <div id="main-sidebar-top">
           CK3 Map Generator
+          <span id="minimize-button">-</span>
         </div>
-        <div class="gen-icon">
-          <p class="outset-text">Map Preview Modes:</p>
-          <img class="small-icon-button" id="colorswatch" src="icons/terrainmap.png">
-          <div class="tooltip" id="tooltip4">Terrain Map Preview</div>
-          <img class="small-icon-button" id="color-map-icon" src="icons/colormapicon.png">
-          <div class="tooltip" id="tooltip5">Color Map Preview</div>
-          <img class="small-icon-button" id="river-map-icon" src="icons/river-icon.png">
-          <div class="tooltip" id="tooltip6">River Map Preview</div>
-          <img class="small-icon-button" id="papyrus-map-icon" src="icons/papyrus-icon.png">
-          <div class="tooltip" id="tooltip7">Flat Map Preview</div>
-          <img class="small-icon-button" id="heightmap-icon" src="icons/heightmap-icon.png">
-          <div class="tooltip" id="tooltip8">Height Map Preview</div>
-          <p class="outset-text">Mass Change:</p>
-          <img class="img-icon" id="startup" src="icons/newmap.png">
-          <div class="tooltip" id="tooltip1">Create a New Map</div>
-          <img  class="img-icon" id="magnify" src="icons/magnifyingglass.png">
-          <div class="tooltip" id="tooltip2">Inspect Cell</div>
-          <img  class="img-icon" id="droptowater" src="icons/droptowater.png">
-          <div class="tooltip" id="tooltip3">Drop All Cells to Ocean</div>
-          <img class="img-icon" id="broom" src="icons/broom.png">
-          <div class="tooltip" id="tooltip9">Clean Up Single Cells</div>
-          <img class="img-icon" id="spread-icon" src="icons/spread-icon.png">
-          <div class="tooltip" id="tooltip14">Spread Elevation from Spreading Centers</div>
-          <img class="img-icon" id="soften-spread-icon" src="icons/soften-spread-icon.png">
-          <div class="tooltip" id="tooltip16">Soften and Spread</div>
-          <img class="img-icon" id="increase-elevation-icon" src="icons/increase-elevation-icon.png">
-          <div class="tooltip" id="tooltip10">Increase Elevation Everywhere</div>
-          <img class="img-icon"  id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png">
-          <div class="tooltip" id="tooltip11">Decrease Elevation Everywhere</div>
-          <img class="img-icon"  id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png">
-          <div class="tooltip" id="tooltip15">Rerun Rivers</div>
-          <img class="img-icon"  id="raise-mountains-icon" src="icons/raise-mountains.png">
-          <div class="tooltip" id="tooltip12">Raise Mountains</div>
-          <img class="img-icon"  id="lower-mountains-icon" src="icons/lower-mountains.png">
-          <div class="tooltip" id="tooltip13">Lower Mountains</div>
+        <div id="main-sidebar-bottom">
+          <div class="gen-icon">
+            <p class="outset-text">Map Preview Modes:</p>
+            <img class="small-icon-button" id="colorswatch" src="icons/terrainmap.png">
+            <div class="tooltip" id="tooltip4">Terrain Map Preview</div>
+            <img class="small-icon-button" id="color-map-icon" src="icons/colormapicon.png">
+            <div class="tooltip" id="tooltip5">Color Map Preview</div>
+            <img class="small-icon-button" id="river-map-icon" src="icons/river-icon.png">
+            <div class="tooltip" id="tooltip6">River Map Preview</div>
+            <img class="small-icon-button" id="papyrus-map-icon" src="icons/papyrus-icon.png">
+            <div class="tooltip" id="tooltip7">Flat Map Preview</div>
+            <img class="small-icon-button" id="heightmap-icon" src="icons/heightmap-icon.png">
+            <div class="tooltip" id="tooltip8">Height Map Preview</div>
+            <p class="outset-text">Mass Change:</p>
+            <img class="img-icon" id="startup" src="icons/newmap.png">
+            <div class="tooltip" id="tooltip1">Create a New Map</div>
+            <img  class="img-icon" id="magnify" src="icons/magnifyingglass.png">
+            <div class="tooltip" id="tooltip2">Inspect Cell</div>
+            <img  class="img-icon" id="droptowater" src="icons/droptowater.png">
+            <div class="tooltip" id="tooltip3">Drop All Cells to Ocean</div>
+            <img class="img-icon" id="broom" src="icons/broom.png">
+            <div class="tooltip" id="tooltip9">Clean Up Single Cells</div>
+            <img class="img-icon" id="spread-icon" src="icons/spread-icon.png">
+            <div class="tooltip" id="tooltip14">Spread Elevation from Spreading Centers</div>
+            <img class="img-icon" id="soften-spread-icon" src="icons/soften-spread-icon.png">
+            <div class="tooltip" id="tooltip16">Soften and Spread</div>
+            <img class="img-icon" id="increase-elevation-icon" src="icons/increase-elevation-icon.png">
+            <div class="tooltip" id="tooltip10">Increase Elevation Everywhere</div>
+            <img class="img-icon"  id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png">
+            <div class="tooltip" id="tooltip11">Decrease Elevation Everywhere</div>
+            <img class="img-icon"  id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png">
+            <div class="tooltip" id="tooltip15">Rerun Rivers</div>
+            <img class="img-icon"  id="raise-mountains-icon" src="icons/raise-mountains.png">
+            <div class="tooltip" id="tooltip12">Raise Mountains</div>
+            <img class="img-icon"  id="lower-mountains-icon" src="icons/lower-mountains.png">
+            <div class="tooltip" id="tooltip13">Lower Mountains</div>
+            
+            <img class="img-icon" id="raiseLand" src="icons/raise-land-only-icon.png">
+            <div class="tooltip" id="tooltip23">Raise Only Land</div>
 
-          <img class="img-icon"  id="all-to-sea-level" src="icons/all-to-sea-level.png">
-          <div class="tooltip" id="tooltip19">All to Sea Level</div>
+            <img class="img-icon" id="lowerWater" src="icons/lower-water-only-icon.png">
+            <div class="tooltip" id="tooltip24">Lower Water Only</div>
 
-          <img class="img-icon"  id="water-to-sea-level" src="icons/water-to-sea-level.png">
-          <div class="tooltip" id="tooltip20">Water to Sea Level</div>
+            <img class="img-icon" id="noiseMap" src="icons/noise-icon.png">
+            <div class="tooltip" id="tooltip25">Noise Map</div>
+  
+            <img class="img-icon"  id="all-to-sea-level" src="icons/all-to-sea-level.png">
+            <div class="tooltip" id="tooltip19">All to Sea Level</div>
+  
+            <img class="img-icon"  id="water-to-sea-level" src="icons/water-to-sea-level.png">
+            <div class="tooltip" id="tooltip20">Water to Sea Level</div>
+  
+            <p class="outset-text">Brushes:</p>
+  
+            <img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png">
+            <div class="tooltip" id="tooltip17">Raise Elevation Brush</div>
+            <img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png">
+            <div class="tooltip" id="tooltip18">Lower Elevation Brush</div>
+            <img class="img-icon" id="undoMap" src="icons/undo-icon.png">
+            <div class="tooltip" id="tooltip21">Undo</div>
+            <img class="img-icon" id="redoMap" src="icons/redo-icon.png">
+            <div class="tooltip" id="tooltip22">Redo</div>
+            <div class="color-picker" id="color-picker">
+              <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
+                <div class="color-tooltip">Sea Level</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
+                <div class="color-tooltip">Plains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
+                <div class="color-tooltip">Desert</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
+                <div class="color-tooltip">Drylands</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
+                <div class="color-tooltip">Floodplains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
+                <div class="color-tooltip">Hills</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
+                <div class="color-tooltip">Mountains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
+                <div class="color-tooltip">Taiga</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
+                <div class="color-tooltip">Desert Mountains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
+                <div class="color-tooltip">Farmlands</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
+                <div class="color-tooltip">Forest</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
+                <div class="color-tooltip">Jungle</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
+                <div class="color-tooltip">Oasis</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
+                <div class="color-tooltip">Steppe</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
+                <div class="color-tooltip">Wetlands</div>
+              </div>
+            </div>
+            <div class="color-box" id="selected-color">
+              <div class="color-tooltip" id="selected-tooltip">Select Color</div>
+            </div>
+  
+            
 
-          <p class="outset-text">Brushes:</p>
+  
 
-          <img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png">
-          <div class="tooltip" id="tooltip17">Raise Elevation Brush</div>
-          <img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png">
-          <div class="tooltip" id="tooltip18">Lower Elevation Brush</div>
-          <img class="img-icon" id="undoMap" src="icons/undo-icon.png">
-          <div class="tooltip" id="tooltip21">Undo</div>
-          <img class="img-icon" id="redoMap" src="icons/redo-icon.png">
-          <div class="tooltip" id="tooltip22">Redo</div>
-
-          <!--
-          <div class="color-box" id="selected-color">
-            <div class="color-tooltip" id="selected-tooltip">Select Color</div>
-          </div>
-
-          <div class="color-picker" id="color-picker">
-            <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
-              <div class="color-tooltip">Sea Level</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
-              <div class="color-tooltip">Plains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
-              <div class="color-tooltip">Desert</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
-              <div class="color-tooltip">Drylands</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
-              <div class="color-tooltip">Floodplains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
-              <div class="color-tooltip">Hills</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
-              <div class="color-tooltip">Mountains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
-              <div class="color-tooltip">Taiga</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
-              <div class="color-tooltip">Desert Mountains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
-              <div class="color-tooltip">Farmlands</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
-              <div class="color-tooltip">Forest</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
-              <div class="color-tooltip">Jungle</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
-              <div class="color-tooltip">Oasis</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
-              <div class="color-tooltip">Steppe</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
-              <div class="color-tooltip">Wetlands</div>
-            </div>
-          </div>
-          -->
           
-          <p class="outset-text">Brush Settings:</p>
-          <div class="slider-container">
-            <label for="sizeSlider" class="slider-label">Size</label>
-            <input type="range" id="sizeSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updateSliderValue(this.value)">
-            <!--<input type="number" id="sizeValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updateSlider(this.value)">-->
+            
+            <p class="outset-text">Brush Settings:</p>
+            <div class="slider-container">
+              <label for="sizeSlider" class="slider-label">Size</label>
+              <input type="range" id="sizeSlider" class="slider" min="0" max="100" value="30" step="1" oninput="updateSliderValue(this.value)">
+              <!--<input type="number" id="sizeValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updateSlider(this.value)">-->
+            </div>
+            <div class="slider-container">
+              <label for="powerSlider" class="slider-label">Power</label>
+              <input type="range" id="powerSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
+                <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
+            </div>
+  
+            <br>
           </div>
+          <p class="outset-text">Map Settings:</p>
           <div class="slider-container">
-            <label for="powerSlider" class="slider-label">Power</label>
-            <input type="range" id="powerSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
-              <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
-          </div>
-
-          <br>
+            <label for="equatorSlider" class="slider-label">Equator</label>
+            <input type="range" id="equatorSlider" class="slider" min="3600" max="8000" value="100" step="1" oninput="updateEquatorValue(this.value)">
+            <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
         </div>
-        <p class="outset-text">Map Settings:</p>
+        <!--
         <div class="slider-container">
-          <label for="equatorSlider" class="slider-label">Equator</label>
-          <input type="range" id="equatorSlider" class="slider" min="3600" max="8000" value="100" step="1" oninput="updateEquatorValue(this.value)">
+          <label for="seaLevelSlider" class="slider-label">Sea Level</label>
+          <input type="range" id="seaLevelSlider" class="slider" min="5" max="508" value="37" step="1" oninput="updateSeaLevelValue(this.value)">
+      </div>-->
+        <div class="slider-container">
+          <label for="riversSlider" class="slider-label">Rivers</label>
+          <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="updateRiversValue(this.value)">
           <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
       </div>
       <!--
-      <div class="slider-container">
-        <label for="seaLevelSlider" class="slider-label">Sea Level</label>
-        <input type="range" id="seaLevelSlider" class="slider" min="5" max="508" value="37" step="1" oninput="updateSeaLevelValue(this.value)">
-    </div>-->
-      <div class="slider-container">
-        <label for="riversSlider" class="slider-label">Rivers</label>
-        <input type="range" id="riversSlider" class="slider" min="3" max="30" value="27" step="1" oninput="updateRiversValue(this.value)">
-        <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
-    </div>
-    <!--
-    <p class="outset-text">Climate Bands:</p>
-      <div class="slider-container">
-          <label for="tropicsSlider" class="slider-label">Tropics</label>
-          <input type="range" id="tropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTropicsValue(this.value)">
+      <p class="outset-text">Climate Bands:</p>
+        <div class="slider-container">
+            <label for="tropicsSlider" class="slider-label">Tropics</label>
+            <input type="range" id="tropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTropicsValue(this.value)">
+        </div>
+        <div class="slider-container">
+          <label for="subtropicsSlider" class="slider-label">Subtropics</label>
+          <input type="range" id="subtropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateSubtropicsValue(this.value)">
       </div>
       <div class="slider-container">
-        <label for="subtropicsSlider" class="slider-label">Subtropics</label>
-        <input type="range" id="subtropicsSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateSubtropicsValue(this.value)">
-    </div>
-    <div class="slider-container">
-        <label for="temperateSlider" class="slider-label">Temperate</label>
-        <input type="range" id="temperateSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTemperateValue(this.value)">
-    </div>
-    <div class="slider-container">
-        <label for="coldSlider" class="slider-label">Cold</label>
-        <input type="range" id="coldSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateColdValue(this.value)">
-    </div>
-  
-    <p class="outset-text">Elevation Limits:</p>
-    <div class="slider-container">
-        <label for="hillsSlider" class="slider-label">Hills</label>
-        <input type="range" id="hillsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateHillsValue(this.value)">
-
-    </div>
+          <label for="temperateSlider" class="slider-label">Temperate</label>
+          <input type="range" id="temperateSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateTemperateValue(this.value)">
+      </div>
       <div class="slider-container">
-        <label for="mountainsSlider" class="slider-label">Mountains</label>
-        <input type="range" id="mountainsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateMountainsValue(this.value)">
-
+          <label for="coldSlider" class="slider-label">Cold</label>
+          <input type="range" id="coldSlider" class="slider" min="0" max="4096" value="100" step="1" oninput="updateColdValue(this.value)">
+      </div>
+    
+      <p class="outset-text">Elevation Limits:</p>
+      <div class="slider-container">
+          <label for="hillsSlider" class="slider-label">Hills</label>
+          <input type="range" id="hillsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateHillsValue(this.value)">
+  
+      </div>
+        <div class="slider-container">
+          <label for="mountainsSlider" class="slider-label">Mountains</label>
+          <input type="range" id="mountainsSlider" class="slider" min="37" max="512" value="205" step="1" oninput="updateMountainsValue(this.value)">
+  
+      </div>
+  
+      <div class="slider-container">
+        <label for="provinceSlider" class="slider-label">Province</label>
+        <input type="range" id="provinceSlider" class="slider" min="300" max="3000" value="900" step="100" oninput="updateProvinceSliderValue(this.value)">
+  
     </div>
+  -->
+          <div class="sbtn menu-btn" id="tracking-toggle">
+            Turn On Undo (Can Cause Crashes)
+          </div>
+          <div class="file-upload-wrapper">
+            <button class="file-upload-button">Import Heightmap</button>
+            <input type="file" class="sbtn" id="imageUpload" accept="image/*" />
+          </div>
+          <canvas id="heightmap-upload-canvas" width="512" height="512" style="display:none;"></canvas>
+  
+          
+          <div class="sbtn menu-btn" id="create-provinces">Generate Provinces</div>
+          
+          <!--<div class="sbtn" id="rainErosion">Rain Erosion</div>-->
+        </div>
 
-    <div class="slider-container">
-      <label for="provinceSlider" class="slider-label">Province</label>
-      <input type="range" id="provinceSlider" class="slider" min="300" max="3000" value="900" step="100" oninput="updateProvinceSliderValue(this.value)">
-
-  </div>
--->
-
-        
-        <div class="sbtn" id="create-provinces">Generate Provinces</div>
-        
-        <!--<div class="sbtn" id="rainErosion">Rain Erosion</div>-->
       </div>
       <div id="downloads-sidebar">
         <div class="sbtn" id="back-to-main-menu-downloads">Back to Main Menu</div>
@@ -547,6 +578,10 @@
     <script src="js/loregen/calculateDaylight.js"></script>
     <script src="js/climate/isClimateTransitionZone.js"></script>
     <script src="js/climate/calculateFloodRisk.js"></script>
+    <script src="experimental/heightmapUpload.js"></script>
+    <script src="js/textFileWriters/writeDescriptor.js"></script>
+    <script src="js/textFileWriters/writeHybridCultures.js"></script>
+    <script src="js/ethnicitygen/vanilla.js"></script>
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>
     <script src="js/testing/createdDummyProvinces.js"></script>

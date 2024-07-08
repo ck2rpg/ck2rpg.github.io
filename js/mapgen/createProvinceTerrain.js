@@ -11,7 +11,9 @@ function createProvinceTerrainNew() {
         if (p.cells > 0) {
             let y = p.y;
             let x = p.bigCell.x
-            if (p.land) {
+            if (p.bigCell.terrainMarked) {
+                p.terrain = p.bigCell.terrain;
+            } else if (p.land) {
                 if (isTropical(y, x)) {
                     assignTropicalTerrain(p)
                 } else if (isSubTropical(y, x)) {
@@ -55,18 +57,22 @@ function createCellTerrains() { // understand that you are passing two different
           let cell = world.map[i][j]
           let x = j
           let y = i * settings.pixelSize;
-          if (cell.elevation > limits.seaLevel.upper) {
-            if (isTropical(y, x)) {
-                assignTropicalTerrain(cell)
-            } else if (isSubTropical(y, x)) {
-                assignSubTropicalTerrain(cell)
-            } else if (isTemperate(y, x)) {
-                assignTemperateTerrain(cell);
-            } else if (isCold(y, x)) {
-                assignColdTerrain(cell)
-            }
+          if (cell.terrainMarked) {
+
           } else {
-            cell.terrain= "sea"
+            if (cell.elevation > limits.seaLevel.upper) {
+                if (isTropical(y, x)) {
+                    assignTropicalTerrain(cell)
+                } else if (isSubTropical(y, x)) {
+                    assignSubTropicalTerrain(cell)
+                } else if (isTemperate(y, x)) {
+                    assignTemperateTerrain(cell);
+                } else if (isCold(y, x)) {
+                    assignColdTerrain(cell)
+                }
+              } else {
+                cell.terrain= "sea"
+              }
           }
         }
       }

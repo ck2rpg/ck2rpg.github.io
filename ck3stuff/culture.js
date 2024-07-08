@@ -302,7 +302,14 @@ function outputCulture(t, c) {
     t += `\tclothing_gfx = { ${c.clothing_gfx} }\n`
     t += `\tunit_gfx = { ${c.unit_gfx} }\n`
     t += `\tethnicities = {\n`
-    t += `\t\t10 = ${c.id}_eth\n`
+    if (settings.ethnicities === "vanilla") {
+        let e = pickFrom(vanillaEthnicityList)
+        t += `10 = ${e.n}\n`
+    } else if (settings.ethnicities === "random") {
+        t += `\t\t10 = ${c.id}_eth\n`
+    }
+
+    
     t += `\t}\n`
     t += `}\n`
     return t;
