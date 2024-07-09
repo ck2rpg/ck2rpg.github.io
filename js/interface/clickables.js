@@ -219,33 +219,6 @@ GID("paint-decrease-elevation").onclick = function() {
   paintbrush = "dropLand"
 }
 
-GID("previewmap").onclick = function() {
-  world.drawingType = "colorful";
-  drawWorld()
-}
-
-GID("paper-map").onclick = function() {
-  world.drawingType = "paper";
-  drawWorld();
-}
-
-GID("papyrus-map").onclick = function() {
-  world.drawingType = "papyrus";
-  drawWorld()
-}
-
-GID("heightmap").onclick = function() {
-  drawHeightmapFromScratch()
-  //world.drawingType = "heightmap"
-  //drawWorld();
-}
-
-GID("rivermap").onclick = function() {
-  world.drawingType = "rivermap"
-  rerunRivers()
-  drawWorld();
-}
-
 GID("download-all-checked-images").onclick = function() {
   setMasks();
   downloadAllImages();
@@ -322,65 +295,6 @@ GID("papyrus-map-icon").onclick = function() {
   drawWorld()
 }
 
-GID("add-downloads").onclick = function() {
-  //DON'T USE THIS ONE - old links - need to clean up and delete
-  const functionsToExecute = [];
-  
-  if (document.getElementById('provinceDefinitionsCheckbox').checked) functionsToExecute.push(() => writeProvinceDefinitions());
-  if (document.getElementById('landedTitlesCheckbox').checked) functionsToExecute.push(() => writeLandedTitles());
-  if (document.getElementById('locatorsBuildingsCheckbox').checked) functionsToExecute.push(() => writeLocators("buildings"));
-  if (document.getElementById('locatorsSpecialBuildingCheckbox').checked) functionsToExecute.push(() => writeLocators("special_building"));
-  if (document.getElementById('locatorsCombatCheckbox').checked) functionsToExecute.push(() => writeLocators("combat"));
-  if (document.getElementById('locatorsSiegeCheckbox').checked) functionsToExecute.push(() => writeLocators("siege"));
-  if (document.getElementById('locatorsUnitStackCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack"));
-  if (document.getElementById('locatorsUnitStackPlayerOwnedCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_player_owned"));
-  if (document.getElementById('locatorsUnitStackOtherOwnerCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_other_owner"));
-  if (document.getElementById('defaultMapCheckbox').checked) functionsToExecute.push(() => writeDefaultMap());
-  if (document.getElementById('culturesCheckbox').checked) functionsToExecute.push(() => outputCultures());
-  if (document.getElementById('simpleHistoryCheckbox').checked) functionsToExecute.push(() => makeSimpleHistory());
-  if (document.getElementById('charactersCheckbox').checked) functionsToExecute.push(() => outputCharacters());
-  if (document.getElementById('historyCheckbox').checked) functionsToExecute.push(() => outputHistory());
-  if (document.getElementById('titleLocalizationCheckbox').checked) functionsToExecute.push(() => writeTitleLocalization());
-  if (document.getElementById('cultureLocalizationCheckbox').checked) functionsToExecute.push(() => writeCultureLocalization());
-  if (document.getElementById('nameListsCheckbox').checked) functionsToExecute.push(() => outputNameLists());
-  if (document.getElementById('ethnicitiesCheckbox').checked) functionsToExecute.push(() => outputEthnicities());
-  if (document.getElementById('languagesCheckbox').checked) functionsToExecute.push(() => outputLanguages());
-  if (document.getElementById('heritagesCheckbox').checked) functionsToExecute.push(() => outputHeritages());
-  if (document.getElementById('provinceTerrainCheckbox').checked) functionsToExecute.push(() => writeProvinceTerrain());
-  //if (document.getElementById('nameListLocCheckbox').checked) functionsToExecute.push(() => outputNameListLoc());
-  if (document.getElementById('heritageLocalizationCheckbox').checked) functionsToExecute.push(() => outputHeritageLocalization());
-  if (document.getElementById('languagesLocalizationCheckbox').checked) functionsToExecute.push(() => outputLanguagesLocalization());
-  if (document.getElementById('dynastyLocalizationCheckbox').checked) functionsToExecute.push(() => writeDynastyLocalization());
-  if (document.getElementById('bookmarkCheckbox').checked) functionsToExecute.push(() => writeBookmark());
-  if (document.getElementById('bookmarkGroupCheckbox').checked) functionsToExecute.push(() => writeBookmarkGroup());
-  if (document.getElementById('religionOutputCheckbox').checked) functionsToExecute.push(() => religionOutputter());
-  if (document.getElementById('winterSeverityCreationCheckbox').checked) functionsToExecute.push(() => createWinterSeverity());
-  if (document.getElementById('winterSeverityCheckbox').checked) functionsToExecute.push(() => writeWinterSeverity());
-  
-  const delayBetweenDownloads = 200;
-  downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
-}
-
-
-
-GID("back-to-main-menu-editor").onclick = function() {
-  GID("sidebar").style.display = "none"
-  GID("main-sidebar").style.display = "block"
-}
-
-GID("back-to-main-menu-downloads").onclick = function() {
-  GID("downloads-sidebar").style.display = "none"
-  GID("main-sidebar").style.display = "block"
-}
-
-GID("download-palettes").onclick = function() {
-  downloadAllPalettes();
-}
-
-GID("download-clothing-palettes").onclick = function() {
-  downloadAllTextures()
-}
-
 GID("create-provinces").onclick = function() {
   world.lastMaps = null
   GID("main-generator-div").style.display = "none";
@@ -449,10 +363,6 @@ GID("all-to-sea-level").onclick = function() {
   }
   cleanupAll()
   drawWorld()
-}
-
-GID("provinceMap").onclick = function() {
-  drawProvinceMap()
 }
 
 GID("province-drawn-proceed").onclick = function() {
