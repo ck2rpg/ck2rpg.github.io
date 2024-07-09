@@ -12,6 +12,11 @@ settings.equator = (settings.height - settings.height / 10)
 settings.riversDistance = 1000
 settings.riverIntoOcean = 1
 settings.ethnicities = "vanilla"
+let waterProvinceCounter = 0;
+let landProvinceCounter = 0;
+settings.landProvinceLimit = 8000 // 8000
+settings.waterProvinceLimit = 10000 //10000
+settings.fillInLimit = 20
 
 settings.maxLandProvinces = 8000; //not implemented
 settings.maxWaterProvinces = 2000; //not implemented
@@ -113,6 +118,7 @@ let paintbrushHardness = 50;
 let paintbrushLast = 0
 let paintbrushShape = "circle"
 let paintbrushTerrain = "plains"
+let paintbrushFeather = false;
 let saveState = false;
 GID("tracking-toggle").onclick = function() {
   if (saveState === false) {

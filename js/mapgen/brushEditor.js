@@ -66,7 +66,13 @@ function applySquareBrush(pos, brushSize, brushType, brushHardness) {
       if (nextCell) {
         if (brushType === "terrain") {
           if (nextCell.elevation > limits.seaLevel.upper) {
-            nextCell.terrain = paintbrushTerrain
+            let terr;
+            if (paintbrushTerrain === "desert mountains") {
+              terr = "desert_mountains"
+            } else {
+              terr = paintbrushTerrain
+            }
+            nextCell.terrain = terr
             nextCell.terrainMarked = true;
           }
         }
@@ -111,27 +117,46 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
   const endY = Math.ceil(cell.y + radius);
   const startX = Math.floor(cell.x - radius);
   const endX = Math.ceil(cell.x + radius);
+  let currHardness = parseInt(brushHardness)
 
   for (let i = startY; i <= endY; i++) {
     for (let j = startX; j <= endX; j++) {
+      currHardness = brushHardness
       const dx = j - cell.x;
       const dy = i - cell.y;
-      if (dx * dx + dy * dy <= radiusSquared) {
+      let dist = dx * dx + dy * dy
+      let mod = parseInt(brushSize) - dist;
+      if (mod < 0) {
+        mod = 0;
+      }
+      if (paintbrushFeather) {
+        currHardness = currHardness + mod;
+        if (currHardness < 0) {
+          currHardness = 0;
+        }
+      }
+      if (dist <= radiusSquared) {
         let nextCell = xy(j, i);
         if (nextCell) {
           if (brushType === "terrain") {
             if (nextCell.elevation > limits.seaLevel.upper) {
-              nextCell.terrain = paintbrushTerrain
+              let terr;
+              if (paintbrushTerrain === "desert mountains") {
+                terr = "desert_mountains"
+              } else {
+                terr = paintbrushTerrain
+              }
+              nextCell.terrain = terr
               nextCell.terrainMarked = true;
             }
           }
           if (brushType === "dropLand") {
-            nextCell.elevation -= brushHardness;
+            nextCell.elevation -= currHardness;
             if (nextCell.elevation < limits.seaLevel.lower) {
               nextCell.elevation = limits.seaLevel.lower + 1;
             }
           } else if (brushType === "raiseLand") {
-            nextCell.elevation += parseInt(brushHardness);
+            nextCell.elevation += parseInt(currHardness);
           }
           if (brushType === "jitterRaise") {
             let n = paintbrushLast + getRandomInt(-5, 5)

@@ -806,8 +806,8 @@ button[type="submit"]:hover {
 .color-picker {
   display: none;
   position: absolute;
-  left: 45vw;
-  top: 45vh;
+  left: 10vw;
+  top: 5vh;
   width: 10vw;
   padding: 5px;
   background-color: #222;

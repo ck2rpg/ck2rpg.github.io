@@ -289,8 +289,8 @@ async function createProvinces() {
     while (addingProvinces === true) {
         addProvinceCounter += 1;
         addProvinces();
-
-        if ((world.coveredLand >= world.landCells.length) || addProvinceCounter === 10 || world.provinces.length > 8000) {
+        //8000
+        if ((world.coveredLand >= world.landCells.length) || addProvinceCounter === 10 || world.provinces.length > settings.landProvinceLimit) {
             addingProvinces = false;
         }
     }
@@ -304,13 +304,12 @@ async function createProvinces() {
     
 
     await updateDOM("Deleting Too Small Provinces", 2);
-
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < settings.fillInLimit; i++) {
         fillIn();
-        await updateDOM(`Filling In (${i + 1}/20)`, 3);
+        await updateDOM(`Filling In (${i + 1}/${settings.fillInLimit})`, 3);
     }
 
-    addProvinces();
+    //addProvinces();
     await updateDOM("Adding Provinces Again", 4);
 
     bruteFillIn();
@@ -577,8 +576,8 @@ function bruteFillIn() {
 
 function addProvinces() {
     let provinceCount = 0;
-    while (provinceCount < 10000) {
-        if ((world.coveredLand >= world.landCells.length) || world.provinces.length > 8000) {
+    while (provinceCount < settings.landProvinceLimit) {
+        if ((world.coveredLand >= world.landCells.length) || world.provinces.length > settings.landProvinceLimit) {
             break;
         }
         provinceCount += 1;
@@ -607,11 +606,12 @@ function assignNonDefIds() {
 
 function addWaterProvinces() {
     let provinceCount = 0;
-    while (provinceCount < 10000) {
-        if (world.coveredWater > world.waterCells) {
+    while (provinceCount < settings.waterProvinceLimit && waterProvinceCounter < settings.waterProvinceLimit) {
+        if (world.coveredWater > world.waterCells || waterProvinceCounter > settings.waterProvinceLimit) {
             break;
         }
         provinceCount += 1;
+
         seedAndGrowWaterCell()
     }
     let num = (world.coveredWater / world.waterCells);
@@ -626,6 +626,7 @@ function seedAndGrowWaterCell() {
     if (cell.colorR || cell.bigCell.elevation > limits.seaLevel.upper) {
         //do nothing if province already applied or land
     } else {
+        waterProvinceCounter += 1;
         let generating = true;
         let count = 0;
         cell.children = [];

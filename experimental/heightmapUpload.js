@@ -10,6 +10,13 @@ document.getElementById('imageUpload').addEventListener('change', function(event
         let total =  yMult + xMult
         return pixels.data[total]
     }
+    for (let i = 0; i < world.height; i++) {
+        for (let j = 0; j < world.width; j++) {
+            let cell = world.map[i][j]
+            cell.elevation = 0;
+        }
+    }
+    cleanupAll()
     
 
     reader.onload = function(event) {
@@ -40,7 +47,6 @@ document.getElementById('imageUpload').addEventListener('change', function(event
             const pixelData = imageData.data; // This is a Uint8ClampedArray
 
             // Log the pixel data array to the console
-            console.log(pixelData);
             for (let i = 0; i < world.height; i++) {
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
@@ -48,7 +54,6 @@ document.getElementById('imageUpload').addEventListener('change', function(event
                 }
             }
             drawWorld()
-            // You can process the pixelData array as needed
         };
         img.src = event.target.result;
 
