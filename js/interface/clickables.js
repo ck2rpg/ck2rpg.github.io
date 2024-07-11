@@ -366,11 +366,27 @@ GID("all-to-sea-level").onclick = function() {
 }
 
 GID("province-drawn-proceed").onclick = function() {
+  GID("province-drawn-proceed").style.display = "none"
+  GID("province-menu").style.display = "block"
+  startProvinceEditor()
+  /*
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
   ctx.fillStyle = "rgb(0, 0, 0)"
   ctx.fill();
   GID("canvas").style.display = "none"
+  GID("province-drawn-proceed").style.display = "none"
+  GID("text-download-settings").style.display = "block"
+  */
+}
+
+GID("province-edits-done-proceed").onclick = function() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(0, 0, 0)"
+  ctx.fill();
+  GID("canvas").style.display = "none"
+  GID("province-menu").style.display = "none"
   GID("province-drawn-proceed").style.display = "none"
   GID("text-download-settings").style.display = "block"
 }
@@ -458,7 +474,7 @@ const mapContainer = document.getElementById('canvas');
 
 bbb.style.setProperty('--brush-size', `${paintbrushSize}px`);
 
-mapContainer.addEventListener('mousemove', (event) => {
+function setRedBrush() {
   if (paintbrushShape && paintbrushShape === "circle") {
     bbb.style.borderRadius = '50%'
     const rect = mapContainer.getBoundingClientRect();
@@ -490,21 +506,66 @@ mapContainer.addEventListener('mousemove', (event) => {
     bbb.style.left = `${x}px`;
     bbb.style.top = `${y}px`;
   }
+}
 
-});
+function showRedBrush() {
+  bbb.style.display = 'block';
+  console.log('Brush shown');
+}
+
+function hideRedBrush() {
+  bbb.style.display = 'none';
+}
+
+mapContainer.addEventListener('mousemove', setRedBrush)
 
 // Show the brush when entering the map container
-mapContainer.addEventListener('mouseenter', () => {
-    bbb.style.display = 'block';
-    console.log('Brush shown');
-});
+mapContainer.addEventListener('mouseenter', showRedBrush)
 
 // Hide the brush when leaving the map container
-mapContainer.addEventListener('mouseleave', () => {
-    bbb.style.display = 'none';
-    console.log('Brush hidden');
-});
+mapContainer.addEventListener('mouseleave', hideRedBrush)
 
 // Initialize the brush display
 bbb.style.display = 'none';
 console.log('Brush initialized');
+
+
+//title color picker
+
+function hexToRgb(hex) {
+  // Remove the leading # if it exists
+  hex = hex.replace(/^#/, '');
+
+  // Parse the r, g, b values
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function setTitleColor() {
+  paintbrushTitle = GID("title-color").value;
+  // Remove the leading # if it exists
+  paintbrushTitle = paintbrushTitle.replace(/^#/, '');
+  paintbrushTitleR = parseInt(paintbrushTitle.substring(0, 2), 16);
+  paintbrushTitleG = parseInt(paintbrushTitle.substring(2, 4), 16);
+  paintbrushTitleB = parseInt(paintbrushTitle.substring(4, 6), 16);
+  paintbrushTitle = `rgb(${paintbrushTitleR}, ${paintbrushTitleG}, ${paintbrushTitleB})`
+}
+
+GID("title-color").addEventListener('change', setTitleColor);
+
+GID("provmap-icon").onclick = function() {
+  world.drawingType = "smallProv"
+  paintbrush = "provinceOverride"
+  setTitleColor()
+  drawWorld()
+}
+
+GID("watermap-icon").onclick = function() {
+  world.drawingType = "smallWater"
+  paintbrush = "waterOverride"
+  setTitleColor()
+  drawWorld()
+}

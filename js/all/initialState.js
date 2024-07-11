@@ -112,13 +112,18 @@ canvas.style.width = '100vw'
 canvas.style.height = '100vh';  // Example display size
 var ctx = canvas.getContext('2d')
 
-let paintbrush = "raiseLand"
+//let paintbrush = "raiseLand"
+let paintbrush = "provinceOverride"
 let paintbrushSize = 30;
 let paintbrushHardness = 50;
 let paintbrushLast = 0
 let paintbrushShape = "circle"
 let paintbrushTerrain = "plains"
 let paintbrushFeather = false;
+let paintbrushTitle = "0, 0, 0"
+let paintbrushTitleR = 0;
+let paintbrushTitleG = 0;
+let paintbrushTitleB = 0;
 let saveState = false;
 GID("tracking-toggle").onclick = function() {
   if (saveState === false) {

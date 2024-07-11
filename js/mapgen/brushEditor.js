@@ -99,6 +99,9 @@ function applySquareBrush(pos, brushSize, brushType, brushHardness) {
 }
 
 
+let overRideProvinces = []
+
+
 /**
  * Applies a brush effect on the map based on the mouse event.
  *
@@ -157,7 +160,24 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             }
           } else if (brushType === "raiseLand") {
             nextCell.elevation += parseInt(currHardness);
+          } else if (brushType === "provinceOverride") {
+            if (nextCell.elevation > limits.seaLevel.upper) {
+              nextCell.provinceOverride = paintbrushTitle
+              nextCell.provinceOverrideR = paintbrushTitleR
+              nextCell.provinceOverrideG = paintbrushTitleG
+              nextCell.provinceOverrideB = paintbrushTitleB
+            }
+
+          } else if (brushType === "waterOverride") {
+            if (nextCell.elevation <= limits.seaLevel.upper) {
+              nextCell.waterOverride = paintbrushTitle
+              nextCell.waterOverrideR = paintbrushTitleR
+              nextCell.waterOverrideG = paintbrushTitleG
+              nextCell.waterOverrideB = paintbrushTitleB
+            }
           }
+
+          //jitterRaise needs to be removed??
           if (brushType === "jitterRaise") {
             let n = paintbrushLast + getRandomInt(-5, 5)
             if (n > 510) {

@@ -638,6 +638,8 @@ function drawWorld() {
   createCellTerrains()
   if (world.drawingType === "terrainMap") {
     drawTerrainSmallMap();
+  } else if (world.drawingType === "smallProv" || world.drawingType === "smallWater") {
+    drawTitleSmallMap("province")
   } else {
     for (let y = 0; y < world.height; y++) {
       for (let x = 0; x < world.width; x++) {
@@ -707,6 +709,50 @@ function drawProvinceMap() {
   //world.smallMap = null
 }
 
+function drawTitleMap(t) {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(75, 75, 75)"
+  ctx.fill();
+  let pixels = wholeMapImage()
+  for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
+          let c = world.smallMap[i][j]
+          if (c && c.colorR) {
+              let prov = provinceKeys[`${c.colorR}, ${c.colorG}, ${c.colorB}`]
+              let title;
+              if (prov) {
+                title = prov[`${t}`]
+              }
+              if (title) {
+                //water
+                pixels.data[count] = title.colorR //r
+                count += 1;
+                pixels.data[count] = title.colorG //g 
+                count += 1;
+                pixels.data[count] = title.colorB //b
+                count += 2;
+              } else {
+                //water
+                pixels.data[count] = 0 //r
+                count += 1;
+                pixels.data[count] = 0 //g 
+                count += 1;
+                pixels.data[count] = 255 //b
+                count += 2;
+              }
+
+          } else {
+              count += 4;
+          }
+      }
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  pixels = null
+}
+
 function drawProvinceMapWithoutOceans() {
   let count = 0
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -742,6 +788,39 @@ function drawProvinceMapWithoutOceans() {
   ctx.putImageData(pixels, 0, 0)
   pixels = null
   world.smallMap = null
+}
+
+function drawTitleSmallMap(titleType) { // This function is too cute in trying to do too much. It handles both override and drawing from kingdom etc
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(0, 0, 255)"
+  ctx.fill();
+  let convTitleType = titleType + "Override"
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let color = "rgb(255, 255, 255)"
+      let cell = world.map[i][j]
+      if (cell.elevation <= limits.seaLevel.upper) {
+        if (cell.waterOverride) {
+          color = `rgb(${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB})`
+          drawSmallPixel(ctx, j, i, color)
+        }
+        //do nothing because you drew water above
+      } else {
+        if (cell[`${convTitleType}`]) { //does it have an overide?
+          color = cell[`${convTitleType}`]
+          drawSmallPixel(ctx, j, i, color)
+        } else if (cell[`${titleType}`]) { //if not, is the title set for cell (e.g. cell.duchy)?
+          let title = cell[`${titleType}`]
+          color = `rgb(${title.colorR}, ${title.colorG}, ${title.colorB})`
+          drawSmallPixel(ctx, j, i, color)
+        } else {
+          color = `rgb(255, 255, 255)`
+          drawSmallPixel(ctx, j, i, color)
+        }
+      } 
+    }
+  }
 }
 
 function drawTerrainSmallMap() {

@@ -780,6 +780,18 @@ button[type="submit"]:hover {
   border: 1px solid #4a4a4a;
 }
 
+#province-menu {
+  display: none;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 20000;
+  background: #4a4a4a;
+  color: #dddddd;
+  padding: 10px;
+  border: 1px solid white;
+}
+
 .slider-value {
   width: 60px;
   margin-left: 10px;

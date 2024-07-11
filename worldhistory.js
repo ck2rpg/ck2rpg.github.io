@@ -220,7 +220,7 @@ function createMyKingdoms(world) {
             potentialKingdom.duchies.push(d1);
             potentialKingdom.ownProvinces = []
             potentialKingdom.adjacentKingdoms = []
-            addProvincesFromTitle(d1, potentialKingdom)
+            addProvincesFromTitle(d1, potentialKingdom, "kingdom")
             
             for (let j = 0; j < d1.adjacentDuchies.length; j++) {
                 let d2Index = d1.adjacentDuchies[j]
@@ -230,7 +230,7 @@ function createMyKingdoms(world) {
                 } else if (d1.kingdom.duchies.length < d1.kingdom.maxDuchies) {
                     d2.kingdom = d1.kingdom
                     potentialKingdom.duchies.push(d2)
-                    addProvincesFromTitle(d2, potentialKingdom)
+                    addProvincesFromTitle(d2, potentialKingdom, "kingdom")
                 }
             }
             kingdoms.push(potentialKingdom);
@@ -244,7 +244,7 @@ function createMyKingdoms(world) {
                 let adjDuchy = dArr[duchy.adjacentDuchies[rand]]
                 if (adjDuchy) {
                     adjDuchy.kingdom.duchies.push(duchy)
-                    addProvincesFromTitle(duchy, adjDuchy.kingdom)
+                    addProvincesFromTitle(duchy, adjDuchy.kingdom, "kingdom")
                     kingdoms[i].delete = true;
                     duchy.kingdom = adjDuchy.kingdom;
                     if (adjDuchy.kingdom.delete) {
@@ -266,9 +266,14 @@ function createMyKingdoms(world) {
     return arr;
 }
 
-function addProvincesFromTitle(t1, t2) {
+function addProvincesFromTitle(t1, t2, landedTitleType) {
     for (let i = 0; i < t1.ownProvinces.length; i++) {
-        t2.ownProvinces.push(t1.ownProvinces[i])
+        let provinceIndex = t1.ownProvinces[i]
+        t2.ownProvinces.push(provinceIndex)
+        if (landedTitleType) {
+            let province = world.provinces[provinceIndex]
+            province[`${landedTitleType}`] = t2;
+        }
     }
 }
 
@@ -317,7 +322,7 @@ function createEmpires(world) {
             potentialEmpire.ownProvinces = [];
             k1.empire = potentialEmpire;
             potentialEmpire.kingdoms.push(k1);
-            addProvincesFromTitle(k1, potentialEmpire)
+            addProvincesFromTitle(k1, potentialEmpire, "empire")
             for (let j = 0; j < k1.adjacentKingdoms.length; j++) {
                 let k2Index = k1.adjacentKingdoms[j]
                 let k2 = kArr[k2Index]
@@ -326,7 +331,7 @@ function createEmpires(world) {
                 } else if (k1.empire.kingdoms.length < k1.empire.maxKingdoms) {
                     k2.empire = k1.empire
                     potentialEmpire.kingdoms.push(k2)
-                    addProvincesFromTitle(k2, potentialEmpire)
+                    addProvincesFromTitle(k2, potentialEmpire, "empire")
                 }
             }
             empires.push(potentialEmpire);
@@ -340,7 +345,7 @@ function createEmpires(world) {
                 let adjKingdom = kArr[kingdom.adjacentKingdoms[rand]]
                 if (adjKingdom) {
                     adjKingdom.empire.kingdoms.push(kingdom)
-                    addProvincesFromTitle(kingdom, adjKingdom.empire)
+                    addProvincesFromTitle(kingdom, adjKingdom.empire, "empire")
                     empires[i].delete = true;
                     kingdom.empire = adjKingdom.empire;
                     if (adjKingdom.empire.delete) {

@@ -271,6 +271,197 @@ function getDominantTerrain(provinces) {
     });
 }
 
+function upscaleOverrides() {
+
+}
+
+function getCellSmallCells(cell) {
+    let arr = []
+    for (let i = 0; i < settings.pixelSize; i++) {
+        for (let j = 0; j < settings.pixelSize; j++) {
+            let y = cell.y * settings.pixelSize + i;
+            let x = cell.x * settings.pixelSize + j;
+            let smallCell = world.smallMap[y][x];
+            arr.push(smallCell);
+        }
+    }
+    return arr;
+}
+
+function createOverrideLandProvinces() {
+    for (let i = 0; i < world.height; i++) {
+        for (let j = 0; j < world.width; j++) {
+            let cell = world.map[i][j];
+            if (cell.provinceOverride) {
+                let color = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+                if (provinceKeys[color]) { //if province colors already exist on provinceKeys
+                    let prov = provinceKeys[color];
+                    let seed = prov.seed;
+                    let arr = getCellSmallCells(cell);
+                    for (let n = 0; n < arr.length; n++) {
+                        let next = arr[n];
+                        if (next === seed) {
+                            // Don't do anything if it is the seed cell
+                        } else {
+                            growCell(seed, next);
+                        }
+                    }
+                } else {
+                    // If province colors do not exist on province keys, create a new province
+                    let ckX = cell.x * settings.pixelSize;
+                    let ckY = cell.y * settings.pixelSize;
+                    let smallCell = world.smallMap[ckY][ckX];
+                    let selectedColor = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+                    smallCell.color = selectedColor;
+                    let selectedColorObject = getColorObjectFromString(selectedColor);
+                    smallCell.colorR = selectedColorObject.r;
+                    smallCell.colorG = selectedColorObject.g;
+                    smallCell.colorB = selectedColorObject.b;
+                    smallCell.elevation = smallCell.bigCell.elevation + getRandomInt(-3, 3);
+                    let prov = createProvince(ckX, ckY, "l", smallCell);
+                    console.log(`Created province color ${selectedColor}. world.provinces is ${world.provinces.length} now`)
+                    smallCell.province = prov;
+                    smallCell.children = [];
+                    smallCell.children.push(smallCell);
+                    smallCell.parent = smallCell;
+                    smallCell.seedCell = true;
+                    world.populatedCells.push(cell);
+                    world.seedCells.push(smallCell);
+                    provinceKeys[color] = prov; // Ensure province is added to provinceKeys
+
+                    let arr = getCellSmallCells(cell);
+                    for (let n = 0; n < arr.length; n++) {
+                        let next = arr[n];
+                        if (next === smallCell) {
+                            // Don't do anything if it is the seed cell
+                        } else {
+                            growCell(smallCell, next);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+function createOverrideWaterProvinces() {
+    //creates provinces based on user defined overrides prior to random province generation
+    for (let i = 0; i < world.height; i++) {
+        for (let j = 0; j < world.width; j++) {
+            let cell = world.map[i][j];
+            if (cell.provinceOverride) {
+                let color = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+                if (provinceKeys[color]) { //if province colors already exist on provinceKeys
+                    let prov = provinceKeys[color];
+                    let seed = prov.seed;
+                    let arr = getCellSmallCells(cell);
+                    for (let n = 0; n < arr.length; n++) {
+                        let next = arr[n];
+                        if (next === seed) {
+                            // Don't do anything if it is the seed cell
+                        } else {
+                            growWaterCell(seed, next);
+                        }
+                    }
+                } else {
+                    // If province colors do not exist on province keys, create a new province
+                    let ckX = cell.x * settings.pixelSize;
+                    let ckY = cell.y * settings.pixelSize;
+                    let smallCell = world.smallMap[ckY][ckX];
+                    let selectedColor = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+                    smallCell.color = selectedColor;
+                    let selectedColorObject = getColorObjectFromString(selectedColor);
+                    smallCell.colorR = selectedColorObject.r;
+                    smallCell.colorG = selectedColorObject.g;
+                    smallCell.colorB = selectedColorObject.b;
+                    smallCell.elevation = smallCell.bigCell.elevation + getRandomInt(-3, 3);
+                    let prov = createProvince(ckX, ckY, "w", smallCell);
+                    console.log(`Created province color ${selectedColor}. world.provinces is ${world.provinces.length} now`)
+                    smallCell.province = prov;
+                    smallCell.children = [];
+                    smallCell.children.push(smallCell);
+                    smallCell.parent = smallCell;
+                    smallCell.seedCell = true;
+                    world.populatedCells.push(cell);
+                    world.seedCells.push(smallCell);
+                    provinceKeys[color] = prov; // Ensure province is added to provinceKeys
+
+                    let arr = getCellSmallCells(cell);
+                    for (let n = 0; n < arr.length; n++) {
+                        let next = arr[n];
+                        if (next === smallCell) {
+                            // Don't do anything if it is the seed cell
+                        } else {
+                            growWaterCell(smallCell, next);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function createProvince(x, y, landWater, cell) {
+    let province = {};
+    province.seed = cell;
+    province.farthestNorth = cell;
+    province.farthestSouth = cell;
+    province.farthestWest = cell;
+    province.farthestEast = cell;
+    province.terrainCount = {}
+    province.terrainCount["desert"] = 0
+    province.terrainCount["drylands"] = 0
+    province.terrainCount["floodplains"] = 0
+    province.terrainCount["hills"] = 0
+    province.terrainCount["mountains"] = 0
+    province.terrainCount["plains"] = 0
+    province.terrainCount["taiga"] = 0
+    province.terrainCount["desert_mountains"] = 0
+    province.terrainCount["farmlands"] = 0
+    province.terrainCount["forest"] = 0
+    province.terrainCount["jungle"] = 0
+    province.terrainCount["oasis"] = 0
+    province.terrainCount["steppe"] = 0
+    province.terrainCount["wetlands"] = 0
+    province.terrainCount["sea"] = 0
+    province.terrainCount[`${cell.bigCell.terrain}`] += 1
+    if (cell.bigCell.adjacentToWater.length > 0) {
+        province.coastalCellCount = 1;
+    } else {
+        province.coastalCellCount = 0
+    }
+    province.adjacentToWater = []
+    province.rivers = []
+    province.mountains = []
+    province.population = 0
+    province.elevation = cell.elevation
+    if (landWater === "l") {
+        province.land = true;
+        province.titleName = `${rando()}`
+    } else {
+        province.land = false
+    }
+    provinceCount += 1;
+    province.geographicalRegions = []
+    province.color = cell.color
+    province.keyColor = `${cell.colorR}, ${cell.colorG}, ${cell.colorB}`
+    provinceKeys[`${province.keyColor}`] = province
+    province.colorR = cell.colorR;
+    province.colorG = cell.colorG;
+    province.colorB = cell.colorB;
+    province.adjacencies = []
+    province.x = x; 
+    province.y = y;
+    province.hemisphere = setHemisphere(province)
+    province.distanceFromEquator = calculateDistanceFromEquator(province)
+    province.bigCell = cell.bigCell
+    province.cells = 1
+    world.provinces.push(province)
+    return province;
+}
+
+
 async function createProvinces() {
     // Initialize all messages
     initializeMessages();
@@ -280,6 +471,8 @@ async function createProvinces() {
     world.seedCells = [];
     createCellTerrains()
     createSmallMap();
+
+    createOverrideLandProvinces()
 
     await updateDOM("Adding Provinces", 0);
 
@@ -484,6 +677,14 @@ function createSmallMap() {
                 cell.bigCell = bigCell
                 world.smallMap[i][j] = cell
                 world.landCells.push(cell)
+                /*
+                if (bigCell.provinceOverride) {
+                    cell.colorR = bigCell.provinceOverrideR
+                    cell.colorG = bigCell.provinceOverrideG
+                    cell.colorB = bigCell.provinceOverrideB
+                }
+                */
+
             } else {
                 let cell = {};
                 cell.x = j;
@@ -491,6 +692,13 @@ function createSmallMap() {
                 cell.bigCell = bigCell
                 world.smallMap[i][j] = cell
                 world.waterCells += 1;
+                /*
+                if (bigCell.waterOverride) {
+                    cell.colorR = bigCell.waterOverrideR
+                    cell.colorG = bigCell.waterOverrideG
+                    cell.colorB = bigCell.waterOverrideB   
+                }
+                */
             }
         }
     }
@@ -505,7 +713,10 @@ function createRealCounties() {
             let c = {};
             c.provinces = []
             for (let n = 0; n < county.length; n++) {
-                c.provinces.push(world.provinces[county[n]])
+                let prov = world.provinces[county[n]]
+                c.provinces.push(prov)
+                prov.county = c;
+                prov.duchy = duchy
             }
             duchy.counties[j] = c
             countyArr.push(c)
@@ -646,7 +857,7 @@ function seedAndGrowWaterCell() {
     }
 }
 
-function growWaterCell(cell) {
+function growWaterCell(cell, target) {
     let randX = 0;
     let randY = 0;
     let rand = getRandomInt(0, 3);
@@ -669,6 +880,10 @@ function growWaterCell(cell) {
             randomNeighbor = world.smallMap[neighborY][neighborX]
         }
 
+        if (target) {
+            randomNeighbor = target
+        }
+
         if (randomNeighbor) {
             randomNeighbor.elevation = cell.bigCell.elevation;
         }
@@ -680,6 +895,7 @@ function growWaterCell(cell) {
                 randomNeighbor.colorR = cell.colorR
                 randomNeighbor.colorG = cell.colorG
                 randomNeighbor.colorB = cell.colorB
+                randomNeighbor.color = cell.color
                 randomNeighbor.parent = cell.parent;
                 randomNeighbor.province = cell.province
                 if (cell.children) {
@@ -717,74 +933,36 @@ function seedAndGrowCell() {
     }
 }
 
+let provinceKeys = {}
+
+function getUniqueColor() {
+    let randColor = uniqueColorSet[uniqueColorCount]
+    let randCheck = getColorObjectFromString(randColor)
+    while (provinceKeys[`${randCheck.r}, ${randCheck.g}, ${randCheck.b}`]) {
+        uniqueColorCount += 1;
+        randColor = uniqueColorSet[uniqueColorCount]
+        randCheck = getColorObjectFromString(randColor)
+    }
+    
+    return randColor;
+}
+
 function seedCell(x, y, landWater) {
     let cell = world.smallMap[y][x]
     if (cell.colorR) {
 
     } else {
-        let randColor = uniqueColorSet[uniqueColorCount]
-        uniqueColorCount += 1;
+        let randColor = getUniqueColor()
         cell.color = randColor;
         let colorObject = getColorObjectFromString(randColor);
         cell.colorR = colorObject.r;
         cell.colorG = colorObject.g;
         cell.colorB = colorObject.b;
         cell.elevation = cell.bigCell.elevation + getRandomInt(-3, 3)
-        let province = {};
-        province.farthestNorth = cell;
-        province.farthestSouth = cell;
-        province.farthestWest = cell;
-        province.farthestEast = cell;
-        province.terrainCount = {}
-        province.terrainCount["desert"] = 0
-        province.terrainCount["drylands"] = 0
-        province.terrainCount["floodplains"] = 0
-        province.terrainCount["hills"] = 0
-        province.terrainCount["mountains"] = 0
-        province.terrainCount["plains"] = 0
-        province.terrainCount["taiga"] = 0
-        province.terrainCount["desert_mountains"] = 0
-        province.terrainCount["farmlands"] = 0
-        province.terrainCount["forest"] = 0
-        province.terrainCount["jungle"] = 0
-        province.terrainCount["oasis"] = 0
-        province.terrainCount["steppe"] = 0
-        province.terrainCount["wetlands"] = 0
-        province.terrainCount["sea"] = 0
-        province.terrainCount[`${cell.bigCell.terrain}`] += 1
-        if (cell.bigCell.adjacentToWater.length > 0) {
-            province.coastalCellCount = 1;
-        } else {
-            province.coastalCellCount = 0
-        }
-        province.adjacentToWater = []
-        province.rivers = []
-        province.mountains = []
-        province.population = 0
-        province.elevation = cell.elevation
-        if (landWater === "l") {
-            province.land = true;
-            province.titleName = `${rando()}`
-        } else {
-            province.land = false
-        }
-        provinceCount += 1;
-        province.geographicalRegions = []
-        province.color = randColor
-        province.colorR = colorObject.r;
-        province.colorG = colorObject.g;
-        province.colorB = colorObject.b;
-        province.adjacencies = []
-        province.x = x; 
-        province.y = y;
-        province.hemisphere = setHemisphere(province)
-        province.distanceFromEquator = calculateDistanceFromEquator(province)
-        province.bigCell = cell.bigCell
+        let province = createProvince(x, y, landWater, cell);
+        world.populatedCells.push(cell)
         cell.province = province
         cell.seedCell = true;
-        province.cells = 1
-        world.provinces.push(province)
-        world.populatedCells.push(cell)
     }
 }
 
@@ -868,7 +1046,7 @@ function flattenAdjacencyArrays() {
     }
 }
 
-function growCell(cell) {    
+function growCell(cell, target) {    //target is needed to allow you to set a cell in brushEditor.js
     //I have to stuff a bunch of unrelated province explainer logic into growcell to avoid another pass since province definition is one of the only times we iterate over small cells for performance reasons.
     let randX = 0;
     let randY = 0;
@@ -890,6 +1068,10 @@ function growCell(cell) {
         let randomNeighbor
         if (world.smallMap[neighborY]) {
             randomNeighbor = world.smallMap[neighborY][neighborX]
+        }
+
+        if (target) {
+            randomNeighbor = target
         }
         
         if (randomNeighbor && randomNeighbor.colorR) {
@@ -922,9 +1104,10 @@ function growCell(cell) {
                 }
 
                 //adding randomNeighbor to province
-                randomNeighbor.colorR = cell.colorR
-                randomNeighbor.colorG = cell.colorG
-                randomNeighbor.colorB = cell.colorB
+                randomNeighbor.colorR = cell.province.colorR
+                randomNeighbor.colorG = cell.province.colorG
+                randomNeighbor.colorB = cell.province.colorB
+                randomNeighbor.color = cell.province.color;
                 randomNeighbor.parent = cell.parent;
                 randomNeighbor.province = cell.province
                 randomNeighbor.elevation = randomNeighbor.bigCell.elevation + getRandomInt(-3, 3)
@@ -933,21 +1116,21 @@ function growCell(cell) {
                 } else {
                     cell.parent.children.push(randomNeighbor)
                 }
-                if (cell.bigCell.adjacentToWater.length > 0) {
+                if (randomNeighbor.bigCell.adjacentToWater.length > 0) {
                     cell.province.coastalCellCount += 1;
                 }
-                cell.province.terrainCount[`${cell.bigCell.terrain}`] += 1
-                if (cell.y >= cell.province.farthestSouth.y) {
-                    cell.province.farthestSouth = cell;
+                cell.province.terrainCount[`${randomNeighbor.bigCell.terrain}`] += 1
+                if (randomNeighbor.y >= cell.province.farthestSouth.y) {
+                    cell.province.farthestSouth = randomNeighbor;
                 } 
-                if (cell.y <= cell.province.farthestNorth.y) {
-                    cell.province.farthestNorth = cell;
+                if (randomNeighbor.y <= cell.province.farthestNorth.y) {
+                    cell.province.farthestNorth = randomNeighbor;
                 }
-                if (cell.x >= cell.province.farthestEast.x) {
-                    cell.province.farthestEast = cell
+                if (randomNeighbor.x >= cell.province.farthestEast.x) {
+                    cell.province.farthestEast = randomNeighbor
                 }
-                if (cell.x <= cell.province.farthestWest.x) {
-                    cell.province.farthestWest = cell;
+                if (randomNeighbor.x <= cell.province.farthestWest.x) {
+                    cell.province.farthestWest = randomNeighbor;
                 }
                 world.coveredLand += 1;
             } else if (randomNeighbor) { //allows spread over water
@@ -982,9 +1165,10 @@ function growCell(cell) {
     
                     //adding randomNeighbor to province
                     cell.province.cells += 1;
-                    randomNeighbor.colorR = cell.colorR
-                    randomNeighbor.colorG = cell.colorG
-                    randomNeighbor.colorB = cell.colorB
+                    randomNeighbor.colorR = cell.province.colorR
+                    randomNeighbor.colorG = cell.province.colorG
+                    randomNeighbor.colorB = cell.province.colorB
+                    randomNeighbor.color = cell.province.color;
                     randomNeighbor.parent = cell.parent;
                     randomNeighbor.elevation = limits.seaLevel.upper + getRandomInt(15, 20) // change to higher to see if it fixes sinking provinces
                     //randomNeighbor.elevation = cell.elevation;
@@ -996,21 +1180,21 @@ function growCell(cell) {
                         cell.parent.children.push(randomNeighbor)
                     }
                     world.coveredLand += 1;
-                    cell.province.terrainCount[`${cell.bigCell.terrain}`] += 1
-                    if (cell.bigCell.adjacentToWater.length > 0) {
+                    if (randomNeighbor.bigCell.adjacentToWater.length > 0) {
                         cell.province.coastalCellCount += 1;
                     }
-                    if (cell.y >= cell.province.farthestSouth.y) {
-                        cell.province.farthestSouth = cell;
+                    cell.province.terrainCount[`${randomNeighbor.bigCell.terrain}`] += 1
+                    if (randomNeighbor.y >= cell.province.farthestSouth.y) {
+                        cell.province.farthestSouth = randomNeighbor;
                     } 
-                    if (cell.y <= cell.province.farthestNorth.y) {
-                        cell.province.farthestNorth = cell;
+                    if (randomNeighbor.y <= cell.province.farthestNorth.y) {
+                        cell.province.farthestNorth = randomNeighbor;
                     }
-                    if (cell.x >= cell.province.farthestEast.x) {
-                        cell.province.farthestEast = cell
+                    if (randomNeighbor.x >= cell.province.farthestEast.x) {
+                        cell.province.farthestEast = randomNeighbor
                     }
-                    if (cell.x <= cell.province.farthestWest.x) {
-                        cell.province.farthestWest = cell;
+                    if (randomNeighbor.x <= cell.province.farthestWest.x) {
+                        cell.province.farthestWest = randomNeighbor;
                     }
                 }
             }
