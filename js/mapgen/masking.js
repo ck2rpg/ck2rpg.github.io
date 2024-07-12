@@ -24,7 +24,7 @@ function assignMasks(cell) { //need to convert from percentages to actual - do w
             cell.mountain_02_c_snow_mask = getRandomInt(40, 70);
             remaining -= cell.mountain_02_c_snow_mask;
             cell.mountain_02_mask = remaining;
-        } else if (el >= limits.mountains.lower) {
+        } else {
             cell.mountain_02_mask = getRandomInt(1, 70);
             remaining -= cell.mountain_02_mask;
             cell.mountain_02_c_mask = remaining;  

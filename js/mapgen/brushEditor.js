@@ -175,6 +175,27 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
               nextCell.waterOverrideG = paintbrushTitleG
               nextCell.waterOverrideB = paintbrushTitleB
             }
+          } else if (brushType === "duchyOverride") {
+            if (nextCell.elevation > limits.seaLevel.upper) {
+              nextCell.duchyOverride = paintbrushTitle
+              nextCell.duchyOverrideR = paintbrushTitleR
+              nextCell.duchyOverrideG = paintbrushTitleG
+              nextCell.duchyOverrideB = paintbrushTitleB
+            }
+          } else if (brushType === "kingdomOverride") {
+            if (nextCell.elevation > limits.seaLevel.upper) {
+              nextCell.kingdomOverride = paintbrushTitle
+              nextCell.kingdomOverrideR = paintbrushTitleR
+              nextCell.kingdomOverrideG = paintbrushTitleG
+              nextCell.kingdomOverrideB = paintbrushTitleB
+            }
+          } else if (brushType === "empireOverride") {
+            if (nextCell.elevation > limits.seaLevel.upper) {
+              nextCell.kingdomOverride = paintbrushTitle
+              nextCell.kingdomOverrideR = paintbrushTitleR
+              nextCell.kingdomOverrideG = paintbrushTitleG
+              nextCell.kingdomOverrideB = paintbrushTitleB
+            }
           }
 
           //jitterRaise needs to be removed??

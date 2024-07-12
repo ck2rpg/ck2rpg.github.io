@@ -345,6 +345,16 @@ function createOverrideLandProvinces() {
 }
 
 
+function createOverrideTitles() {
+    for (let i = 0; i < world.provinces.length; i++) {
+        let p = world.provinces[i]
+        if (p.empireOverride) {
+            
+        }
+    }
+}
+
+
 function createOverrideWaterProvinces() {
     //creates provinces based on user defined overrides prior to random province generation
     for (let i = 0; i < world.height; i++) {
