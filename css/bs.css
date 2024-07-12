@@ -61,6 +61,16 @@ table {
   background: olive;
 }
 
+#prov-btn {
+  font-size: 1.2em;
+  background:#3f6a97;
+  color: #dddddd;
+  text-align: center;
+  margin-top: 2px;
+  border: 1px solid #dddddd;
+  width: 100%;
+}
+
 #buttons {
   font-size: 5em;
 }

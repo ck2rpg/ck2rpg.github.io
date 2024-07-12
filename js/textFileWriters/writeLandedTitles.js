@@ -28,10 +28,14 @@ function writeLandedTitles() {
                     t += `        color = {${county.colorR} ${county.colorG} ${county.colorB}}\n`
                     for (let m = 0; m < county.provinces.length; m++) {
                         let province = county.provinces[m]
-                        t += `        b_${province.titleName} = {\n`
-                        t += `          province = ${world.provinces.indexOf(province) + 1}\n`
-                        t += `          color = {${county.colorR} ${county.colorG} ${county.colorB}}\n`
-                        t += `        }\n`
+                        if (province.isImpassable) {
+                            //need to ensure that we don't leave empty counties full of impassable terrain
+                        } else {
+                            t += `        b_${province.titleName} = {\n`
+                            t += `          province = ${world.provinces.indexOf(province) + 1}\n`
+                            t += `          color = {${county.colorR} ${county.colorG} ${county.colorB}}\n`
+                            t += `        }\n`
+                        }
                     }
                     t += `      }\n`
                 }

@@ -1,7 +1,7 @@
 function writeLocators(type) {
     let t = `${daBom}game_object_locator={\n`
     t += `  name="${type}"\n`
-    t += `  clamp_to_water_level=yes\n`
+    t += `  clamp_to_water_level=yes\n` //this should change based on which locator. TODO
     t += `  render_under_water=no\n`
     t += `  generated_content=no\n`
     if (type === "buildings" || type === "special_building") {
@@ -18,7 +18,7 @@ function writeLocators(type) {
         let p = world.provinces[i]
         if (p.cells > 0) {
             count += 1;
-            if (p.land) {
+            if (p.land && !p.isImpassable) {
                 t += `    {\n`
                 t += `      id=${count}\n`
                 t += `      position={ ${p.x}.000000 0.000000 ${settings.height - p.y}.000000 }\n`
@@ -55,6 +55,9 @@ function writeLocators(type) {
     } else if (type === "unit_stack_other_owner") {
         short = "other"
         fileName = "other_stack_locators.txt"
+    } else if (type === "activities") {
+        short = "activities"
+        fileName = "activities.txt"
     }
 
 

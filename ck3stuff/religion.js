@@ -410,6 +410,18 @@ function createReligion(empire) {
             pickUniqOrDiscard(empire.ownProvinces, f.holySites)
         }
         r.faiths.push(f)
+
+        //propogate faith property down to province level to track through later reassignments
+        for (let j = 0; j < kingdom.duchies.length; j++) {
+            let duchy = kingdom.duchies[j]
+            for (let n = 0; n < duchy.counties.length; n++) {
+                let county = duchy.counties[n]
+                for (let z = 0; z < county.provinces.length; z++) {
+                    let province = county.provinces[z]
+                    province.faith = kingdom.faith // really set at county level but for ease of use with possible province swapping
+                }
+            }
+        }
     }
     world.religions.push(r)
 }

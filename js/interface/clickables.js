@@ -238,6 +238,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   if (document.getElementById('locatorsUnitStackCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack"));
   if (document.getElementById('locatorsUnitStackPlayerOwnedCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_player_owned"));
   if (document.getElementById('locatorsUnitStackOtherOwnerCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_other_owner"));
+  functionsToExecute.push(() => writeLocators("activities"));
   if (document.getElementById('culturesCheckbox').checked) functionsToExecute.push(() => outputCultures());
   if (document.getElementById('simpleHistoryCheckbox').checked) functionsToExecute.push(() => makeSimpleHistory());
   if (document.getElementById('charactersCheckbox').checked) functionsToExecute.push(() => outputCharacters());
@@ -466,6 +467,7 @@ GID("province-drawn-proceed").onclick = function() {
 
 GID("province-edits-done-proceed").onclick = function() {
   saveLastProvince()
+  removeEmptyTitles()
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
   ctx.fillStyle = "rgb(0, 0, 0)"

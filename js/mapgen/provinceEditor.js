@@ -22,8 +22,37 @@ function saveLastProvince() {
             currentProvince.duchy.localizedTitle = document.getElementById("duchyLocBox").value
             currentProvince.kingdom.localizedTitle = document.getElementById("kingdomLocBox").value
             currentProvince.empire.localizedTitle = document.getElementById("empireLocBox").value
+            currentProvince.faith.nameLoc = GID("faithbox").value; 
+            currentProvince.culture.name = GID("culturebox").value;
         }
     }
+}
+
+function removeEmptyTitles() {
+    // Remove empty counties
+    for (let duchy of world.duchies) {
+        duchy.counties = duchy.counties.filter(county => {
+            let hasPassableProvince = county.provinces.some(province => !province.isImpassable);
+            if (!hasPassableProvince) {
+                // If no passable province in county, mark it for removal
+                return false;
+            }
+            return true;
+        });
+    }
+
+    // Remove empty duchies
+    for (let kingdom of world.kingdoms) {
+        kingdom.duchies = kingdom.duchies.filter(duchy => duchy.counties.length > 0);
+    }
+
+    // Remove empty kingdoms
+    for (let empire of world.empires) {
+        empire.kingdoms = empire.kingdoms.filter(kingdom => kingdom.duchies.length > 0);
+    }
+
+    // Remove empty empires
+    world.empires = world.empires.filter(empire => empire.kingdoms.length > 0);
 }
 
 function closeProvinceEditor() {
@@ -63,7 +92,8 @@ function startProvinceEditor() {
     document.addEventListener('mouseup', () => {
         isDragging = false;
     });
-    
+
+
 
     canvas.onclick = function(e) {
         saveLastProvince()
@@ -87,11 +117,15 @@ function startProvinceEditor() {
                 document.getElementById("duchyLocBox").value = currentProvince.duchy.localizedTitle
                 document.getElementById("kingdomLocBox").value = currentProvince.kingdom.localizedTitle
                 document.getElementById("empireLocBox").value = currentProvince.empire.localizedTitle
+                GID("faithbox").value = currentProvince.faith.nameLoc 
+                GID("culturebox").value = currentProvince.culture.name
             } else {
                 document.getElementById("countyLocBox").value = "N/A"
                 document.getElementById("duchyLocBox").value = "N/A"
                 document.getElementById("kingdomLocBox").value = "N/A"
-                document.getElementById("empireLocBox").value = "N/A"  
+                document.getElementById("empireLocBox").value = "N/A"
+                GID("faithbox").value = "N/A"
+                GID("culturebox").value = "N/A"
             }
             if (currentProvince.isOcean) {
                 oceanCheck = true;

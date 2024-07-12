@@ -1,4 +1,14 @@
 function writeBookmark() {
+    let c;
+    for (let i = 0; i < world.provinces.length; i++) {
+        let p = world.provinces[i]
+        if (p.isImpassable || p.isOcean || p.isRiver || p.isImpassableSea) {
+
+        } else {
+            c = p.county;
+            break;
+        }
+    }
     let t = `${daBom}bm_mod_placeholder = {\n`
     t += `  start_date = ${world.year}.${world.month}.${world.day}\n`
     t += `  is_playable = yes\n`
@@ -7,16 +17,16 @@ function writeBookmark() {
     t += `
     character = {\n
 		name = "bookmark_canarias_guanarigato\n"
-		dynasty = ${world.counties[0].holder.dyn}\n
+		dynasty = ${c.holder.dyn}\n
 		dynasty_splendor_level = 1\n
-		type = ${world.counties[0].holder.gender}\n
-		birth = ${world.counties[0].holder.birth}\n
-		title = c_${world.counties[0].titleName}\n
+		type = ${c.holder.gender}\n
+		birth = ${c.holder.birth}\n
+		title = c_${c.titleName}\n
 		government = tribal_government\n
-		culture = ${world.counties[0].holder.culture.id}\n
-		religion = "${world.counties[0].holder.religion.id}\n"
+		culture = ${c.holder.culture.id}\n
+		religion = "${c.holder.religion.id}\n"
 		difficulty = "BOOKMARK_CHARACTER_DIFFICULTY_EASY\n"
-		history_id = ${world.counties[0].holder.id}\n
+		history_id = ${c.holder.id}\n
 		position = { 500 1000 }\n
 
 		animation = happiness\n

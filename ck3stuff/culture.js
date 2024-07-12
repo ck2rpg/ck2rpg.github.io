@@ -927,6 +927,7 @@ function assignCultures() {
                 for (let z = 0; z < county.provinces.length; z++) {
                     let province = county.provinces[z]
                     province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                    province.culture = culture // really set at county level but for ease of use with possible province swapping
                     //province.localizedTitle = placeName(kingdom.culture.language)
                 }
             }

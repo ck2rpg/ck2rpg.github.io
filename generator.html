@@ -138,6 +138,22 @@
         <div id="start-generator-button">Generate a New World</div><br>
         <hr>
         <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. As we take another step into creating dynamic and unique maps for your gameplay experience, we want to set clear expectations regarding the current state of the generator and its capabilities. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
+        <p class="text-intro">Alpha 0.1.3 Release</p>
+        <p class="main-landing-text">Alpha 0.1.3 introduces province painting and editing.
+        <p class="main-landing-heading">0.1.3 Change Log</p>
+        <p class="main-landing-text">
+          -Feature: Paint a land or water province on the map. During province generation, if it has room to grow, it will.<br>
+          -Feature: Rewrite localization for empires, kingdoms, duchies, counties, provinces, faiths, and cultures by clicking on a province in the province map and defining the related localization.<br>
+          -Feature: Toggle whether a province is impassable, impassable sea, lake, or river by clicking on the province in the province map and toggling a checkbox.<br>
+          -Feature: The Gimp post-processing script now prints a message to screen when it is done.<br>
+          -Feature: While editing provinces, draw a land only province map.<br>
+          -Feature: While editing provinces, draw a water only province map.<br>
+          -Feature: While editing provinces, draw empire, kingdom, duchy, and county maps. (Warning: this is a bit slow).<br>
+          -Bug fix: Terrain painting with mountains now results in correct masking.<br>
+          -Bug fix: Activities locator is now properly generated.<br>
+          -Bug fix: Locators are now actually automatically moved during Gimp post-processing script.<br>
+          -Quality of Life: You no longer need to process your flatmap by hand. It is now done by the Gimp post-processing script. <br>
+        </p><br><br>
         <p class="text-intro">Alpha 0.1.2 Release</p>
         <p class="main-landing-text">Alpha 0.1.2 includes two hot fixes for issues in the generator: (1) desert_mountains not painting on terrain map and (2) ghostly looking beaches left behind from prior map when you import a height map. There are also some new options under the hood but not exposed through the toolbox yet.</p>
         <p class="main-landing-heading">0.1.2 Change Log</p>
@@ -192,9 +208,6 @@
         </p>
 
         <p class="main-landing-text">5. Random Generation: Our goal is to create a generator that allows deep generation of history and lore to provide something more than a map to play on and randomly generated cultures and titles to play with. We've made great progress on this goal recently, but those developments are not camera-ready for this initial Alpha release. Alpha 0.1 maintains the mostly random distributions you might have seen in previous map releases.</p>
-
-        <p class="main-landing-heading">Looking Ahead to the Next Release</p>
-        <p class="main-landing-text">The next release will focus on: (1) improvements to terrain assignment and masking and (2) history and lore generation.</p>
 
         <p class="main-landing-heading">How You Can Help</p>
         <p class="main-landing-text">We invite you to join the community on <a href="https://discord.gg/eemRxbCUX3">Discord</a>, share suggestions, report bugs, and contribute to development either through Discord or <a href="https://github.com/ck2rpg/ck2rpg.github.io">Github</a>.</p>
@@ -393,29 +406,31 @@
     <div id="province-menu">
       <div id="top-bar-province-menu">Edit Provinces</div>
       <div id="top-bar-edits-menu">
-        <p>Empire Loc.: <input class="province-menu-input" id="empireLocBox"></input></p>
-        <p>Kingdom Loc.: <input class="province-menu-input" id="kingdomLocBox"></input></p>
-        <p>Duchy Loc.: <input class="province-menu-input" id="duchyLocBox"></input></p>
-        <p>County Loc.: <input class="province-menu-input" id="countyLocBox"></input></p>
-        <p>Def. Name: <input class="province-menu-input" id="namebox"></input></p>
-        <p>Province Loc.: <input id="locbox"></input></p>
-        <label><input type="checkbox" id="oceanCheckbox"> Ocean</label><br>
-        <label><input type="checkbox" id="lakeCheckbox"> Lake</label><br>
-        <label><input type="checkbox" id="riverCheckbox"> River</label><br>
-        <label><input type="checkbox" id="impassableCheckbox"> Impassable</label><br>
-        <p>Def. ID: <span id="defid"></input></p>
-        <p>Red: <span id="r"></span></p>
-        <p>Green: <span id="g"></span></p>
-        <p>Blue: <span id="b"></span></p>
+          <p>Empire Loc.: <input class="province-menu-input" id="empireLocBox" /></p>
+          <p>Kingdom Loc.: <input class="province-menu-input" id="kingdomLocBox" /></p>
+          <p>Duchy Loc.: <input class="province-menu-input" id="duchyLocBox" /></p>
+          <p>County Loc.: <input class="province-menu-input" id="countyLocBox" /></p>
+          <p>Province Loc.: <input id="locbox" /></p>
+          <p>Province Name: <input id="namebox" /></p>
+          <p>Faith Loc: <input class="province-menu-input" id="faithbox" /></p>
+          <p>Culture Loc:<input class="province-menu-input" id="culturebox" /></p>
+          <label><input type="checkbox" id="oceanCheckbox"> Ocean</label><br>
+          <label><input type="checkbox" id="lakeCheckbox"> Lake</label><br>
+          <label><input type="checkbox" id="riverCheckbox"> River</label><br>
+          <label><input type="checkbox" id="impassableCheckbox"> Impassable</label><br>
+          <label><input type="checkbox" id="impassableSeaCheckbox"> Impassable Sea</label><br>
+          <p>Def. ID: <span id="defid"></span></p>
+          <p>Red: <span id="r"></span></p>
+          <p>Green: <span id="g"></span></p>
+          <p>Blue: <span id="b"></span></p>
       </div>
-
-      <div class="sbtn" id="full-province-map">Draw Full Province Map</div>
-      <div class="sbtn" id="only-land-map">Draw Only Land Provinces Map</div>
-      <div class="sbtn" id="only-water-map">Draw Only Water Provinces Map</div>
-      <div class="sbtn" id="county-map">Draw County Map</div>
-      <div class="sbtn" id="duchy-map">Draw Duchy Map</div>
-      <div class="sbtn" id="kingdom-map">Draw Kingdom Map</div>
-      <div class="sbtn" id="empire-map">Draw Empire Map</div>
+      <div class="sbtn prov-btn" id="full-province-map">Draw Full Province Map</div>
+      <div class="sbtn prov-btn" id="only-land-map">Draw Only Land Provinces Map</div>
+      <div class="sbtn prov-btn" id="only-water-map">Draw Only Water Provinces Map</div>
+      <div class="sbtn prov-btn" id="county-map">Draw County Map</div>
+      <div class="sbtn prov-btn" id="duchy-map">Draw Duchy Map</div>
+      <div class="sbtn prov-btn" id="kingdom-map">Draw Kingdom Map</div>
+      <div class="sbtn prov-btn" id="empire-map">Draw Empire Map</div>
 
       <div class="sbtn" id="province-edits-done-proceed">Proceed to File Saving</div>
     </div>
