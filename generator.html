@@ -391,12 +391,32 @@
 
 
     <div id="province-menu">
-      <p>Def. Name: <input id="namebox"></input></p>
-      <p>Localization: <input id="locbox"></input></p>
-      <p>Def. ID: <span id="defid"></input></p>
-      <p>Red: <span id="r"></span></p>
-      <p>Green: <span id="g"></span></p>
-      <p>Blue: <span id="b"></span></p>
+      <div id="top-bar-province-menu">Edit Provinces</div>
+      <div id="top-bar-edits-menu">
+        <p>Empire Loc.: <input class="province-menu-input" id="empireLocBox"></input></p>
+        <p>Kingdom Loc.: <input class="province-menu-input" id="kingdomLocBox"></input></p>
+        <p>Duchy Loc.: <input class="province-menu-input" id="duchyLocBox"></input></p>
+        <p>County Loc.: <input class="province-menu-input" id="countyLocBox"></input></p>
+        <p>Def. Name: <input class="province-menu-input" id="namebox"></input></p>
+        <p>Province Loc.: <input id="locbox"></input></p>
+        <label><input type="checkbox" id="oceanCheckbox"> Ocean</label><br>
+        <label><input type="checkbox" id="lakeCheckbox"> Lake</label><br>
+        <label><input type="checkbox" id="riverCheckbox"> River</label><br>
+        <label><input type="checkbox" id="impassableCheckbox"> Impassable</label><br>
+        <p>Def. ID: <span id="defid"></input></p>
+        <p>Red: <span id="r"></span></p>
+        <p>Green: <span id="g"></span></p>
+        <p>Blue: <span id="b"></span></p>
+      </div>
+
+      <div class="sbtn" id="full-province-map">Draw Full Province Map</div>
+      <div class="sbtn" id="only-land-map">Draw Only Land Provinces Map</div>
+      <div class="sbtn" id="only-water-map">Draw Only Water Provinces Map</div>
+      <div class="sbtn" id="county-map">Draw County Map</div>
+      <div class="sbtn" id="duchy-map">Draw Duchy Map</div>
+      <div class="sbtn" id="kingdom-map">Draw Kingdom Map</div>
+      <div class="sbtn" id="empire-map">Draw Empire Map</div>
+
       <div class="sbtn" id="province-edits-done-proceed">Proceed to File Saving</div>
     </div>
 

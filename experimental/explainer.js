@@ -44,6 +44,27 @@ function floodFillWaterProvinces() {
         }
         p.floodFilled = false;
     }
+    for (let i = 0; i < world.waterBodies.length; i++) {
+        let wb = world.waterBodies[i]
+        let len = wb.provinces.length;
+        let oceanMarker;
+        let lakeMarker;
+        if (len > 10) { //lake ocean sea distinction needed here and implemented later...
+            oceanMarker = true;
+            lakeMarker = false;
+        } else if (len > 0) {
+            oceanMarker = false;
+            lakeMarker = true;
+        } else {
+            lakeMarker = false;
+            oceanMarker = false;
+        }
+        for (let n = 0; n < wb.provinces.length; n++) {
+            let p = wb.provinces[n]
+            p.isOcean = oceanMarker
+            p.isLake = lakeMarker;
+        }
+    }
 }
 
 function floodFillWater(p, color) {

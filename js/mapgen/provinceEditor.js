@@ -9,8 +9,28 @@ function getMousePosAbs(canvas, evt) {
     };
 }
 
+function saveLastProvince() {
+    if (currentProvince) {
+        currentProvince.titleName = document.getElementById("namebox").value;
+        currentProvince.localizedTitle = document.getElementById("locbox").value;
+        currentProvince.id = document.getElementById("defid").innerHTML;
+        currentProvince.r = parseInt(document.getElementById("r").innerHTML);
+        currentProvince.g = parseInt(document.getElementById("g").innerHTML);
+        currentProvince.b = parseInt(document.getElementById("b").innerHTML);
+        if (currentProvince.county) {
+            currentProvince.county.localizedTitle = document.getElementById("countyLocBox").value
+            currentProvince.duchy.localizedTitle = document.getElementById("duchyLocBox").value
+            currentProvince.kingdom.localizedTitle = document.getElementById("kingdomLocBox").value
+            currentProvince.empire.localizedTitle = document.getElementById("empireLocBox").value
+        }
+    }
+}
+
+function closeProvinceEditor() {
+    saveLastProvince()
+}
+
 function startProvinceEditor() {
-    GID("province-screen-menu").style.display = "block"
     GID("province-menu").style.display = "block"
     canvas.removeEventListener("mousedown", onMouseDown);
     canvas.removeEventListener("mouseup", onMouseUp)
@@ -19,16 +39,34 @@ function startProvinceEditor() {
     mapContainer.removeEventListener('mouseenter', showRedBrush)
     mapContainer.removeEventListener('mouseleave', hideRedBrush)
 
-    canvas.onclick = function(e) {
-        if (currentProvince) {
-            // Save last province
-            currentProvince.titleName = document.getElementById("namebox").value;
-            currentProvince.localizedTitle = document.getElementById("locbox").value;
-            currentProvince.id = document.getElementById("defid").innerHTML;
-            currentProvince.r = parseInt(document.getElementById("r").innerHTML);
-            currentProvince.g = parseInt(document.getElementById("g").innerHTML);
-            currentProvince.b = parseInt(document.getElementById("b").innerHTML);
+    let movableDiv2 = document.getElementById('province-menu');
+    let movingDiv2 = document.getElementById("top-bar-province-menu")
+
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    movingDiv2.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - movableDiv2.offsetLeft;
+        offsetY = e.clientY - movableDiv2.offsetTop;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            movableDiv2.style.left = `${e.clientX - offsetX}px`;
+            movableDiv2.style.top = `${e.clientY - offsetY}px`;
+            movableDiv2.style.height = `fit-content`;
+            movableDiv2.style.width = `fit-content`
         }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
+
+    canvas.onclick = function(e) {
+        saveLastProvince()
         let pos = getMousePosAbs(canvas, e);
         let output = ctx.getImageData(pos.x, pos.y, 1, 1);
         let r = output.data[0];
@@ -44,59 +82,45 @@ function startProvinceEditor() {
             document.getElementById("r").innerHTML = currentProvince.colorR;
             document.getElementById("g").innerHTML = currentProvince.colorG;
             document.getElementById("b").innerHTML = currentProvince.colorB;
+            if (currentProvince.county) {
+                document.getElementById("countyLocBox").value = currentProvince.county.localizedTitle
+                document.getElementById("duchyLocBox").value = currentProvince.duchy.localizedTitle
+                document.getElementById("kingdomLocBox").value = currentProvince.kingdom.localizedTitle
+                document.getElementById("empireLocBox").value = currentProvince.empire.localizedTitle
+            } else {
+                document.getElementById("countyLocBox").value = "N/A"
+                document.getElementById("duchyLocBox").value = "N/A"
+                document.getElementById("kingdomLocBox").value = "N/A"
+                document.getElementById("empireLocBox").value = "N/A"  
+            }
+            if (currentProvince.isOcean) {
+                oceanCheck = true;
+            } else {
+                oceanCheck = false;
+            }
+            if (currentProvince.isLake) {
+                lakeCheck = true;
+            } else {
+                lakeCheck = false;
+            }
+            if (currentProvince.isImpassableSea) {
+                impassableSeaCheck = true;
+            } else {
+                impassableSeaCheck = false;
+            }
+            if (currentProvince.isImpassable) {
+                impassableCheck = true;
+            } else {
+                impassableCheck = false;
+            }
+            if (currentProvince.isRiver) {
+                riverCheck = true;
+            } else {
+                riverCheck = false;
+            }
+            redoCheckboxes(null)
         } else {
             console.log("No province found for color:", colorKey);
         }
-        /*
-        if (currentProvince) {
-            //save last province
-            currentProvince.titleName = document.getElementById("namebox").value
-            currentProvince.localizedTitle = document.getElementById("locbox").value
-            currentProvince.id = document.getElementById("defid").innerHTML
-            currentProvince.r = parseInt(document.getElementById("r").innerHTML)
-            currentProvince.g = parseInt(document.getElementById("g").innerHTML)
-            currentProvince.b = parseInt(document.getElementById("b").innerHTML)
-        }
-        let pos = getMousePosAbs(canvas, e);
-        let output = ctx.getImageData(pos.x, pos.y, 1, 1 )
-        let r = output.data[0]
-        let g = output.data[1];
-        let b = output.data[2];
-        console.log(r);
-        console.log(g);
-        console.log(b)
-        console.log(world.provinces[0].colorR)
-        console.log(world.provinces[0].colorG) 
-        console.log(world.provinces[0].colorB)
-        for (let i = 0; i < world.provinces.length; i++) {
-            //set new province
-            currentProvince = world.provinces[i]
-            if (parseInt(currentProvince.colorR) === r && parseInt(currentProvince.colorG) === g && parseInt(currentProvince.colorB) === b) {
-                console.log(currentProvince)
-                if (currentProvince.titleName) {
-                    document.getElementById("namebox").value = currentProvince.titleName;
-                } else {
-                    document.getElementById("namebox").value = "OCEAN";
-                }
-
-                if (currentProvince.localizedTitle) {
-                    document.getElementById("locbox").value = currentProvince.localizedTitle;
-                } else {
-                    document.getElementById("locbox").value = "OCEAN";
-                }
-
-                
-                if (currentProvince.id) {
-                    document.getElementById("defid").innerHTML = currentProvince.id
-                }
- 
-                document.getElementById("r").innerHTML = currentProvince.colorR;
-                document.getElementById("g").innerHTML = currentProvince.colorG;
-                document.getElementById("b").innerHTML = currentProvince.colorB;
-                found = true;
-                break;
-            }
-        }
-        */
     }
 }

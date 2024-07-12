@@ -14,6 +14,8 @@ document.addEventListener('mousemove', (e) => {
     if (isDragging) {
         movableDiv.style.left = `${e.clientX - offsetX}px`;
         movableDiv.style.top = `${e.clientY - offsetY}px`;
+        movableDiv.style.width = `10vw`
+        movableDiv.style.height = `10vw`
     }
 });
 
@@ -365,10 +367,92 @@ GID("all-to-sea-level").onclick = function() {
   drawWorld()
 }
 
+function redoCheckboxes(c) {
+  if (c === "river") {
+    if (riverCheck === false) {
+      lakeCheck = false;
+      oceanCheck = false;
+      impassableCheck = false;
+      impassableSeaCheck = false;
+      riverCheck = true;
+      currentProvince.isRiver = true;
+    } else {
+      riverCheck = false;
+      currentProvince.isRiver = false;
+    }
+  } else if (c === "lake") {
+    if (lakeCheck === false) {
+      riverCheck = false;
+      oceanCheck = false;
+      impassableCheck = false;
+      impassableSeaCheck = false;
+      lakeCheck = true;
+      currentProvince.isLake = true
+    } else {
+      lakeCheck = false
+      currentProvince.isLake = false;
+    }
+  } else if (c === "impassable") {
+    if (impassableCheck === false) {
+      riverCheck = false;
+      lakeCheck = false;
+      oceanCheck = false;
+      impassableSeaCheck = false;
+      impassableCheck = true;
+      currentProvince.isImpassable = true;
+    } else {
+      impassableCheck = false;
+      currentProvince.isImpassable = false;
+    } 
+  } else if (c === "ocean") {
+    if (oceanCheck === false) {
+      riverCheck = false;
+      lakeCheck = false;
+      impassableCheck = false;
+      impassableSeaCheck = false;
+      oceanCheck = true;
+      currentProvince.isOcean = true;
+
+    } else {
+      oceanCheck = false;
+      currentProvince.isOcean = false;
+    }
+  } else if (c === "impassableSea") {
+    if (impassableSeaCheck === false) {
+      riverCheck = false;
+      lakeCheck = false;
+      impassableCheck = false;
+      oceanCheck = false;
+      impassableSeaCheck = true;
+      currentProvince.isImpassableSea = true;
+
+    } else {
+      impassableSeaCheck = false;
+      currentProvince.isImpassableSea = false;
+    }
+  }
+  GID("riverCheckbox").checked = riverCheck
+  GID("lakeCheckbox").checked = lakeCheck;
+  GID("impassableCheckbox").checked = impassableCheck;
+  GID("oceanCheckbox").checked = oceanCheck;
+  GID("impassableSeaCheckbox").checked = impassableSeaCheck;
+}
+
+let lakeCheck = false;
+let riverCheck = false;
+let impassableCheck = false;
+let oceanCheck = false
+let impassableSeaCheck = false;
+
 GID("province-drawn-proceed").onclick = function() {
-  GID("province-drawn-proceed").style.display = "none"
-  GID("province-menu").style.display = "block"
-  startProvinceEditor()
+  GID("province-drawn-proceed").style.display = "none";
+  GID("province-menu").style.display = "block";
+  GID("lakeCheckbox").addEventListener('click', function() { redoCheckboxes('lake'); });
+  GID("riverCheckbox").addEventListener('click', function() { redoCheckboxes('river'); });
+  GID("impassableCheckbox").addEventListener('click', function() { redoCheckboxes('impassable'); });
+  GID("oceanCheckbox").addEventListener('click', function() { redoCheckboxes('ocean'); });
+  GID("impassableSeaCheckbox").addEventListener('click', function() { redoCheckboxes('impassableSea'); });
+  startProvinceEditor();
   /*
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
@@ -381,6 +465,7 @@ GID("province-drawn-proceed").onclick = function() {
 }
 
 GID("province-edits-done-proceed").onclick = function() {
+  saveLastProvince()
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
   ctx.fillStyle = "rgb(0, 0, 0)"
@@ -568,4 +653,41 @@ GID("watermap-icon").onclick = function() {
   paintbrush = "waterOverride"
   setTitleColor()
   drawWorld()
+}
+
+GID("full-province-map").onclick = function() {
+  drawProvinceMap()
+  GID("province-drawn-proceed").style.display = "none"
+  GID("province-menu").style.display = "block"
+  startProvinceEditor()
+}
+
+GID("only-land-map").onclick = function() {
+  drawProvinceMapWithoutOceans()
+  GID("province-drawn-proceed").style.display = "none"
+  GID("province-menu").style.display = "block"
+  startProvinceEditor()
+}
+
+GID("only-water-map").onclick = function() {
+  drawProvinceMapWithoutLand()
+  GID("province-drawn-proceed").style.display = "none"
+  GID("province-menu").style.display = "block"
+  startProvinceEditor()
+}
+
+GID("county-map").onclick = function() {
+  drawTitleMap("county")
+}
+
+GID("duchy-map").onclick = function() {
+  drawTitleMap("duchy")
+}
+
+GID("kingdom-map").onclick = function() {
+  drawTitleMap("kingdom")
+}
+
+GID("empire-map").onclick = function() {
+  drawTitleMap("empire")
 }

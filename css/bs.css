@@ -433,6 +433,16 @@ table {
   color: white;
 }
 
+#top-bar-province-menu {
+  background: black;
+  color: #dddddd;
+  padding: 10px;
+}
+
+#top-bar-province-menu:hover {
+  cursor: pointer;
+}
+
 #canvas {
   position: absolute;
   left: 0px;
@@ -788,8 +798,11 @@ button[type="submit"]:hover {
   z-index: 20000;
   background: #4a4a4a;
   color: #dddddd;
-  padding: 10px;
   border: 1px solid white;
+}
+
+#top-bar-edits-menu {
+  padding: 10px;
 }
 
 .slider-value {

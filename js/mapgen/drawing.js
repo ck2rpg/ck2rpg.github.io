@@ -705,7 +705,7 @@ function drawProvinceMap() {
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
-  pixels = null
+  //pixels = null
   //world.smallMap = null
 }
 
@@ -786,8 +786,45 @@ function drawProvinceMapWithoutOceans() {
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
-  pixels = null
-  world.smallMap = null
+  //pixels = null
+  //world.smallMap = null
+}
+
+function drawProvinceMapWithoutLand() {
+  let count = 0
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.rect(0, 0, settings.width, settings.height);
+  ctx.fillStyle = "rgb(255, 255, 255)"
+  ctx.fill();
+  let pixels = wholeMapImage()
+  for (let i = 0; i < settings.height; i++) {
+      for (let j = 0; j < settings.width; j++) {
+          let c = world.smallMap[i][j]
+          if (c && c.elevation > limits.seaLevel.upper) {
+            pixels.data[count] = 255 //r
+            count += 1;
+            pixels.data[count] = 255 //g 
+            count += 1;
+            pixels.data[count] = 255 //b
+            count += 2;     
+          } else {
+            if (c && c.colorR) {
+              pixels.data[count] = c.colorR //r
+              count += 1;
+              pixels.data[count] = c.colorG //g 
+              count += 1;
+              pixels.data[count] = c.colorB //b
+              count += 2;
+            } else {
+                count += 4;
+            }
+        }
+      }
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(pixels, 0, 0)
+  //pixels = null
+  //world.smallMap = null
 }
 
 function drawTitleSmallMap(titleType) { // This function is too cute in trying to do too much. It handles both override and drawing from kingdom etc
