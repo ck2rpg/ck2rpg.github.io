@@ -266,6 +266,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   functionsToExecute.push(() => writeDescriptor());
   functionsToExecute.push(() => writeHybridCultures()) 
   functionsToExecute.push(() => writeHybridCulturesLocalization())
+  functionsToExecute.push(() => writeGenerators());
   
   const delayBetweenDownloads = 200;
   downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
