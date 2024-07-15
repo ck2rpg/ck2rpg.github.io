@@ -694,3 +694,15 @@ GID("kingdom-map").onclick = function() {
 GID("empire-map").onclick = function() {
   drawTitleMap("empire")
 }
+
+function updateMaxLandProvinces(num) {
+  settings.landProvinceLimit = parseInt(num);
+}
+
+function updateMaxWaterProvinces(num) {
+  settings.waterProvinceLimit = parseInt(num);
+}
+
+function updateMaxFill(num) {
+  settings.fillInLimit = parseInt(num)
+}

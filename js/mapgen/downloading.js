@@ -42,6 +42,8 @@ function drawAndDownload(type, filename, callback) {
       drawProvinceMapWithoutOceans()
       downloadImage(canvas, "landProvinces.png");
     })
+    functionsToExecute.push(() => drawAndDownload("parchment", "parchment.png"));
+    functionsToExecute.push(() => drawAndDownload("pixelRoguelike", "pixelRoguelike.png"));
     if (document.getElementById('colorfulCheckbox').checked) functionsToExecute.push(() => drawAndDownload("colorful", "colorful.png"));
     if (document.getElementById('paperCheckbox').checked) functionsToExecute.push(() => drawAndDownload("paper", "paper.png"));
     if (document.getElementById('papyrusCheckbox').checked) functionsToExecute.push(() => drawAndDownload("papyrus", "papyrus.png"));

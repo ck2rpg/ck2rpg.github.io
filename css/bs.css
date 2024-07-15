@@ -355,6 +355,22 @@ table {
   margin-left: -10px; /* Center the tooltip */
 }
 
+#provmap-icon:hover ~#tooltip26 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
+
+
+#watermap-icon:hover ~#tooltip27 {
+  visibility: visible;
+  opacity: 1;
+  top: 105%; /* Position the tooltip above the image */
+  left: 50%;
+  margin-left: -10px; /* Center the tooltip */
+}
 
 
 
@@ -430,6 +446,13 @@ table {
 
 #main-sidebar-top:hover {
   cursor: pointer;
+}
+
+#main-sidebar-bottom {
+  color: #dddddd;
+  background: #454545;
+  padding: 10px;
+  text-align: center;
 }
 
 .sbtn {
@@ -930,4 +953,8 @@ button[type="submit"]:hover {
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
+}
+
+#ink-images {
+  display: none;
 }

@@ -38,7 +38,9 @@ function drawCell(x, y) {
   
     const { r, g, b } = getRGBFromElevation(cell.elevation);
   
-    if (type === "book") {
+    if (type === "pixelRoguelike") {
+      drawPixelRoguelike(cell)
+    } else if (type === "book") {
       drawBookType(cell);
     } else if (type === "parchment") {
       drawParchmentType(cell, r, g, b);
@@ -106,7 +108,7 @@ function drawCell(x, y) {
     }
     if (cell.text) {
       ctx.fillStyle = cell.rgb;
-      ctx.font = "32px serif";
+      ctx.font = "16px serif";
       ctx.fillText(cell.text, cell.x * settings.pixelSize, cell.y * settings.pixelSize);
     }
   }
@@ -154,15 +156,19 @@ function drawCell(x, y) {
       drawInkMarsh(cell);
     } else if (cellBiome === "river" || cellBiome === "lake" || cellBiome === "ocean") {
       cell.rgb = `rgb(200, 200, 200)`;
-      mapOutline(ctx, cell.x * settings.pixelSize, cell.y * settings.pixelSize, cell.rgb, cell);
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
+      //mapOutline(ctx, cell.x * settings.pixelSize, cell.y * settings.pixelSize, cell.rgb, cell);
     } else if (cellBiome === "mountain") {
       cell.rgb = `rgb(255, 255, 255)`;
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
       drawInkMountain(cell);
     } else if (cell.tree) {
       cell.rgb = `rgb(255, 255, 255)`;
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
       drawInkTree(cell);
     } else {
       cell.rgb = `rgb(255, 255, 255)`;
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
     }
   }
   
@@ -471,7 +477,7 @@ function drawInkTree(cell) {
     const roundedY = Math.round(cell.y);
     const img = GID(`tree${getRandomInt(1, 4)}`);
     console.log("DRAWING INK TREE");
-    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize, 16, 16);
   }
   
   /**
@@ -483,7 +489,7 @@ function drawInkTree(cell) {
     const roundedX = Math.round(cell.x);
     const roundedY = Math.round(cell.y);
     const img = GID('marsh1');
-    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize, 16, 16);
   }
   
   /**
@@ -515,7 +521,7 @@ function drawInkTree(cell) {
       img = GID("mountain1");
     }
   
-    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize);
+    ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize, 16, 16);
   }
   
 
@@ -534,7 +540,7 @@ function mapOutline(context, x, y, color, cell) {
   const g = 120 + Math.floor((cell.elevation / 5));
   const b = 140 + Math.floor((cell.elevation / 5));
   context.fillStyle = `rgb(${r}, ${g}, ${b})`;
-  context.fillRect(x, y, 10, 10);
+  context.fillRect(x, y, 16, 16);
 }
 
 /**

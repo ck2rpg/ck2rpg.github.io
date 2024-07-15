@@ -51,6 +51,8 @@ Better rank ordering method by Stefan Gustavson in 2012.
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
+ The miniworldsprites.png file is a free to use file by Shade at https://merchant-shade.itch.io/16x16-mini-world-sprites.
+
 Unless otherwise noted herein, the remaining files are licensed under the Unlicense and free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -77,3 +79,5 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <https://unlicense.org>
 
 I ask but do not require one thing: if you use the map generator to create a mod, please include a note that ck2rpg's CK3 Procedural Map Generator was used in the creation of the mod. Thanks and happy generating!
+
+

@@ -137,8 +137,18 @@
       <div id="landing-text">
         <div id="start-generator-button">Generate a New World</div><br>
         <hr>
-        <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. As we take another step into creating dynamic and unique maps for your gameplay experience, we want to set clear expectations regarding the current state of the generator and its capabilities. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
-        <p class="text-intro">Alpha 0.1.4 Release</p>
+        <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
+   
+        <p class="text-intro">Alpha 0.1.5 Release</p>
+        <p class="main-landing-text">Alpha 0.1.5 includes a few bug fixes and backend changes.</p>
+        <p class="main-landing-heading">0.1.5 Change Log</p>
+        <p class="main-landing-text">
+          -Bug fix: Dragging the map editor menu no longer results in a clear background over parts of it.<br>
+          -Bug fix: I neglected to add UI for previously implemented ability to change province limit, water province limit, and fill in. Added UI here. This feature should be considred unstable and in early user testing. If you reduce the maximum number of provinces, you need to increase the fill limit to give the generator more attempts to correctly fill in larger provinces. Unfortunately, increasing the fill in attempts will reduce the speed of generation fairly significantly.<br>
+          -Experimental: Added a couple of experimental image generators that are not currently used in the game. Building up to future paper/flat map generation options (e.g., roguelike, pixel art, parchment, etc.).<br>
+        </p>
+
+     <p class="text-intro">Alpha 0.1.4 Release</p>
         <p class="main-landing-text">Alpha 0.1.4 removes the need to edit mapobjectdata or rivers.png by resetting the /map_object_data/generated file and processing the rivers.png image with indexing through the Gimp script.
         <p class="main-landing-heading">0.1.4 Change Log</p>
         <p class="main-landing-text">
@@ -255,9 +265,9 @@
               <img class="small-icon-button" id="heightmap-icon" src="icons/heightmap-icon.png">
               <div class="tooltip" id="tooltip8">Height Map Preview</div>
               <img class="small-icon-button" id="provmap-icon" src="icons/prov-icon.png">
-              <div class="tooltip" id="tooltip26">Province Map Preview</div>
+              <div class="tooltip" id="tooltip26">Province Map Painter</div>
               <img class="small-icon-button" id="watermap-icon" src="icons/watermap-icon.png">
-              <div class="tooltip" id="tooltip27">Water Province Map Preview</div>
+              <div class="tooltip" id="tooltip27">Water Province Map Painter</div>
               <p class="outset-text">Mass Change:</p>
               <img class="img-icon" id="startup" src="icons/newmap.png">
               <div class="tooltip" id="tooltip1">Create a New Map</div>
@@ -354,11 +364,11 @@
                   <div class="color-tooltip">Wetlands</div>
                 </div>
               </div>
-              <div class="color-box" id="selected-color">
-                <div class="color-tooltip" id="selected-tooltip">Select Color</div>
-              </div>
-  
-              <input type="color" id="title-color">
+            <div class="color-box" id="selected-color">
+              <div class="color-tooltip" id="selected-tooltip">Select Color</div>
+            </div>
+
+            <input type="color" id="title-color">
     
               
   
@@ -377,8 +387,6 @@
                 <input type="range" id="powerSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
                   <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
               </div>
-    
-              <br>
               <p class="outset-text">Map Settings:</p>
               <div class="slider-container">
                   <label for="equatorSlider" class="slider-label">Equator</label>
@@ -387,6 +395,17 @@
               <div class="slider-container">
                 <label for="riversSlider" class="slider-label">Rivers</label>
                 <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="updateRiversValue(this.value)">
+              </div>
+
+              <div>
+                <p>Province Settings:</p>
+                <label for="max-land-provinces">Max Land Provinces:</label>
+                <input type="number" min="100" max="10000" value="8000" oninput="updateMaxLandProvinces(this.value)"><br>
+                <label for="max-water-provinces">Max Water Provinces:</label>
+                <input type="number" min="100" max="10000" value="8000" oninput="updateMaxWaterProvinces(this.value)"><br>
+                <label for="max-fill-in">Max Fill In Attempts:</label>
+                <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)"><br>
+                <p>Warning: DEFAULT LIMITS SUGGESTED ABOVE. If you reduce the maximum number of provinces, you need to increase the fill. For example, I've had good results with 300 provinces at 300 fill. Increasing the fill slows the generator significantly.</p>
               </div>
       
               <div class="sbtn menu-btn" id="tracking-toggle">
@@ -452,6 +471,22 @@
     </div>
     <div id="testing-div">
 
+    </div>
+    <div id="ink-images">
+      <img id="tree1" src="bw/tree1.png"/>
+      <img id="tree2" src="bw/tree2.png"/>
+      <img id="tree3" src="bw/tree2.png"/>
+      <img id="tree4" src="bw/tree2.png"/>
+      <img id="marsh1" src="bw/marsh1.png"/>
+      <img id="hills1" src="bw/hills1.png"/>
+      <img id="hills2" src="bw/hills2.png"/>
+      <img id="hills3" src="bw/hills3.png"/>
+      <img id="hills4" src="bw/hills4.png"/>
+      <img id="mountain1" src="bw/mountain1.png"/>
+      <img id="mountain2" src="bw/mountain2.png"/>
+      <img id="mountain3" src="bw/mountain3.png"/>
+      <img id="mountain4" src="bw/mountain4.png"/>
+      <img id="minisprites" src="experimental/miniworldsprites.png" />
     </div>
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
     <script src="js/langgen/alice.js"></script>
@@ -537,6 +572,7 @@
     <script src="js/textFileWriters/writeHybridCultures.js"></script>
     <script src="js/textFileWriters/writeGenerators.js"></script>
     <script src="js/ethnicitygen/vanilla.js"></script>
+    <script src="experimental/drawRoguelike.js"></script>
     <script src="js/mapgen/provinceEditor.js"></script>
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>

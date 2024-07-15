@@ -18,9 +18,6 @@ settings.landProvinceLimit = 8000 // 8000
 settings.waterProvinceLimit = 10000 //10000
 settings.fillInLimit = 20
 
-settings.maxLandProvinces = 8000; //not implemented
-settings.maxWaterProvinces = 2000; //not implemented
-
 
 let brush = {}
 brush.terrain = "plains"
