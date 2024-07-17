@@ -267,6 +267,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   functionsToExecute.push(() => writeHybridCultures()) 
   functionsToExecute.push(() => writeHybridCulturesLocalization())
   functionsToExecute.push(() => writeGenerators());
+  functionsToExecute.push(() => writeDefines());
   
   const delayBetweenDownloads = 200;
   downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
@@ -706,3 +707,14 @@ function updateMaxWaterProvinces(num) {
 function updateMaxFill(num) {
   settings.fillInLimit = parseInt(num)
 }
+
+document.getElementById('map-sizes').addEventListener('change', function(event) {
+  const selectedValue = event.target.value;
+  const [width, height] = selectedValue.split('x').map(Number);
+
+  settings.width = width;
+  settings.height = height;
+  settings.pixelSize = settings.height / world.height
+  resetClimateLimits()
+  drawWorld()
+});

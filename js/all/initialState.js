@@ -2,8 +2,8 @@ let bookText = aliceText.split("");
 let currentBookPosition = 0;
 
 let settings = {}
-settings.width = 8192
-settings.height = 4096
+settings.width = 8192 //8192 4096
+settings.height = 4096 //4096 2048
 settings.tooSmallProvince = 900 // 900 was my default before
 settings.horizontalSpread = false; // the new try, not working
 settings.verticalSpread = true; //the original I've been using
@@ -65,31 +65,59 @@ function createVaryRange() {
   return arr;
 }
 
+
+function modifyClimate(t) {
+  let mod = settings.width / 8192;
+  t.lower = Math.floor(t.lowerBase * mod);
+  t.upper = Math.floor(t.upperBase * mod);
+  if (t.plains) {
+    t.plains = Math.floor(t.plains * mod)
+  }
+  settings.equator = (settings.height - settings.height / 10)
+
+}
+
+function resetClimateLimits() {
+  modifyClimate(limits.tropical)
+  modifyClimate(limits.subTropical);
+  modifyClimate(limits.temperate);
+  modifyClimate(limits.cold);
+}
+
 limits.tropical = {
   lower: 0,
-  upper: 1007
+  lowerBase: 0,
+  upper: 1007,
+  upperBase: 1007,
 }
 
 limits.tropical.varyRange = createVaryRange();
 
 limits.subTropical = {
   lower: 1008,
-  upper: 1520
+  lowerBase: 1008,
+  upper: 1520,
+  upperBase: 1520
 }
 
 limits.subTropical.varyRange = createVaryRange()
 
 limits.temperate = {
   lower: 1521,
-  upper: 2865
+  lowerBase: 1521,
+  upper: 2865,
+  upperBase: 2865
 }
 
 limits.temperate.varyRange = createVaryRange();
 
 limits.cold = {
   lower: 2866,
+  lowerBase: 2866,
   plains: 3300,
-  upper: 4096
+  plainsBase: 3300,
+  upper: 4096,
+  upperBase: 4096
 }
 
 limits.cold.varyRange = createVaryRange();

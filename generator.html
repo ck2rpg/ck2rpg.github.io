@@ -139,6 +139,13 @@
         <hr>
         <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
    
+        <p class="text-intro">Alpha 0.2.0 Release</p>
+        <p class="main-landing-text">Map Sizes!</p>
+        <p class="main-landing-heading">0.2.0 Change Log</p>
+        <p class="main-landing-text">
+          -Feature: Select from 8192x4096, 4096x2048, 2048x1024, and 1024x512 map sizes.<br>
+        </p>
+
         <p class="text-intro">Alpha 0.1.5 Release</p>
         <p class="main-landing-text">Alpha 0.1.5 includes a few bug fixes and backend changes.</p>
         <p class="main-landing-heading">0.1.5 Change Log</p>
@@ -396,6 +403,16 @@
                 <label for="riversSlider" class="slider-label">Rivers</label>
                 <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="updateRiversValue(this.value)">
               </div>
+              <div>
+                <label for="map-sizes">Map Size:</label>
+
+                <select name="map-sizes" id="map-sizes">
+                  <option value="8192x4096">8192x4096</option>
+                  <option value="4096x2048">4096x2048</option>
+                  <option value="2048x1024">2048x1024</option>
+                  <option value="1024x512">1024x512</option>
+                </select> 
+              </div>
 
               <div>
                 <p>Province Settings:</p>
@@ -571,6 +588,7 @@
     <script src="js/textFileWriters/writeDescriptor.js"></script>
     <script src="js/textFileWriters/writeHybridCultures.js"></script>
     <script src="js/textFileWriters/writeGenerators.js"></script>
+    <script src="js/textFileWriters/writeDefines.js"></script>
     <script src="js/ethnicitygen/vanilla.js"></script>
     <script src="experimental/drawRoguelike.js"></script>
     <script src="js/mapgen/provinceEditor.js"></script>

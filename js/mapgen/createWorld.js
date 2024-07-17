@@ -15,7 +15,13 @@ function createWorld() {
    * Initializes a blank world with default settings, geographical points,
    * feature arrays, and populates the world map with cells.
    */
-  function createBlankWorld() {
+  function createBlankWorld(h, w) {
+    if (h) {
+      world.height = h;
+    }
+    if (w) {
+      world.width = w
+    }
     initializeWorldSettings();
     setGeographicalPoints();
     initializeFeatureArrays();

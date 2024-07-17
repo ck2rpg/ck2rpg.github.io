@@ -42,6 +42,15 @@ function drawAndDownload(type, filename, callback) {
       drawProvinceMapWithoutOceans()
       downloadImage(canvas, "landProvinces.png");
     })
+    functionsToExecute.push(() => drawAndDownload("black", "black1_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black2_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black3_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black4_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black5_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black6_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black7_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black8_mask.png"));
+    functionsToExecute.push(() => drawAndDownload("black", "black9_mask.png"));
     functionsToExecute.push(() => drawAndDownload("parchment", "parchment.png"));
     functionsToExecute.push(() => drawAndDownload("pixelRoguelike", "pixelRoguelike.png"));
     if (document.getElementById('colorfulCheckbox').checked) functionsToExecute.push(() => drawAndDownload("colorful", "colorful.png"));

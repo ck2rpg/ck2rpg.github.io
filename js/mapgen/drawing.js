@@ -635,24 +635,30 @@ function redoLetterMap() {
 function drawWorld() {
   // Clear the entire canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
   // Set the canvas dimensions based on the world's size and pixel size
   canvas.width = world.width * settings.pixelSize;
   canvas.height = world.height * settings.pixelSize;
-  
-  // Iterate over each cell in the world and draw it
-  createCellTerrains()
-  if (world.drawingType === "terrainMap") {
-    drawTerrainSmallMap();
-  } else if (world.drawingType === "smallProv" || world.drawingType === "smallWater") {
-    drawTitleSmallMap("province")
+  if (world.drawingType === "black") { // use for empty masks so you don't have to repeat.
+    ctx.fillStyle = "black"
+    ctx.fillRect(0, 0, settings.width, settings.height);
   } else {
-    for (let y = 0; y < world.height; y++) {
-      for (let x = 0; x < world.width; x++) {
-        drawCell(x, y);
+    
+    // Iterate over each cell in the world and draw it
+    createCellTerrains()
+    if (world.drawingType === "terrainMap") {
+      drawTerrainSmallMap();
+    } else if (world.drawingType === "smallProv" || world.drawingType === "smallWater") {
+      drawTitleSmallMap("province")
+    } else {
+      for (let y = 0; y < world.height; y++) {
+        for (let x = 0; x < world.width; x++) {
+          drawCell(x, y);
+        }
       }
     }
   }
+  
+
 
 }
 
