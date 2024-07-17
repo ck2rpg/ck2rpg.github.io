@@ -415,14 +415,15 @@
               </div>
 
               <div>
-                <p>Province Settings:</p>
+                <p class="outset-text">Province Settings:</p>
                 <label for="max-land-provinces">Max Land Provinces:</label>
                 <input type="number" min="100" max="10000" value="8000" oninput="updateMaxLandProvinces(this.value)"><br>
                 <label for="max-water-provinces">Max Water Provinces:</label>
                 <input type="number" min="100" max="10000" value="8000" oninput="updateMaxWaterProvinces(this.value)"><br>
                 <label for="max-fill-in">Max Fill In Attempts:</label>
-                <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)"><br>
-                <p>Warning: DEFAULT LIMITS SUGGESTED ABOVE. If you reduce the maximum number of provinces, you need to increase the fill. For example, I've had good results with 300 provinces at 300 fill. Increasing the fill slows the generator significantly.</p>
+                <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)"><br><br><br>
+                <p>Warning: DEFAULT MAX LIMITS SUGGESTED ABOVE. If you reduce the maximum number of provinces, you need to increase the fill. For example, I've had good results with 300 provinces at 300 fill. Increasing the fill slows the generator significantly.</p>
+                <br><br>
               </div>
       
               <div class="sbtn menu-btn" id="tracking-toggle">
