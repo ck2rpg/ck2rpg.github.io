@@ -414,17 +414,17 @@
                   <option value="1024x512">1024x512</option>
                 </select> 
               </div>
+              <div>
+                <label for="map-sizes">Generator Resolution:</label>
 
-              <label for="map-sizes">Generator Resolution:</label>
-
-              <select name="generator-resolution" id="generator-resolution">
-                <option value="512x256">512x256</option>
-                <option value="1024x512">1024x512</option>
-                <option value="2048x1024">2048x1024</option>
-                <option value="4096x2048">4096x2048</option>
-                <option value="8192x4096">8192x4096</option>
-              </select>
-              
+                <select name="generator-resolution" id="generator-resolution">
+                  <option value="512x256">512x256</option>
+                  <option value="1024x512">1024x512</option>
+                  <option value="2048x1024">2048x1024</option>
+                  <option value="4096x2048">4096x2048</option>
+                  <option value="8192x4096">8192x4096</option>
+                </select>
+            </div>
               <label for="heightmap-adjuster">Adjust Heightmap Import</label>
               <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
             </div>
