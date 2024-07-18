@@ -674,7 +674,7 @@ function drawWorld() {
   function drawHeightmapCell(x, y) {
     let cell = world.smallMap[y][x]
     let c;
-    if (cell) {
+    if (cell && settings.varyElevation) {
       c = Math.floor((cell.elevation / 2))
       if (c > (limits.seaLevel.upper + 5)) {
         c += getRandomInt(-5, 5)
@@ -940,6 +940,8 @@ function drawTerrainSmallMap() {
           color = `rgb(200, 100, 25)`
         } else if (cell.terrain === "wetlands") {
           color = `rgb(77, 153, 153)`
+        } else {
+          color = "rgb(255, 0, 0)"
         }
       }
       drawSmallPixel(ctx, j, i, color)

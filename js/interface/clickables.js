@@ -718,3 +718,40 @@ document.getElementById('map-sizes').addEventListener('change', function(event) 
   resetClimateLimits()
   drawWorld()
 });
+
+document.getElementById('generator-resolution').addEventListener('change', function(event) {
+  const selectedValue = event.target.value;
+  const [width, height] = selectedValue.split('x').map(Number);
+  world = {}
+  createWorld(width, height)
+  settings.pixelSize = settings.height / world.height
+  resetClimateLimits()
+  drawWorld()
+});
+
+let heightmapAdjuster = 0
+function updateHeightmapAdjuster(num) {
+  heightmapAdjuster = num;
+}
+
+let allImagesChecked = true;
+
+GID("toggle-all-image-downloads").onclick = function() {
+  toggleAllImages()
+}
+
+function toggleAllImages() {
+  if (allImagesChecked) {
+    let els = document.getElementsByClassName("imageDownloadCheckbox")
+    for (let i = 0; i < els.length; i++) {
+      els[i].checked = false;
+    }
+    allImagesChecked = false;
+  } else {
+    let els = document.getElementsByClassName("imageDownloadCheckbox")
+    for (let i = 0; i < els.length; i++) {
+      els[i].checked = true;
+    }
+    allImagesChecked = true;
+  }
+}

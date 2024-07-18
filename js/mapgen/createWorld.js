@@ -2,8 +2,13 @@
  * Creates the world by initializing a blank world, setting up spreading centers,
  * creating spreading lines, and generating horizontal spreading lines.
  */
-function createWorld() {
-    createBlankWorld();
+function createWorld(w, h) {
+    if (w, h) {
+      createBlankWorld(h, w);
+    } else {
+      createBlankWorld()
+    }
+
     createSpreadingCenters();
     world.tectonics.spreadingCenters.forEach(center => {
       createSpreadingLine(center);
@@ -26,6 +31,7 @@ function createWorld() {
     setGeographicalPoints();
     initializeFeatureArrays();
     populateWorldMap();
+    resetVaryRanges()
   }
   
   /**

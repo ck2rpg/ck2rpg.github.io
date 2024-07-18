@@ -57,6 +57,7 @@ function createCellTerrains() { // understand that you are passing two different
           let cell = world.map[i][j]
           let x = j
           let y = i * settings.pixelSize;
+          
           if (cell.terrainMarked) {
 
           } else {

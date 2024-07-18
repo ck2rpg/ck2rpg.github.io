@@ -1,11 +1,12 @@
 document.getElementById('imageUpload').addEventListener('change', function(event) {
-    const canvas = document.getElementById('heightmap-upload-canvas');
+    //const canvas = document.getElementById('heightmap-upload-canvas');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const file = event.target.files[0];
     const reader = new FileReader();
 
-    function getGreyscalePixelAt(pixels, x, y) {
-        let yMult = y * 512 * 4; // could change this to allow more
+    function getGreyscalePixelAt(pixels, x, y, imgWidth) {
+        let yMult = y * world.width * 4; // could change this to allow more
         let xMult = x * 4
         let total =  yMult + xMult
         return pixels.data[total]
@@ -25,8 +26,8 @@ document.getElementById('imageUpload').addEventListener('change', function(event
             // Calculate the dimensions to fit the image within 512x512
             let width = img.width;
             let height = img.height;
-            const maxWidth = 512;
-            const maxHeight = 512;
+            const maxWidth = world.width;
+            const maxHeight = world.height;
 
             if (width > maxWidth || height > maxHeight) {
                 if (width > height) {
@@ -37,23 +38,23 @@ document.getElementById('imageUpload').addEventListener('change', function(event
                     height = maxHeight;
                 }
             }
-
             // Clear the canvas and draw the image
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(img, 0, 0, world.width, world.height);
+            console.log("here")
 
             // Get the image data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixelData = imageData.data; // This is a Uint8ClampedArray
+            const imageData = ctx.getImageData(0, 0, world.width, world.height);
 
             // Log the pixel data array to the console
             for (let i = 0; i < world.height; i++) {
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
                     cell.elevation = getGreyscalePixelAt(imageData, j, i);
+                    cell.elevation += parseInt(heightmapAdjuster)
                 }
             }
-            drawWorld()
+            //drawWorld()
         };
         img.src = event.target.result;
 

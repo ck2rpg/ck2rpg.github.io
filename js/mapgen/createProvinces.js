@@ -537,15 +537,21 @@ async function createProvinces() {
     getDominantTerrain(world.provinces)
     await updateDOM("Creating Province Terrain", 10);
 
-    floodFillWaterProvinces();
-    await updateDOM("Identifying Waterbodies", 11);
+    if (world.width === 512) {
+        floodFillWaterProvinces();
+        await updateDOM("Identifying Waterbodies", 11);
+    
+        clearFloodFillProvinces();
+        floodFillContinents();
+        await updateDOM("Identifying Continents", 12);
+    
+        mapProvincesToContinents();
+        await updateDOM("Mapping Provinces to Continents", 13);
+    } else {
+        console.log("Skipped flood filling continents and waterbodies because resolution is too large")
+    }
 
-    clearFloodFillProvinces();
-    floodFillContinents();
-    await updateDOM("Identifying Continents", 12);
 
-    mapProvincesToContinents();
-    await updateDOM("Mapping Provinces to Continents", 13);
 
     assignDaylight();
     await updateDOM("Assigning Daylight", 14);

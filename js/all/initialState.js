@@ -12,6 +12,7 @@ settings.equator = (settings.height - settings.height / 10)
 settings.riversDistance = 1000
 settings.riverIntoOcean = 1
 settings.ethnicities = "vanilla"
+settings.varyElevation = false;
 let waterProvinceCounter = 0;
 let landProvinceCounter = 0;
 settings.landProvinceLimit = 8000 // 8000
@@ -52,7 +53,13 @@ limits.seaLevel = {
 function createVaryRange() {
   let arr = [];
   let last = 0;
-  for (let i = 0; i < 512; i++) {
+  let w;
+  if (world) {
+    w = world.width;
+  } else {
+    w = 512
+  }
+  for (let i = 0; i < w; i++) {
     last += getRandomInt(-1, 1);
     if (last > 15) {
       last = 15
@@ -82,7 +89,15 @@ function resetClimateLimits() {
   modifyClimate(limits.subTropical);
   modifyClimate(limits.temperate);
   modifyClimate(limits.cold);
+  resetVaryRanges()
 }
+
+function resetVaryRanges() {
+  limits.tropical.varyRange = createVaryRange();
+  limits.subTropical.varyRange = createVaryRange()
+  limits.temperate.varyRange = createVaryRange();
+  limits.cold.varyRange = createVaryRange();
+  }
 
 limits.tropical = {
   lower: 0,
@@ -91,8 +106,6 @@ limits.tropical = {
   upperBase: 1007,
 }
 
-limits.tropical.varyRange = createVaryRange();
-
 limits.subTropical = {
   lower: 1008,
   lowerBase: 1008,
@@ -100,7 +113,7 @@ limits.subTropical = {
   upperBase: 1520
 }
 
-limits.subTropical.varyRange = createVaryRange()
+
 
 limits.temperate = {
   lower: 1521,
@@ -109,7 +122,6 @@ limits.temperate = {
   upperBase: 2865
 }
 
-limits.temperate.varyRange = createVaryRange();
 
 limits.cold = {
   lower: 2866,
@@ -120,7 +132,7 @@ limits.cold = {
   upperBase: 4096
 }
 
-limits.cold.varyRange = createVaryRange();
+
 
 
 
