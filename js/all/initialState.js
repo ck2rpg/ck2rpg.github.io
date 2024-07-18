@@ -18,6 +18,7 @@ let landProvinceCounter = 0;
 settings.landProvinceLimit = 8000 // 8000
 settings.waterProvinceLimit = 10000 //10000
 settings.fillInLimit = 20
+settings.massBrushAdjuster = 1
 
 
 let brush = {}

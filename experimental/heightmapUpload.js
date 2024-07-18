@@ -50,7 +50,7 @@ document.getElementById('imageUpload').addEventListener('change', function(event
             for (let i = 0; i < world.height; i++) {
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
-                    cell.elevation = getGreyscalePixelAt(imageData, j, i);
+                    cell.elevation = Math.floor(getGreyscalePixelAt(imageData, j, i) * 5);
                     cell.elevation += parseInt(heightmapAdjuster)
                 }
             }

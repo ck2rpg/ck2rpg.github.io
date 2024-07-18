@@ -1,39 +1,66 @@
-function raiseMountains() {
+function raiseMountains(num) {
   let mountains = getMountains();
+  console.log(mountains)
   for (let i = 0; i < mountains.length; i++) {
-    mountains[i].elevation += 1;
+    if (num) {
+      mountains[i].elevation += num;
+    } else {
+      mountains[i].elevation += 1;
+    }
   }
-}
-
-function lowerSeaLevel() {
-  limits.seaLevel.upper -= 1;
-}
-
-function raiseSeaLevel() {
-  limits.seaLevel.upper += 1;
 }
 
 function lowerMountains(num) {
   let mountains = getMountains();
   for (let i = 0; i < mountains.length; i++) {
-    mountains[i].elevation -= num;
-  }
-}
-
-function raiseElevation() {
-  for (let i = 0; i < world.height; i++) {
-    for (let j = 0; j < world.width; j++) {
-      let cell = xy(j, i);
-      cell.elevation += 1;
+    if (num) {
+      mountains[i].elevation -= num;
+    } else {
+      mountains[i].elevation -= 1;
     }
   }
 }
 
-function lowerElevation() {
+function lowerSeaLevel(num) {
+  if (num) {
+    limits.seaLevel.upper -= num;
+  } else {
+    limits.seaLevel.upper -= 1;
+  }
+}
+
+function raiseSeaLevel() {
+  if (num) {
+    limits.seaLevel.upper += num;
+  } else {
+    limits.seaLevel.upper += 1;
+  }
+}
+
+
+
+function raiseElevation(num) {
   for (let i = 0; i < world.height; i++) {
     for (let j = 0; j < world.width; j++) {
       let cell = xy(j, i);
-      cell.elevation -= 1;
+      if (num) {
+        cell.elevation += num;
+      } else {
+        cell.elevation += 1;
+      }
+    }
+  }
+}
+
+function lowerElevation(num) {
+  for (let i = 0; i < world.height; i++) {
+    for (let j = 0; j < world.width; j++) {
+      let cell = xy(j, i);
+      if (num) {
+        cell.elevation -= num;
+      } else {
+        cell.elevation -= 1;
+      }
     }
   }
 }

@@ -314,6 +314,11 @@
     
               <img class="img-icon"  id="water-to-sea-level" src="icons/water-to-sea-level.png">
               <div class="tooltip" id="tooltip20">Water to Sea Level</div>
+
+              <div>
+                <label for="mass-brush-adjuster">Adjustment Level</label>
+                <input type="number" id="mass-brush-adjuster" min="-100" max="100" value="0" step="1" oninput="updateMassBrushAdjuster(this.value)">
+              </div>
     
               <p class="outset-text">Brushes:</p>
     
@@ -425,6 +430,7 @@
                   <option value="8192x4096">8192x4096</option>
                 </select>
             </div>
+            <div>
               <label for="heightmap-adjuster">Adjust Heightmap Import</label>
               <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
             </div>

@@ -151,22 +151,22 @@ GID("startup").onclick = function() {
 }
 
 GID("increase-elevation-icon").onclick = function() {
-  raiseElevation()
+  raiseElevation(settings.massBrushAdjuster)
   drawWorld()
 }
 
 GID("decrease-elevation-icon").onclick = function() {
-  lowerElevation()
+  lowerElevation(settings.massBrushAdjuster)
   drawWorld()
 }
 
 GID("lower-mountains-icon").onclick = function() {
-  lowerMountains(10);
+  lowerMountains(settings.massBrushAdjuster);
   drawWorld()
 }
 
 GID("raise-mountains-icon").onclick = function() {
-  raiseMountains(10)
+  raiseMountains(settings.massBrushAdjuster)
   drawWorld()
 }
 
@@ -706,6 +706,10 @@ function updateMaxWaterProvinces(num) {
 
 function updateMaxFill(num) {
   settings.fillInLimit = parseInt(num)
+}
+
+function updateMassBrushAdjuster(num) {
+  settings.massBrushAdjuster += parseInt(num)
 }
 
 document.getElementById('map-sizes').addEventListener('change', function(event) {
