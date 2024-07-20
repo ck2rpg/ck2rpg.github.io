@@ -151,7 +151,7 @@ canvas.style.height = '100vh';  // Example display size
 var ctx = canvas.getContext('2d')
 
 //let paintbrush = "raiseLand"
-let paintbrush = "provinceOverride"
+let paintbrush = "raiseLand"
 let paintbrushSize = 30;
 let paintbrushHardness = 50;
 let paintbrushLast = 0
