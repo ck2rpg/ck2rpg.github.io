@@ -669,6 +669,7 @@ GID("full-province-map").onclick = function() {
   startProvinceEditor()
 }
 
+
 GID("only-land-map").onclick = function() {
   drawProvinceMapWithoutOceans()
   GID("province-drawn-proceed").style.display = "none"
@@ -725,6 +726,15 @@ document.getElementById('map-sizes').addEventListener('change', function(event) 
   resetClimateLimits()
   drawWorld()
 });
+
+GID("absoluteBrush").addEventListener('change', function(event) {
+  const selectedValue = event.target.value;
+  if (selectedValue === "true") {
+    paintbrushAbsolute = true;
+  } else {
+    paintbrushAbsolute = false;
+  }
+})
 
 document.getElementById('generator-resolution').addEventListener('change', function(event) {
   const selectedValue = event.target.value;

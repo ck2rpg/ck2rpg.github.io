@@ -154,12 +154,21 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             }
           }
           if (brushType === "dropLand") {
-            nextCell.elevation -= currHardness;
+            if (paintbrushAbsolute) {
+              nextCell.elevation = currHardness;
+            } else {
+              nextCell.elevation -= currHardness;
+            }
+            
             if (nextCell.elevation < limits.seaLevel.lower) {
               nextCell.elevation = limits.seaLevel.lower + 1;
             }
           } else if (brushType === "raiseLand") {
-            nextCell.elevation += parseInt(currHardness);
+            if (paintbrushAbsolute) {
+              nextCell.elevation = parseInt(currHardness);
+            } else {
+              nextCell.elevation += parseInt(currHardness);
+            }
           } else if (brushType === "provinceOverride") {
             if (nextCell.elevation > limits.seaLevel.upper) {
               nextCell.provinceOverride = paintbrushTitle

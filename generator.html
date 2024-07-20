@@ -390,14 +390,21 @@
             
               
               <p class="outset-text">Brush Settings:</p>
+              <div>
+                <lable for="absoluteBrush">Absolute</lable>
+                <select name="absoluteBrush" id="absoluteBrush">
+                  <option value="true">True</option>
+                  <option value="false" selected>False</option>
+                </select>
+              </div>
               <div class="slider-container">
                 <label for="sizeSlider" class="slider-label">Size</label>
-                <input type="range" id="sizeSlider" class="slider" min="0" max="100" value="30" step="1" oninput="updateSliderValue(this.value)">
+                <input type="number" id="sizeSlider" min="0" max="2000" value="30" step="1" oninput="updateSliderValue(this.value)">
                 <!--<input type="number" id="sizeValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updateSlider(this.value)">-->
               </div>
               <div class="slider-container">
                 <label for="powerSlider" class="slider-label">Power</label>
-                <input type="range" id="powerSlider" class="slider" min="0" max="100" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
+                <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
                   <!--<input type="number" id="powerValue" class="slider-value" min="0" max="100" step="1" value="1" onchange="updatePowerSlider(this.value)">-->
               </div>
               <p class="outset-text">Map Settings:</p>

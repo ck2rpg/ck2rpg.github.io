@@ -162,6 +162,7 @@ let paintbrushTitle = "0, 0, 0"
 let paintbrushTitleR = 0;
 let paintbrushTitleG = 0;
 let paintbrushTitleB = 0;
+let paintbrushAbsolute = false;
 let saveState = false;
 GID("tracking-toggle").onclick = function() {
   if (saveState === false) {
