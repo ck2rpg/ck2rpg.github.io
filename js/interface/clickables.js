@@ -109,6 +109,7 @@ function updateSliderValue(value) {
 }
 
 function updateSlider(value) {
+  
   paintbrushSize = value;
   //document.getElementById('sizeSlider').value = value;
 }
@@ -575,7 +576,7 @@ function setRedBrush() {
     const x = (event.clientX - rect.left)
     const y = (event.clientY - rect.top)
     
-    const brushSize = paintbrushSize * 16 / scaleY; // Scaling brush size
+    const brushSize = paintbrushSize * settings.pixelSize / scaleY; // Scaling brush size
 
     bbb.style.width = `${brushSize}px`;  // Setting the width of the brush preview
     bbb.style.height = `${brushSize}px`; // Setting the height of the brush preview
