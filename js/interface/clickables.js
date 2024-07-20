@@ -268,6 +268,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   functionsToExecute.push(() => writeHybridCulturesLocalization())
   functionsToExecute.push(() => writeGenerators());
   functionsToExecute.push(() => writeDefines());
+  functionsToExecute.push(() => writeHeightmapHeightmap())
   
   const delayBetweenDownloads = 200;
   downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
@@ -470,6 +471,7 @@ GID("province-drawn-proceed").onclick = function() {
 GID("province-edits-done-proceed").onclick = function() {
   saveLastProvince()
   removeEmptyTitles()
+  world.smallMap = null
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
   ctx.fillStyle = "rgb(0, 0, 0)"

@@ -27,6 +27,8 @@ function createWorld(w, h) {
     if (w) {
       world.width = w
     }
+    settings.pixelSize = settings.height / world.height
+    resetClimateLimits()
     initializeWorldSettings();
     setGeographicalPoints();
     initializeFeatureArrays();

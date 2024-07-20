@@ -473,6 +473,7 @@ function createProvince(x, y, landWater, cell) {
 
 
 async function createProvinces() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     // Initialize all messages
     initializeMessages();
 
@@ -537,10 +538,11 @@ async function createProvinces() {
     getDominantTerrain(world.provinces)
     await updateDOM("Creating Province Terrain", 10);
 
+    floodFillWaterProvinces();
+    await updateDOM("Identifying Waterbodies", 11);
+
     if (world.width === 512) {
-        floodFillWaterProvinces();
-        await updateDOM("Identifying Waterbodies", 11);
-    
+        //is this a good limit? Kills memory because it is small cell based. Could we replace with floodFillContinentsByProvince?
         clearFloodFillProvinces();
         floodFillContinents();
         await updateDOM("Identifying Continents", 12);

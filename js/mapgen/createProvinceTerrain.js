@@ -234,7 +234,7 @@ function assignSubTropicalTerrain(p) {
     } else if (p.adjacentToWater.length > 0) {
         p.terrain = "jungle"
     } else {
-        p.terrain = "plains"
+        p.terrain = "desert"
     }
 }
 

@@ -4,6 +4,9 @@ document.getElementById('imageUpload').addEventListener('change', function(event
     const ctx = canvas.getContext('2d');
     const file = event.target.files[0];
     const reader = new FileReader();
+    
+    let divider = GID("import-divider-adjuster").value;
+    let multiplier = GID("import-multiplier-adjuster").value;
 
     function getGreyscalePixelAt(pixels, x, y, imgWidth) {
         let yMult = y * world.width * 4; // could change this to allow more
@@ -50,8 +53,17 @@ document.getElementById('imageUpload').addEventListener('change', function(event
             for (let i = 0; i < world.height; i++) {
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
-                    cell.elevation = Math.floor(getGreyscalePixelAt(imageData, j, i) * 5);
-                    cell.elevation += parseInt(heightmapAdjuster)
+                    cell.elevation = Math.floor(getGreyscalePixelAt(imageData, j, i)); //5 for CK map
+                    if (cell.elevation > 37) {
+                        cell.elevation += parseInt(heightmapAdjuster * 2)
+                        cell.elevation /= divider
+                        cell.elevation *= multiplier
+                        if (cell.elevation < 38) {
+                            cell.elevation = 38
+                        }
+                    } else {
+                        cell.elevation *= multiplier
+                    }
                 }
             }
             //drawWorld()

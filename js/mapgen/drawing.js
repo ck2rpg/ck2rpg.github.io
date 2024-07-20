@@ -674,8 +674,8 @@ function drawWorld() {
   function drawHeightmapCell(x, y) {
     let cell = world.smallMap[y][x]
     let c;
+    c = Math.floor((cell.elevation / 5)) //was cell.elevation / 2 - should match whatever we scale incoming heightmap to (right now * 5 because max el is 51)
     if (cell && settings.varyElevation) {
-      c = Math.floor((cell.elevation / 2))
       if (c > (limits.seaLevel.upper + 5)) {
         c += getRandomInt(-5, 5)
       }
