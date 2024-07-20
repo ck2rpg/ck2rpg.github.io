@@ -125,13 +125,25 @@ function updatePowerSlider(value) {
   paintbrushHardness = value
 }
 
+function debounce(func, timeout = 300){
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+const equatorChange = debounce(() => updateEquatorValue());
+
 function updateEquatorValue(value) {
-  settings.equator = parseInt(value)
+  settings.equator = parseInt(GID("equatorSlider").value)
   drawWorld()
 }
 
+const riverChange = debounce(() => updateRiversValue())
+
 function updateRiversValue(value) {
-  settings.riversDistance = 30 - value;
+  settings.riversDistance = 31 - parseInt(GID("riversSlider").value);
   rerunRivers()
   cleanupAll()
   drawWorld()

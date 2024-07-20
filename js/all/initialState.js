@@ -75,13 +75,13 @@ function createVaryRange() {
 
 
 function modifyClimate(t) {
-  let mod = world.width / 8192;
+  let mod = settings.width / 8192;
   t.lower = Math.floor(t.lowerBase * mod);
   t.upper = Math.floor(t.upperBase * mod);
   if (t.plains) {
     t.plains = Math.floor(t.plains * mod)
   }
-  settings.equator = (world.height - world.height / 10)
+  settings.equator = (settings.height - settings.height / 10)
 
 }
 
