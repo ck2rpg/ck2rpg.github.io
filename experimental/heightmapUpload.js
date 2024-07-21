@@ -66,7 +66,9 @@ document.getElementById('imageUpload').addEventListener('change', function(event
                     }
                 }
             }
-            //drawWorld()
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            world.drawingType = "heightmap"
+            drawWorld()
         };
         img.src = event.target.result;
 
