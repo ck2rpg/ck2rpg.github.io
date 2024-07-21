@@ -765,6 +765,8 @@ function updateHeightmapAdjuster(num) {
   heightmapAdjuster = num;
 }
 
+let limitAdjuster = debounce(() => adjustLimits());
+
 function adjustLimits() {
   const tropicalUpper = parseInt(document.getElementById('tropicalUpper').value);
   const subTropicalUpper = parseInt(document.getElementById('subTropicalUpper').value);
@@ -782,10 +784,6 @@ function adjustLimits() {
   document.getElementById('temperateUpper').value = limits.temperate.upper
   drawWorld()
 }
-
-document.querySelectorAll('.climateChanger').forEach(slider => {
-  slider.addEventListener('input', adjustLimits);
-});
 
 document.getElementById('overrideSelect').addEventListener('change', function() {
   settings.overrideWithFlatmap = this.value === 'true';

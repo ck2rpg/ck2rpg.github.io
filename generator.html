@@ -50,6 +50,19 @@
         <hr>
         <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
    
+        <p class="text-intro">Alpha 0.4.0 Release</p>
+        <p class="main-landing-text">Minor quality of life changes</p>
+        <p class="main-landing-heading">0.4.0 Change Log</p>
+        <p class="main-landing-text">
+          -Feature: Added an option to override zoomed in terrain with flat map through shader generation (thanks to terrapass at mod coop for the inspiration through an unrelated question)<br>
+          -Feature: Added an equator line to the color map.<br>
+          -Feature: Added ability to modify broad climate zones. You set the upper limit of their distance from equator, and the zones run sequentially up to their upper distance.<br>
+          -TUTORIAL UPDATE: I added a new part to step 14 to clarify that you also need to <em>REPACK THE HEIGHTMAP</em>!
+          -Bug Fix: The last update created a problem where heighmaps were showing in their original state on import. I changed it to draw the heightmap in the generator state.<br>
+          -Bug Fix: Fixed bug where brush power was initially set incorrectly and did not match the slider.<br>
+          -Known remaining problem from last update: The farther a map size and resolution gets away from vanilla sizes, the more jagged everything becomes. This is due to an error in the blur process in post-processing. I am working on it, but it is not solved yet.<br>
+        </p>
+
         <p class="text-intro">Alpha 0.3.0 Release</p>
         <p class="main-landing-text">Introduced generator resolution!</p>
         <p class="main-landing-heading">0.3.0 Change Log</p>
@@ -343,16 +356,19 @@
             </div>
 
             <div class="slider-container">
-              <label for="tropicalUpper">Tropical:&nbsp&nbsp</label>
-              <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007">
+              <div class="tt"><label for="tropicalUpper">Tropical:&nbsp&nbsp</label>
+              <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007" oninput="limitAdjuster()">
+              <span class="ttText">What Y distance from the equator (black line on color map) does the tropical climate zone end?</span></div>
             </div>
             <div class="slider-container">
-              <label for="subTropicalUpper">Sub-Tropical:&nbsp&nbsp</label>
-              <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520">
+              <div class="tt"><label for="tropicalUpper">Sub-Tropical:&nbsp&nbsp</label>
+              <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520" oninput="limitAdjuster()">
+              <span class="ttText">What Y distance from the equator (black line on color map) does the subtropical climate zone end?</span></div>
             </div>
             <div class="slider-container">
-              <label for="temperateUpper">Temperate:&nbsp&nbsp</label>
-              <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865">
+              <div class="tt"><label for="temperateUpper">Temperate:&nbsp&nbsp</label>
+              <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
+              <span class="ttText">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span></div>
             </div>
 
             <div class="slider-container">
