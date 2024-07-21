@@ -242,38 +242,40 @@ GID("download-all-checked-images").onclick = function() {
 GID("write-all-checked-texts-button").onclick = function() {
   const functionsToExecute = [];
   
-  if (document.getElementById('provinceDefinitionsCheckbox').checked) functionsToExecute.push(() => writeProvinceDefinitions());
-  if (document.getElementById('landedTitlesCheckbox').checked) functionsToExecute.push(() => writeLandedTitles());
-  if (document.getElementById('locatorsBuildingsCheckbox').checked) functionsToExecute.push(() => writeLocators("buildings"));
-  if (document.getElementById('locatorsSpecialBuildingCheckbox').checked) functionsToExecute.push(() => writeLocators("special_building"));
-  if (document.getElementById('locatorsCombatCheckbox').checked) functionsToExecute.push(() => writeLocators("combat"));
-  if (document.getElementById('locatorsSiegeCheckbox').checked) functionsToExecute.push(() => writeLocators("siege"));
-  if (document.getElementById('locatorsUnitStackCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack"));
-  if (document.getElementById('locatorsUnitStackPlayerOwnedCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_player_owned"));
-  if (document.getElementById('locatorsUnitStackOtherOwnerCheckbox').checked) functionsToExecute.push(() => writeLocators("unit_stack_other_owner"));
+  functionsToExecute.push(() => writeProvinceDefinitions());
+  functionsToExecute.push(() => writeLandedTitles());
+  functionsToExecute.push(() => writeLocators("buildings"));
+  functionsToExecute.push(() => writeLocators("special_building"));
+  functionsToExecute.push(() => writeLocators("combat"));
+  functionsToExecute.push(() => writeLocators("siege"));
+  functionsToExecute.push(() => writeLocators("unit_stack"));
+  functionsToExecute.push(() => writeLocators("unit_stack_player_owned"));
+  functionsToExecute.push(() => writeLocators("unit_stack_other_owner"));
   functionsToExecute.push(() => writeLocators("activities"));
-  if (document.getElementById('culturesCheckbox').checked) functionsToExecute.push(() => outputCultures());
-  if (document.getElementById('simpleHistoryCheckbox').checked) functionsToExecute.push(() => makeSimpleHistory());
-  if (document.getElementById('charactersCheckbox').checked) functionsToExecute.push(() => outputCharacters());
-  if (document.getElementById('historyCheckbox').checked) functionsToExecute.push(() => outputHistory());
-  if (document.getElementById('titleLocalizationCheckbox').checked) functionsToExecute.push(() => writeTitleLocalization());
-  if (document.getElementById('cultureLocalizationCheckbox').checked) functionsToExecute.push(() => writeCultureLocalization());
-  if (document.getElementById('nameListsCheckbox').checked) functionsToExecute.push(() => outputNameLists());
-  if (document.getElementById('ethnicitiesCheckbox').checked) functionsToExecute.push(() => outputEthnicities());
-  if (document.getElementById('languagesCheckbox').checked) functionsToExecute.push(() => outputLanguages());
-  if (document.getElementById('heritagesCheckbox').checked) functionsToExecute.push(() => outputHeritages());
-  if (document.getElementById('provinceTerrainCheckbox').checked) functionsToExecute.push(() => writeProvinceTerrain());
+  functionsToExecute.push(() => outputCultures());
+  functionsToExecute.push(() => makeSimpleHistory());
+  functionsToExecute.push(() => outputCharacters());
+  functionsToExecute.push(() => outputHistory());
+  functionsToExecute.push(() => writeTitleLocalization());
+  functionsToExecute.push(() => writeCultureLocalization());
+  functionsToExecute.push(() => outputNameLists());
+  functionsToExecute.push(() => outputEthnicities());
+  functionsToExecute.push(() => outputLanguages());
+  functionsToExecute.push(() => outputHeritages());
+  functionsToExecute.push(() => writeProvinceTerrain());
   //if (document.getElementById('nameListLocCheckbox').checked) functionsToExecute.push(() => outputNameListLoc());
-  if (document.getElementById('heritageLocalizationCheckbox').checked) functionsToExecute.push(() => outputHeritageLocalization());
-  if (document.getElementById('languagesLocalizationCheckbox').checked) functionsToExecute.push(() => outputLanguagesLocalization());
-  if (document.getElementById('dynastyLocalizationCheckbox').checked) functionsToExecute.push(() => writeDynastyLocalization());
-  if (document.getElementById('bookmarkCheckbox').checked) functionsToExecute.push(() => writeBookmark());
-  if (document.getElementById('bookmarkGroupCheckbox').checked) functionsToExecute.push(() => writeBookmarkGroup());
-  if (document.getElementById('religionOutputCheckbox').checked) functionsToExecute.push(() => religionOutputter());
-  if (document.getElementById('defaultMapCheckbox').checked) functionsToExecute.push(() => writeDefaultMap());
-  if (document.getElementById('winterSeverityCheckbox').checked) {
-    functionsToExecute.push(() => createWinterSeverity());
-    functionsToExecute.push(() => writeWinterSeverity());
+  functionsToExecute.push(() => outputHeritageLocalization());
+  functionsToExecute.push(() => outputLanguagesLocalization());
+  functionsToExecute.push(() => writeDynastyLocalization());
+  functionsToExecute.push(() => writeBookmark());
+  functionsToExecute.push(() => writeBookmarkGroup());
+  functionsToExecute.push(() => religionOutputter());
+  functionsToExecute.push(() => writeDefaultMap());
+  functionsToExecute.push(() => createWinterSeverity());
+  functionsToExecute.push(() => writeWinterSeverity());
+  if (settings.overrideWithFlatmap) {
+    functionsToExecute.push(() => writeTerrainShader())
+    functionsToExecute.push(() => writeWaterShader())
   }
   functionsToExecute.push(() => moveToImageDownloads())
   functionsToExecute.push(() => writeDescriptor());
@@ -763,24 +765,28 @@ function updateHeightmapAdjuster(num) {
   heightmapAdjuster = num;
 }
 
-let allImagesChecked = true;
+function adjustLimits() {
+  const tropicalUpper = parseInt(document.getElementById('tropicalUpper').value);
+  const subTropicalUpper = parseInt(document.getElementById('subTropicalUpper').value);
+  const temperateUpper = parseInt(document.getElementById('temperateUpper').value);
 
-GID("toggle-all-image-downloads").onclick = function() {
-  toggleAllImages()
+  limits.tropical.upper = tropicalUpper;
+  limits.subTropical.lower = tropicalUpper + 1;
+  limits.subTropical.upper = subTropicalUpper;
+  limits.temperate.lower = subTropicalUpper + 1;
+  limits.temperate.upper = temperateUpper;
+  limits.cold.lower = temperateUpper + 1;
+  limits.cold.upper = 4096; // Assuming the maximum limit is fixed
+  document.getElementById('tropicalUpper').value = limits.tropical.upper;
+  document.getElementById('subTropicalUpper').value = limits.subTropical.upper;
+  document.getElementById('temperateUpper').value = limits.temperate.upper
+  drawWorld()
 }
 
-function toggleAllImages() {
-  if (allImagesChecked) {
-    let els = document.getElementsByClassName("imageDownloadCheckbox")
-    for (let i = 0; i < els.length; i++) {
-      els[i].checked = false;
-    }
-    allImagesChecked = false;
-  } else {
-    let els = document.getElementsByClassName("imageDownloadCheckbox")
-    for (let i = 0; i < els.length; i++) {
-      els[i].checked = true;
-    }
-    allImagesChecked = true;
-  }
-}
+document.querySelectorAll('.climateChanger').forEach(slider => {
+  slider.addEventListener('input', adjustLimits);
+});
+
+document.getElementById('overrideSelect').addEventListener('change', function() {
+  settings.overrideWithFlatmap = this.value === 'true';
+});

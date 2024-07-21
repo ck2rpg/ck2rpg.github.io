@@ -641,6 +641,9 @@ function drawWorld() {
   if (world.drawingType === "black") { // use for empty masks so you don't have to repeat.
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, settings.width, settings.height);
+  } else if (world.drawingType === "white") {
+    ctx.fillStyle = "white"
+    ctx.fillRect(0, 0, settings.width, settings.height);
   } else {
     
     // Iterate over each cell in the world and draw it
@@ -654,6 +657,12 @@ function drawWorld() {
         for (let x = 0; x < world.width; x++) {
           drawCell(x, y);
         }
+      }
+      if (world.drawingType === "colorful") {
+        ctx.beginPath(); // Start a new path
+        ctx.moveTo(0, settings.equator); 
+        ctx.lineTo(settings.width, settings.equator); 
+        ctx.stroke(); // Render the path
       }
     }
   }
