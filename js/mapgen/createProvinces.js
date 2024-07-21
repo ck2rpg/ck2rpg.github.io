@@ -446,12 +446,6 @@ function createProvince(x, y, landWater, cell) {
     province.mountains = []
     province.population = 0
     province.elevation = cell.elevation
-    if (landWater === "l") {
-        province.land = true;
-        province.titleName = `${rando()}`
-    } else {
-        province.land = false
-    }
     provinceCount += 1;
     province.geographicalRegions = []
     province.color = cell.color
@@ -460,6 +454,12 @@ function createProvince(x, y, landWater, cell) {
     province.colorR = cell.colorR;
     province.colorG = cell.colorG;
     province.colorB = cell.colorB;
+    if (landWater === "l") {
+        province.land = true;
+        province.titleName = `R${province.colorR}G${province.colorG}B${province.colorB}`
+    } else {
+        province.land = false
+    }
     province.adjacencies = []
     province.x = x; 
     province.y = y;
@@ -1018,7 +1018,7 @@ function setWestEastAdjacency() {
 
 function setHemisphere(province) {
     let h;
-    if (province.y < 2048) {
+    if (province.y < settings.equator) {
         h = 'Northern';
     } else {
         h = 'Southern';
