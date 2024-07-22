@@ -20,6 +20,7 @@ settings.waterProvinceLimit = 10000 //10000
 settings.fillInLimit = 20
 settings.massBrushAdjuster = 1
 settings.overrideWithFlatmap = false;
+settings.elevationToHeightmap = 2;
 
 
 let brush = {}

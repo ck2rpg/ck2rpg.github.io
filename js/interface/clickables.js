@@ -788,3 +788,29 @@ function adjustLimits() {
 document.getElementById('overrideSelect').addEventListener('change', function() {
   settings.overrideWithFlatmap = this.value === 'true';
 });
+
+
+let elevationToHeightmapAdjuster = debounce(() => adjustElevationToHeightmap())
+
+function adjustElevationToHeightmap() {
+  settings.elevationToHeightmap = GID("elevation-to-heightmap").value;
+}
+
+let hillAdjuster = debounce(() => adjustHillLimits())
+
+function adjustHillLimits() {
+  limits.hills.lower = GID("hills-line").value;
+}
+
+let mountainAdjuster = debounce(() => adjustMountainLimits())
+
+function adjustMountainLimits() {
+  limits.mountains.lower = GID("mountain-line").value;
+  limits.hills.upper = limits.mountains.lower - 1;
+}
+
+let snowLineAdjuster = debounce(() => adjustSnowLine())
+
+function adjustSnowLine() {
+  limits.mountains.snowLine = GID("snow-line").value;
+}

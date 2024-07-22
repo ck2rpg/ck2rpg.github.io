@@ -50,6 +50,14 @@
         <hr>
         <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
    
+        <p class="text-intro">Alpha 0.5.0 Release</p>
+        <p class="main-landing-text">Generator Improvements</p>
+        <p class="main-landing-heading">0.5.0 Change Log</p>
+        <p class="main-landing-text">
+          -Feature: Squish your heightmap by editing the generator to heightmap divisor directly from current default of 2. The higher the divisor, the less stark your heightmap and closer your elevation changes.<br>
+          -Feature: Change the generator's lower elevation limits for hills, mountains, and mountain snow lines.<br>
+        </p>
+
         <p class="text-intro">Alpha 0.4.0 Release</p>
         <p class="main-landing-text">Minor quality of life changes</p>
         <p class="main-landing-heading">0.4.0 Change Log</p>
@@ -370,6 +378,32 @@
               <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
               <span class="ttText">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span></div>
             </div>
+
+            <div class="slider-container">
+              <div class="tt"><label for="elevation-to-heightmap">Elevation to Heightmap Divider:&nbsp&nbsp</label>
+              <input type="number" id="elevation-to-heightmap" min="2" max="100" value="2" oninput="elevationToHeightmapAdjuster()">
+              <span class="ttText">In the generator, elevation of land ranges from 37-510. The default divider of 2 converts to where the highest place on heightmap is rgb(255,255,255). Increase the divider value to squish the terrain down and make it less stark. This will not affect the cut-offs for different terrain types.</span></div>
+            </div>
+
+
+            <div class="slider-container">
+              <div class="tt"><label for="hills-line">Hills Elevation:&nbsp&nbsp</label>
+              <input type="number" id="hills-line" min="37" max="510" value="205" oninput="hillAdjuster()">
+              <span class="ttText">When the generator reaches this elevation, hills terrain and masking occurs.</span></div>
+            </div>
+
+            <div class="slider-container">
+              <div class="tt"><label for="mountain-line">Mountain Elevation:&nbsp&nbsp</label>
+              <input type="number" id="mountain-line" min="37" max="510" value="255" oninput="mountainAdjuster()">
+              <span class="ttText">When the generator reaches this elevation, hills change to mountain terrain and masking.</span></div>
+            </div>
+
+            <div class="slider-container">
+              <div class="tt"><label for="snow-line">Snow Line Elevation:&nbsp&nbsp</label>
+              <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
+              <span class="ttText">When the generator reaches this elevation, mountains change to snow line with snow masking.</span></div>
+            </div>
+
 
             <div class="slider-container">
               <label for="import-divider-adjuster"><div class="tt">Imported Divider:&nbsp&nbsp</label>

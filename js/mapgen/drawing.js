@@ -267,7 +267,16 @@ function drawCell(x, y) {
    * @param {Object} cell - The cell to draw.
    */
   function drawHeightmapType(cell) {
-    let c = Math.floor(cell.elevation / 2);
+    let c;
+    if (cell.elevation > 36) {
+      //Squishing in the land to whatever the elevationToHeightmap settings are
+      let el = cell.elevation - 36;
+      c = Math.floor(el / settings.elevationToHeightmap);
+      c += 36
+    } else {
+      //don't squish water
+      c = Math.floor(cell.elevation / 2)
+    }
     c = Math.min(255, Math.max(0, c));
     cell.rgb = `rgb(${c}, ${c}, ${c})`;
     drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
