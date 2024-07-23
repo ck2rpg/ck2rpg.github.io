@@ -857,6 +857,55 @@ function drawProvinceMapWithoutLand() {
   //world.smallMap = null
 }
 
+function drawTitlePixel(x, y, convTitleType) {
+  let color = "rgb(255, 255, 255)"
+  let cell = world.map[y][x]
+  if (cell.elevation <= limits.seaLevel.upper) {
+    if (cell.waterOverride) {
+      color = `rgb(${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB})`
+      drawSmallPixel(ctx, x, y, color)
+    }
+    //do nothing because you drew water above
+  } else {
+    if (cell[`${convTitleType}`]) { //does it have an overide?
+      color = cell[`${convTitleType}`]
+      drawSmallPixel(ctx, x, y, color)
+    } else {
+      if (cell.terrain === "plains") {
+        color = `rgb(204, 163, 102)`
+      } else if (cell.terrain === "desert") {
+        color = `rgb(255, 230, 0)`
+      } else if (cell.terrain === "drylands") {
+        color = `rgb(220, 45, 120)`
+      } else if (cell.terrain === "floodplains") {
+        color = `rgb(55, 31, 153)`
+      } else if (cell.terrain === `hills`) {
+        color = `rgb(90, 50, 12)`
+      } else if (cell.terrain === "mountains") {
+        color = `rgb(100, 100, 100)`
+      } else if (cell.terrain === "taiga") {
+        color = `rgb(46, 153, 89)`
+      } else if (cell.terrain === "desert_mountains") {
+        color = `rgb(23, 19, 38)`
+      } else if (cell.terrain === "farmlands") {
+        color = `rgb(255, 0, 0)`
+      } else if (cell.terrain === "forest") {
+        color = `rgb(71, 179, 45)`
+      } else if (cell.terrain === "jungle") {
+        color = `rgb(10, 60, 35)`
+      } else if (cell.terrain === "oasis") {
+        color = `rgb(155, 143, 204)`
+      } else if (cell.terrain === "steppe") {
+        color = `rgb(200, 100, 25)`
+      } else if (cell.terrain === "wetlands") {
+        color = `rgb(77, 153, 153)`
+      }
+      //color = `rgb(255, 255, 255)`
+      drawSmallPixel(ctx, x, y, color)
+    }
+  } 
+}
+
 function drawTitleSmallMap(titleType) { // This function is too cute in trying to do too much. It handles both override and drawing from kingdom etc
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
@@ -865,58 +914,49 @@ function drawTitleSmallMap(titleType) { // This function is too cute in trying t
   let convTitleType = titleType + "Override"
   for (let i = 0; i < world.height; i++) {
     for (let j = 0; j < world.width; j++) {
-      let color = "rgb(255, 255, 255)"
-      let cell = world.map[i][j]
-      if (cell.elevation <= limits.seaLevel.upper) {
-        if (cell.waterOverride) {
-          color = `rgb(${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB})`
-          drawSmallPixel(ctx, j, i, color)
-        }
-        //do nothing because you drew water above
-      } else {
-        if (cell[`${convTitleType}`]) { //does it have an overide?
-          color = cell[`${convTitleType}`]
-          drawSmallPixel(ctx, j, i, color)
-        } else if (cell[`${titleType}`]) { //if not, is the title set for cell (e.g. cell.duchy)?
-          let title = cell[`${titleType}`]
-          color = `rgb(${title.colorR}, ${title.colorG}, ${title.colorB})`
-          drawSmallPixel(ctx, j, i, color)
-        } else {
-          if (cell.terrain === "plains") {
-            color = `rgb(204, 163, 102)`
-          } else if (cell.terrain === "desert") {
-            color = `rgb(255, 230, 0)`
-          } else if (cell.terrain === "drylands") {
-            color = `rgb(220, 45, 120)`
-          } else if (cell.terrain === "floodplains") {
-            color = `rgb(55, 31, 153)`
-          } else if (cell.terrain === `hills`) {
-            color = `rgb(90, 50, 12)`
-          } else if (cell.terrain === "mountains") {
-            color = `rgb(100, 100, 100)`
-          } else if (cell.terrain === "taiga") {
-            color = `rgb(46, 153, 89)`
-          } else if (cell.terrain === "desert_mountains") {
-            color = `rgb(23, 19, 38)`
-          } else if (cell.terrain === "farmlands") {
-            color = `rgb(255, 0, 0)`
-          } else if (cell.terrain === "forest") {
-            color = `rgb(71, 179, 45)`
-          } else if (cell.terrain === "jungle") {
-            color = `rgb(10, 60, 35)`
-          } else if (cell.terrain === "oasis") {
-            color = `rgb(155, 143, 204)`
-          } else if (cell.terrain === "steppe") {
-            color = `rgb(200, 100, 25)`
-          } else if (cell.terrain === "wetlands") {
-            color = `rgb(77, 153, 153)`
-          }
-          //color = `rgb(255, 255, 255)`
-          drawSmallPixel(ctx, j, i, color)
-        }
-      } 
+      drawTitlePixel(j, i, convTitleType)
     }
   }
+}
+
+function drawTerrainPixel(x, y) {
+  let cell = world.map[y][x]
+  if (cell.elevation <= limits.seaLevel.upper) {
+    color = `rgb(97, 170, 229)`
+  } else {
+    if (cell.terrain === "plains") {
+      color = `rgb(204, 163, 102)`
+    } else if (cell.terrain === "desert") {
+      color = `rgb(255, 230, 0)`
+    } else if (cell.terrain === "drylands") {
+      color = `rgb(220, 45, 120)`
+    } else if (cell.terrain === "floodplains") {
+      color = `rgb(55, 31, 153)`
+    } else if (cell.terrain === `hills`) {
+      color = `rgb(90, 50, 12)`
+    } else if (cell.terrain === "mountains") {
+      color = `rgb(100, 100, 100)`
+    } else if (cell.terrain === "taiga") {
+      color = `rgb(46, 153, 89)`
+    } else if (cell.terrain === "desert_mountains") {
+      color = `rgb(23, 19, 38)`
+    } else if (cell.terrain === "farmlands") {
+      color = `rgb(255, 0, 0)`
+    } else if (cell.terrain === "forest") {
+      color = `rgb(71, 179, 45)`
+    } else if (cell.terrain === "jungle") {
+      color = `rgb(10, 60, 35)`
+    } else if (cell.terrain === "oasis") {
+      color = `rgb(155, 143, 204)`
+    } else if (cell.terrain === "steppe") {
+      color = `rgb(200, 100, 25)`
+    } else if (cell.terrain === "wetlands") {
+      color = `rgb(77, 153, 153)`
+    } else {
+      color = "rgb(255, 0, 0)"
+    }
+  }
+  drawSmallPixel(ctx, x, y, color)
 }
 
 function drawTerrainSmallMap() {
@@ -926,43 +966,7 @@ function drawTerrainSmallMap() {
   ctx.fill();
   for (let i = 0; i < world.height; i++) {
     for (let j = 0; j < world.width; j++) {
-      let cell = world.map[i][j]
-      if (cell.elevation <= limits.seaLevel.upper) {
-        color = `rgb(97, 170, 229)`
-      } else {
-        if (cell.terrain === "plains") {
-          color = `rgb(204, 163, 102)`
-        } else if (cell.terrain === "desert") {
-          color = `rgb(255, 230, 0)`
-        } else if (cell.terrain === "drylands") {
-          color = `rgb(220, 45, 120)`
-        } else if (cell.terrain === "floodplains") {
-          color = `rgb(55, 31, 153)`
-        } else if (cell.terrain === `hills`) {
-          color = `rgb(90, 50, 12)`
-        } else if (cell.terrain === "mountains") {
-          color = `rgb(100, 100, 100)`
-        } else if (cell.terrain === "taiga") {
-          color = `rgb(46, 153, 89)`
-        } else if (cell.terrain === "desert_mountains") {
-          color = `rgb(23, 19, 38)`
-        } else if (cell.terrain === "farmlands") {
-          color = `rgb(255, 0, 0)`
-        } else if (cell.terrain === "forest") {
-          color = `rgb(71, 179, 45)`
-        } else if (cell.terrain === "jungle") {
-          color = `rgb(10, 60, 35)`
-        } else if (cell.terrain === "oasis") {
-          color = `rgb(155, 143, 204)`
-        } else if (cell.terrain === "steppe") {
-          color = `rgb(200, 100, 25)`
-        } else if (cell.terrain === "wetlands") {
-          color = `rgb(77, 153, 153)`
-        } else {
-          color = "rgb(255, 0, 0)"
-        }
-      }
-      drawSmallPixel(ctx, j, i, color)
+      drawTerrainPixel(j, i)
     }
   }
 }
