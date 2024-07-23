@@ -7,11 +7,9 @@
  * @param {string} color - The color of the pixel. Defaults to black if not specified.
  */
 function drawSmallPixel(context, x, y, color) {
-    const roundedX = Math.round(x);
-    const roundedY = Math.round(y);
-    context.fillStyle = color || '#000';
-    context.fillRect(roundedX * settings.pixelSize, roundedY * settings.pixelSize, settings.pixelSize, settings.pixelSize);
-  }
+  context.fillStyle = color || '#000';
+  context.fillRect(x * settings.pixelSize, y * settings.pixelSize, settings.pixelSize, settings.pixelSize);
+}
   
   /**
    * Draws a tiny pixel on the canvas at the specified coordinates with the given color.
@@ -112,6 +110,334 @@ function drawCell(x, y) {
       ctx.fillText(cell.text, cell.x * settings.pixelSize, cell.y * settings.pixelSize);
     }
   }
+
+  function getBookColor(cell) {
+    let rgb = { r: 0, g: 0, b: 0 }; // Default black
+  
+    const cellBiome = biome(cell);
+  
+    if (cellBiome === "beach") {
+      rgb = {
+        r: 194 - cell.elevation * 3,
+        g: 178 - cell.elevation * 3,
+        b: 128 - cell.elevation * 3,
+      };
+    } else if (cellBiome === "lake" || cellBiome === "river") {
+      rgb = {
+        r: 0,
+        g: 0,
+        b: 350 - cell.elevation,
+      };
+    } else if (cellBiome === "mountain") {
+      const mountainMod = cell.elevation - limits.mountains.lower;
+      rgb = {
+        r: mountainMod,
+        g: mountainMod,
+        b: mountainMod,
+      };
+    } else if (cellBiome === "arctic") {
+      const el = cell.elevation;
+      rgb = {
+        r: 355 - el,
+        g: 355 - el,
+        b: 355 - el,
+      };
+    } else if (cellBiome === "desert") {
+      const el = cell.elevation;
+      rgb = {
+        r: Math.floor(194 * (el / 255)),
+        g: Math.floor(178 * (el / 255)),
+        b: Math.floor(128 * (el / 255)),
+      };
+    } else if (cellBiome === "grass") {
+      rgb = getGrassBookColor(cell);
+    } else if (cellBiome === "ocean") {
+      const waterMod = 255 - Math.floor(getCorrectedColor(cell) * 0.6);
+      rgb = {
+        r: 0,
+        g: 0,
+        b: waterMod,
+      };
+    }
+  
+    return rgb;
+  }
+  
+  function getGrassBookColor(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+    let grassAlpha;
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 1.3);
+      grass -= Math.floor(diff / 2.5);
+      const m = Math.max(1, Math.floor(cell.elevation / 25));
+      grassAlpha = `0.${m}`;
+    }
+    return {
+      r: grassAccent2,
+      g: grass,
+      b: grassAccent,
+    };
+  }
+
+  function getParchmentColor(cell, r, g, b) {
+    let rgb = { r: 255, g: 255, b: 255 }; // Default white
+  
+    const cellBiome = biome(cell);
+  
+    if (cellBiome === "beach") {
+      rgb = { r: 0, g: 0, b: 0 };
+    } else if (cell.wetlands) {
+      rgb = { r: 255, g: 255, b: 255 };
+    } else if (cellBiome === "river" || cellBiome === "lake" || cellBiome === "ocean") {
+      rgb = { r: 200, g: 200, b: 200 };
+    } else if (cellBiome === "mountain") {
+      rgb = { r: 255, g: 255, b: 255 };
+    } else if (cell.tree) {
+      rgb = { r: 255, g: 255, b: 255 };
+    } else {
+      rgb = { r: 255, g: 255, b: 255 };
+    }
+  
+    return rgb;
+  }
+
+  function getPaperColor(cell, r, g, b) {
+    let rgb = { r: 255, g: 255, b: 255 }; // Default white
+  
+    const cellBiome = biome(cell);
+  
+    if (cellBiome === "beach" || cell.wetlands || cellBiome === "river" || cellBiome === "lake" || cellBiome === "ocean") {
+      rgb = { r: 255, g: 255, b: 255 };
+    } else if (cellBiome === "mountain" || cell.tree) {
+      rgb = { r: 255, g: 255, b: 255 };
+    } else {
+      rgb = { r: 255, g: 255, b: 255 };
+    }
+  
+    return rgb;
+  }
+
+  function getPapyrusColor(cell, r, g, b) {
+    let rgb = { r: 230 - Math.floor(cell.elevation / 5), g: 210 - Math.floor(cell.elevation / 5), b: 183 - Math.floor(cell.elevation / 5) };
+  
+    const cellBiome = biome(cell);
+  
+    if (cellBiome === "lake" || cellBiome === "ocean") {
+      rgb = {
+        r: 100 + Math.floor(cell.elevation / 5),
+        g: 120 + Math.floor(cell.elevation / 5),
+        b: 140 + Math.floor(cell.elevation / 5),
+      };
+    } else if (cell.tree || cellBiome === "beach" || cellBiome === "mountain" || cellBiome === "arctic") {
+      rgb = {
+        r: 230 - Math.floor(cell.elevation / 5),
+        g: 210 - Math.floor(cell.elevation / 5),
+        b: 183 - Math.floor(cell.elevation / 5),
+      };
+    }
+  
+    return rgb;
+  }
+
+  function getColorfulColor(cell) {
+    let rgb = { r: 255, g: 255, b: 255 }; // Default white
+  
+    if (cell.elevation < limits.seaLevel.upper) {
+      rgb = {
+        r: 100 + Math.floor(cell.elevation / 5),
+        g: 120 + Math.floor(cell.elevation / 5),
+        b: 140 + Math.floor(cell.elevation / 5),
+      };
+    } else {
+      const cellBiome = biome(cell);
+  
+      if (cellBiome === "beach") {
+        rgb = drawBeachColor(cell);
+      } else if (cell.elevation >= limits.mountains.lower) {
+        rgb = drawMountainColor(cell);
+      } else if (cell.terrain === "taiga" || (cell.climateCategory === "cold" && cell.terrain === "hills")) {
+        rgb = drawArcticColor(cell);
+      } else if (cell.terrain === "jungle") {
+        rgb = drawJungleColor(cell);
+      } else if (cell.climateCategory === "tropical" && cell.terrain === "hills") {
+        rgb = drawJungleColor(cell);
+      } else if (cell.terrain === "drylands") {
+        rgb = drawDrylandsColor(cell);
+      } else if (cell.terrain === "steppe") {
+        rgb = drawSteppeColor(cell);
+      } else if (cell.terrain === "desert" || cell.terrain === "drylands") {
+        rgb = drawDesertColor(cell);
+      } else if (cell.terrain === "plains" || cell.terrain === "farmlands" || cell.terrain === "hills" || cell.terrain === "wetlands" || cell.terrain === "floodplains") {
+        rgb = drawGrassColor(cell);
+      } else if (cellBiome === "ocean" || cell.terrain === "oasis") {
+        rgb = {
+          r: 100 + Math.floor(cell.elevation / 5),
+          g: 120 + Math.floor(cell.elevation / 5),
+          b: 140 + Math.floor(cell.elevation / 5),
+        };
+      } else {
+        rgb = drawGrassColor(cell);
+      }
+    }
+  
+    return rgb;
+  }
+  
+  function drawBeachColor(cell) {
+    return {
+      r: 194 - cell.elevation * 3,
+      g: 178 - cell.elevation * 3,
+      b: 128 - cell.elevation * 3,
+    };
+  }
+  
+  function drawMountainColor(cell) {
+    const mountainMod = cell.elevation - limits.mountains.lower;
+    return {
+      r: mountainMod,
+      g: mountainMod,
+      b: mountainMod,
+    };
+  }
+  
+  function drawArcticColor(cell) {
+    const el = cell.elevation;
+    return {
+      r: 355 - el,
+      g: 355 - el,
+      b: 355 - el,
+    };
+  }
+  
+  function drawJungleColor(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = Math.floor(correctedColor / 5);
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 3);
+      grass -= Math.floor(diff / 2.5);
+    }
+    return {
+      r: grassAccent2,
+      g: grass,
+      b: grassAccent,
+    };
+  }
+  
+  function drawDrylandsColor(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+  
+    if (grass > 50) {
+      const diff = Math.floor(grass - 49);
+      grassAccent = grass - 49;
+      grassAccent2 = Math.floor(grassAccent * 1.3);
+      grass -= Math.floor(diff / 2.5);
+    }
+    return {
+      r: grassAccent2,
+      g: grass,
+      b: grassAccent,
+    };
+  }
+  
+  function drawSteppeColor(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 3);
+      grass -= Math.floor(diff / 2.5);
+    }
+    return {
+      r: grassAccent2,
+      g: grass,
+      b: grassAccent,
+    };
+  }
+  
+  function drawDesertColor(cell) {
+    const el = cell.elevation;
+    return {
+      r: Math.floor(194 * (el / 255)),
+      g: Math.floor(178 * (el / 255)),
+      b: Math.floor(128 * (el / 255)),
+    };
+  }
+  
+  function drawGrassColor(cell) {
+    const correctedColor = getCorrectedColor(cell);
+    let grassAccent = 0;
+    let grassAccent2 = 0;
+    let grass = correctedColor;
+  
+    if (grass > 100) {
+      const diff = Math.floor(grass - 100);
+      grassAccent = grass - 100;
+      grassAccent2 = Math.floor(grassAccent * 1.3);
+      grass -= Math.floor(diff / 2.5);
+    }
+    return {
+      r: grassAccent2,
+      g: grass,
+      b: grassAccent,
+    };
+  }
+  
+  function getHeightmapColor(cell) {
+    let c;
+    if (cell.elevation > 36) {
+      // Squishing in the land to whatever the elevationToHeightmap settings are
+      let el = cell.elevation - 36;
+      c = Math.floor(el / settings.elevationToHeightmap);
+      c += 36;
+    } else {
+      // don't squish water
+      c = Math.floor(cell.elevation / 2);
+    }
+    c = Math.min(255, Math.max(0, c));
+    return { r: c, g: c, b: c };
+  }
+
+  function getRivermapColor(cell) {
+    const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
+    if (c) {
+      return { r: 255, g: 255, b: 255 };
+    } else {
+      return { r: 255, g: 0, b: 128 };
+    }
+
+  }
+
+  function getSpecialColor(cell, type) {
+    const maskValue = cell[type];
+    if (maskValue) {
+      const color = Math.floor((maskValue / 100) * 255);
+      return { r: color, g: color, b: color };
+    } else {
+      return { r: 0, g: 0, b: 0 };
+    }
+  }
+  
+  
+  
+  
   
   /**
    * Draws a grass cell of "book" type.
@@ -647,37 +973,86 @@ function drawWorld() {
   // Set the canvas dimensions based on the world's size and pixel size
   canvas.width = world.width * settings.pixelSize;
   canvas.height = world.height * settings.pixelSize;
+
   if (world.drawingType === "black") { // use for empty masks so you don't have to repeat.
-    ctx.fillStyle = "black"
-    ctx.fillRect(0, 0, settings.width, settings.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else if (world.drawingType === "white") {
-    ctx.fillStyle = "white"
-    ctx.fillRect(0, 0, settings.width, settings.height);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else {
-    
-    // Iterate over each cell in the world and draw it
-    createCellTerrains()
+    createCellTerrains();
     if (world.drawingType === "terrainMap") {
       drawTerrainSmallMap();
     } else if (world.drawingType === "smallProv" || world.drawingType === "smallWater") {
-      drawTitleSmallMap("province")
+      drawTitleSmallMap("province");
     } else {
+      const imageData = ctx.createImageData(canvas.width, canvas.height);
       for (let y = 0; y < world.height; y++) {
         for (let x = 0; x < world.width; x++) {
-          drawCell(x, y);
+          drawCellToImageData(imageData, x, y);
         }
       }
+      ctx.putImageData(imageData, 0, 0);
       if (world.drawingType === "colorful") {
         ctx.beginPath(); // Start a new path
-        ctx.moveTo(0, settings.equator); 
-        ctx.lineTo(settings.width, settings.equator); 
+        ctx.moveTo(0, settings.equator);
+        ctx.lineTo(canvas.width, settings.equator);
         ctx.stroke(); // Render the path
       }
     }
   }
-  
+}
 
+function drawCellToImageData(imageData, x, y) {
+  const cell = xy(x, y);
+  const { r, g, b } = getRGBFromElevation(cell.elevation);
+  let color;
 
+  switch (world.drawingType) {
+    case "book":
+      color = getBookColor(cell);
+      break;
+    case "parchment":
+      color = getParchmentColor(cell, r, g, b);
+      break;
+    case "paper":
+      color = getPaperColor(cell, r, g, b);
+      break;
+    case "papyrus":
+      color = getPapyrusColor(cell, r, g, b);
+      break;
+    case "colorful":
+      color = getColorfulColor(cell);
+      break;
+    case "heightmap":
+      color = getHeightmapColor(cell);
+      break;
+    case "rivermap":
+      color = getRivermapColor(cell);
+      break;
+    default:
+      color = getSpecialColor(cell, world.drawingType);
+      break;
+  }
+
+  setBlock(imageData, x * settings.pixelSize, y * settings.pixelSize, settings.pixelSize, color);
+}
+
+function setBlock(imageData, startX, startY, size, color) {
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      setPixel(imageData, startX + x, startY + y, color);
+    }
+  }
+}
+
+function setPixel(imageData, x, y, color) {
+  const index = (x + y * imageData.width) * 4;
+  imageData.data[index] = color.r;
+  imageData.data[index + 1] = color.g;
+  imageData.data[index + 2] = color.b;
+  imageData.data[index + 3] = 255; // alpha channel
 }
 
   /**
