@@ -820,3 +820,7 @@ let updateLimitSliderValue = debounce(() => adjustLimitSlider())
 function adjustLimitSlider() {
   paintbrushLimit = parseInt(GID("limitSlider").value)
 }
+
+GID("erase-province").onclick = function() {
+  paintbrush = "province-eraser"
+}

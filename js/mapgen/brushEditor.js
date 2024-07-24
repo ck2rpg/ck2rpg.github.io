@@ -76,7 +76,17 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             nextCell.terrain = paintbrushTerrain === "desert mountains" ? "desert_mountains" : paintbrushTerrain;
             nextCell.terrainMarked = true;
           }
-          if (brushType === "dropLand") {
+          if (brushType === "province-eraser") {
+            nextCell.provinceOverride = undefined;
+            nextCell.provinceOverrideR = undefined;
+            nextCell.provinceOverrideG = undefined;
+            nextCell.provinceOverrideB = undefined;
+            nextCell.waterOverride = undefined;
+            nextCell.waterOverrideR = undefined;
+            nextCell.waterOverrideG = undefined;
+            nextCell.waterOverrideB = undefined;
+
+          } else if (brushType === "dropLand") {
             if (nextCell.elevation < paintbrushLimit) {
               //don't do anything if existing cell is less than brush limit
             } else {
@@ -200,6 +210,9 @@ function redrawAffectedCells() {
       if (cell.provinceOverride || cell.waterOverride) {
         clearCell(x, y, context);
         drawTitlePixel(x, y, "provinceOverride")
+      } else {
+        clearCell(x, y, context);
+        drawTerrainPixel(x, y)
       }
     });
   } else {

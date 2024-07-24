@@ -1284,7 +1284,7 @@ function drawTitlePixel(x, y, convTitleType) {
 function drawTitleSmallMap(titleType) { // This function is too cute in trying to do too much. It handles both override and drawing from kingdom etc
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
-  ctx.fillStyle = "rgb(0, 0, 255)"
+  ctx.fillStyle = `rgb(97, 170, 229)`
   ctx.fill();
   let convTitleType = titleType + "Override"
   for (let i = 0; i < world.height; i++) {
