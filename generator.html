@@ -351,6 +351,11 @@
                 <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
                 <span class="ttText">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span></div>
               </div>
+              <div class="slider-container">
+                <label for="limitSlider" class="slider-label"><div class="tt">Limit:&nbsp&nbsp</label>
+                <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
+                <span class="ttText">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span></div>
+              </div>
               <p class="outset-text">Map Settings:</p>
               <div class="slider-container">
                   <label for="equatorSlider" class="slider-label" debounce=True><div class="tt">Equator:&nbsp&nbsp</label>

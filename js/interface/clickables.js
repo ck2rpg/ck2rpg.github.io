@@ -814,3 +814,9 @@ let snowLineAdjuster = debounce(() => adjustSnowLine())
 function adjustSnowLine() {
   limits.mountains.snowLine = GID("snow-line").value;
 }
+
+let updateLimitSliderValue = debounce(() => adjustLimitSlider())
+
+function adjustLimitSlider() {
+  paintbrushLimit = parseInt(GID("limitSlider").value)
+}

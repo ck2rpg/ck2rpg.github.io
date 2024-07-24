@@ -56,11 +56,15 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
       const dx = j - cell.x;
       const dy = i - cell.y;
       const dist = dx * dx + dy * dy;
-      let mod = parseInt(brushSize) - dist;
-      if (mod < 0) mod = 0;
+      let change = dist / brushSize;
+      let mod = 1 - change
+    
+      if (mod > 1) {
+        mod = 1;
+      }
 
       if (paintbrushFeather) {
-        currHardness = brushHardness + mod;
+        currHardness = Math.floor(brushHardness * mod);
         if (currHardness < 0) currHardness = 0;
       }
 
@@ -73,12 +77,26 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             nextCell.terrainMarked = true;
           }
           if (brushType === "dropLand") {
-            nextCell.elevation = paintbrushAbsolute ? currHardness : nextCell.elevation - currHardness;
-            if (nextCell.elevation < limits.seaLevel.lower) {
-              nextCell.elevation = limits.seaLevel.lower + 1;
+            if (nextCell.elevation < paintbrushLimit) {
+              //don't do anything if existing cell is less than brush limit
+            } else {
+              nextCell.elevation = paintbrushAbsolute ? currHardness : nextCell.elevation - currHardness;
+              //push cell back up to brush limit if it goes below after change
+              if (nextCell.elevation < paintbrushLimit) {
+                nextCell.elevation = paintbrushLimit
+              }
             }
+
           } else if (brushType === "raiseLand") {
-            nextCell.elevation = paintbrushAbsolute ? parseInt(currHardness) : nextCell.elevation + parseInt(currHardness);
+            let change;
+            if (nextCell.elevation > paintbrushLimit) {
+              
+            } else {
+              nextCell.elevation = paintbrushAbsolute ? parseInt(currHardness) : nextCell.elevation + parseInt(currHardness);
+              if (nextCell.elevation > paintbrushLimit) {
+                nextCell.elevation = paintbrushLimit
+              }
+            }
           } else if (brushType.includes("Override")) {
             applyOverrideBrushType(brushType, nextCell);
           }

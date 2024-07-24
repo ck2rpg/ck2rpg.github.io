@@ -165,6 +165,9 @@ let paintbrushTitleR = 0;
 let paintbrushTitleG = 0;
 let paintbrushTitleB = 0;
 let paintbrushAbsolute = false;
+let paintbrushLimit = 510
+
+
 let saveState = false;
 GID("tracking-toggle").onclick = function() {
   if (saveState === false) {
