@@ -25,6 +25,7 @@ function writeHybridCulturesLocalization() {
         let p = world.provinces[i]
         if (p.land) {
             t += `${world.provinces[i].titleName}_hybrid: "${world.provinces[i].localizedTitle}"\n`
+            t += `${world.provinces[i].titleName}_hybrid_name: "${world.provinces[i].localizedTitle}"\n`
         }
     }
     var data = new Blob([t], {type: 'text/yaml'})
