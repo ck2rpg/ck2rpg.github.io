@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <title>CK3 Procedural Map Generator</title>
     <link rel="stylesheet" href="css/bs.css"></link>
+    <link rel="stylesheet" href="css/menus.css"></link>
+    <link rel="stylesheet" href="css/landing.css"></link>
   </head>
   <body>
     <div id="done-done">
@@ -39,475 +41,513 @@
     </div>
     <div id="main-generator-div">
     <canvas id="canvas"></canvas>
+
+    <!-- Main Side Panel -->
+    <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
+      <div class="display-horizontal flex-spread-evenly">
+        <span>CK3 Map Generator</span>
+        <div>
+          <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
+        </div>
+      </div>
+      <div id="mass-changes" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Mass Changes</span>       
+        </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <div class="icon-tray">
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="startup" src="icons/newmap.png"><span class="tool-tip">Create a New Map</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="magnify" src="icons/magnifyingglass.png"><span class="tool-tip">Zoom In</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="droptowater" src="icons/droptowater.png"><span class="tool-tip">Drop All Cells to Ocean</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="broom" src="icons/broom.png"><span class="tool-tip">Clean Up Any Isolated Single Cells</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="spread-icon" src="icons/spread-icon.png"><span class="tool-tip">Spread Elevation From Spreading Centers</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="soften-spread-icon" src="icons/soften-spread-icon.png"><span class="tool-tip">Soften Elevation and Spread it Out</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="increase-elevation-icon" src="icons/increase-elevation-icon.png"><span class="tool-tip">Increase Elevation Everywhere</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png"><span class="tool-tip">Decrease Elevation Everywhere</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png"><span class="tool-tip">Rerun Rivers</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="raise-mountains-icon" src="icons/raise-mountains.png"><span class="tool-tip">Raise Elevation of Mountains Only</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="lower-mountains-icon" src="icons/lower-mountains.png"><span class="tool-tip">Lower Elevation of Mountains Only</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="raiseLand" src="icons/raise-land-only-icon.png"><span class="tool-tip">Raise Elevation of Land Only</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="lowerWater" src="icons/lower-water-only-icon.png"><span class="tool-tip">Lower Elevation of Water Only</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="noiseMap" src="icons/noise-icon.png"><span class="tool-tip">Basic Noise Map</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="all-to-sea-level" src="icons/all-to-sea-level.png"><span class="tool-tip">All Elevations to Sea Level</span></div>
+              <div class="icon-clickable icon-tools has-tool-tip"><img id="water-to-sea-level" src="icons/water-to-sea-level.png"><span class="tool-tip">Raise Elevation of Water to Sea Level</span></div>
+            </div>
+          
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="mass-brush-adjuster">Adjustment Level</label>
+              <input class="ck-field" type="number" id="mass-brush-adjuster" min="-100" max="100" value="0" step="1" oninput="updateMassBrushAdjuster(this.value)"/>
+              <span class="tool-tip">Changing the adjustment level affects the factor by which the Mass Change brushes are applied.</span>
+            </div>
+        </div>  
+        </div>
+
+      <div id="menu-brushes" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Brush Settings</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area menu-setting">
+        <div class="display-horizontal flex-spread-evenly flex-align-vertically">
+          <div class="display-horizontal">
+            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png"><span class="tool-tip">Raise Elevation Brush</span></div>
+            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png"><span class="tool-tip">Lower Elevation Brush</span></div>
+            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="erase-province" src="icons/eraser.png"><span class="tool-tip">Erase Province</span></div>
+            <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="undoMap" src="icons/undo-icon.png"><span class="tool-tip">Undo</span></div>
+            <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="redoMap" src="icons/redo-icon.png"><span class="tool-tip">Redo</span></div>
+          </div>
+
+          <div class="color-picker has-tool-tip" id="color-picker">
+            <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
+              <div class="color-tooltip">Sea Level</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
+              <div class="color-tooltip">Plains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
+              <div class="color-tooltip">Desert</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
+              <div class="color-tooltip">Drylands</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
+              <div class="color-tooltip">Floodplains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
+              <div class="color-tooltip">Hills</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
+              <div class="color-tooltip">Mountains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
+              <div class="color-tooltip">Taiga</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
+              <div class="color-tooltip">Desert Mountains</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
+              <div class="color-tooltip">Farmlands</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
+              <div class="color-tooltip">Forest</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
+              <div class="color-tooltip">Jungle</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
+              <div class="color-tooltip">Oasis</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
+              <div class="color-tooltip">Steppe</div>
+            </div>
+            <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
+              <div class="color-tooltip">Wetlands</div>
+            </div>
+          </div>
+          <div class="color-box has-tool-tip" id="selected-color">
+            <div class="tool-tip" id="selected-tooltip">Select Color</div>
+          </div>
+          <input type="color" id="title-color">
+        </div>
+
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="absoluteBrush">Absolute</label>
+            <input type="checkbox" id="absoluteBrush"/>
+            <span class="tool-tip">Should brush power make absolute changes to elevation?</span><br>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="sizeSlider"> Brush Size</label>
+            <input type="number" id="sizeSlider" min="1" max="2000" value="30" step="1" oninput="updateSliderValue(this.value)">
+            <span class="tool-tip">Change the diameter of the brush.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="powerSlider"> Brush Power</label>
+            <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
+          <span class="tool-tip">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="limitSlider">Limit</label>
+            <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
+            <span class="tool-tip">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span>
+          </span>
+        </div>
+      </div>
+
+      <div id="map-settings" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Map Settings</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area">
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="map-sizes">Map Size</label>
+            <select name="map-sizes" id="map-sizes">
+              <option value="8192x4096">8192x4096</option>
+              <option value="4096x2048">4096x2048</option>
+              <option value="2048x1024">2048x1024</option>
+              <option value="1024x512">1024x512</option>
+            </select>
+            <span class="tool-tip">Map Size refers to the ultimate size of your generated map. For example, the vanilla map is 8192x4096 pixels.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="generator-resolution">Resolution</label>
+            <select name="generator-resolution" id="generator-resolution">
+              <option value="512x256">512x256</option>
+              <option value="1024x512">1024x512</option>
+              <option value="2048x1024">2048x1024</option>
+              <option value="4096x2048">4096x2048</option>
+              <option value="8192x4096">8192x4096</option>
+            </select>
+            <span class="tool-tip">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="elevation-to-heightmap">Elevation to Heightmap Divider:&nbsp&nbsp</label>
+            <input type="number" id="elevation-to-heightmap" min="2" max="100" value="2" oninput="elevationToHeightmapAdjuster()">
+            <span class="tool-tip">In the generator, elevation of land ranges from 37-510. The default divider of 2 converts to where the highest place on heightmap is rgb(255,255,255). Increase the divider value to squish the terrain down and make it less stark. This will not affect the cut-offs for different terrain types.</span>
+          </span>
+
+
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="hills-line">Hills Elevation:&nbsp&nbsp</label>
+            <input type="number" id="hills-line" min="37" max="510" value="205" oninput="hillAdjuster()">
+            <span class="tool-tip">When the generator reaches this elevation, hills terrain and masking occurs.</span>
+          </span>
+
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="mountain-line">Mountain Elevation:&nbsp&nbsp</label>
+            <input type="number" id="mountain-line" min="37" max="510" value="255" oninput="mountainAdjuster()">
+            <span class="tool-tip">When the generator reaches this elevation, hills change to mountain terrain and masking.</span>
+          </span>
+
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="snow-line">Snow Line Elevation:&nbsp&nbsp</label>
+            <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
+            <span class="tool-tip">When the generator reaches this elevation, mountains change to snow line with snow masking.</span>
+          </span>
+        </div>
+      </div>
+
+      <div id="terrain-settings" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Terrain Settings</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area menu-setting">
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="equatorSlider" class="slider-label" debounce=True>Equator</label>
+            <input type="number" id="equatorSlider" min="0" max="8192" value="4096" step="1" oninput="equatorChange()"> <!--4096 is having equator at bottom of screen-->
+            <span class="tool-tip">How many pixels from the top of the canvas is the equator?</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="tropicalUpper">Tropical</label>
+            <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007" oninput="limitAdjuster()">
+            <span class="tool-tip">What Y distance from the equator (black line on color map) does the tropical climate zone end?</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="subTropicalUpper">Sub-Tropical</label>
+            <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520" oninput="limitAdjuster()">
+            <span class="tool-tip">What Y distance from the equator (black line on color map) does the subtropical climate zone end?</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="temperateUpper">Temperate</label>
+            <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
+            <span class="tool-tip">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting">
+            <label for="riversSlider">Rivers</label>
+            <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="riverChange()">
+          </span>
+        </div>
+      </div>
+
+      <div id="province-settings" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Experimental Province Settings</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area menu-setting">
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="max-land-province-setting">Max Land Provinces</label>
+            <input type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)">
+            <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: Max land provinces is an upper limit, which may not be reached, to the number of generated land provinces. Reducing the maximumn number of land provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="max-water-province-setting">Max Water Provinces</label>
+            <input type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)">
+            <span class="tool-tip" >EXPERIMENTAL FEATURE WARNING: Max water provinces is an upper limit, which may not be reached, to the number of generated water provinces. Reducing the maximumn number of water provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="max-fill-in-setting">Max Fill In Attempts</label>
+            <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)">
+            <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: The province generation algorithm works by seeding cells across the map and then filling in from there until the seed cell's growth bumps into other cell growths. This is a general function to control how many times the algorithm will attempt to fill in before stopping. A higher number will result in more likely fill in of the map without resorting to default colors or bleeding the province across the map through a brute fill in process.</span>
+          </span>
+        </div>
+      </div>
+
+      <div id="import-settings" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+          <span>Import Settings</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area menu-setting">
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="import-divider-adjuster">Imported Divider</label>
+            <input type="number" id="import-divider-adjuster" min="1" max="5000" value="1" step="0.1">
+            <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be divided by the divider to determine elevation of a cell.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="import-multiplier-adjuster">Imported Multiplier</label>
+            <input type="number" id="import-multiplier-adjuster" min="1" max="5000" value="1" step="0.1">
+            <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be multiplied by the multiplier to determine elevation of a cell.</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+            <label for="heightmap-adjuster">Imported Adjuster</label>
+            <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
+            <span class="tool-tip">When you import a heightmap, the adjuster (positive or negative) will be added to each cell.</span>
+          </span>
+          <div class="file-upload-wrapper">
+            <button class="ck-button">Import Heightmap</button>
+            <input type="file" class="ck-button" id="imageUpload" accept="image/*" />
+          </div>
+        </div>
+      </div>
+
+      <div id="final-settings" class="menu-cat menu-hideable">
+        <div class="menu-section-header display-horizontal flex-align-vertically">          
+          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div> 
+          <span>Miscellaneous</span>       
+        </div>
+        <div class="menu-section-content menu-hideable-area menu-setting">
+          <button class="ck-button" id="tracking-toggle">Turn On Undo (Can Cause Crashes)</button>
+          <button class="ck-button" id="create-provinces">Generate Provinces</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Map Modes -->
+    <div id="menus-map-modes" class="moveable-element ck-style-tray">
+      <div class="display-horizontal flex-spread-evenly">
+        <span>Map Modes</span>
+        <div>
+          <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
+        </div>
+      </div>
+      <div class="menu-cat flex-spread-evenly">
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="colorswatch" src="icons/terrainmap.png"><span class="tool-tip">Terrain Map</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="color-map-icon" src="icons/colormapicon.png"><span class="tool-tip">Pixel Map</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
+        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
+      </div>      
+    </div>
+
     <div id="brush"></div>
     <canvas id="texture-canvas"></canvas>
     <canvas id="gradientCanvas"></canvas>
 
     <div id="landing-screen">
-      <h1 class="landing-header">Crusader Kings 3 Procedural Map Generator</h1>
-      <div id="landing-text">
-        <div id="start-generator-button">Generate a New World</div><br>
-        <hr>
-        <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
-   
-        <p class="text-intro">Alpha 0.6.0 Release</p>
-        <p class="main-landing-text">Hot fix for hybrid culture names. Limiter for elevation brushes. Province eraser.</p>
-        <p class="main-landing-heading">0.6.0 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: A new "Limit" setting allows you to set a limit over which or under which the raise elevation and lower elevation brushes will not go. For example, a limit of 40 would cause the raise elevation brush to raise AT MOST to 40 elevation. Any cells that are above or under the limit remain unaffected. This will allow you to make more targeted changes (e.g., adding plains to a coastline without affecting the coastline)<br>
-          -Feature: Added a province eraser brush that will erase any drawn province overrides.<br>
-          -Fix: Fixed bug where hybrid culture name localization was not being generated.<br>
-          -Fix: Reduced size of overly large icon file.<br>
-        </p><br><br>
+      <div id="landing-info">
+        <div id="landing-generate">
+          <h1 class="landing-header">Crusader Kings 3 Procedural Map Generator</h1>
+          <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
+          <button class="ck-button" id="start-generator-button">Generate a New World</button><br>
+        </div>
+        <div id="main-landing">
+        <div id="landing-greetings">
 
-        <p class="text-intro">Alpha 0.5.2 Release</p>
-        <p class="main-landing-text">Full map draw performance improvements</p>
-        <p class="main-landing-heading">0.5.2 Change Log</p>
-        <p class="main-landing-text">
-          -Fix: Improved full map drawing performance by using image data in lieu of pixel by pixel rects.<br>
-        </p><br><br>
+            <p class="main-landing-heading">Current State of the Generator</p>
+        
+            <p class="main-landing-text">1. Basic Procedural Map Generation: The generator creates the basic files you need to get a map up and running. This is our first iteration, focusing on creating a functional and stable base for future enhancements.</p>
+        
+            <p class="main-landing-text">2. Limited User Interface: Interact with a simplified UI designed for ease of use. While the design is minimalist, it provides all necessary controls to begin experimenting with map generation.</p>
+        
+            <p class="main-landing-text">3. Rough Edges: Both the generator and generated maps have many rough edges and visible seams.
+            </p>
+        
+            <p class="main-landing-text">4. Bugs and Errors: Don't be surprised if you encounter bugs and errors in the generator or in game. Help us by reporting those bugs to the discord or on Github. For example, we had greatly reduced the error log before Legends of the Dead was released, but we have not had time to address the growth following release.
+            </p>
+        
+            <p class="main-landing-text">5. Random Generation: Our goal is to create a generator that allows deep generation of history and lore to provide something more than a map to play on and randomly generated cultures and titles to play with. We've made great progress on this goal recently, but those developments are not camera-ready for this initial Alpha release. Alpha 0.1 maintains the mostly random distributions you might have seen in previous map releases.</p>
+        
+            <p class="main-landing-heading">How You Can Help</p>
+            <p class="main-landing-text">We invite you to join the community on <a href="https://discord.gg/eemRxbCUX3">Discord</a>, share suggestions, report bugs, and contribute to development either through Discord or <a href="https://github.com/ck2rpg/ck2rpg.github.io">Github</a>.</p>
+        
+            <p class="main-landing-text">Thank you for being a part of this early stage of the Procedural Map Generator. We are committed to creating a robust tool that enhances your Crusader Kings 3 experience. Stay tuned for updates.</p>
+        
+            <p class="main-landing-text">Happy mapping!</p>
+        
+            <img class="avatar" src="icons/ck2rpg.png">
+            <p class="main-landing-text">-ck2rpg, 6/29/24</p>
+        
+                
+        </div>
+        <div id="landing-release-notes">
+          <div id="landing-release-notes-details">
 
-        <p class="text-intro">Alpha 0.5.1 Release</p>
-        <p class="main-landing-text">Brush editor performance improvements</p>
-        <p class="main-landing-heading">0.5.1 Change Log</p>
-        <p class="main-landing-text">
-          -Fix: Massively improved the speed and latency of the brush editor for elevation, province, and terrain editing. Night and day difference.<br>
-        </p><br><br>
+            <p class="text-intro">Alpha 0.7.0 Release</p>
+            <p class="main-landing-text">PakaruMar's UI Updates</p>
+            <p class="main-landing-heading">0.7.0 Change Log</p>
+            <p class="main-landing-text">
+              -Note: A special thank you to Discord user PakaruMar for providing the following UI updates:<br>
+              -UI: Improved landing page.<br>
+              -UI: Collapsible menu sections<br>
+              -UI: A map mode menu<br>
+              -UI: "Generating World" loading spinner<br>
+              -UI: New icons<br>
+              -UI: Code cleanup<br>
+              -UI: Overall improvements to look and feel<br>
 
-        <hr>
+            </p>
 
-        <p class="text-intro">Alpha 0.5.0 Release</p>
-        <p class="main-landing-text">Generator and quality of life mprovements</p>
-        <p class="main-landing-heading">0.5.0 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Added ability to normalize your heightmap by editing the generator-to-heightmap divisor directly from current default of 2. The higher the divisor, the less stark your heightmap and closer your elevation changes. This also should address the jagged terrain problem for smaller maps.<br>
-          -Feature: Added ability to change the generator's lower elevation limits for hills, mountains, and mountain snow lines.<br>
-          -Feature: Changed title key naming schema to use the RGB of the province (or capital province for higher tiers) for easier editing.<br>
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.4.0 Release</p>
-        <p class="main-landing-text">Minor quality of life changes</p>
-        <p class="main-landing-heading">0.4.0 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Added an option to override zoomed in terrain with flat map through shader generation (thanks to terrapass at mod coop for the inspiration through an unrelated question)<br>
-          -Feature: Added an equator line to the color map.<br>
-          -Feature: Added ability to modify broad climate zones. You set the upper limit of their distance from equator, and the zones run sequentially up to their upper distance.<br>
-          -TUTORIAL UPDATE: I added a new part to step 14 to clarify that you also need to <em>REPACK THE HEIGHTMAP</em>!
-          -Bug Fix: The last update created a problem where heighmaps were showing in their original state on import. I changed it to draw the heightmap in the generator state.<br>
-          -Bug Fix: Fixed bug where brush power was initially set incorrectly and did not match the slider.<br>
-          -Known remaining problem from last update: The farther a map size and resolution gets away from vanilla sizes, the more jagged everything becomes. This is due to an error in the blur process in post-processing. I am working on it, but it is not solved yet.<br>
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.3.0 Release</p>
-        <p class="main-landing-text">Introduced generator resolution!</p>
-        <p class="main-landing-heading">0.3.0 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Select from multiple generator resolutions. Fair warning that higher resolutions are resource intensive and can lead to out of memory errors. I am working on solutions to this. I'm currently able to run a 4,096x2048 res 8192x4096 map with 32GB ram.<br>
-          -Feature: Added the ability to modify heightmap imports by multiplying, dividing, or adding to base import on import.<br>
-          -Bug Fix: Fixed brush indicator bug. Brush indicator now matches even after scaling.<br>
-          -Bug Fix: Tooltips now work correctly and appear directly above tooltipped features.<br>
-          -Bug Fix: Replaced several sliders with number inputs because the sliders were too fidgety.<br>
-        </p>
-        <hr>
-        <p class="text-intro">Alpha 0.2.0 Release</p>
-        <p class="main-landing-text">Map Sizes!</p>
-        <p class="main-landing-heading">0.2.0 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Select from 8192x4096, 4096x2048, 2048x1024, and 1024x512 map sizes.<br>
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.1.5 Release</p>
-        <p class="main-landing-text">Alpha 0.1.5 includes a few bug fixes and backend changes.</p>
-        <p class="main-landing-heading">0.1.5 Change Log</p>
-        <p class="main-landing-text">
-          -Bug fix: Dragging the map editor menu no longer results in a clear background over parts of it.<br>
-          -Bug fix: I neglected to add UI for previously implemented ability to change province limit, water province limit, and fill in. Added UI here. This feature should be considred unstable and in early user testing. If you reduce the maximum number of provinces, you need to increase the fill limit to give the generator more attempts to correctly fill in larger provinces. Unfortunately, increasing the fill in attempts will reduce the speed of generation fairly significantly.<br>
-          -Experimental: Added a couple of experimental image generators that are not currently used in the game. Building up to future paper/flat map generation options (e.g., roguelike, pixel art, parchment, etc.).<br>
-        </p><br><br>
-        <hr>
-     <p class="text-intro">Alpha 0.1.4 Release</p>
-        <p class="main-landing-text">Alpha 0.1.4 removes the need to edit mapobjectdata or rivers.png by resetting the /map_object_data/generated file and processing the rivers.png image with indexing through the Gimp script.
-        <p class="main-landing-heading">0.1.4 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Generates additional files for the map_object_data/generated folder.
-          -Feature: Gimp script revised to automatically process the rivers.png file and reset the map_object_data/generated folder.
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.1.3 Release</p>
-        <p class="main-landing-text">Alpha 0.1.3 introduces province painting and editing.
-        <p class="main-landing-heading">0.1.3 Change Log</p>
-        <p class="main-landing-text">
-          -Feature: Paint a land or water province on the map. During province generation, if it has room to grow, it will.<br>
-          -Feature: Rewrite localization for empires, kingdoms, duchies, counties, provinces, faiths, and cultures by clicking on a province in the province map and defining the related localization.<br>
-          -Feature: Toggle whether a province is impassable, impassable sea, lake, or river by clicking on the province in the province map and toggling a checkbox.<br>
-          -Feature: The Gimp post-processing script now prints a message to screen when it is done.<br>
-          -Feature: While editing provinces, draw a land only province map.<br>
-          -Feature: While editing provinces, draw a water only province map.<br>
-          -Feature: While editing provinces, draw empire, kingdom, duchy, and county maps. (Warning: this is a bit slow).<br>
-          -Bug fix: Terrain painting with mountains now results in correct masking.<br>
-          -Bug fix: Activities locator is now properly generated.<br>
-          -Bug fix: Locators are now actually automatically moved during Gimp post-processing script.<br>
-          -Quality of Life: You no longer need to process your flatmap by hand. It is now done by the Gimp post-processing script. <br>
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.1.2 Release</p>
-        <p class="main-landing-text">Alpha 0.1.2 includes two hot fixes for issues in the generator: (1) desert_mountains not painting on terrain map and (2) ghostly looking beaches left behind from prior map when you import a height map. There are also some new options under the hood but not exposed through the toolbox yet.</p>
-        <p class="main-landing-heading">0.1.2 Change Log</p>
-        <p class="main-landing-text">
-          Fixed bug preventing desert_mountains from painting in terrain painter.<br>
-          When you uploaded a heightmap, the system would retain beaches on map from prior map. Fixed this problem.<br>
-          Added rudimentary ability to modify land and water province limits, no UI for it yet.<br>
-          Added brush feathering option for circle brush, no UI for it yet.<br>
-          Restyled terrain selection box to move it closer to toolbox on open.<br>
-        </p><br><br>
-        <hr>
-        <p class="text-intro">Alpha 0.1.1 Release</p>
-        <p class="main-landing-text">We are thrilled to announce the alpha release 0.1.1 of the Procedural Map Generator for Crusader Kings 3.</p>
-        <p class="main-landing-heading">0.1.1 Change Log</p>
-        <p class="main-landing-text">
-          Added ability to import heightmap.<br>
-          Added simple noise function.<br>
-          Stopped drawing rivers initially. Now you must choose to draw rivers because it affects elevation when you rerun rivers.<br>
-          Added undo button to map generator.<br>
-          Added redo button to map generator.<br>
-          Added toggle to allow users to avoid bug causing memory overflows due to undo/redo buttons.<br>
-          Added a button allowing you to lower elevation of water only (useful for heightmap import work)<br>
-          Added a button allowing you to raise elevation of land only (useful for heightmap import work)<br>
-          Fixed bug causing hills around desert mountains to look green.<br>
-          Fixed bug causing hills around cold climate mountains to look green.<br>
-          Deleted generated clothing palettes from template file. Clothing is vanilla palette now. Will work on palette generation at some point. Random is boring.<br>
-          Removed large ears. Will add back as optional with history/lore update.<br>
-          Added red brush overlay to show where you are on generator. <br>
-          Minimizable toolbar.<br>
-          Fixed bug preventing moving to image downloads if winter severity was not checked.<br>
-          Add generator for descriptor.mod<br>
-          Added ability to draw a land only province map <br>
-          Added square and circle brushes for map editor.<br>
-          Added indicator for paintbrush cursor.<br>
-          Fixed locator generation and made automatic. Will need to spread combat, etc. locators around province in future release.<br>
-          Added hybrid culture name generation (keyed to province of creating character).<br>
-          Added settings to use vanilla ethnicities for now. Will add back in other options with history/lore update.<br>
-          Removed asset file that was calling old files that are no longer in the mod.<br>
-          Deleted bugged line in template descriptor.mod that was causing crashes.<br>
-          Fixed missing 'DeathDeityHerHim' and decay localization for religions.<br>
-        </p>
+            <p class="text-intro">Alpha 0.6.0 Release</p>
+            <p class="main-landing-text">Hot fix for hybrid culture names. Limiter for elevation brushes. Province eraser.</p>
+            <p class="main-landing-heading">0.6.0 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: A new "Limit" setting allows you to set a limit over which or under which the raise elevation and lower elevation brushes will not go. For example, a limit of 40 would cause the raise elevation brush to raise AT MOST to 40 elevation. Any cells that are above or under the limit remain unaffected. This will allow you to make more targeted changes (e.g., adding plains to a coastline without affecting the coastline)<br>
+              -Feature: Added a province eraser brush that will erase any drawn province overrides.<br>
+              -Fix: Fixed bug where hybrid culture name localization was not being generated.<br>
+              -Fix: Reduced size of overly large icon file.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.5.2 Release</p>
+            <p class="main-landing-text">Full map draw performance improvements</p>
+            <p class="main-landing-heading">0.5.2 Change Log</p>
+            <p class="main-landing-text">
+              -Fix: Improved full map drawing performance by using image data in lieu of pixel by pixel rects.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.5.1 Release</p>
+            <p class="main-landing-text">Brush editor performance improvements</p>
+            <p class="main-landing-heading">0.5.1 Change Log</p>
+            <p class="main-landing-text">
+              -Fix: Massively improved the speed and latency of the brush editor for elevation, province, and terrain editing. Night and day difference.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.5.0 Release</p>
+            <p class="main-landing-text">Generator and quality of life mprovements</p>
+            <p class="main-landing-heading">0.5.0 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Added ability to normalize your heightmap by editing the generator-to-heightmap divisor directly from current default of 2. The higher the divisor, the less stark your heightmap and closer your elevation changes. This also should address the jagged terrain problem for smaller maps.<br>
+              -Feature: Added ability to change the generator's lower elevation limits for hills, mountains, and mountain snow lines.<br>
+              -Feature: Changed title key naming schema to use the RGB of the province (or capital province for higher tiers) for easier editing.<br>
+            </p>
 
-        <hr>
-
-        <p class="main-landing-heading">Current State of the Generator</p>
-
-        <p class="main-landing-text">1. Basic Procedural Map Generation: The generator creates the basic files you need to get a map up and running. This is our first iteration, focusing on creating a functional and stable base for future enhancements.</p>
-
-        <p class="main-landing-text">2. Limited User Interface: Interact with a simplified UI designed for ease of use. While the design is minimalist, it provides all necessary controls to begin experimenting with map generation.</p>
-
-        <p class="main-landing-text">3. Rough Edges: Both the generator and generated maps have many rough edges and visible seams. For example, we are still working on issues causing rivers to end early, messy beaches, and filled in lakes.
-        </p>
-
-        <p class="main-landing-text">4. Bugs and Errors: Don't be surprised if you encounter bugs and errors in the generator or in game. Help us by reporting those bugs to the discord or on Github. For example, we had greatly reduced the error log before Legends of the Dead was released, but we have not had time to address the growth following release.
-        </p>
-
-        <p class="main-landing-text">5. Random Generation: Our goal is to create a generator that allows deep generation of history and lore to provide something more than a map to play on and randomly generated cultures and titles to play with. We've made great progress on this goal recently, but those developments are not camera-ready for this initial Alpha release. Alpha 0.1 maintains the mostly random distributions you might have seen in previous map releases.</p>
-
-        <p class="main-landing-heading">How You Can Help</p>
-        <p class="main-landing-text">We invite you to join the community on <a href="https://discord.gg/eemRxbCUX3">Discord</a>, share suggestions, report bugs, and contribute to development either through Discord or <a href="https://github.com/ck2rpg/ck2rpg.github.io">Github</a>.</p>
-
-        <p class="main-landing-text">Thank you for being a part of this early stage of the Procedural Map Generator. We are committed to creating a robust tool that enhances your Crusader Kings 3 experience. Stay tuned for updates.</p>
-
-        <p class="main-landing-text">Happy mapping!</p>
-
-        <img class="avatar" src="icons/ck2rpg.png">
-        <p class="main-landing-text">-ck2rpg, 6/29/24</p>
-
+            <p class="text-intro">Alpha 0.4.0 Release</p>
+            <p class="main-landing-text">Minor quality of life changes</p>
+            <p class="main-landing-heading">0.4.0 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Added an option to override zoomed in terrain with flat map through shader generation (thanks to terrapass at mod coop for the inspiration through an unrelated question)<br>
+              -Feature: Added an equator line to the color map.<br>
+              -Feature: Added ability to modify broad climate zones. You set the upper limit of their distance from equator, and the zones run sequentially up to their upper distance.<br>
+              -TUTORIAL UPDATE: I added a new part to step 14 to clarify that you also need to <em>REPACK THE HEIGHTMAP</em>!
+              -Bug Fix: The last update created a problem where heighmaps were showing in their original state on import. I changed it to draw the heightmap in the generator state.<br>
+              -Bug Fix: Fixed bug where brush power was initially set incorrectly and did not match the slider.<br>
+              -Known remaining problem from last update: The farther a map size and resolution gets away from vanilla sizes, the more jagged everything becomes. This is due to an error in the blur process in post-processing. I am working on it, but it is not solved yet.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.3.0 Release</p>
+            <p class="main-landing-text">Introduced generator resolution!</p>
+            <p class="main-landing-heading">0.3.0 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Select from multiple generator resolutions. Fair warning that higher resolutions are resource intensive and can lead to out of memory errors. I am working on solutions to this. I'm currently able to run a 4,096x2048 res 8192x4096 map with 32GB ram.<br>
+              -Feature: Added the ability to modify heightmap imports by multiplying, dividing, or adding to base import on import.<br>
+              -Bug Fix: Fixed brush indicator bug. Brush indicator now matches even after scaling.<br>
+              -Bug Fix: Tooltips now work correctly and appear directly above tooltipped features.<br>
+              -Bug Fix: Replaced several sliders with number inputs because the sliders were too fidgety.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.2.0 Release</p>
+            <p class="main-landing-text">Map Sizes!</p>
+            <p class="main-landing-heading">0.2.0 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Select from 8192x4096, 4096x2048, 2048x1024, and 1024x512 map sizes.<br>
+            </p>
+    
+            <p class="text-intro">Alpha 0.1.5 Release</p>
+            <p class="main-landing-text">Alpha 0.1.5 includes a few bug fixes and backend changes.</p>
+            <p class="main-landing-heading">0.1.5 Change Log</p>
+            <p class="main-landing-text">
+              -Bug fix: Dragging the map editor menu no longer results in a clear background over parts of it.<br>
+              -Bug fix: I neglected to add UI for previously implemented ability to change province limit, water province limit, and fill in. Added UI here. This feature should be considred unstable and in early user testing. If you reduce the maximum number of provinces, you need to increase the fill limit to give the generator more attempts to correctly fill in larger provinces. Unfortunately, increasing the fill in attempts will reduce the speed of generation fairly significantly.<br>
+              -Experimental: Added a couple of experimental image generators that are not currently used in the game. Building up to future paper/flat map generation options (e.g., roguelike, pixel art, parchment, etc.).<br>
+            </p>
+    
+          <p class="text-intro">Alpha 0.1.4 Release</p>
+            <p class="main-landing-text">Alpha 0.1.4 removes the need to edit mapobjectdata or rivers.png by resetting the /map_object_data/generated file and processing the rivers.png image with indexing through the Gimp script.
+            <p class="main-landing-heading">0.1.4 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Generates additional files for the map_object_data/generated folder.
+              -Feature: Gimp script revised to automatically process the rivers.png file and reset the map_object_data/generated folder.
+            </p>
+            <p class="text-intro">Alpha 0.1.3 Release</p>
+            <p class="main-landing-text">Alpha 0.1.3 introduces province painting and editing.
+            <p class="main-landing-heading">0.1.3 Change Log</p>
+            <p class="main-landing-text">
+              -Feature: Paint a land or water province on the map. During province generation, if it has room to grow, it will.<br>
+              -Feature: Rewrite localization for empires, kingdoms, duchies, counties, provinces, faiths, and cultures by clicking on a province in the province map and defining the related localization.<br>
+              -Feature: Toggle whether a province is impassable, impassable sea, lake, or river by clicking on the province in the province map and toggling a checkbox.<br>
+              -Feature: The Gimp post-processing script now prints a message to screen when it is done.<br>
+              -Feature: While editing provinces, draw a land only province map.<br>
+              -Feature: While editing provinces, draw a water only province map.<br>
+              -Feature: While editing provinces, draw empire, kingdom, duchy, and county maps. (Warning: this is a bit slow).<br>
+              -Bug fix: Terrain painting with mountains now results in correct masking.<br>
+              -Bug fix: Activities locator is now properly generated.<br>
+              -Bug fix: Locators are now actually automatically moved during Gimp post-processing script.<br>
+              -Quality of Life: You no longer need to process your flatmap by hand. It is now done by the Gimp post-processing script. <br>
+            </p><br><br>
+            <p class="text-intro">Alpha 0.1.2 Release</p>
+            <p class="main-landing-text">Alpha 0.1.2 includes two hot fixes for issues in the generator: (1) desert_mountains not painting on terrain map and (2) ghostly looking beaches left behind from prior map when you import a height map. There are also some new options under the hood but not exposed through the toolbox yet.</p>
+            <p class="main-landing-heading">0.1.2 Change Log</p>
+            <p class="main-landing-text">
+              Fixed bug preventing desert_mountains from painting in terrain painter.<br>
+              When you uploaded a heightmap, the system would retain beaches on map from prior map. Fixed this problem.<br>
+              Added rudimentary ability to modify land and water province limits, no UI for it yet.<br>
+              Added brush feathering option for circle brush, no UI for it yet.<br>
+              Restyled terrain selection box to move it closer to toolbox on open.<br>
+            </p><br><br>
+            <p class="text-intro">Alpha 0.1.1 Release</p>
+            <p class="main-landing-text">We are thrilled to announce the alpha release 0.1.1 of the Procedural Map Generator for Crusader Kings 3.</p>
+            <p class="main-landing-heading">0.1.1 Change Log</p>
+            <p class="main-landing-text">
+              Added ability to import heightmap.<br>
+              Added simple noise function.<br>
+              Stopped drawing rivers initially. Now you must choose to draw rivers because it affects elevation when you rerun rivers.<br>
+              Added undo button to map generator.<br>
+              Added redo button to map generator.<br>
+              Added toggle to allow users to avoid bug causing memory overflows due to undo/redo buttons.<br>
+              Added a button allowing you to lower elevation of water only (useful for heightmap import work)<br>
+              Added a button allowing you to raise elevation of land only (useful for heightmap import work)<br>
+              Fixed bug causing hills around desert mountains to look green.<br>
+              Fixed bug causing hills around cold climate mountains to look green.<br>
+              Deleted generated clothing palettes from template file. Clothing is vanilla palette now. Will work on palette generation at some point. Random is boring.<br>
+              Removed large ears. Will add back as optional with history/lore update.<br>
+              Added red brush overlay to show where you are on generator. <br>
+              Minimizable toolbar.<br>
+              Fixed bug preventing moving to image downloads if winter severity was not checked.<br>
+              Add generator for descriptor.mod<br>
+              Added ability to draw a land only province map <br>
+              Added square and circle brushes for map editor.<br>
+              Added indicator for paintbrush cursor.<br>
+              Fixed locator generation and made automatic. Will need to spread combat, etc. locators around province in future release.<br>
+              Added hybrid culture name generation (keyed to province of creating character).<br>
+              Added settings to use vanilla ethnicities for now. Will add back in other options with history/lore update.<br>
+              Removed asset file that was calling old files that are no longer in the mod.<br>
+              Deleted bugged line in template descriptor.mod that was causing crashes.<br>
+              Fixed missing 'DeathDeityHerHim' and decay localization for religions.<br>
+            </p>
+          </div>
+        </div>
       </div>
-      
-      
-    </div>
+      </div>
+    </div>      
 
     <div id="loading-screen">
       <h1 class="loading">Generating a New World</h1>
+      <div class="loadingSpin"></div> 
     </div>
-    <div id="sidebars">
-      <div id="main-sidebar">
-        <div id="main-sidebar-top">
-          CK3 Map Generator
-          <span id="minimize-button">-</span>
-        </div>
-        <div id="main-sidebar-bottom">
-          <div id="map-editor-bottom-sidebar">
-            <div class="gen-icon" id="editor-bottom-tools">
-              <p class="outset-text">Map Preview Modes:</p>
-              <div class="tt"><img class="small-icon-button" id="colorswatch" src="icons/terrainmap.png"><span class="ttText">Terrain Map Preview</span></div>
-              <div class="tt"><img class="small-icon-button" id="color-map-icon" src="icons/colormapicon.png"><span class="ttText">Pixel Map Preview</span></div>
-              <div class="tt"><img class="small-icon-button" id="river-map-icon" src="icons/river-icon.png"><span class="ttText">River Map Preview</span></div>
-              <div class="tt"><img class="small-icon-button" id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="ttText">Flat Map Preview</span></div>
-              <div class="tt"><img class="small-icon-button" id="heightmap-icon" src="icons/heightmap-icon.png"><span class="ttText">Heightmap Preview</span></div>
-              <div class="tt"><img class="small-icon-button" id="provmap-icon" src="icons/prov-icon.png"><span class="ttText">Province Map Painter</span></div>
-              <div class="tt"><img class="small-icon-button" id="watermap-icon" src="icons/watermap-icon.png"><span class="ttText">Water Province Map Painter</span></div>
-              <p class="outset-text">Mass Change:</p>
-              <div class="tt"><img class="img-icon" id="startup" src="icons/newmap.png"><span class="ttText">Create a New Map</span></div>
-              <div class="tt"><img  class="img-icon" id="magnify" src="icons/magnifyingglass.png"><span class="ttText">Zoom In (NOT IMPLEMENTED)</span></div>
-              <div class="tt"><img  class="img-icon" id="droptowater" src="icons/droptowater.png"><span class="ttText">Drop All Cells to Ocean</span></div>
-              <div class="tt"><img class="img-icon" id="broom" src="icons/broom.png"><span class="ttText">Clean Up Any Isolated Single Cells</span></div>
-              <div class="tt"><img class="img-icon" id="spread-icon" src="icons/spread-icon.png"><span class="ttText">Spread Elevation From Spreading Centers</span></div>
-              <div class="tt"><img class="img-icon" id="soften-spread-icon" src="icons/soften-spread-icon.png"><span class="ttText">Soften Elevation and Spread it Out</span></div>
-              <div class="tt"><img class="img-icon" id="increase-elevation-icon" src="icons/increase-elevation-icon.png"><span class="ttText">Increase Elevation Everywhere</span></div>
-              <div class="tt"><img class="img-icon" id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png"><span class="ttText">Decrease Elevation Everywhere</span></div>
-              <div class="tt"><img class="img-icon" id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png"><span class="ttText">Rerun Rivers</span></div>
-              <div class="tt"><img class="img-icon" id="raise-mountains-icon" src="icons/raise-mountains.png"><span class="ttText">Raise Elevation of Mountains Only</span></div>
-              <div class="tt"><img class="img-icon" id="lower-mountains-icon" src="icons/lower-mountains.png"><span class="ttText">Lower Elevation of Mountains Only</span></div>
-              <div class="tt"><img class="img-icon" id="raiseLand" src="icons/raise-land-only-icon.png"><span class="ttText">Raise Elevation of Land Only</span></div>
-              <div class="tt"><img class="img-icon" id="lowerWater" src="icons/lower-water-only-icon.png"><span class="ttText">Lower Elevation of Water Only</span></div>
-              <div class="tt"><img class="img-icon" id="noiseMap" src="icons/noise-icon.png"><span class="ttText">Basic Noise Map</span></div>
-              <div class="tt"><img class="img-icon"  id="all-to-sea-level" src="icons/all-to-sea-level.png"><span class="ttText">All Elevations to Sea Level</span></div>
-              <div class="tt"><img class="img-icon"  id="water-to-sea-level" src="icons/water-to-sea-level.png"><span class="ttText">Raise Elevation of Water to Sea Level</span></div>
-              <div class="tt"><span class="ttText"></span></div>
-              <div class="tt"><span class="ttText"></span></div>
-              <div class="tt"><span class="ttText"></span></div>
-              <div class="tt"><span class="ttText"></span></div>
-              <div class="tt"><span class="ttText"></span></div>
-  
-
-
-              <div>
-                <div class="tt">
-                  <label for="mass-brush-adjuster">Adjustment Level</label>
-                  <input type="number" id="mass-brush-adjuster" min="-100" max="100" value="0" step="1" oninput="updateMassBrushAdjuster(this.value)">
-                <span class="ttText">Changing the adjustment level affects the factor by which the Mass Change brushes are applied.</span></div>
-              </div>
-    
-              <p class="outset-text">Brushes:</p>
-              
-              <div class="tt"><img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png"><span class="ttText">Raise Elevation Brush</span></div>
-              <div class="tt"><img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png"><span class="ttText">Lower Elevation Brush</span></div>
-              <div class="tt"><img class="img-icon"  id="erase-province" src="icons/eraser.png"><span class="ttText">Erase Province</span></div>
-              <div class="tt"><img class="img-icon" id="undoMap" src="icons/undo-icon.png"><span class="ttText">Undo</span></div>
-              <div class="tt"><img class="img-icon" id="redoMap" src="icons/redo-icon.png"><span class="ttText">Redo</span></div>
-              
-
-              <div class="color-picker" id="color-picker">
-                <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
-                  <div class="color-tooltip">Sea Level</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
-                  <div class="color-tooltip">Plains</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
-                  <div class="color-tooltip">Desert</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
-                  <div class="color-tooltip">Drylands</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
-                  <div class="color-tooltip">Floodplains</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
-                  <div class="color-tooltip">Hills</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
-                  <div class="color-tooltip">Mountains</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
-                  <div class="color-tooltip">Taiga</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
-                  <div class="color-tooltip">Desert Mountains</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
-                  <div class="color-tooltip">Farmlands</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
-                  <div class="color-tooltip">Forest</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
-                  <div class="color-tooltip">Jungle</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
-                  <div class="color-tooltip">Oasis</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
-                  <div class="color-tooltip">Steppe</div>
-                </div>
-                <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
-                  <div class="color-tooltip">Wetlands</div>
-                </div>
-              </div>
-            <div class="color-box" id="selected-color">
-              <div class="color-tooltip" id="selected-tooltip">Select Color</div>
-            </div>
-
-            <input type="color" id="title-color">
-    
-              
-  
-    
-  
-            
-              
-              <p class="outset-text">Brush Settings:</p>
-              <div class="slider-container">
-                <lable for="absoluteBrush"><div class="tt">Absolute:&nbsp&nbsp</lable>
-                <select name="absoluteBrush" id="absoluteBrush">
-                  <option value="true">True</option>
-                  <option value="false" selected>False</option>
-                </select>
-                <span class="ttText">Should brush power make absolute changes to elevation?</span></div>
-              </div>
-              <div class="slider-container">
-                <label for="sizeSlider" class="slider-label"><div class="tt">Size:&nbsp&nbsp</label>
-                <input type="number" id="sizeSlider" min="1" max="2000" value="30" step="1" oninput="updateSliderValue(this.value)">
-                <span class="ttText">Change the diameter of the brush.</span></div>
-              </div>
-              <div class="slider-container">
-                <label for="powerSlider" class="slider-label"><div class="tt">Power:&nbsp&nbsp</label>
-                <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
-                <span class="ttText">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span></div>
-              </div>
-              <div class="slider-container">
-                <label for="limitSlider" class="slider-label"><div class="tt">Limit:&nbsp&nbsp</label>
-                <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
-                <span class="ttText">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span></div>
-              </div>
-              <p class="outset-text">Map Settings:</p>
-              <div class="slider-container">
-                  <label for="equatorSlider" class="slider-label" debounce=True><div class="tt">Equator:&nbsp&nbsp</label>
-                  <input type="number" id="equatorSlider" min="0" max="8192" value="4096" step="1" oninput="equatorChange()"> <!--4096 is having equator at bottom of screen-->
-                  <span class="ttText">How many pixels from the top of the canvas is the equator?</span></div>
-              </div>
-              <div class="slider-container">
-                <label for="riversSlider" class="slider-label">Rivers:&nbsp&nbsp</label>
-                <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="riverChange()">
-              </div>
-              <div class="slider-container">
-                <label for="map-sizes"><div class="tt">Map Size:&nbsp&nbsp</label>
-
-                <select name="map-sizes" id="map-sizes">
-                  <option value="8192x4096">8192x4096</option>
-                  <option value="4096x2048">4096x2048</option>
-                  <option value="2048x1024">2048x1024</option>
-                  <option value="1024x512">1024x512</option>
-                </select> 
-                <span class="ttText">Map Size refers to the ultimate size of your generated map. For example, the vanilla map is 8192x4096 pixels.</span></div>
-              </div>
-              <div class="slider-container">
-                <label for="map-sizes"><div class="tt">Generator Resolution:&nbsp&nbsp</label>
-
-                <select name="generator-resolution" id="generator-resolution">
-                  <option value="512x256">512x256</option>
-                  <option value="1024x512">1024x512</option>
-                  <option value="2048x1024">2048x1024</option>
-                  <option value="4096x2048">4096x2048</option>
-                  <option value="8192x4096">8192x4096</option>
-                </select>
-                <span class="ttText">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span></div>
-            </div>
-
-            <div class="slider-container">
-              <div class="tt"><label for="tropicalUpper">Tropical:&nbsp&nbsp</label>
-              <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007" oninput="limitAdjuster()">
-              <span class="ttText">What Y distance from the equator (black line on color map) does the tropical climate zone end?</span></div>
-            </div>
-            <div class="slider-container">
-              <div class="tt"><label for="tropicalUpper">Sub-Tropical:&nbsp&nbsp</label>
-              <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520" oninput="limitAdjuster()">
-              <span class="ttText">What Y distance from the equator (black line on color map) does the subtropical climate zone end?</span></div>
-            </div>
-            <div class="slider-container">
-              <div class="tt"><label for="temperateUpper">Temperate:&nbsp&nbsp</label>
-              <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
-              <span class="ttText">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span></div>
-            </div>
-
-            <div class="slider-container">
-              <div class="tt"><label for="elevation-to-heightmap">Elevation to Heightmap Divider:&nbsp&nbsp</label>
-              <input type="number" id="elevation-to-heightmap" min="2" max="100" value="2" oninput="elevationToHeightmapAdjuster()">
-              <span class="ttText">In the generator, elevation of land ranges from 37-510. The default divider of 2 converts to where the highest place on heightmap is rgb(255,255,255). Increase the divider value to squish the terrain down and make it less stark. This will not affect the cut-offs for different terrain types.</span></div>
-            </div>
-
-
-            <div class="slider-container">
-              <div class="tt"><label for="hills-line">Hills Elevation:&nbsp&nbsp</label>
-              <input type="number" id="hills-line" min="37" max="510" value="205" oninput="hillAdjuster()">
-              <span class="ttText">When the generator reaches this elevation, hills terrain and masking occurs.</span></div>
-            </div>
-
-            <div class="slider-container">
-              <div class="tt"><label for="mountain-line">Mountain Elevation:&nbsp&nbsp</label>
-              <input type="number" id="mountain-line" min="37" max="510" value="255" oninput="mountainAdjuster()">
-              <span class="ttText">When the generator reaches this elevation, hills change to mountain terrain and masking.</span></div>
-            </div>
-
-            <div class="slider-container">
-              <div class="tt"><label for="snow-line">Snow Line Elevation:&nbsp&nbsp</label>
-              <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
-              <span class="ttText">When the generator reaches this elevation, mountains change to snow line with snow masking.</span></div>
-            </div>
-
-
-            <div class="slider-container">
-              <label for="import-divider-adjuster"><div class="tt">Imported Divider:&nbsp&nbsp</label>
-              <input type="number" id="import-divider-adjuster" min="1" max="5000" value="1" step="0.1">
-              <span class="ttText">When you import a heightmap, the whiteness of each cell will be divided by the divider to determine elevation of a cell.</span></div>
-            </div>
-
-            <div class="slider-container">
-              <label for="import-multiplier-adjuster"><div class="tt">Imported Multiplier:&nbsp&nbsp</label>
-              <input type="number" id="import-multiplier-adjuster" min="1" max="5000" value="1" step="0.1">
-              <span class="ttText">When you import a heightmap, the whiteness of each cell will be multiplied by the multiplier to determine elevation of a cell.</span></div>
-            </div>
-  
-
-            <div class="slider-container">
-              <label for="heightmap-adjuster"><div class="tt">Imported Adjuster:&nbsp&nbsp</label>
-              <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
-              <span class="ttText">When you import a heightmap, the adjuster (positive or negative) will be added to each cell.</span></div>
-            </div>
-
-            <div>
-              <p class="outset-text">Province Settings:</p>
-              <div class="slider-container">
-                <div class="tt">
-                  <label for="max-land-provinces">Max Land Provinces:&nbsp&nbsp</label>
-                  <input type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)"><br>
-                  <span class="ttText">EXPERIMENTAL FEATURE WARNING: Max land provinces is an upper limit, which may not be reached, to the number of generated land provinces. Reducing the maximumn number of land provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
-                </div>
-              </div>
-              <div class="slider-container">
-                <div class="tt">
-                  <label for="max-water-provinces">Max Water Provinces:&nbsp&nbsp</label>
-                  <input type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)"><br>
-                  <span class="ttText" >EXPERIMENTAL FEATURE WARNING: Max water provinces is an upper limit, which may not be reached, to the number of generated water provinces. Reducing the maximumn number of water provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
-                </div>
-              </div>
-              <div class="slider-container">
-                <div class="tt">
-                  <label for="max-fill-in">Max Fill In Attempts:&nbsp&nbsp</label>
-                  <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)"><br><br><br>
-                  <span class="ttText">EXPERIMENTAL FEATURE WARNING: The province generation algorithm works by seeding cells across the map and then filling in from there until the seed cell's growth bumps into other cell growths. This is a general function to control how many times the algorithm will attempt to fill in before stopping. A higher number will result in more likely fill in of the map without resorting to default colors or bleeding the province across the map through a brute fill in process.</span>
-                </div>
-              </div>
-              <br><br>
-            </div>
-      
-              <div class="sbtn menu-btn" id="tracking-toggle">
-                Turn On Undo (Can Cause Crashes)
-              </div>
-              <div class="file-upload-wrapper">
-                <button class="file-upload-button">Import Heightmap</button>
-                <input type="file" class="sbtn" id="imageUpload" accept="image/*" />
-              </div>
-            </div>
-          </div>
-
-
-          <canvas id="heightmap-upload-canvas" width="512" height="512" style="display:none;"></canvas>
-  
-          
-          <div class="sbtn menu-btn" id="create-provinces">Generate Provinces</div>
-        </div>
-
-      </div>
-    </div>
-
 
     <div id="province-menu">
       <div id="top-bar-province-menu">Edit Provinces</div>
@@ -656,7 +696,8 @@
     <script src="experimental/drawRoguelike.js"></script>
     <script src="js/mapgen/provinceEditor.js"></script>
     <script src="js/textFileWriters/writeHeightmapHeightmap.js"></script>
-    <script src="js/textFileWriters/writeTerrainShader.js"></script>
+    <script src="js/shared/ui/moveable-element.js"></script>
+    <script src="js/shared/ui/hideable-element.js"></script>
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>
     <script src="js/testing/createdDummyProvinces.js"></script>

@@ -1,0 +1,158 @@
+:root {
+  --panel-bg: #29282d83;
+  --cat-bg: #29282dc4;
+  --font-color: #ececec;
+  --border-color: #766752;
+  --button-color: #2d2c31;
+  --botton-color-hover: #3b291d;
+}
+
+#menus-main{
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  display: inline-block;
+  width:300px;
+  color:var(--font-color);
+  font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#menus-map-modes{
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    display: inline-block;
+    width:350px;
+    color:var(--font-color);
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ck-style-tray{
+  background: var(--panel-bg);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.icon-tray{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: 50px;
+}
+
+.display-horizontal{
+    position: relative;
+    display: inline-flex;
+}
+
+.icon-clickable:hover{
+    cursor: pointer;
+}
+
+.icon-tools img{
+  width: 15px;
+  margin: 2px;
+}
+
+.icon-small-round img{
+    width: 30px;
+    margin: 2px;
+    border-radius: 50%;
+    border: var(--border-color) 2px solid;
+}
+
+.icon-extra-small img{
+    width: 15px;
+    margin: 2px;
+}
+
+.has-tool-tip{
+  position: relative;
+}
+
+.has-tool-tip .tool-tip {
+  visibility: hidden;
+  width: auto;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.has-tool-tip:hover .tool-tip{
+  visibility: visible;
+  opacity: 1;
+} 
+
+.menu-section-header{
+  width:100%;
+}
+
+.menu-section-header img{
+  margin-right: 10px;
+}
+
+.menu-cat{
+  background-color: var(--cat-bg);
+  border-radius: 5px;
+  padding:5px;
+  margin-bottom: 5px;
+}
+
+.menu-setting label{
+  width:50%;
+}
+
+.flex-spread-evenly{
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-align-vertically{
+  align-items: center;
+}
+
+.menu-section-content{
+
+}
+
+/* Smaller elements */
+.input-field{
+  width: 33%;
+}
+
+.ck-button{
+  cursor: pointer;
+  width: 100%;
+  padding: 5px;
+  border-radius: 5px;
+  margin-top: 5px;
+  background: var(--button-color);
+  color: var(--font-color);
+  border: var(--border-color) 2px solid;
+}
+
+.ck-button:hover{
+  background: var(--botton-color-hover);
+  transition: 0.3s;
+}
+
+.menu-cat input,
+.menu-cat select {
+  padding: 2px;
+  width: 33%;
+}

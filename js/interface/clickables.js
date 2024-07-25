@@ -1,28 +1,3 @@
-const movableDiv = document.getElementById('main-sidebar');
-const movingDiv = document.getElementById("main-sidebar-top")
-
-let isDragging = false;
-let offsetX, offsetY;
-
-movingDiv.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    offsetX = e.clientX - movableDiv.offsetLeft;
-    offsetY = e.clientY - movableDiv.offsetTop;
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        movableDiv.style.left = `${e.clientX - offsetX}px`;
-        movableDiv.style.top = `${e.clientY - offsetY}px`;
-        movableDiv.style.width = `10vw`
-        movableDiv.style.height = `10vw`
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-});
-
 function undoMapChange() {
   if (world.lastCounter > 0) {
     world.lastCounter -= 1;
@@ -319,7 +294,8 @@ GID("papyrus-map-icon").onclick = function() {
 GID("create-provinces").onclick = function() {
   world.lastMaps = null
   GID("main-generator-div").style.display = "none";
-  GID("sidebars").style.display = "none";
+  GID("menus-main").style.display = "none"
+  GID("menus-map-modes").style.display = "none"
   GID("province-creation-screen").style.display = "block";
   // Delay the createProvinces function call
   setTimeout(function() {
@@ -529,18 +505,6 @@ document.addEventListener('click', (e) => {
 });
 
 
-//Minimizing
-document.getElementById('minimize-button').addEventListener('click', function() {
-  var sidebar = document.getElementById('main-sidebar');
-  if (sidebar.classList.contains('minimized')) {
-    sidebar.style.height = "fit-content"
-  }
-
-  sidebar.classList.toggle('minimized');
-  var bottomSidebar = document.getElementById("main-sidebar-bottom")
-  this.textContent = sidebar.classList.contains('minimized') ? '+' : '-';
-  bottomSidebar.style.display = sidebar.classList.contains('minimized') ? "none" : "block";
-});
 
 //BRUSH VIEW
 
@@ -742,8 +706,8 @@ document.getElementById('map-sizes').addEventListener('change', function(event) 
 });
 
 GID("absoluteBrush").addEventListener('change', function(event) {
-  const selectedValue = event.target.value;
-  if (selectedValue === "true") {
+  const selectedValue = event.target;
+  if (selectedValue.checked) {
     paintbrushAbsolute = true;
   } else {
     paintbrushAbsolute = false;
