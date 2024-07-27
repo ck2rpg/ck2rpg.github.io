@@ -130,7 +130,7 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
 
 // Function to simulate erosion
 function applyErosionBrush(pos, brushSize) {
-  EROSION_RATE *= paintbrushHardness
+  EROSION_RATE = 0.1 * paintbrushHardness
   const cell = xy(pos.x, pos.y);
   const radius = brushSize / 2;
   const radiusSquared = radius * radius;
