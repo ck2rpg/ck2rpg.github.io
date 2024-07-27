@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="css/landing.css"></link>
   </head>
   <body>
+    <div id="zoom-container" class="zoom-container">
+      <div id="zoom-in" class="zoom-button">+</div>
+      <div id="zoom-out" class="zoom-button">-</div>
+      <div id="fullscreen" class="fullscreen-button">⛶</div>
+    </div>
     <div id="done-done">
       <p>Woohoo! You are done with the browser-based work. Please see the <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> for next steps.</p>
     </div>
@@ -40,7 +45,7 @@
       Be patient, your provinces are generating.
     </div>
     <div id="main-generator-div">
-    <canvas id="canvas"></canvas>
+      <canvas id="canvas"></canvas>
 
     <!-- Main Side Panel -->
     <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
@@ -703,6 +708,7 @@
     <script src="js/textFileWriters/writeHeightmapHeightmap.js"></script>
     <script src="js/shared/ui/moveable-element.js"></script>
     <script src="js/shared/ui/hideable-element.js"></script>
+    <script src="js/interface/zoom.js"></script>
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>
     <script src="js/testing/createdDummyProvinces.js"></script>

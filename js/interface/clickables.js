@@ -789,15 +789,3 @@ GID("erase-province").onclick = function() {
   paintbrush = "province-eraser"
 }
 
-let zoomAdjuster = debounce(() => adjustZoomLevel())
-
-function adjustZoomLevel() {
-  let zoom = GID("zoom-level").value;
-  if (parseInt(zoom) === 0) {
-
-  } else {
-    canvas.style.width = `${128 * zoom}px`
-    canvas.style.height = `${128 * zoom}px`
-  }
-
-}

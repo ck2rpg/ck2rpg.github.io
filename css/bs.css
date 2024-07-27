@@ -996,3 +996,47 @@ button[type="submit"]:hover {
   visibility: visible;
   opacity: 1;
 } 
+
+.zoom-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 24px;
+  margin: 5px;
+  background: var(--button-color);
+  color: var(--font-color);
+  border: var(--border-color) 2px solid;
+}
+
+.zoom-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  z-index: 30000;
+  position: fixed;
+  right: 10px;
+  top: 10px;
+}
+
+.fullscreen-button {
+  width: 40px;
+  height: 40px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 5px;
+  border-radius: 50%;
+  background: var(--button-color);
+  color: var(--font-color);
+  border: var(--border-color) 2px solid;
+}

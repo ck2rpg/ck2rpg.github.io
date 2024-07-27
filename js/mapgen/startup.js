@@ -18,6 +18,7 @@ function startup() {
 
     // Hide the loading screen after the processing is done
     GID("loading-screen").style.display = "none";
+    GID("main-generator-div").style.display = "block"
   }, 0); // setTimeout with 0 delay
 }
 
