@@ -8,14 +8,11 @@
     <link rel="stylesheet" href="css/landing.css"></link>
   </head>
   <body>
-    <div id="zoom-container" class="zoom-container">
-      <div id="zoom-in" class="zoom-button">+</div>
-      <div id="zoom-out" class="zoom-button">-</div>
-      <div id="fullscreen" class="fullscreen-button">⛶</div>
-    </div>
+
     <div id="done-done">
       <p>Woohoo! You are done with the browser-based work. Please see the <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> for next steps.</p>
     </div>
+
     <div id="province-drawn-proceed">
       Your province map has been downloaded. Now you can edit your provinces. When you are done, click proceed to go on to save your files.
     </div>
@@ -26,6 +23,8 @@
         Download Image Files
       </div>
     </div>
+
+
     <div class="downloads-menus" id="text-download-settings">
       Now it is time to download the text files. Click below to choose the files to download.<br><br>
       <div id="text-generation-settings">
@@ -41,322 +40,406 @@
         Download Text Files
       </div>
     </div>
+
+
     <div id="province-creation-screen">
       Be patient, your provinces are generating.
     </div>
+
+
     <div id="main-generator-div">
       <canvas id="canvas"></canvas>
 
-    <!-- Main Side Panel -->
-    <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
-      <div class="display-horizontal flex-spread-evenly">
-        <span>CK3 Map Generator</span>
-        <div>
-          <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
-        </div>
+      <div id="zoom-container" class="zoom-container">
+        <div id="zoom-in" class="zoom-button has-tool-tip">+<span class="tool-tip">Zoom In</span></div>
+        <div id="zoom-out" class="zoom-button has-tool-tip">-<span class="tool-tip">Zoom Out</span></div>
+        <div id="fullscreen" class="fullscreen-button has-tool-tip">⛶<span class="tool-tip">Wrap</span></div>
       </div>
-      <div id="mass-changes" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Mass Changes</span>       
+      <!-- Main Side Panel -->
+      <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
+        <div class="display-horizontal flex-spread-evenly">
+          <span>CK3 Map Generator</span>
+          <div>
+            <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
+          </div>
         </div>
+        <div id="mass-changes" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Mass Changes</span>       
+          </div>
+            <div class="menu-section-content menu-hideable-area menu-setting">
+              <div class="icon-tray">
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="startup" src="icons/newmap.png"><span class="tool-tip">Create a New Map</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="magnify" src="icons/magnifyingglass.png"><span class="tool-tip">Zoom In</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="droptowater" src="icons/droptowater.png"><span class="tool-tip">Drop All Cells to Ocean</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="broom" src="icons/broom.png"><span class="tool-tip">Clean Up Any Isolated Single Cells</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="spread-icon" src="icons/spread-icon.png"><span class="tool-tip">Spread Elevation From Spreading Centers</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="soften-spread-icon" src="icons/soften-spread-icon.png"><span class="tool-tip">Soften Elevation and Spread it Out</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="increase-elevation-icon" src="icons/increase-elevation-icon.png"><span class="tool-tip">Increase Elevation Everywhere</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png"><span class="tool-tip">Decrease Elevation Everywhere</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png"><span class="tool-tip">Rerun Rivers</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="raise-mountains-icon" src="icons/raise-mountains.png"><span class="tool-tip">Raise Elevation of Mountains Only</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="lower-mountains-icon" src="icons/lower-mountains.png"><span class="tool-tip">Lower Elevation of Mountains Only</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="raiseLand" src="icons/raise-land-only-icon.png"><span class="tool-tip">Raise Elevation of Land Only</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="lowerWater" src="icons/lower-water-only-icon.png"><span class="tool-tip">Lower Elevation of Water Only</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="noiseMap" src="icons/noise-icon.png"><span class="tool-tip">Basic Noise Map</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="all-to-sea-level" src="icons/all-to-sea-level.png"><span class="tool-tip">All Elevations to Sea Level</span></div>
+                <div class="icon-clickable icon-tools has-tool-tip"><img id="water-to-sea-level" src="icons/water-to-sea-level.png"><span class="tool-tip">Raise Elevation of Water to Sea Level</span></div>
+              </div>
+            
+              <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+                <label for="mass-brush-adjuster">Adjustment Level</label>
+                <input class="ck-field" type="number" id="mass-brush-adjuster" min="-100" max="100" value="0" step="1" oninput="updateMassBrushAdjuster(this.value)"/>
+                <span class="tool-tip">Changing the adjustment level affects the factor by which the Mass Change brushes are applied.</span>
+              </div>
+          </div>  
+        </div>
+
+        <div id="menu-brushes" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Brush Settings</span>       
+          </div>
           <div class="menu-section-content menu-hideable-area menu-setting">
-            <div class="icon-tray">
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="startup" src="icons/newmap.png"><span class="tool-tip">Create a New Map</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="magnify" src="icons/magnifyingglass.png"><span class="tool-tip">Zoom In</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="droptowater" src="icons/droptowater.png"><span class="tool-tip">Drop All Cells to Ocean</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="broom" src="icons/broom.png"><span class="tool-tip">Clean Up Any Isolated Single Cells</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="spread-icon" src="icons/spread-icon.png"><span class="tool-tip">Spread Elevation From Spreading Centers</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="soften-spread-icon" src="icons/soften-spread-icon.png"><span class="tool-tip">Soften Elevation and Spread it Out</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="increase-elevation-icon" src="icons/increase-elevation-icon.png"><span class="tool-tip">Increase Elevation Everywhere</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="decrease-elevation-icon" src="icons/decrease-elevation-icon.png"><span class="tool-tip">Decrease Elevation Everywhere</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="rerun-rivers-icon" src="icons/rerun-rivers-icon.png"><span class="tool-tip">Rerun Rivers</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="raise-mountains-icon" src="icons/raise-mountains.png"><span class="tool-tip">Raise Elevation of Mountains Only</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="lower-mountains-icon" src="icons/lower-mountains.png"><span class="tool-tip">Lower Elevation of Mountains Only</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="raiseLand" src="icons/raise-land-only-icon.png"><span class="tool-tip">Raise Elevation of Land Only</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="lowerWater" src="icons/lower-water-only-icon.png"><span class="tool-tip">Lower Elevation of Water Only</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="noiseMap" src="icons/noise-icon.png"><span class="tool-tip">Basic Noise Map</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="all-to-sea-level" src="icons/all-to-sea-level.png"><span class="tool-tip">All Elevations to Sea Level</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="water-to-sea-level" src="icons/water-to-sea-level.png"><span class="tool-tip">Raise Elevation of Water to Sea Level</span></div>
+          <div class="display-horizontal flex-spread-evenly flex-align-vertically">
+            <div class="display-horizontal">
+              <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png"><span class="tool-tip">Raise Elevation Brush</span></div>
+              <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png"><span class="tool-tip">Lower Elevation Brush</span></div>
+              <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="erase-province" src="icons/eraser.png"><span class="tool-tip">Erase Province</span></div>
+              <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="undoMap" src="icons/undo-icon.png"><span class="tool-tip">Undo</span></div>
+              <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="redoMap" src="icons/redo-icon.png"><span class="tool-tip">Redo</span></div>
             </div>
-          
-            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
-              <label for="mass-brush-adjuster">Adjustment Level</label>
-              <input class="ck-field" type="number" id="mass-brush-adjuster" min="-100" max="100" value="0" step="1" oninput="updateMassBrushAdjuster(this.value)"/>
-              <span class="tool-tip">Changing the adjustment level affects the factor by which the Mass Change brushes are applied.</span>
-            </div>
-        </div>  
-        </div>
 
-      <div id="menu-brushes" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Brush Settings</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area menu-setting">
-        <div class="display-horizontal flex-spread-evenly flex-align-vertically">
-          <div class="display-horizontal">
-            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-increase-elevation" src="icons/paint-increase-elevation.png"><span class="tool-tip">Raise Elevation Brush</span></div>
-            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="paint-decrease-elevation" src="icons/paint-decrease-elevation.png"><span class="tool-tip">Lower Elevation Brush</span></div>
-            <div class="has-tool-tip icon-extra-small"><img class="img-icon"  id="erase-province" src="icons/eraser.png"><span class="tool-tip">Erase Province</span></div>
-            <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="undoMap" src="icons/undo-icon.png"><span class="tool-tip">Undo</span></div>
-            <div class="has-tool-tip icon-extra-small"><img class="img-icon" id="redoMap" src="icons/redo-icon.png"><span class="tool-tip">Redo</span></div>
+            <div class="color-picker has-tool-tip" id="color-picker">
+              <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
+                <div class="color-tooltip">Sea Level</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
+                <div class="color-tooltip">Plains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
+                <div class="color-tooltip">Desert</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
+                <div class="color-tooltip">Drylands</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
+                <div class="color-tooltip">Floodplains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
+                <div class="color-tooltip">Hills</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
+                <div class="color-tooltip">Mountains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
+                <div class="color-tooltip">Taiga</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
+                <div class="color-tooltip">Desert Mountains</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
+                <div class="color-tooltip">Farmlands</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
+                <div class="color-tooltip">Forest</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
+                <div class="color-tooltip">Jungle</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
+                <div class="color-tooltip">Oasis</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
+                <div class="color-tooltip">Steppe</div>
+              </div>
+              <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
+                <div class="color-tooltip">Wetlands</div>
+              </div>
+            </div>
+            <div class="color-box has-tool-tip" id="selected-color">
+              <div class="tool-tip" id="selected-tooltip">Select Color</div>
+            </div>
+            <input type="color" id="title-color">
           </div>
 
-          <div class="color-picker has-tool-tip" id="color-picker">
-            <div class="color-option" style="background-color: rgb(97, 170, 229);" data-tooltip="Sea Level">
-              <div class="color-tooltip">Sea Level</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(204, 163, 102);" data-tooltip="Plains">
-              <div class="color-tooltip">Plains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(255, 230, 0);" data-tooltip="Desert">
-              <div class="color-tooltip">Desert</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(220, 45, 120);" data-tooltip="Drylands">
-              <div class="color-tooltip">Drylands</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(55, 31, 153);" data-tooltip="Floodplains">
-              <div class="color-tooltip">Floodplains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(90, 50, 12);" data-tooltip="Hills">
-              <div class="color-tooltip">Hills</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(100, 100, 100);" data-tooltip="Mountains">
-              <div class="color-tooltip">Mountains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(46, 153, 89);" data-tooltip="Taiga">
-              <div class="color-tooltip">Taiga</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(23, 19, 38);" data-tooltip="Desert Mountains">
-              <div class="color-tooltip">Desert Mountains</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(255, 0, 0);" data-tooltip="Farmlands">
-              <div class="color-tooltip">Farmlands</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(71, 179, 45);" data-tooltip="Forest">
-              <div class="color-tooltip">Forest</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(10, 60, 35);" data-tooltip="Jungle">
-              <div class="color-tooltip">Jungle</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(155, 143, 204);" data-tooltip="Oasis">
-              <div class="color-tooltip">Oasis</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(200, 100, 25);" data-tooltip="Steppe">
-              <div class="color-tooltip">Steppe</div>
-            </div>
-            <div class="color-option" style="background-color: rgb(77, 153, 153);" data-tooltip="Wetlands">
-              <div class="color-tooltip">Wetlands</div>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="absoluteBrush">Absolute</label>
+              <input type="checkbox" id="absoluteBrush"/>
+              <span class="tool-tip">Should brush power make absolute changes to elevation?</span><br>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="sizeSlider"> Brush Size</label>
+              <input type="number" id="sizeSlider" min="1" max="2000" value="30" step="1" oninput="updateSliderValue(this.value)">
+              <span class="tool-tip">Change the diameter of the brush.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="powerSlider"> Brush Power</label>
+              <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
+            <span class="tool-tip">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="limitSlider">Limit</label>
+              <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
+              <span class="tool-tip">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span>
+            </span>
+          </div>
+        </div>
+
+        <div id="map-settings" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Map Settings</span>       
+          </div>
+          <div class="menu-section-content menu-hideable-area">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="zoom-level">Zoom</label>
+              <input type="number" id="zoom-level" min="0" max="510" value="1" oninput="zoomAdjuster()">
+              <span class="tool-tip">Zoom Level</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="map-sizes">Map Size</label>
+              <select name="map-sizes" id="map-sizes">
+                <option value="8192x4096">8192x4096</option>
+                <option value="4096x2048">4096x2048</option>
+                <option value="2048x1024">2048x1024</option>
+                <option value="1024x512">1024x512</option>
+              </select>
+              <span class="tool-tip">Map Size refers to the ultimate size of your generated map. For example, the vanilla map is 8192x4096 pixels.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="generator-resolution">Resolution</label>
+              <select name="generator-resolution" id="generator-resolution">
+                <option value="512x256">512x256</option>
+                <option value="1024x512">1024x512</option>
+                <option value="2048x1024">2048x1024</option>
+                <option value="4096x2048">4096x2048</option>
+                <option value="8192x4096">8192x4096</option>
+              </select>
+              <span class="tool-tip">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="elevation-to-heightmap">Elevation to Heightmap Divider:&nbsp&nbsp</label>
+              <input type="number" id="elevation-to-heightmap" min="2" max="100" value="2" oninput="elevationToHeightmapAdjuster()">
+              <span class="tool-tip">In the generator, elevation of land ranges from 37-510. The default divider of 2 converts to where the highest place on heightmap is rgb(255,255,255). Increase the divider value to squish the terrain down and make it less stark. This will not affect the cut-offs for different terrain types.</span>
+            </span>
+
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="hills-line">Hills Elevation:&nbsp&nbsp</label>
+              <input type="number" id="hills-line" min="37" max="510" value="205" oninput="hillAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, hills terrain and masking occurs.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="mountain-line">Mountain Elevation:&nbsp&nbsp</label>
+              <input type="number" id="mountain-line" min="37" max="510" value="255" oninput="mountainAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, hills change to mountain terrain and masking.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="snow-line">Snow Line Elevation:&nbsp&nbsp</label>
+              <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, mountains change to snow line with snow masking.</span>
+            </span>
+          </div>
+        </div>
+
+        <div id="terrain-settings" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Terrain Settings</span>       
+          </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="equatorSlider" class="slider-label" debounce=True>Equator</label>
+              <input type="number" id="equatorSlider" min="0" max="8192" value="4096" step="1" oninput="equatorChange()"> <!--4096 is having equator at bottom of screen-->
+              <span class="tool-tip">How many pixels from the top of the canvas is the equator?</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="tropicalUpper">Tropical</label>
+              <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007" oninput="limitAdjuster()">
+              <span class="tool-tip">What Y distance from the equator (black line on color map) does the tropical climate zone end?</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="subTropicalUpper">Sub-Tropical</label>
+              <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520" oninput="limitAdjuster()">
+              <span class="tool-tip">What Y distance from the equator (black line on color map) does the subtropical climate zone end?</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="temperateUpper">Temperate</label>
+              <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
+              <span class="tool-tip">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting">
+              <label for="riversSlider">Rivers</label>
+              <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="riverChange()">
+            </span>
+          </div>
+        </div>
+
+        <div id="province-settings" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Experimental Province Settings</span>       
+          </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-land-province-setting">Max Land Provinces</label>
+              <input type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)">
+              <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: Max land provinces is an upper limit, which may not be reached, to the number of generated land provinces. Reducing the maximumn number of land provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-water-province-setting">Max Water Provinces</label>
+              <input type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)">
+              <span class="tool-tip" >EXPERIMENTAL FEATURE WARNING: Max water provinces is an upper limit, which may not be reached, to the number of generated water provinces. Reducing the maximumn number of water provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-fill-in-setting">Max Fill In Attempts</label>
+              <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)">
+              <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: The province generation algorithm works by seeding cells across the map and then filling in from there until the seed cell's growth bumps into other cell growths. This is a general function to control how many times the algorithm will attempt to fill in before stopping. A higher number will result in more likely fill in of the map without resorting to default colors or bleeding the province across the map through a brute fill in process.</span>
+            </span>
+          </div>
+        </div>
+
+        <div id="import-settings" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
+            <span>Import Settings</span>       
+          </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="import-divider-adjuster">Imported Divider</label>
+              <input type="number" id="import-divider-adjuster" min="1" max="5000" value="1" step="0.1">
+              <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be divided by the divider to determine elevation of a cell.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="import-multiplier-adjuster">Imported Multiplier</label>
+              <input type="number" id="import-multiplier-adjuster" min="1" max="5000" value="1" step="0.1">
+              <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be multiplied by the multiplier to determine elevation of a cell.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="heightmap-adjuster">Imported Adjuster</label>
+              <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
+              <span class="tool-tip">When you import a heightmap, the adjuster (positive or negative) will be added to each cell.</span>
+            </span>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Heightmap</button>
+              <input type="file" class="ck-button" id="imageUpload" accept="image/*" />
             </div>
           </div>
-          <div class="color-box has-tool-tip" id="selected-color">
-            <div class="tool-tip" id="selected-tooltip">Select Color</div>
+        </div>
+
+        <div id="final-settings" class="menu-cat menu-hideable">
+          <div class="menu-section-header display-horizontal flex-align-vertically">          
+            <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div> 
+            <span>Miscellaneous</span>       
           </div>
-          <input type="color" id="title-color">
-        </div>
-
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="absoluteBrush">Absolute</label>
-            <input type="checkbox" id="absoluteBrush"/>
-            <span class="tool-tip">Should brush power make absolute changes to elevation?</span><br>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="sizeSlider"> Brush Size</label>
-            <input type="number" id="sizeSlider" min="1" max="2000" value="30" step="1" oninput="updateSliderValue(this.value)">
-            <span class="tool-tip">Change the diameter of the brush.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="powerSlider"> Brush Power</label>
-            <input type="number" id="powerSlider" min="0" max="510" value="1" step="1" oninput="updatePowerSliderValue(this.value)">
-          <span class="tool-tip">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="limitSlider">Limit</label>
-            <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
-            <span class="tool-tip">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span>
-          </span>
-        </div>
-      </div>
-
-      <div id="map-settings" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Map Settings</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area">
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="zoom-level">Zoom</label>
-            <input type="number" id="zoom-level" min="0" max="510" value="1" oninput="zoomAdjuster()">
-            <span class="tool-tip">Zoom Level</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="map-sizes">Map Size</label>
-            <select name="map-sizes" id="map-sizes">
-              <option value="8192x4096">8192x4096</option>
-              <option value="4096x2048">4096x2048</option>
-              <option value="2048x1024">2048x1024</option>
-              <option value="1024x512">1024x512</option>
-            </select>
-            <span class="tool-tip">Map Size refers to the ultimate size of your generated map. For example, the vanilla map is 8192x4096 pixels.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="generator-resolution">Resolution</label>
-            <select name="generator-resolution" id="generator-resolution">
-              <option value="512x256">512x256</option>
-              <option value="1024x512">1024x512</option>
-              <option value="2048x1024">2048x1024</option>
-              <option value="4096x2048">4096x2048</option>
-              <option value="8192x4096">8192x4096</option>
-            </select>
-            <span class="tool-tip">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="elevation-to-heightmap">Elevation to Heightmap Divider:&nbsp&nbsp</label>
-            <input type="number" id="elevation-to-heightmap" min="2" max="100" value="2" oninput="elevationToHeightmapAdjuster()">
-            <span class="tool-tip">In the generator, elevation of land ranges from 37-510. The default divider of 2 converts to where the highest place on heightmap is rgb(255,255,255). Increase the divider value to squish the terrain down and make it less stark. This will not affect the cut-offs for different terrain types.</span>
-          </span>
-
-
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="hills-line">Hills Elevation:&nbsp&nbsp</label>
-            <input type="number" id="hills-line" min="37" max="510" value="205" oninput="hillAdjuster()">
-            <span class="tool-tip">When the generator reaches this elevation, hills terrain and masking occurs.</span>
-          </span>
-
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="mountain-line">Mountain Elevation:&nbsp&nbsp</label>
-            <input type="number" id="mountain-line" min="37" max="510" value="255" oninput="mountainAdjuster()">
-            <span class="tool-tip">When the generator reaches this elevation, hills change to mountain terrain and masking.</span>
-          </span>
-
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="snow-line">Snow Line Elevation:&nbsp&nbsp</label>
-            <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
-            <span class="tool-tip">When the generator reaches this elevation, mountains change to snow line with snow masking.</span>
-          </span>
-        </div>
-      </div>
-
-      <div id="terrain-settings" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Terrain Settings</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area menu-setting">
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="equatorSlider" class="slider-label" debounce=True>Equator</label>
-            <input type="number" id="equatorSlider" min="0" max="8192" value="4096" step="1" oninput="equatorChange()"> <!--4096 is having equator at bottom of screen-->
-            <span class="tool-tip">How many pixels from the top of the canvas is the equator?</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="tropicalUpper">Tropical</label>
-            <input type="number" id="tropicalUpper" class="climateChanger" min="0" max="4096" value="1007" oninput="limitAdjuster()">
-            <span class="tool-tip">What Y distance from the equator (black line on color map) does the tropical climate zone end?</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="subTropicalUpper">Sub-Tropical</label>
-            <input type="number" id="subTropicalUpper"  class="climateChanger" min="0" max="4096" value="1520" oninput="limitAdjuster()">
-            <span class="tool-tip">What Y distance from the equator (black line on color map) does the subtropical climate zone end?</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-            <label for="temperateUpper">Temperate</label>
-            <input type="number" id="temperateUpper" class="climateChanger" min="0" max="4096" value="2865" oninput="limitAdjuster()">
-            <span class="tool-tip">What Y distance from the equator (black line on color map) does the temperate climate zone end? The cold zone takes up the remainder.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically menu-setting">
-            <label for="riversSlider">Rivers</label>
-            <input type="range" id="riversSlider" class="slider" min="0" max="30" value="1" step="1" oninput="riverChange()">
-          </span>
-        </div>
-      </div>
-
-      <div id="province-settings" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Experimental Province Settings</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area menu-setting">
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="max-land-province-setting">Max Land Provinces</label>
-            <input type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)">
-            <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: Max land provinces is an upper limit, which may not be reached, to the number of generated land provinces. Reducing the maximumn number of land provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="max-water-province-setting">Max Water Provinces</label>
-            <input type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)">
-            <span class="tool-tip" >EXPERIMENTAL FEATURE WARNING: Max water provinces is an upper limit, which may not be reached, to the number of generated water provinces. Reducing the maximumn number of water provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="max-fill-in-setting">Max Fill In Attempts</label>
-            <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)">
-            <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: The province generation algorithm works by seeding cells across the map and then filling in from there until the seed cell's growth bumps into other cell growths. This is a general function to control how many times the algorithm will attempt to fill in before stopping. A higher number will result in more likely fill in of the map without resorting to default colors or bleeding the province across the map through a brute fill in process.</span>
-          </span>
-        </div>
-      </div>
-
-      <div id="import-settings" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div>   
-          <span>Import Settings</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area menu-setting">
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="import-divider-adjuster">Imported Divider</label>
-            <input type="number" id="import-divider-adjuster" min="1" max="5000" value="1" step="0.1">
-            <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be divided by the divider to determine elevation of a cell.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="import-multiplier-adjuster">Imported Multiplier</label>
-            <input type="number" id="import-multiplier-adjuster" min="1" max="5000" value="1" step="0.1">
-            <span class="tool-tip">When you import a heightmap, the whiteness of each cell will be multiplied by the multiplier to determine elevation of a cell.</span>
-          </span>
-          <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
-            <label for="heightmap-adjuster">Imported Adjuster</label>
-            <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
-            <span class="tool-tip">When you import a heightmap, the adjuster (positive or negative) will be added to each cell.</span>
-          </span>
-          <div class="file-upload-wrapper">
-            <button class="ck-button">Import Heightmap</button>
-            <input type="file" class="ck-button" id="imageUpload" accept="image/*" />
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <button class="ck-button" id="tracking-toggle">Turn On Undo (Can Cause Crashes)</button>
+            <button class="ck-button" id="create-provinces">Generate Provinces</button>
           </div>
         </div>
       </div>
-
-      <div id="final-settings" class="menu-cat menu-hideable">
-        <div class="menu-section-header display-horizontal flex-align-vertically">          
-          <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div> 
-          <span>Miscellaneous</span>       
-        </div>
-        <div class="menu-section-content menu-hideable-area menu-setting">
-          <button class="ck-button" id="tracking-toggle">Turn On Undo (Can Cause Crashes)</button>
-          <button class="ck-button" id="create-provinces">Generate Provinces</button>
-        </div>
-      </div>
-    </div>
     
-    <!-- Map Modes -->
-    <div id="menus-map-modes" class="moveable-element ck-style-tray">
-      <div class="display-horizontal flex-spread-evenly">
-        <span>Map Modes</span>
-        <div>
-          <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
+      <!-- Map Modes -->
+      <div id="menus-map-modes" class="moveable-element ck-style-tray">
+        <div class="display-horizontal flex-spread-evenly">
+          <span>Map Modes</span>
+          <div>
+            <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
+          </div>
         </div>
+        <div class="menu-cat flex-spread-evenly">
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="colorswatch" src="icons/terrainmap.png"><span class="tool-tip">Terrain Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="color-map-icon" src="icons/colormapicon.png"><span class="tool-tip">Pixel Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
+        </div>      
       </div>
-      <div class="menu-cat flex-spread-evenly">
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="colorswatch" src="icons/terrainmap.png"><span class="tool-tip">Terrain Map</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="color-map-icon" src="icons/colormapicon.png"><span class="tool-tip">Pixel Map</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
-        <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
-      </div>      
-    </div>
 
-    <div id="brush"></div>
-    <canvas id="texture-canvas"></canvas>
-    <canvas id="gradientCanvas"></canvas>
+      <div id="brush"></div>
+      <canvas id="texture-canvas"></canvas>
+      <canvas id="gradientCanvas"></canvas>
+
+      <div id="province-menu">
+        <div id="top-bar-province-menu">Edit Provinces</div>
+        <div id="top-bar-edits-menu">
+            <p>Empire Loc.: <input class="province-menu-input" id="empireLocBox" /></p>
+            <p>Kingdom Loc.: <input class="province-menu-input" id="kingdomLocBox" /></p>
+            <p>Duchy Loc.: <input class="province-menu-input" id="duchyLocBox" /></p>
+            <p>County Loc.: <input class="province-menu-input" id="countyLocBox" /></p>
+            <p>Province Loc.: <input id="locbox" /></p>
+            <p>Province Name: <input id="namebox" /></p>
+            <p>Faith Loc: <input class="province-menu-input" id="faithbox" /></p>
+            <p>Culture Loc:<input class="province-menu-input" id="culturebox" /></p>
+            <label><input type="checkbox" id="oceanCheckbox"> Ocean</label><br>
+            <label><input type="checkbox" id="lakeCheckbox"> Lake</label><br>
+            <label><input type="checkbox" id="riverCheckbox"> River</label><br>
+            <label><input type="checkbox" id="impassableCheckbox"> Impassable</label><br>
+            <label><input type="checkbox" id="impassableSeaCheckbox"> Impassable Sea</label><br>
+            <p>Def. ID: <span id="defid"></span></p>
+            <p>Red: <span id="r"></span></p>
+            <p>Green: <span id="g"></span></p>
+            <p>Blue: <span id="b"></span></p>
+        </div>
+        <div class="sbtn prov-btn" id="full-province-map">Draw Full Province Map</div>
+        <div class="sbtn prov-btn" id="only-land-map">Draw Only Land Provinces Map</div>
+        <div class="sbtn prov-btn" id="only-water-map">Draw Only Water Provinces Map</div>
+        <div class="sbtn prov-btn" id="county-map">Draw County Map</div>
+        <div class="sbtn prov-btn" id="duchy-map">Draw Duchy Map</div>
+        <div class="sbtn prov-btn" id="kingdom-map">Draw Kingdom Map</div>
+        <div class="sbtn prov-btn" id="empire-map">Draw Empire Map</div>
+
+        <div class="sbtn" id="province-edits-done-proceed">Proceed to File Saving</div>
+      </div>
+
+
+
+    
+    
+      <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
+        <img id="rivertemp" src="images/river_templates/rivertemp.png" style="display: none"/>
+        <img id="river-temp-trans" src="images/river_templates/riverTransTemp.png" style="display: none"/>
+  </div>
+      <div id="testing-div">
+
+      </div>
+      <div id="ink-images">
+        <img id="tree1" src="bw/tree1.png"/>
+        <img id="tree2" src="bw/tree2.png"/>
+        <img id="tree3" src="bw/tree2.png"/>
+        <img id="tree4" src="bw/tree2.png"/>
+        <img id="marsh1" src="bw/marsh1.png"/>
+        <img id="hills1" src="bw/hills1.png"/>
+        <img id="hills2" src="bw/hills2.png"/>
+        <img id="hills3" src="bw/hills3.png"/>
+        <img id="hills4" src="bw/hills4.png"/>
+        <img id="mountain1" src="bw/mountain1.png"/>
+        <img id="mountain2" src="bw/mountain2.png"/>
+        <img id="mountain3" src="bw/mountain3.png"/>
+        <img id="mountain4" src="bw/mountain4.png"/>
+        <img id="minisprites" src="experimental/miniworldsprites.png" />
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="landing-screen">
       <div id="landing-info">
@@ -559,65 +642,8 @@
       <div class="loadingSpin"></div> 
     </div>
 
-    <div id="province-menu">
-      <div id="top-bar-province-menu">Edit Provinces</div>
-      <div id="top-bar-edits-menu">
-          <p>Empire Loc.: <input class="province-menu-input" id="empireLocBox" /></p>
-          <p>Kingdom Loc.: <input class="province-menu-input" id="kingdomLocBox" /></p>
-          <p>Duchy Loc.: <input class="province-menu-input" id="duchyLocBox" /></p>
-          <p>County Loc.: <input class="province-menu-input" id="countyLocBox" /></p>
-          <p>Province Loc.: <input id="locbox" /></p>
-          <p>Province Name: <input id="namebox" /></p>
-          <p>Faith Loc: <input class="province-menu-input" id="faithbox" /></p>
-          <p>Culture Loc:<input class="province-menu-input" id="culturebox" /></p>
-          <label><input type="checkbox" id="oceanCheckbox"> Ocean</label><br>
-          <label><input type="checkbox" id="lakeCheckbox"> Lake</label><br>
-          <label><input type="checkbox" id="riverCheckbox"> River</label><br>
-          <label><input type="checkbox" id="impassableCheckbox"> Impassable</label><br>
-          <label><input type="checkbox" id="impassableSeaCheckbox"> Impassable Sea</label><br>
-          <p>Def. ID: <span id="defid"></span></p>
-          <p>Red: <span id="r"></span></p>
-          <p>Green: <span id="g"></span></p>
-          <p>Blue: <span id="b"></span></p>
-      </div>
-      <div class="sbtn prov-btn" id="full-province-map">Draw Full Province Map</div>
-      <div class="sbtn prov-btn" id="only-land-map">Draw Only Land Provinces Map</div>
-      <div class="sbtn prov-btn" id="only-water-map">Draw Only Water Provinces Map</div>
-      <div class="sbtn prov-btn" id="county-map">Draw County Map</div>
-      <div class="sbtn prov-btn" id="duchy-map">Draw Duchy Map</div>
-      <div class="sbtn prov-btn" id="kingdom-map">Draw Kingdom Map</div>
-      <div class="sbtn prov-btn" id="empire-map">Draw Empire Map</div>
-
-      <div class="sbtn" id="province-edits-done-proceed">Proceed to File Saving</div>
-    </div>
 
 
-
-    
-    
-    <div id="download-links"></div> <!--necessary for now for auto-download, but can change this to remove-->
-    <img id="rivertemp" src="images/river_templates/rivertemp.png" style="display: none"/>
-    <img id="river-temp-trans" src="images/river_templates/riverTransTemp.png" style="display: none"/>
-    </div>
-    <div id="testing-div">
-
-    </div>
-    <div id="ink-images">
-      <img id="tree1" src="bw/tree1.png"/>
-      <img id="tree2" src="bw/tree2.png"/>
-      <img id="tree3" src="bw/tree2.png"/>
-      <img id="tree4" src="bw/tree2.png"/>
-      <img id="marsh1" src="bw/marsh1.png"/>
-      <img id="hills1" src="bw/hills1.png"/>
-      <img id="hills2" src="bw/hills2.png"/>
-      <img id="hills3" src="bw/hills3.png"/>
-      <img id="hills4" src="bw/hills4.png"/>
-      <img id="mountain1" src="bw/mountain1.png"/>
-      <img id="mountain2" src="bw/mountain2.png"/>
-      <img id="mountain3" src="bw/mountain3.png"/>
-      <img id="mountain4" src="bw/mountain4.png"/>
-      <img id="minisprites" src="experimental/miniworldsprites.png" />
-    </div>
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
     <script src="js/langgen/alice.js"></script>
     <script src="js/external_libraries/simplex-noise.js"></script>
