@@ -821,7 +821,7 @@ button[type="submit"]:hover {
 
 #province-menu {
   display: none;
-  position: absolute;
+  position: fixed;
   bottom: 10px;
   right: 10px;
   z-index: 20000;

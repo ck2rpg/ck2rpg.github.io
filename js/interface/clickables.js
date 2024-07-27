@@ -473,6 +473,10 @@ GID("province-edits-done-proceed").onclick = function() {
   GID("text-download-settings").style.display = "block"
 }
 
+GID("paint-erode").onclick = function() {
+  paintbrush = "erosion"
+}
+
 
 //color picker
 

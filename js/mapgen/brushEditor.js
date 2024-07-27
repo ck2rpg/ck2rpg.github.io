@@ -128,8 +128,6 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
   }
 }
 
-paintbrush = "erosion"
-
 // Function to simulate erosion
 function applyErosionBrush(pos, brushSize) {
   EROSION_RATE *= paintbrushHardness
