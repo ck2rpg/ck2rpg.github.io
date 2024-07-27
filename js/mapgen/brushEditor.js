@@ -7,6 +7,11 @@ const DEBOUNCE_TIME = 0; // Adjust debounce time as needed
 const canvasWidth = canvas.width;
 const canvasHeight = canvas.height;
 
+// Define erosion parameters
+let EROSION_RATE = 0.1; // Rate of erosion
+const DEPOSITION_RATE = 0.05; // Rate of sediment deposition
+const MAX_ITERATIONS = 200; // Max iterations for erosion simulation
+
 function applySquareBrush(pos, brushSize, brushType, brushHardness) {
   const cell = xy(pos.x, pos.y);
   const halfBrush = Math.floor(brushSize / 2);
@@ -41,6 +46,13 @@ function applySquareBrush(pos, brushSize, brushType, brushHardness) {
 }
 
 function applyBrush(pos, brushSize, brushType, brushHardness) {
+  if (brushType === "erosion") {
+    applyErosionBrush(pos, brushSize);
+    return;
+  } 
+
+
+
   const cell = xy(pos.x, pos.y);
   const radius = brushSize / 2;
   const radiusSquared = radius * radius;
@@ -116,6 +128,99 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
   }
 }
 
+paintbrush = "erosion"
+
+// Function to simulate erosion
+function applyErosionBrush(pos, brushSize) {
+  EROSION_RATE *= paintbrushHardness
+  const cell = xy(pos.x, pos.y);
+  const radius = brushSize / 2;
+  const radiusSquared = radius * radius;
+
+  const startY = Math.floor(cell.y - radius);
+  const endY = Math.ceil(cell.y + radius);
+  const startX = Math.floor(cell.x - radius);
+  const endX = Math.ceil(cell.x + radius);
+
+  for (let i = startY; i <= endY; i++) {
+    for (let j = startX; j <= endX; j++) {
+      const dx = j - cell.x;
+      const dy = i - cell.y;
+      const dist = dx * dx + dy * dy;
+
+      if (dist <= radiusSquared) {
+        let nextCell = xy(j, i);
+        if (nextCell) {
+          applyErosion(nextCell, EROSION_RATE, DEPOSITION_RATE);
+          affectedCells.add(`${j},${i}`);
+        }
+      }
+    }
+  }
+}
+
+// Erosion simulation function
+function applyErosion(cell, erosionRate, depositionRate) {
+  let sediment = 0;
+
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    let neighbors = getErosionNeighbors(cell.x, cell.y);
+    let steepestSlope = null;
+    let maxSlope = -Infinity;
+
+    // Find the steepest downhill neighbor
+    for (let neighbor of neighbors) {
+      let slope = cell.elevation - neighbor.elevation;
+      if (slope > maxSlope) {
+        maxSlope = slope;
+        steepestSlope = neighbor;
+      }
+    }
+
+    if (steepestSlope && maxSlope > 0) {
+      // Erode material from the current cell
+      let erodedMaterial = Math.min(maxSlope * erosionRate, cell.elevation);
+      cell.elevation -= erodedMaterial;
+      sediment += erodedMaterial;
+
+      // Move to the steepest downhill neighbor
+      cell = steepestSlope;
+
+      // Deposit sediment
+      let depositedMaterial = sediment * depositionRate;
+      cell.elevation += depositedMaterial;
+      sediment -= depositedMaterial;
+    } else {
+      // No downhill neighbor or maximum slope is zero
+      break;
+    }
+  }
+}
+
+// Function to get neighboring cells
+function getErosionNeighbors(x, y) {
+  const neighbors = [];
+  const directions = [
+    { dx: -1, dy: 0 },
+    { dx: 1, dy: 0 },
+    { dx: 0, dy: -1 },
+    { dx: 0, dy: 1 },
+    { dx: -1, dy: -1 },
+    { dx: 1, dy: 1 },
+    { dx: -1, dy: 1 },
+    { dx: 1, dy: -1 }
+  ];
+
+  for (let dir of directions) {
+    let neighbor = xy(x + dir.dx, y + dir.dy);
+    if (neighbor) {
+      neighbors.push(neighbor);
+    }
+  }
+
+  return neighbors;
+}
+
 const overrideProps = {
   "waterOverride": "waterOverride",
   "provinceOverride": "provinceOverride",
@@ -176,6 +281,8 @@ function applyBrushToTouchedPositions() {
   touchedPositions.forEach(pos => {
     if (paintbrushShape === "square") {
       applySquareBrush(pos, paintbrushSize, paintbrush, paintbrushHardness);
+    } else if (paintbrush === "erosion") {
+      applyErosionBrush(pos, paintbrushSize);
     } else {
       applyBrush(pos, paintbrushSize, paintbrush, paintbrushHardness);
     }
@@ -222,8 +329,6 @@ function redrawAffectedCells() {
       drawCell(x, y, context);
     });
   }
-
-
 }
 
 function clearCell(x, y, context) {
@@ -232,9 +337,9 @@ function clearCell(x, y, context) {
   context.clearRect(x * cellSizeX, y * cellSizeY, cellSizeX, cellSizeY);
 }
 
-
-
 // Add event listeners
 canvas.addEventListener('mousedown', onMouseDown);
 canvas.addEventListener('mousemove', onMouseMove);
 canvas.addEventListener('mouseup', onMouseUp);
+
+

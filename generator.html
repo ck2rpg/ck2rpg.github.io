@@ -181,6 +181,11 @@
         </div>
         <div class="menu-section-content menu-hideable-area">
           <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+            <label for="zoom-level">Zoom</label>
+            <input type="number" id="zoom-level" min="0" max="510" value="1" oninput="zoomAdjuster()">
+            <span class="tool-tip">Zoom Level</span>
+          </span>
+          <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
             <label for="map-sizes">Map Size</label>
             <select name="map-sizes" id="map-sizes">
               <option value="8192x4096">8192x4096</option>
