@@ -1018,14 +1018,53 @@ button[type="submit"]:hover {
   border: var(--border-color) 2px solid;
 }
 
+
+
 .zoom-container {
-  position: absolute;
   display: flex;
   flex-direction: column;
   z-index: 30000;
   position: fixed;
   right: 10px;
   top: 10px;
+}
+
+.brush-container {
+  display: flex;
+  flex-direction: column;
+  z-index: 30000;
+  position: fixed;
+  left: 10px;
+  top: 10px;
+}
+
+.bottom-left-button {
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin: 5px;
+  background: var(--button-color);
+  color: var(--font-color);
+  border: var(--border-color) 2px solid;
+}
+
+.bottom-left-container {
+  display: flex;
+  flex-direction: row;
+  z-index: 30000;
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+}
+
+.bottom-left-img {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
 }
 
 .fullscreen-button {
