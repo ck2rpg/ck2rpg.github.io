@@ -813,3 +813,23 @@ kingdomDistanceThresholdInput.addEventListener('input', () => {
     kingdomDistanceThreshold = parseFloat(kingdomDistanceThresholdInput.value);
 });
 
+let maxProvincesInCounty = 6;
+let maxCountiesInDuchy = 6;
+let maxDuchiesInKingdom = 6;
+let maxKingdomsInEmpire = 6;
+
+document.getElementById('max-provinces-in-county').addEventListener('input', function(event) {
+  maxProvincesInCounty = parseInt(event.target.value);
+});
+
+document.getElementById('max-counties-in-duchy').addEventListener('input', function(event) {
+  maxCountiesInDuchy = parseInt(event.target.value);
+});
+
+document.getElementById('max-duchies-in-kingdom').addEventListener('input', function(event) {
+  maxDuchiesInKingdom = parseInt(event.target.value);
+});
+
+document.getElementById('max-kingdoms-in-empire').addEventListener('input', function(event) {
+  maxKingdomsInEmpire = parseInt(event.target.value);
+});

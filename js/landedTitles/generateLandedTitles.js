@@ -5,11 +5,13 @@ landedTitleLogger.duchies = {};
 landedTitleLogger.kingdoms = {};
 let worldHistory = {}
 
-//The results here are disappointing and need work
+// Merge control variables
+let mergeCounties = false;
+let mergeDuchies = false;
+let mergeKingdoms = false;
+let mergeEmpires = false;
 
 function calculateDistance(provinceIndex1, provinceIndex2) {
-    // Assuming we have a way to calculate the distance between two provinces
-    // This could be Euclidean distance, Manhattan distance, or any other metric
     let province1 = world.provinces[provinceIndex1];
     let province2 = world.provinces[provinceIndex2];
     let dx = province1.x - province2.x;
@@ -17,16 +19,13 @@ function calculateDistance(provinceIndex1, provinceIndex2) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-
 function sanitizeAdjacencies(province) {
-    //his function will iterate through each province's adjacencies array and convert any non-integer elements to integers using parseInt. If parseInt fails to convert a value into an integer (for example, if the value is not a number), the function will remove that value from the adjacencies array to maintain data integrity.
     province.adjacencies = province.adjacencies
         .map(adj => parseInt(adj))
         .filter(adj => !isNaN(adj));
 }
 
 function createCounties(world) {
-    // Sanitize adjacencies
     world.provinces.forEach(province => {
         province.adjacencies = province.adjacencies
             .map(adj => parseInt(adj))
@@ -37,7 +36,11 @@ function createCounties(world) {
     const counties = [];
 
     function getRandomUpperLimit() {
-        return Math.floor(Math.random() * (6 - 2 + 1)) + 2;
+        let lim = Math.random() * (maxProvincesInCounty) + 1;
+        if (lim < 1) {
+            lim = 1
+        } 
+        return Math.floor(lim);
     }
 
     function dfs(provinceIndex, currentCounty, upperLimit, firstProvinceIndex) {
@@ -66,7 +69,7 @@ function createCounties(world) {
 
             if (currentCounty.length >= 2) {
                 counties.push(currentCounty);
-            } else {
+            } else if (mergeCounties) {
                 // Try to merge small counties with an adjacent one
                 let merged = false;
                 for (const neighbor of world.provinces[i].adjacencies) {
@@ -80,10 +83,11 @@ function createCounties(world) {
                     }
                 }
 
-                // If unable to merge, try with a new upper limit
                 if (!merged) {
                     counties.push(currentCounty);
                 }
+            } else {
+                counties.push(currentCounty);
             }
         }
     }
@@ -104,7 +108,11 @@ function createDuchies(counties, world) {
     }
 
     function getRandomUpperLimit() {
-        return Math.floor(Math.random() * (6 - 2 + 1)) + 2;
+        let lim = Math.random() * (maxCountiesInDuchy) + 1;
+        if (lim < 1) {
+            lim = 1
+        } 
+        return Math.floor(lim);
     }
 
     function dfs(countyIndex, currentDuchy, upperLimit, firstProvinceIndex) {
@@ -146,7 +154,7 @@ function createDuchies(counties, world) {
 
             if (currentDuchy.length >= 2) {
                 duchies.push(currentDuchy.map(index => counties[index]));
-            } else {
+            } else if (mergeDuchies) {
                 let merged = false;
                 for (const adjacentCountyIndex of counties[i]) {
                     for (const neighbor of world.provinces[adjacentCountyIndex].adjacencies) {
@@ -166,13 +174,14 @@ function createDuchies(counties, world) {
                 if (!merged) {
                     duchies.push(currentDuchy.map(index => counties[index]));
                 }
+            } else {
+                duchies.push(currentDuchy.map(index => counties[index]));
             }
         }
     }
 
     return duchies;
 }
-
 
 function createMyKingdoms(world) {
     let dArr = [];
@@ -203,6 +212,14 @@ function createMyKingdoms(world) {
         dArr.push(duchyObj);
     }
 
+    function getRandomUpperLimit() {
+        let lim = Math.random() * (maxDuchiesInKingdom) + 1;
+        if (lim < 1) {
+            lim = 1
+        } 
+        return Math.floor(lim);
+    }
+
     for (let i = 0; i < dArr.length; i++) {
         for (let j = 0; j < dArr.length; j++) {
             if (i !== j && areDuchiesAdjacent(dArr[i], dArr[j])) {
@@ -216,8 +233,7 @@ function createMyKingdoms(world) {
         if (!d1.kingdom) {
             let potentialKingdom = {};
             potentialKingdom.duchies = [];
-            //potentialKingdom.maxDuchies = getRandomInt(2, 4);
-            potentialKingdom.maxDuchies = 100;
+            potentialKingdom.maxDuchies = getRandomUpperLimit()
             d1.kingdom = potentialKingdom;
             potentialKingdom.duchies.push(d1);
             potentialKingdom.ownProvinces = [];
@@ -262,7 +278,6 @@ function createMyKingdoms(world) {
     world.duchies = dArr;
     return arr;
 }
-
 
 function addProvincesFromTitle(t1, t2, landedTitleType) {
     for (let i = 0; i < t1.ownProvinces.length; i++) {
@@ -309,6 +324,14 @@ function createEmpires(world) {
         }
     }
 
+    function getRandomUpperLimit() {
+        let lim = Math.random() * (maxKingdomsInEmpire) + 1;
+        if (lim < 1) {
+            lim = 1
+        } 
+        return Math.floor(lim);
+    }
+
     for (let i = 0; i < kArr.length; i++) {
         let k1 = kArr[i]
         if (k1.empire) {
@@ -316,7 +339,7 @@ function createEmpires(world) {
         } else {
             let potentialEmpire = {};
             potentialEmpire.kingdoms = [];
-            potentialEmpire.maxKingdoms = getRandomInt(2, 4);
+            potentialEmpire.maxKingdoms = getRandomUpperLimit();
             potentialEmpire.ownProvinces = [];
             k1.empire = potentialEmpire;
             potentialEmpire.kingdoms.push(k1);
@@ -335,19 +358,21 @@ function createEmpires(world) {
             empires.push(potentialEmpire);
         }
     }
-    for (let i = 0; i < empires.length; i++) {
-        if (empires[i].kingdoms.length === 1) {
-            for (let j = 0; j < empires[i].kingdoms.length; j++) {
-                let kingdom = empires[i].kingdoms[j]
-                let rand = getRandomInt(0, kingdom.adjacentKingdoms.length - 1);
-                let adjKingdom = kArr[kingdom.adjacentKingdoms[rand]]
-                if (adjKingdom) {
-                    adjKingdom.empire.kingdoms.push(kingdom)
-                    addProvincesFromTitle(kingdom, adjKingdom.empire, "empire")
-                    empires[i].delete = true;
-                    kingdom.empire = adjKingdom.empire;
-                    if (adjKingdom.empire.delete) {
-                        adjKingdom.empire.delete = false;
+    if (mergeEmpires) {
+        for (let i = 0; i < empires.length; i++) {
+            if (empires[i].kingdoms.length === 1) {
+                for (let j = 0; j < empires[i].kingdoms.length; j++) {
+                    let kingdom = empires[i].kingdoms[j]
+                    let rand = getRandomInt(0, kingdom.adjacentKingdoms.length - 1);
+                    let adjKingdom = kArr[kingdom.adjacentKingdoms[rand]]
+                    if (adjKingdom) {
+                        adjKingdom.empire.kingdoms.push(kingdom)
+                        addProvincesFromTitle(kingdom, adjKingdom.empire, "empire")
+                        empires[i].delete = true;
+                        kingdom.empire = adjKingdom.empire;
+                        if (adjKingdom.empire.delete) {
+                            adjKingdom.empire.delete = false;
+                        }
                     }
                 }
             }
@@ -371,7 +396,6 @@ function giveColors(giver, taker) {
 }
 
 function assignTitleInfo() {
-    //need to convert counties to actual what they need to be? That seems to be the problem.
     for (let i = 0; i < world.counties.length; i++) {
         let county = world.counties[i]
         let prov = county.provinces[0]

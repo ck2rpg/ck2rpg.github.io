@@ -356,6 +356,29 @@
               <input type="number" id="kingdom-distance-threshold" min="1" max="2000" value="400" step="1">
               <span class="tool-tip">Sets the maximum allowable distance between duchies within the same kingdom and capital province. A higher value allows for larger kingdoms.</span>
             </div>
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-provinces-in-county">Max Provinces in a County</label>
+              <input type="number" id="max-provinces-in-county" min="1" max="100" value="6" step="1">
+              <span class="tool-tip">Sets the maximum number of provinces allowed in a county. A higher value allows for larger counties.</span>
+            </div>
+            
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-counties-in-duchy">Max Counties in a Duchy</label>
+              <input type="number" id="max-counties-in-duchy" min="1" max="100" value="6" step="1">
+              <span class="tool-tip">Sets the maximum number of counties allowed in a duchy. A higher value allows for larger duchies.</span>
+            </div>
+            
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-duchies-in-kingdom">Max Duchies in a Kingdom</label>
+              <input type="number" id="max-duchies-in-kingdom" min="1" max="100" value="6" step="1">
+              <span class="tool-tip">Sets the maximum number of duchies allowed in a kingdom. A higher value allows for larger kingdoms.</span>
+            </div>
+            
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="max-kingdoms-in-empire">Max Kingdoms in an Empire</label>
+              <input type="number" id="max-kingdoms-in-empire" min="1" max="100" value="6" step="1">
+              <span class="tool-tip">Sets the maximum number of kingdoms allowed in an empire. A higher value allows for larger empires.</span>
+            </div>
             <button class="ck-button" id="create-provinces">Generate Provinces</button>
           </div>
         </div>
@@ -497,6 +520,13 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.9.2 Release</p>
+            <p class="main-landing-text">Settable max titles within title</p>
+            <p class="main-landing-heading">0.9.2 Change Log</p>
+            <p class="main-landing-text">
+              In response to 0.9.0, some indicated a preference for the ability to change the maximum number of titles within a title. This release implements that feature.<br>
+            </p>
 
             <p class="text-intro">Alpha 0.9.1 Release</p>
             <p class="main-landing-text">Hot fix</p>
