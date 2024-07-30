@@ -1,7 +1,7 @@
-const hideableElements = Array.from(document.getElementsByClassName("menu-hideable"));
+/*const hideableElements = Array.from(document.getElementsByClassName("menu-hideable"));
 hideableElements.forEach(element => {
     hideElement(element);
-});
+});*/
 
 function hideElement(elmnt) {
   const hideButton = Array.from(elmnt.getElementsByClassName("hideable-element-toggle"))[0];

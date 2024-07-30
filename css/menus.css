@@ -13,9 +13,9 @@
   left: 20px;
   display: flex;
   display: inline-block;
-  width:300px;
+  width:450px;
   color:var(--font-color);
-  font-size: 12px;
+  font-size: 16px;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -150,4 +150,38 @@
 .menu-cat select {
   padding: 2px;
   width: 33%;
+}
+
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #333;
+  font-size: 1.5em;
+}
+
+.tab-button {
+  background-color: inherit;
+  flex: 1 1 25%; 
+  border: var(--border-color) 2px solid;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  color: var(--font-color);
+  text-align: center;
+}
+
+.tab-button:hover {
+  background-color: var(--button-color);
+}
+
+.tab-button.active {
+  background-color: var(--botton-color-hover);
+}
+
+.tab-content {
+  display: none;
+  padding: 6px 12px;
+  border-top: none;
 }
