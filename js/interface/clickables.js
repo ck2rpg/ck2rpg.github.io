@@ -793,9 +793,9 @@ GID("erase-province").onclick = function() {
   paintbrush = "province-eraser"
 }
 
-const countyDistanceThresholdInput = 80
-const duchyDistanceThresholdInput = 100
-const kingdomDistanceThresholdInput = 400
+const countyDistanceThresholdInput = GID("county-distance-threshold")
+const duchyDistanceThresholdInput = GID("duchy-distance-threshold")
+const kingdomDistanceThresholdInput = GID("kingdom-distance-threshold")
 
 let countyDistanceThreshold = parseFloat(countyDistanceThresholdInput.value);
 let duchyDistanceThreshold = parseFloat(duchyDistanceThresholdInput.value);
