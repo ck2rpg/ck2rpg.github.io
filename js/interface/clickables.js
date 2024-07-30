@@ -793,3 +793,23 @@ GID("erase-province").onclick = function() {
   paintbrush = "province-eraser"
 }
 
+const countyDistanceThresholdInput = 80
+const duchyDistanceThresholdInput = 100
+const kingdomDistanceThresholdInput = 400
+
+let countyDistanceThreshold = parseFloat(countyDistanceThresholdInput.value);
+let duchyDistanceThreshold = parseFloat(duchyDistanceThresholdInput.value);
+let kingdomDistanceThreshold = parseFloat(kingdomDistanceThresholdInput.value);
+
+countyDistanceThresholdInput.addEventListener('input', () => {
+    countyDistanceThreshold = parseFloat(countyDistanceThresholdInput.value);
+});
+
+duchyDistanceThresholdInput.addEventListener('input', () => {
+    duchyDistanceThreshold = parseFloat(duchyDistanceThresholdInput.value);
+});
+
+kingdomDistanceThresholdInput.addEventListener('input', () => {
+    kingdomDistanceThreshold = parseFloat(kingdomDistanceThresholdInput.value);
+});
+

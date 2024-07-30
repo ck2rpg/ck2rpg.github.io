@@ -335,10 +335,27 @@
         <div id="final-settings" class="menu-cat menu-hideable">
           <div class="menu-section-header display-horizontal flex-align-vertically">          
             <div class="icon-clickable icon-extra-small hideable-element-toggle"><img src="icons/ui/arrow-down.png"></div> 
-            <span>Miscellaneous</span>       
+            <span>Titles</span>       
           </div>
           <div class="menu-section-content menu-hideable-area menu-setting">
-            <button class="ck-button" id="tracking-toggle">Turn On Undo (Can Cause Crashes)</button>
+            <!--<button class="ck-button" id="tracking-toggle">Turn On Undo (Can Cause Crashes)</button>-->
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="county-distance-threshold">County Distance Threshold</label>
+              <input type="number" id="county-distance-threshold" min="1" max="2000" value="80" step="1">
+              <span class="tool-tip">Sets the maximum allowable distance in pixels between provinces within the same county and capital province. A higher value allows for larger counties.</span>
+            </div>
+            
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="duchy-distance-threshold">Duchy Distance Threshold</label>
+              <input type="number" id="duchy-distance-threshold" min="1" max="2000" value="100" step="1">
+              <span class="tool-tip">Sets the maximum allowable distance between counties within the same duchy and capital province. A higher value allows for larger duchies.</span>
+            </div>
+            
+            <div class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="kingdom-distance-threshold">Kingdom Distance Threshold</label>
+              <input type="number" id="kingdom-distance-threshold" min="1" max="2000" value="400" step="1">
+              <span class="tool-tip">Sets the maximum allowable distance between duchies within the same kingdom and capital province. A higher value allows for larger kingdoms.</span>
+            </div>
             <button class="ck-button" id="create-provinces">Generate Provinces</button>
           </div>
         </div>
@@ -707,7 +724,6 @@
     <script src="js/landedTitles/generateLandedTitles.js"></script>
     <script src="js/mapgen/createProvinces.js"></script>
     <script src="js/mapgen/createProvinceTerrain.js"></script>
-    <script src="js/mapgen/fromheightmap.js"></script>
     <script src="js/culture/generateCulture.js"></script>
     <script src="js/religion/generateReligion.js"></script>
     <script src="js/history/simplehistory.js"></script>

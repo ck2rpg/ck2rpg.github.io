@@ -7,12 +7,14 @@ let worldHistory = {}
 
 //The results here are disappointing and need work
 
-function createLandedTitleStructure() {
-    let titles = []
-    for (let i = 0; i < world.empires.length; i++) {
-        let empire = world.empires[i]
-
-    }
+function calculateDistance(provinceIndex1, provinceIndex2) {
+    // Assuming we have a way to calculate the distance between two provinces
+    // This could be Euclidean distance, Manhattan distance, or any other metric
+    let province1 = world.provinces[provinceIndex1];
+    let province2 = world.provinces[provinceIndex2];
+    let dx = province1.x - province2.x;
+    let dy = province1.y - province2.y;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 
@@ -38,7 +40,7 @@ function createCounties(world) {
         return Math.floor(Math.random() * (6 - 2 + 1)) + 2;
     }
 
-    function dfs(provinceIndex, currentCounty, upperLimit) {
+    function dfs(provinceIndex, currentCounty, upperLimit, firstProvinceIndex) {
         if (currentCounty.length >= upperLimit || visited.has(provinceIndex) || !world.provinces[provinceIndex].land) {
             return;
         }
@@ -48,7 +50,10 @@ function createCounties(world) {
 
         world.provinces[provinceIndex].adjacencies.forEach(neighbor => {
             if (!visited.has(neighbor) && world.provinces[neighbor].land) {
-                dfs(neighbor, currentCounty, upperLimit);
+                let distance = calculateDistance(firstProvinceIndex, neighbor, world);
+                if (distance <= countyDistanceThreshold) {
+                    dfs(neighbor, currentCounty, upperLimit, firstProvinceIndex);
+                }
             }
         });
     }
@@ -57,7 +62,7 @@ function createCounties(world) {
         if (!visited.has(i) && world.provinces[i].land) {
             const upperLimit = getRandomUpperLimit();
             const currentCounty = [];
-            dfs(i, currentCounty, upperLimit);
+            dfs(i, currentCounty, upperLimit, i);
 
             if (currentCounty.length >= 2) {
                 counties.push(currentCounty);
@@ -77,7 +82,7 @@ function createCounties(world) {
 
                 // If unable to merge, try with a new upper limit
                 if (!merged) {
-                    counties.push(currentCounty)
+                    counties.push(currentCounty);
                 }
             }
         }
@@ -86,25 +91,23 @@ function createCounties(world) {
     return counties;
 }
 
-
 function createDuchies(counties, world) {
-    // Function to check if two counties are adjacent
+    const visitedCounties = new Set();
+    const duchies = [];
+
     function areAdjacent(county1, county2) {
-        return county1.some(provinceIndex1 => 
-            world.provinces[provinceIndex1].adjacencies.some(provinceIndex2 => 
+        return county1.some(provinceIndex1 =>
+            world.provinces[provinceIndex1].adjacencies.some(provinceIndex2 =>
                 county2.includes(provinceIndex2)
             )
         );
     }
 
-    const visitedCounties = new Set();
-    const duchies = [];
-
     function getRandomUpperLimit() {
         return Math.floor(Math.random() * (6 - 2 + 1)) + 2;
     }
 
-    function dfs(countyIndex, currentDuchy, upperLimit) {
+    function dfs(countyIndex, currentDuchy, upperLimit, firstProvinceIndex) {
         if (currentDuchy.length >= upperLimit || visitedCounties.has(countyIndex)) {
             return;
         }
@@ -113,8 +116,24 @@ function createDuchies(counties, world) {
         currentDuchy.push(countyIndex);
 
         for (let i = 0; i < counties.length; i++) {
-            if (!visitedCounties.has(i) && areAdjacent(counties[countyIndex], counties[i])) {
-                dfs(i, currentDuchy, upperLimit);
+            if (!visitedCounties.has(i)) {
+                let isAdjacentToCurrentDuchy = currentDuchy.some(duchyCountyIndex =>
+                    areAdjacent(counties[duchyCountyIndex], counties[i])
+                );
+
+                if (isAdjacentToCurrentDuchy) {
+                    let addCounty = true;
+                    for (let provinceIndex of counties[i]) {
+                        let distance = calculateDistance(firstProvinceIndex, provinceIndex);
+                        if (distance > duchyDistanceThreshold) {
+                            addCounty = false;
+                            break;
+                        }
+                    }
+                    if (addCounty) {
+                        dfs(i, currentDuchy, upperLimit, firstProvinceIndex);
+                    }
+                }
             }
         }
     }
@@ -123,12 +142,11 @@ function createDuchies(counties, world) {
         if (!visitedCounties.has(i)) {
             const upperLimit = getRandomUpperLimit();
             const currentDuchy = [];
-            dfs(i, currentDuchy, upperLimit);
+            dfs(i, currentDuchy, upperLimit, counties[i][0]);
 
             if (currentDuchy.length >= 2) {
                 duchies.push(currentDuchy.map(index => counties[index]));
             } else {
-                // Merge small duchies with adjacent ones
                 let merged = false;
                 for (const adjacentCountyIndex of counties[i]) {
                     for (const neighbor of world.provinces[adjacentCountyIndex].adjacencies) {
@@ -145,7 +163,6 @@ function createDuchies(counties, world) {
                     if (merged) break;
                 }
 
-                // If unable to merge, try with a new upper limit
                 if (!merged) {
                     duchies.push(currentDuchy.map(index => counties[index]));
                 }
@@ -162,109 +179,90 @@ function createMyKingdoms(world) {
     let kingdoms = [];
 
     function areDuchiesAdjacent(duchy1, duchy2) {
-        for (let i = 0; i < duchy1.ownProvinces.length; i++) {
-            let province1 = world.provinces[duchy1.ownProvinces[i]]
-            for (let j = 0; j < province1.adjacencies.length; j++) {
-                let adjIndex = province1.adjacencies[j]
-                for (let n = 0; n < duchy2.ownProvinces.length; n++) {
-                    let province2Index = duchy2.ownProvinces[n]
-                    if (adjIndex === province2Index) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return duchy1.ownProvinces.some(province1 =>
+            world.provinces[province1].adjacencies.some(province2 =>
+                duchy2.ownProvinces.includes(province2)
+            )
+        );
     }
 
     for (let i = 0; i < world.duchies.length; i++) {
         let duchyObj = {};
-        duchyObj.adjacentDuchies = []
-        duchyObj.ownProvinces = []
-        duchyObj.counties = []
+        duchyObj.adjacentDuchies = [];
+        duchyObj.ownProvinces = [];
+        duchyObj.counties = [];
         let currentDuchy = world.duchies[i];
         for (let z = 0; z < currentDuchy.length; z++) {
             let currentCounty = currentDuchy[z];
             for (let j = 0; j < currentCounty.length; j++) {
-                let currentProvince = currentCounty[j]
+                let currentProvince = currentCounty[j];
                 duchyObj.ownProvinces.push(currentProvince);
             }
-            duchyObj.counties.push(currentCounty)
+            duchyObj.counties.push(currentCounty);
         }
-        dArr.push(duchyObj)
+        dArr.push(duchyObj);
     }
 
     for (let i = 0; i < dArr.length; i++) {
         for (let j = 0; j < dArr.length; j++) {
-            let duchy1 = dArr[i]
-            let duchy2 = dArr[j]
-            if (i === j) {
-
-            } else {
-                if (areDuchiesAdjacent(duchy1, duchy2)) {
-                    duchy1.adjacentDuchies.push(j)
-                }
+            if (i !== j && areDuchiesAdjacent(dArr[i], dArr[j])) {
+                dArr[i].adjacentDuchies.push(j);
             }
         }
     }
 
     for (let i = 0; i < dArr.length; i++) {
-        let d1 = dArr[i]
-        if (d1.kingdom) {
-
-        } else {
+        let d1 = dArr[i];
+        if (!d1.kingdom) {
             let potentialKingdom = {};
             potentialKingdom.duchies = [];
-            potentialKingdom.maxDuchies = getRandomInt(2, 4);
+            //potentialKingdom.maxDuchies = getRandomInt(2, 4);
+            potentialKingdom.maxDuchies = 100;
             d1.kingdom = potentialKingdom;
             potentialKingdom.duchies.push(d1);
-            potentialKingdom.ownProvinces = []
-            potentialKingdom.adjacentKingdoms = []
-            addProvincesFromTitle(d1, potentialKingdom, "kingdom")
-            
-            for (let j = 0; j < d1.adjacentDuchies.length; j++) {
-                let d2Index = d1.adjacentDuchies[j]
-                let d2 = dArr[d2Index]
-                if (d2.kingdom) {
+            potentialKingdom.ownProvinces = [];
+            potentialKingdom.adjacentKingdoms = [];
+            addProvincesFromTitle(d1, potentialKingdom, "kingdom");
 
-                } else if (d1.kingdom.duchies.length < d1.kingdom.maxDuchies) {
-                    d2.kingdom = d1.kingdom
-                    potentialKingdom.duchies.push(d2)
-                    addProvincesFromTitle(d2, potentialKingdom, "kingdom")
+            let firstProvinceIndex = d1.ownProvinces[0];
+
+            for (let j = 0; j < d1.adjacentDuchies.length; j++) {
+                let d2Index = d1.adjacentDuchies[j];
+                let d2 = dArr[d2Index];
+
+                if (!d2.kingdom && d1.kingdom.duchies.length < d1.kingdom.maxDuchies) {
+                    let addDuchy = true;
+
+                    for (let k = 0; k < d2.ownProvinces.length; k++) {
+                        let distance = calculateDistance(firstProvinceIndex, d2.ownProvinces[k]);
+                        if (distance > kingdomDistanceThreshold) {
+                            addDuchy = false;
+                            break;
+                        }
+                    }
+
+                    if (addDuchy) {
+                        d2.kingdom = d1.kingdom;
+                        potentialKingdom.duchies.push(d2);
+                        addProvincesFromTitle(d2, potentialKingdom, "kingdom");
+                    }
                 }
             }
             kingdoms.push(potentialKingdom);
         }
     }
-    for (let i = 0; i < kingdoms.length; i++) {
-        if (kingdoms[i].duchies.length === 1) {
-            for (let j = 0; j < kingdoms[i].duchies.length; j++) {
-                let duchy = kingdoms[i].duchies[j]
-                let rand = getRandomInt(0, duchy.adjacentDuchies.length - 1);
-                let adjDuchy = dArr[duchy.adjacentDuchies[rand]]
-                if (adjDuchy) {
-                    adjDuchy.kingdom.duchies.push(duchy)
-                    addProvincesFromTitle(duchy, adjDuchy.kingdom, "kingdom")
-                    kingdoms[i].delete = true;
-                    duchy.kingdom = adjDuchy.kingdom;
-                    if (adjDuchy.kingdom.delete) {
-                        adjDuchy.kingdom.delete = false;
-                    }
-                }
-            }
-        }
-    }
+
     let arr = [];
     for (let i = 0; i < kingdoms.length; i++) {
-        if (kingdoms[i].delete) {
-
-        } else {
-            arr.push(kingdoms[i])
+        if (!kingdoms[i].delete) {
+            arr.push(kingdoms[i]);
         }
     }
-    world.duchies = dArr
+
+    world.duchies = dArr;
     return arr;
 }
+
 
 function addProvincesFromTitle(t1, t2, landedTitleType) {
     for (let i = 0; i < t1.ownProvinces.length; i++) {
@@ -399,236 +397,3 @@ function assignTitleInfo() {
         giveColors(empire.kingdoms[0], empire)
     }
 }
-
-
-
-function simpleCounties() { 
-    world.counties = [];
-    for (let i = 0; i < world.provinces.length; i++) {
-        let prov = world.provinces[i]
-        let provCounter = 1
-        let countySize = getRandomInt(2, 6);
-        if (prov.county) {
-
-        } else {
-            if (prov.land) {
-                let county = {
-                    titleName: `c_${prov.titleName}`,
-                    provinces: [],
-                    colorR: prov.colorR,
-                    colorG: prov.colorG,
-                    colorB: prov.colorB,
-                    capital: `b_${prov.titleName}`,
-                    adjacencies: []
-                }
-                world.counties.push(county)
-                prov.county = county
-                county.provinces.push(prov)
-                if (countySize !== 1) {
-                    for (let j = 0; j < prov.adjacencies.length; j++) {
-                        let correctedNum = prov.adjacencies[j] - 1;
-                        let neighbor = world.provinces[correctedNum]
-                        if (neighbor.land) {
-                            if (neighbor.county) {
-                                //do nothing
-                            } else {
-                                neighbor.county = county;
-                                county.provinces.push(neighbor)
-                                provCounter += 1;
-                            }
-                            if (provCounter === countySize) {
-
-                                break;
-                            }
-                        }
-                    }
-                }  
-                if (landedTitleLogger.counties[provCounter]) {
-                    landedTitleLogger.counties[provCounter] += 1
-                } else {
-                    landedTitleLogger.counties[provCounter] = 1
-                }
-            }
-        }
-    }
-    for (let i = 0; i < world.counties.length; i++) {
-        let c = world.counties[i];
-        for (let n = 0; n < c.provinces.length; n++) {
-            let prov = c.provinces[n]
-            for (let z = 0; z < prov.adjacencies.length; z++) {
-                let adj = prov.adjacencies[z]
-                c.adjacencies.push(adj)
-            }
-        }
-        let unique = c.adjacencies.filter(onlyUnique)
-        let onlyExteriorProvinces = [];
-        for (let z = 0; z < unique.length; z++) {
-            let correctedNum = parseInt(unique[z]) - 1; // adjacencies are set on definition files vs. what we need here - the province in array
-            let adjProv = world.provinces[correctedNum]
-            if (adjProv.county === c) { 
-                //Do nothing/get rid of province from adjacencies if it is part of county being checked
-            } else {
-                onlyExteriorProvinces.push(adjProv.id) // set the adjacency based on the def id
-            }
-        }
-        c.adjacencies = onlyExteriorProvinces
-    }
-}
-
-function simpleDuchies() {
-    world.duchies = [];
-    for (let i = 0; i < world.provinces.length; i++) {
-        let prov = world.provinces[i]
-        let countyCounter = 1
-        let duchySize = getRandomInt(2, 6);
-        if (prov.duchy) {
-            duchySize = prov.duchy.duchySize;
-            countyCounter = prov.duchy.counties.length;
-            countyCounter = pullNeighborsIntoDuchy(prov, prov.duchy, countyCounter, duchySize)
-        } else {
-            if (prov.land) {
-                let duchy = {
-                    titleName: `d_${prov.titleName}`,
-                    counties: [],
-                    colorR: prov.colorR,
-                    colorG: prov.colorG,
-                    colorB: prov.colorB,
-                    capital: `c_${prov.titleName}`,
-                    duchySize: duchySize
-                };
-                world.duchies.push(duchy);
-                duchy.counties.push(prov.county)
-                prov.county.duchy = duchy
-                prov.duchy = duchy
-                for (let j = 0; j < prov.county.provinces.length; j++) {
-                    let other = prov.county.provinces[j]
-                    other.duchy = duchy;
-                }
-                for (let j = 0; j < prov.county.provinces.length; j++) {
-                    countyCounter = pullNeighborsIntoDuchy(prov.county.provinces[j], duchy, countyCounter, duchySize)
-                }
-                
-                if (landedTitleLogger.duchies[countyCounter]) {
-                    landedTitleLogger.duchies[countyCounter] += 1
-                } else {
-                    landedTitleLogger.duchies[countyCounter] = 1
-                }
-            }
-        }
-    }
-}
-
-function pullNeighborsIntoDuchy(prov, duchy, countyCounter, duchySize) {
-    if (prov.land) {
-        for (let j = 0; j < prov.adjacencies.length; j++) {
-            if (countyCounter === duchySize) {
-                break;
-            }
-            let correctedNum = parseInt(prov.adjacencies[j]) - 1
-            let neighbor = world.provinces[correctedNum]
-            if (neighbor.land) {
-                
-                if (neighbor.duchy) {
-                    
-                } else {
-                    if (neighbor.county !== prov.county) {
-                        neighbor.duchy = duchy
-                        neighbor.county.duchy = duchy
-                        duchy.counties.push(neighbor.county);
-                        countyCounter += 1;
-                        for (let z = 0; z < neighbor.county.provinces.length; z++) {
-                            let p = neighbor.county.provinces[z];
-                            p.duchy = duchy;
-                        }
-                        for (let z = 0; z < neighbor.county.provinces.length; z++) {
-                            if (countyCounter === duchySize) {
-                                break;
-                            }
-                            let p = neighbor.county.provinces[z];
-                            countyCounter = pullNeighborsIntoDuchy(p, duchy, countyCounter, duchySize)
-                        }
-                    }
-                    
-                }
-            }
-        }
-    }
-    return countyCounter
-}
-
-function simpleKingdoms() {
-    world.kingdoms = [];
-    for (let i = 0; i < world.provinces.length; i++) {
-        let prov = world.provinces[i]
-        let duchyCounter = 1;
-        let kingdomSize = getRandomInt(2, 8);
-        if (prov.kingdom) {
-
-        } else {
-            if (prov.land) {
-                let kingdom = {
-                    titleName: `k_${prov.titleName}`,
-                    duchies: [],
-                    colorR: prov.colorR,
-                    colorG: prov.colorG,
-                    colorB: prov.colorB,
-                    capital: `c_${prov.titleName}`
-                };
-                world.kingdoms.push(kingdom);
-                kingdom.duchies.push(prov.duchy);
-                prov.duchy.kingdom = kingdom
-                prov.kingdom = kingdom
-                for (let j = 0; j < prov.duchy.counties.length; j++) {
-                    let c = prov.duchy.counties[j]
-                    for (let z = 0; z < c.provinces.length; z++) {
-                        let p = c.provinces[z];
-                        p.kingdom = kingdom
-                    }
-                }
-                for (let j = 0; j < prov.adjacencies.length; j++) {
-                    let correctedNum = prov.adjacencies[j] - 1
-                    let neighbor = world.provinces[correctedNum]
-                    if (neighbor.land) {
-                        if (neighbor.kingdom || neighbor.duchy.kingdom) {
-    
-                        } else {
-                            if (neighbor.duchy !== prov.duchy) {
-                                neighbor.kingdom = kingdom;
-                                neighbor.duchy.kingdom = kingdom
-                                kingdom.duchies.push(neighbor.duchy);
-                                for (let z = 0; z < neighbor.duchy.counties.length; z++) {
-                                    let c = neighbor.duchy.counties[z]
-                                    for (let y = 0; y < c.provinces.length; y++) {
-                                        c.provinces[y].kingdom = kingdom
-                                    }
-                                } 
-                                duchyCounter += 1;
-                            }
-                            if (duchyCounter === kingdomSize) {
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (landedTitleLogger.kingdoms[duchyCounter]) {
-                    landedTitleLogger.kingdoms[duchyCounter] += 1
-                } else {
-                    landedTitleLogger.kingdoms[duchyCounter] = 1
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-/******************************************END MAIN GENERATOR THREAd***********************************/
-
-
-
-/******************************************BEGIN CULTURE GENERATOR***********************************/
-
-
-/******************************************END CULTURE GENERATOR***********************************/

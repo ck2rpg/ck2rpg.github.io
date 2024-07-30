@@ -168,6 +168,7 @@ let paintbrushAbsolute = false;
 let paintbrushLimit = 510
 
 
+/*
 let saveState = false;
 GID("tracking-toggle").onclick = function() {
   if (saveState === false) {
@@ -182,6 +183,7 @@ GID("tracking-toggle").onclick = function() {
     GID("redoMap").style.display = "none";
   }
 }
+*/
 
 let gCount = 0;
 let bCount = 0;
