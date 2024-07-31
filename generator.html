@@ -77,6 +77,8 @@
           <button class="tab-button" onclick="openTab(event, 'ProvinceSettings')">Province</button>
           <button class="tab-button" onclick="openTab(event, 'ImportSettings')">Import</button>
           <button class="tab-button" onclick="openTab(event, 'Titles')">Titles</button>
+          <button class="tab-button" onclick="openTab(event, 'CultureSettings')">Cultures</button>
+          <button class="tab-button" onclick="openTab(event, 'ReligionSettings')">Religions</button>
         </div>
       
         <div id="MassChanges" class="tab-content">
@@ -358,6 +360,38 @@
             <button class="ck-button" id="create-provinces">Generate Provinces</button>
           </div>
         </div>
+
+        <div id="CultureSettings" class="tab-content">
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="ethnicities">Ethnicities</label>
+              <select name="ethnicities" id="ethnicities">
+                <option value="vanilla">Vanilla</option>
+                <option value="random">Random</option>
+              </select>
+              <span class="tool-tip">Choose how ethnicities (appearances) will be assigned to cultures.</span>
+            </span>
+          </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="culture-spread">Generate Culture per:</label>
+              <select name="culture-per" id="culture-per">
+                <option value="county">County</option>
+                <option value="duchy">Duchy</option>
+                <option value="kingdom">Kingdom</option>
+                <option value="empire">Empire</option>
+              </select>
+              <span class="tool-tip">Choose how ethnicities (appearances) will be assigned to cultures.</span>
+            </span>
+          </div>
+        </div>
+
+        <div id="ReligionSettings" class="tab-content">
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            
+          </div>
+        </div>
+
       </div>
       
     
