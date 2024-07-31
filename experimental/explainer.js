@@ -200,6 +200,9 @@ function overloadProvinceProperties() {
             p.graphicsPossibilities = assignGraphicsPossibilities(p)
             evaluateExpansionFavorability(p)
         }
+        if (p.isRiver || p.isLake || p.isImpassable || p.isOcean || p.isImpassableSea) {
+            p.doNotCreateLandedTitles = true
+        }
     }
     analyzeAllRegions()
 }
