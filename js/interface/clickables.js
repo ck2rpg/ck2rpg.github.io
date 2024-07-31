@@ -192,11 +192,6 @@ GID("canvas").onclick = function(e) {
     showInfo(e)
   }
   if (paintbrush !== "") {
-    if (saveState === true) {
-      let last = structuredClone(world.map)
-      world.lastMaps.push(last)
-      world.lastCounter = world.lastMaps.length - 1
-    }
     applyBrush(e, paintbrushSize, paintbrush, paintbrushHardness)
   }
 }
