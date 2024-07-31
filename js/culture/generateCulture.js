@@ -903,36 +903,92 @@ function assignCultures() {
         let empire = world.empires[i]
         empire.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
     }
-
-    for (let i = 0; i < world.kingdoms.length; i++) {
-        let kingdom = world.kingdoms[i];
-        let culture = createCulture()
-        kingdom.culture = culture;
-        if (world.cultures) {
-            world.cultures.push(culture)
-        } else {
-            world.cultures = [];
-            world.cultures.push(culture)
+    for (let z = 0; z < world.empires.length; z++) {
+        let culture;
+        let empire = world.empires[z]
+        if (settings.culturePer === "empire") {
+            culture = createCulture()
+            empire.culture = culture;
+            if (world.cultures) {
+                world.cultures.push(culture)
+            } else {
+                world.cultures = [];
+                world.cultures.push(culture)
+            }
         }
-        //kingdom.localizedTitle = placeName(kingdom.culture.language)
-        kingdom.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-        for (let j = 0; j < kingdom.duchies.length; j++) {
-            let duchy = kingdom.duchies[j]
-            //duchy.localizedTitle = placeName(kingdom.culture.language)
-            duchy.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-            for (let n = 0; n < duchy.counties.length; n++) {
-                let county = duchy.counties[n]
-                //county.localizedTitle = placeName(kingdom.culture.language)
-                county.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-                for (let z = 0; z < county.provinces.length; z++) {
-                    let province = county.provinces[z]
-                    province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-                    province.culture = culture // really set at county level but for ease of use with possible province swapping
-                    //province.localizedTitle = placeName(kingdom.culture.language)
+        for (let i = 0; i < empire.kingdoms.length; i++) {
+            let kingdom = empire.kingdoms[i];
+            if (culture) {
+                kingdom.culture = culture;
+            }
+            if (settings.culturePer === "kingdom") {
+                culture = createCulture()
+                kingdom.culture = culture;
+                if (world.cultures) {
+                    world.cultures.push(culture)
+                } else {
+                    world.cultures = [];
+                    world.cultures.push(culture)
+                }
+            }
+            //kingdom.localizedTitle = placeName(kingdom.culture.language)
+            kingdom.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+            for (let j = 0; j < kingdom.duchies.length; j++) {
+                let duchy = kingdom.duchies[j]
+                if (culture) {
+                    duchy.culture = culture
+                }
+                if (settings.culturePer === "duchy") {
+                    culture = createCulture()
+                    if (j === 0) {
+                        kingdom.culture = culture;
+                        empire.culture = culture;
+                    }
+                    duchy.culture = culture;
+                    if (world.cultures) {
+                        world.cultures.push(culture)
+                    } else {
+                        world.cultures = [];
+                        world.cultures.push(culture)
+                    }
+                }
+                //duchy.localizedTitle = placeName(kingdom.culture.language)
+                duchy.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                for (let n = 0; n < duchy.counties.length; n++) {
+                    let county = duchy.counties[n]
+                    if (culture) [
+                        county.culture = culture
+                    ]
+                    if (settings.culturePer === "county") {
+                        culture = createCulture()
+                        if (n === 0) {
+                            duchy.culture = culture;
+                            kingdom.culture = culture;
+                            if (empire) {
+                                empire.culture = culture;     
+                            }
+                        }
+                        county.culture = culture;
+                        if (world.cultures) {
+                            world.cultures.push(culture)
+                        } else {
+                            world.cultures = [];
+                            world.cultures.push(culture)
+                        }
+                    }
+                    //county.localizedTitle = placeName(kingdom.culture.language)
+                    county.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                    for (let z = 0; z < county.provinces.length; z++) {
+                        let province = county.provinces[z]
+                        province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                        province.culture = culture // really set at county level but for ease of use with possible province swapping
+                        //province.localizedTitle = placeName(kingdom.culture.language)
+                    }
                 }
             }
         }
     }
+
 }
 
 let cultureEthosList = [

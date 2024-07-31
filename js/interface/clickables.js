@@ -853,3 +853,20 @@ function openTab(evt, tabName) {
 document.addEventListener("DOMContentLoaded", function() {
   document.querySelector(".tab-button").click();
 });
+
+
+const ethnicitiesSelect = document.getElementById('ethnicities');
+const culturePerSelect = document.getElementById('culture-per');
+
+
+ethnicitiesSelect.addEventListener('change', () => {
+  settings.ethnicities = ethnicitiesSelect.value;
+});
+
+culturePerSelect.addEventListener('change', () => {
+  settings.culturePer = culturePerSelect.value;
+});
+
+
+settings.ethnicities = ethnicitiesSelect.value;
+settings.culturePer = culturePerSelect.value;
