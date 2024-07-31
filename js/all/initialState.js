@@ -202,6 +202,20 @@ uniqueColorSet = [...uniqueColorSet]
 
 let uniqueColorCount = 0;
 
+let provinceKeys = {}
+
+function getUniqueColor() {
+    let randColor = uniqueColorSet[uniqueColorCount]
+    let randCheck = getColorObjectFromString(randColor)
+    while (provinceKeys[`${randCheck.r}, ${randCheck.g}, ${randCheck.b}`]) {
+        uniqueColorCount += 1;
+        randColor = uniqueColorSet[uniqueColorCount]
+        randCheck = getColorObjectFromString(randColor)
+    }
+    
+    return randColor;
+}
+
 let simp = new SimplexNoise()
 
 function noise(nx, ny) {
