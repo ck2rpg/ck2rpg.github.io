@@ -345,23 +345,13 @@ function createOverrideLandProvinces() {
 }
 
 
-function createOverrideTitles() {
-    for (let i = 0; i < world.provinces.length; i++) {
-        let p = world.provinces[i]
-        if (p.empireOverride) {
-            
-        }
-    }
-}
-
-
 function createOverrideWaterProvinces() {
     //creates provinces based on user defined overrides prior to random province generation
     for (let i = 0; i < world.height; i++) {
         for (let j = 0; j < world.width; j++) {
             let cell = world.map[i][j];
-            if (cell.provinceOverride) {
-                let color = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+            if (cell.waterOverride) {
+                let color = `${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB}`;
                 if (provinceKeys[color]) { //if province colors already exist on provinceKeys
                     let prov = provinceKeys[color];
                     let seed = prov.seed;
@@ -379,13 +369,12 @@ function createOverrideWaterProvinces() {
                     let ckX = cell.x * settings.pixelSize;
                     let ckY = cell.y * settings.pixelSize;
                     let smallCell = world.smallMap[ckY][ckX];
-                    let selectedColor = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
+                    let selectedColor = `${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB}`;
                     smallCell.color = selectedColor;
                     let selectedColorObject = getColorObjectFromString(selectedColor);
                     smallCell.colorR = selectedColorObject.r;
                     smallCell.colorG = selectedColorObject.g;
                     smallCell.colorB = selectedColorObject.b;
-                    smallCell.elevation = smallCell.bigCell.elevation + getRandomInt(-3, 3);
                     let prov = createProvince(ckX, ckY, "w", smallCell);
                     console.log(`Created province color ${selectedColor}. world.provinces is ${world.provinces.length} now`)
                     smallCell.province = prov;
@@ -482,8 +471,9 @@ async function createProvinces() {
     world.seedCells = [];
     createCellTerrains()
     createSmallMap();
-
+    createOverrideWaterProvinces()
     createOverrideLandProvinces()
+
 
     await updateDOM("Adding Provinces", 0);
 
@@ -951,20 +941,6 @@ function seedAndGrowCell() {
     }
 }
 
-let provinceKeys = {}
-
-function getUniqueColor() {
-    let randColor = uniqueColorSet[uniqueColorCount]
-    let randCheck = getColorObjectFromString(randColor)
-    while (provinceKeys[`${randCheck.r}, ${randCheck.g}, ${randCheck.b}`]) {
-        uniqueColorCount += 1;
-        randColor = uniqueColorSet[uniqueColorCount]
-        randCheck = getColorObjectFromString(randColor)
-    }
-    
-    return randColor;
-}
-
 function seedCell(x, y, landWater) {
     let cell = world.smallMap[y][x]
     if (cell.colorR) {
@@ -1223,7 +1199,9 @@ function growCell(cell, target) {    //target is needed to allow you to set a ce
 function deleteSmallProvinces() {
     for (let i = 0; i < world.seedCells.length; i++) {
         let cell = world.seedCells[i]
-        if (cell.children && cell.children.length < settings.tooSmallProvince) { //should be 900
+        if (cell.bigCell.waterOverride || cell.bigCell.provinceOverride) {
+            //don't delete provinces if they were created by man
+        } else if (cell.children && cell.children.length < settings.tooSmallProvince) { //should be 900
             cell.colorR = undefined;
             cell.colorG = undefined;
             cell.colorB = undefined;
