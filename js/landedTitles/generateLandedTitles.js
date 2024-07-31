@@ -44,7 +44,7 @@ function createCounties(world) {
     }
 
     function dfs(provinceIndex, currentCounty, upperLimit, firstProvinceIndex) {
-        if (currentCounty.length >= upperLimit || visited.has(provinceIndex) || !world.provinces[provinceIndex].land) {
+        if (currentCounty.length >= upperLimit || visited.has(provinceIndex) || !world.provinces[provinceIndex].land || world.provinces[provinceIndex].doNotCreateLandedTitles) {
             return;
         }
 
