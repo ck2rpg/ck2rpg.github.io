@@ -918,25 +918,50 @@ function assignCultures() {
         }
         for (let i = 0; i < empire.kingdoms.length; i++) {
             let kingdom = empire.kingdoms[i];
+            let kingdomCulture;
             if (culture) {
-                kingdom.culture = culture;
+                if (settings.divergeCulturesAtKingdom) {
+                    kingdom.culture = createCulture(empire.culture)
+                    if (world.cultures) {
+                        world.cultures.push(kingdom.culture)
+                    } else {
+                        world.cultures = [];
+                        world.cultures.push(kingdom.culture)
+                    }
+                } else {
+                    kingdom.culture = culture;
+                }
+                kingdomCulture = kingdom.culture
             }
             if (settings.culturePer === "kingdom") {
                 culture = createCulture()
                 kingdom.culture = culture;
                 if (world.cultures) {
-                    world.cultures.push(culture)
+                    world.cultures.push(kingdom.culture)
                 } else {
                     world.cultures = [];
-                    world.cultures.push(culture)
+                    world.cultures.push(kingdom.culture)
                 }
+                kingdomCulture = kingdom.culture
             }
             //kingdom.localizedTitle = placeName(kingdom.culture.language)
             kingdom.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
             for (let j = 0; j < kingdom.duchies.length; j++) {
                 let duchy = kingdom.duchies[j]
-                if (culture) {
-                    duchy.culture = culture
+                let duchyCulture;
+                if (kingdomCulture) {
+                    if (settings.divergeCulturesAtDuchy) {
+                        duchy.culture = createCulture(kingdom.culture)
+                        if (world.cultures) {
+                            world.cultures.push(duchy.culture)
+                        } else {
+                            world.cultures = [];
+                            world.cultures.push(duchy.culture)
+                        }
+                    } else {
+                        duchy.culture = kingdomCulture
+                    }
+                    duchyCulture = duchy.culture;
                 }
                 if (settings.culturePer === "duchy") {
                     culture = createCulture()
@@ -951,29 +976,40 @@ function assignCultures() {
                         world.cultures = [];
                         world.cultures.push(culture)
                     }
+                    duchyCulture = duchy.culture;
                 }
                 //duchy.localizedTitle = placeName(kingdom.culture.language)
                 duchy.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
                 for (let n = 0; n < duchy.counties.length; n++) {
                     let county = duchy.counties[n]
-                    if (culture) [
-                        county.culture = culture
-                    ]
+                    if (duchyCulture) {
+                        if (settings.divergeCulturesAtCounty) {
+                            county.culture = createCulture(duchy.culture)
+                            if (world.cultures) {
+                                world.cultures.push(county.culture)
+                            } else {
+                                world.cultures = [];
+                                world.cultures.push(county.culture)
+                            }
+                        } else {
+                            county.culture = duchyCulture
+                        }
+
+                    }
                     if (settings.culturePer === "county") {
-                        culture = createCulture()
+                        county.culture = createCulture()
                         if (n === 0) {
-                            duchy.culture = culture;
-                            kingdom.culture = culture;
+                            duchy.culture = county.culture;
+                            kingdom.culture = county.culture;
                             if (empire) {
-                                empire.culture = culture;     
+                                empire.culture = county.culture;     
                             }
                         }
-                        county.culture = culture;
                         if (world.cultures) {
-                            world.cultures.push(culture)
+                            world.cultures.push(county.culture)
                         } else {
                             world.cultures = [];
-                            world.cultures.push(culture)
+                            world.cultures.push(county.culture)
                         }
                     }
                     //county.localizedTitle = placeName(kingdom.culture.language)
@@ -981,7 +1017,7 @@ function assignCultures() {
                     for (let z = 0; z < county.provinces.length; z++) {
                         let province = county.provinces[z]
                         province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-                        province.culture = culture // really set at county level but for ease of use with possible province swapping
+                        province.culture = county.culture // really set at county level but for ease of use with possible province swapping
                         //province.localizedTitle = placeName(kingdom.culture.language)
                     }
                 }
@@ -1069,7 +1105,7 @@ let traditionsList = [
         t: "combat"
     },
     {
-        n: "tradition_reverance_for_veterans",
+        n: "tradition_reverence_for_veterans",
         t: "combat"
     },
     {
@@ -1173,7 +1209,7 @@ let traditionsList = [
         t: "realm"
     },
     {
-        n: "tradition_fervant_temple_builders",
+        n: "tradition_fervent_temple_builders",
         t: "realm"
     },
     {
@@ -1473,8 +1509,8 @@ function getRandomCultureUnit() {
 function createCulture(parent) {
     let culture = {};
     if (parent) {
-        //fix this to where it makes language based on parent - then discard placeholder below
-        culture.martial_custom = parent.martial
+        //fix this to where it makes language based on parent - then discard placeholder below, name list, etc. if you don't, you get duplicates
+        culture.martial_custom = parent.martial_custom
         culture.ethos = parent.ethos
         culture.traditions = parent.traditions
         culture.language = parent.language
@@ -1483,10 +1519,13 @@ function createCulture(parent) {
         culture.clothing_gfx = parent.clothing_gfx
         culture.unit_gfx = parent.unit_gfx
         culture.ethnicities = parent.ethnicities
-        culture.name = translate(culture.language, "People")
-        culture.name = capitalize(romanizeText(culture.name))
         culture.id = rando()
-        culture.name_list = parent.name_list
+        let n1 = capitalize(translate(culture.language, culture.id));
+        let n2 = capitalize(translate(culture.language, "People"));
+        culture.name = `${n1} ${n2}`
+        culture.name = romanizeText(culture.name)
+        culture.name_list = `name_list_${culture.id}`
+        culture.isChildCulture = true;
     } else {
         culture.martial_custom = pickFrom(martialCustomRuleList)
         culture.ethos = pickFrom(cultureEthosList)

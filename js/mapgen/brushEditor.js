@@ -99,18 +99,17 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
             nextCell.waterOverrideB = undefined;
 
           } else if (brushType === "dropLand") {
-            if (nextCell.elevation < paintbrushLimit) {
+            if (nextCell.elevation < lowerPaintbrushLimit) {
               //don't do anything if existing cell is less than brush limit
             } else {
               nextCell.elevation = paintbrushAbsolute ? currHardness : nextCell.elevation - currHardness;
               //push cell back up to brush limit if it goes below after change
-              if (nextCell.elevation < paintbrushLimit) {
-                nextCell.elevation = paintbrushLimit
+              if (nextCell.elevation < lowerPaintbrushLimit) {
+                nextCell.elevation = lowerPaintbrushLimit
               }
             }
 
           } else if (brushType === "raiseLand") {
-            let change;
             if (nextCell.elevation > paintbrushLimit) {
               
             } else {

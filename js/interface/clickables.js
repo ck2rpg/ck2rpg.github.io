@@ -778,6 +778,12 @@ function adjustSnowLine() {
   limits.mountains.snowLine = GID("snow-line").value;
 }
 
+let updateLowerLimitSliderValue = debounce(() => adjustLowerLimitSlider())
+
+function adjustLowerLimitSlider() {
+  lowerPaintbrushLimit = parseInt(GID("lowerLimitSlider").value)
+}
+
 let updateLimitSliderValue = debounce(() => adjustLimitSlider())
 
 function adjustLimitSlider() {
@@ -856,17 +862,130 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 const ethnicitiesSelect = document.getElementById('ethnicities');
-const culturePerSelect = document.getElementById('culture-per');
+const culturePerSelect = GID("culture-per");
+const divergeAtKingdomSelect = GID("diverge-at-kingdom");
+const divergeAtDuchySelect = GID("diverge-at-duchy");
+const divergeAtCountySelect = GID("diverge-at-county");
 
+function updateDivergenceOptions() {
+  const culturePerValue = culturePerSelect.value;
 
-ethnicitiesSelect.addEventListener('change', () => {
-  settings.ethnicities = ethnicitiesSelect.value;
-});
+  // Enable or disable divergence options based on the selected culturePer tier
+  switch (culturePerValue) {
+    case "county":
+      divergeAtCountySelect.value = "false";
+      divergeAtCountySelect.disabled = true;
+      divergeAtDuchySelect.value = "false";
+      divergeAtDuchySelect.disabled = true;
+      divergeAtKingdomSelect.value = "false";
+      divergeAtKingdomSelect.disabled = true;
+      break;
+    case "duchy":
+      divergeAtCountySelect.disabled = false;
+      divergeAtDuchySelect.value = "false";
+      divergeAtDuchySelect.disabled = true;
+      divergeAtKingdomSelect.value = "false";
+      divergeAtKingdomSelect.disabled = true;
+      break;
+    case "kingdom":
+      divergeAtCountySelect.disabled = false;
+      divergeAtDuchySelect.disabled = false;
+      divergeAtKingdomSelect.value = "false";
+      divergeAtKingdomSelect.disabled = true;
+      break;
+    case "empire":
+      divergeAtCountySelect.disabled = false;
+      divergeAtDuchySelect.disabled = false;
+      divergeAtKingdomSelect.disabled = false;
+      break;
+  }
 
-culturePerSelect.addEventListener('change', () => {
-  settings.culturePer = culturePerSelect.value;
-});
+  // Update settings based on new values
+  settings.divergeCulturesAtKingdom = divergeAtKingdomSelect.value === "true";
+  settings.divergeCulturesAtDuchy = divergeAtDuchySelect.value === "true";
+  settings.divergeCulturesAtCounty = divergeAtCountySelect.value === "true";
+}
 
-
+// Initialize settings
 settings.ethnicities = ethnicitiesSelect.value;
 settings.culturePer = culturePerSelect.value;
+updateDivergenceOptions();
+
+// Event listeners for divergence selection
+divergeAtKingdomSelect.addEventListener('change', () => {
+  settings.divergeCulturesAtKingdom = divergeAtKingdomSelect.value === "true";
+});
+
+divergeAtDuchySelect.addEventListener('change', () => {
+  settings.divergeCulturesAtDuchy = divergeAtDuchySelect.value === "true";
+});
+
+divergeAtCountySelect.addEventListener('change', () => {
+  settings.divergeCulturesAtCounty = divergeAtCountySelect.value === "true";
+});
+
+// Event listener for culturePer selection
+culturePerSelect.addEventListener('change', () => {
+  settings.culturePer = culturePerSelect.value;
+  updateDivergenceOptions();
+});
+
+
+const religionFamilyLevelSelect = GID("religion-family-level")
+const divergeFaithLevelSelect = GID("diverge-faith-level");
+
+function updateFaithDivergenceOptions() {
+  const religionFamilyLevelValue = religionFamilyLevelSelect.value;
+
+  // Enable options in divergeFaithLevelSelect based on religionFamilyLevel
+  switch (religionFamilyLevelValue) {
+    case "empire":
+      divergeFaithLevelSelect.querySelectorAll('option').forEach(option => {
+        option.disabled = false; // Enable all options
+      });
+      break;
+    case "kingdom":
+      divergeFaithLevelSelect.querySelectorAll('option').forEach(option => {
+        option.disabled = option.value === "empire";
+      });
+      if (divergeFaithLevelSelect.value === "empire") {
+        divergeFaithLevelSelect.value = "kingdom"; // Set to a valid level
+      }
+      break;
+    case "duchy":
+      divergeFaithLevelSelect.querySelectorAll('option').forEach(option => {
+        option.disabled = option.value === "empire" || option.value === "kingdom";
+      });
+      if (divergeFaithLevelSelect.value === "empire" || divergeFaithLevelSelect.value === "kingdom") {
+        divergeFaithLevelSelect.value = "duchy"; // Set to a valid level
+      }
+      break;
+    case "county":
+      divergeFaithLevelSelect.querySelectorAll('option').forEach(option => {
+        option.disabled = option.value !== "county"; // Only county is valid
+      });
+      if (divergeFaithLevelSelect.value !== "county") {
+        divergeFaithLevelSelect.value = "county"; // Set to county level
+      }
+      break;
+  }
+
+  // Update settings based on new values
+  settings.religionFamilyLevel = religionFamilyLevelSelect.value;
+  settings.divergeFaithLevel = divergeFaithLevelSelect.value;
+}
+
+// Initialize settings
+settings.religionFamilyLevel = religionFamilyLevelSelect.value;
+settings.divergeFaithLevel = divergeFaithLevelSelect.value;
+updateFaithDivergenceOptions();
+
+// Event listener for religionFamilyLevel selection
+religionFamilyLevelSelect.addEventListener('change', () => {
+  updateFaithDivergenceOptions();
+});
+
+// Event listener for divergeFaithLevel selection
+divergeFaithLevelSelect.addEventListener('change', () => {
+  settings.divergeFaithLevel = divergeFaithLevelSelect.value;
+});

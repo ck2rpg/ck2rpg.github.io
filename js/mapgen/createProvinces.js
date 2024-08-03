@@ -572,6 +572,8 @@ async function createProvinces() {
     createRealCounties();
     await updateDOM("Creating Real Counties", 22);
 
+    bubbleUpProvinces()
+
     assignTitleInfo();
     await updateDOM("Assigning Title Info", 23);
 
@@ -579,6 +581,7 @@ async function createProvinces() {
     await updateDOM("Assigning Cultures", 24);
 
     religionGenerator();
+    faithsSlideDown()
     await updateDOM("Generating Religions", 25);
 
     drawProvinceMap();
@@ -720,8 +723,10 @@ function createRealCounties() {
             let county = duchy.counties[j]
             let c = {};
             c.provinces = []
+            c.ownProvinces = []
             for (let n = 0; n < county.length; n++) {
                 let prov = world.provinces[county[n]]
+                c.ownProvinces.push(county[n])
                 c.provinces.push(prov)
                 prov.county = c;
                 prov.duchy = duchy

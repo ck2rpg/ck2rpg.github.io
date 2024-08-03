@@ -102,6 +102,7 @@ function capitalize(word) {
 }
 
 function rando() {
+    return `${pickFrom(randomAdjectives)}` + `${pickFrom(randomNouns)}`
     let t = ""
     let letters = ["b", "c", "d", "f", "g", "h", "k", "m", "n"]
     for (let i = 0; i < 10; i++) {

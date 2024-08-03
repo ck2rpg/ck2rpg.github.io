@@ -189,9 +189,14 @@
               <span class="tool-tip">Change the hardness of the brush. Each increment corresponds to one elevation. Elevation spans from -255 to 510 and is normalized from 0 to 255 on heightmap.</span>
             </span>
             <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-              <label for="limitSlider">Limit</label>
+              <label for="limitSlider">Upper Limit</label>
               <input type="number" id="limitSlider" min="-255" max="510" value="510" step="1" oninput="updateLimitSliderValue()">
-              <span class="tool-tip">Change the limit of the brush. On raise land, it will at max raise to this level. On lower land, it will at max lower to this level.</span>
+              <span class="tool-tip">Change the upper elevation limit of the brush. On raise land, it will at max raise to this level.</span>
+            </span>
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="lowerLimitSlider">Lower Limit</label>
+              <input type="number" id="lowerLimitSlider" min="-255" max="510" value="0" step="1" oninput="updateLowerLimitSliderValue()">
+              <span class="tool-tip">Change the lower elevation limit of the brush. On lower land, it will at max lower to this level.</span>
             </span>
           </div>
         </div>
@@ -374,22 +379,82 @@
           </div>
           <div class="menu-section-content menu-hideable-area menu-setting">
             <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
-              <label for="culture-spread">Generate Culture per:</label>
+              <label for="culture-per">Generate Culture per:</label>
               <select name="culture-per" id="culture-per">
                 <option value="county">County</option>
                 <option value="duchy">Duchy</option>
                 <option value="kingdom">Kingdom</option>
                 <option value="empire">Empire</option>
               </select>
-              <span class="tool-tip">Choose how ethnicities (appearances) will be assigned to cultures.</span>
+              <span class="tool-tip">Generate an initial seed culture for every title at this level. Diverging cultures will have the same heritage.</span>
             </span>
           </div>
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="diverge-at-kingdom">Diverge at Kingdom</label>
+              <select name="diverge-at-kingdom" id="diverge-at-kingdom">
+                <option value="false">No</option>
+                <option value="true" selected>Yes</option>
+              </select>
+              <span class="tool-tip">If selected, kingdom cultures will be generated as children of a generated empire culture.</span>
+            </span>
+          </div>
+
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="diverge-at-duchy">Diverge at Duchy</label>
+              <select name="diverge-at-duchy" id="diverge-at-duchy">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+              <span class="tool-tip">If selected, kingdom cultures will be generated as children of a generated or inherited kingdom culture.</span>
+            </span>
+          </div>
+
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="diverge-at-county">Diverge at County</label>
+              <select name="diverge-at-county" id="diverge-at-county">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+              <span class="tool-tip">If selected, county cultures will be generated as children of a generated or inherited duchy culture.</span>
+            </span>
+          </div>
+
         </div>
 
         <div id="ReligionSettings" class="tab-content">
+
           <div class="menu-section-content menu-hideable-area menu-setting">
-            
+            <div class="menu-section-content menu-hideable-area menu-setting">
+              <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+                <label for="religion-family-level">Set Religious Families at:</label>
+                <select name="religion-family-level" id="religion-family-level">
+                  <option value="empire">Empire Level</option>
+                  <option value="kingdom">Kingdom Level</option>
+                  <option value="duchy">Duchy Level</option>
+                  <option value="county">County Level</option>
+                </select>
+                <span class="tool-tip">For every instance of a title of the specified level, an associated religion family will be generated.</span>
+              </span>
+            </div>
           </div>
+
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <div class="menu-section-content menu-hideable-area menu-setting">
+              <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+                <label for="diverge-faith-level">Faiths Diverge at:</label>
+                <select name="diverge-faith-level" id="diverge-faith-level">
+                  <option value="kingdom">Kingdom Level</option>
+                  <option value="duchy">Duchy Level</option>
+                  <option value="county">County Level</option>
+                </select>
+                <span class="tool-tip">Faiths will diverge from a religion family at every instance of an underlying title level (e.g., religion family at empire level with divergence at kingdom level and three kingdoms under empire will result in three generated faiths applied to all downstream counties).</span>
+              </span>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -531,6 +596,20 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.11.0 Release</p>
+            <p class="main-landing-text">Religion and Culture options</p>
+            <p class="main-landing-heading">0.11.0 Change Log</p>
+            <p class="main-landing-text">
+              UI: Added culture and religion tabs to the menu.<br><br>
+              Feature: Added an option to decide the title tier at which cultural heritages are generated. One culture will be generated at each title of that tier with a separate cultural heritage.<br><br>
+              Feature: Added an option to diverge from the selected heritage/culture level. For example, a heritage level of Empire and divergence level of duchy would mean that each empire would have one culture and an associated heritage and each duchy within the empire would have a culture of that heritage.<br><br>
+              Feature: Changed keys from a random assortment of letters to a random combination of a random adjective and random other word (usually a noun) mashed together.<br><br>
+              QoL: Changed the brush elevation limit from a single limit to an upper and lower limit. Now, you don't have to switch limits back and forth anymore for the raise and lower elevation brushes.<br><br> 
+              Bug Fix: Water province drawing is now fixed.<br><br>
+              Bug Fix: Removed unused error logging code from the now defunct undo-redo function.<br><br>
+
+            </p>
 
             <p class="text-intro">Alpha 0.10.0 Release</p>
             <p class="main-landing-text">UI Updates</p>
@@ -832,6 +911,9 @@
     <script src="js/shared/ui/moveable-element.js"></script>
     <script src="js/shared/ui/hideable-element.js"></script>
     <script src="js/interface/zoom.js"></script>
+    <script src="js/randomKeys/randomAdjectives.js"></script>
+    <script src="js/randomKeys/randomNouns.js"></script>
+
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>
     <script src="js/testing/createdDummyProvinces.js"></script>

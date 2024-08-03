@@ -3,11 +3,222 @@ Note that doctrines that allow more than one pick can not be defined on a religi
 */
 
 function religionGenerator() {
-    for (let i = 0; i < world.empires.length; i++) {
-        let empire = world.empires[i]
-        createReligion(empire);
+    // Generate religions based on the religionFamilyLevel setting
+    if (settings.religionFamilyLevel === "empire") {
+        world.empires.forEach(empire => createReligion(empire));
+    } else if (settings.religionFamilyLevel === "kingdom") {
+        world.empires.forEach(empire => {
+            empire.kingdoms.forEach(kingdom => createReligion(kingdom));
+        });
+    } else if (settings.religionFamilyLevel === "duchy") {
+        world.empires.forEach(empire => {
+            empire.kingdoms.forEach(kingdom => {
+                kingdom.duchies.forEach(duchy => createReligion(duchy));
+            });
+        });
+    } else if (settings.religionFamilyLevel === "county") {
+        world.empires.forEach(empire => {
+            empire.kingdoms.forEach(kingdom => {
+                kingdom.duchies.forEach(duchy => {
+                    duchy.counties.forEach(county => createReligion(county));
+                });
+            });
+        });
     }
 }
+
+function createReligion(entity) {
+    let suff = rando()
+    let religion = {
+        name: `${suff}`,
+        isPagan: "yes",
+        graphical_faith: "pagan_gfx",
+        piety_icon_group: "pagan",
+        doctrine_background_icon: "core_tenet_banner_pagan.dds",
+        hostility_doctrine: "pagan_hostility_doctrine",
+        doctrines: [
+            pickFrom(faithHeads),
+            pickFrom(faithGendered),
+            pickFrom(faithPluralism),
+            pickFrom(faithTheocracy),
+            pickFrom(faithConcubines),
+            pickFrom(faithDivorce),
+            pickFrom(faithConsan),
+            pickFrom(faithHomosexuality),
+            pickFrom(faithAdulteryMen),
+            pickFrom(faithAdulteryWomen),
+            pickFrom(faithKinslaying),
+            pickFrom(faithDeviancy),
+            pickFrom(faithWitchcraft),
+            pickFrom(faithClerical1),
+            pickFrom(faithClerical2),
+            pickFrom(faithClerical3),
+            pickFrom(faithClerical4),
+            pickFrom(faithPilgrimages),
+            pickFrom(funeralDoctrines)
+        ],
+        virtueSins: [],
+        custom_faith_icons: `custom_faith_1 custom_faith_2 custom_faith_3 custom_faith_4 custom_faith_5 custom_faith_6 custom_faith_7 custom_faith_8 custom_faith_9 custom_faith_10 dualism_custom_1 zoroastrian_custom_1 zoroastrian_custom_2 buddhism_custom_1 buddhism_custom_2 buddhism_custom_3 buddhism_custom_4 taoism_custom_1 yazidi_custom_1 sunni_custom_2 sunni_custom_3 sunni_custom_4 muhakkima_1 muhakkima_2 muhakkima_4 muhakkima_5 muhakkima_6 judaism_custom_1 custom_faith_fp1_fenrir custom_faith_fp1_irminsul custom_faith_fp1_jormungandr custom_faith_fp1_odins_ravens custom_faith_fp1_runestone_moon custom_faith_fp1_thors_hammer custom_faith_fp1_valknut custom_faith_fp1_yggdrasil custom_faith_boromian_circles custom_faith_lotus custom_faith_aum_tibetan custom_faith_pentagram custom_faith_pentagram_inverted custom_faith_burning_bush custom_faith_allah custom_faith_gankyil custom_faith_eye_of_providence custom_faith_dove custom_faith_ichthys custom_faith_lamb custom_faith_black_sheep custom_faith_ankh custom_faith_chi_rho custom_faith_hamsa custom_faith_cool_s`,
+        holy_order_names: [
+            "PLACEHOLDER",
+            "PLACEHOLDER"
+        ],
+        holy_order_maa: pickFrom(faithMAAS),
+        faiths: []
+    };
+    if (entity.culture) {
+        religion.language = entity.culture.language
+    } else {
+        religion.language = entity.provinces[0].culture.language
+    }
+    let prefix = capitalize(translate(religion.language, 'Rel'))
+    let translatedSuff = translate(religion.language, suff);
+    religion.nameLoc = prefix + translatedSuff
+    religion.oldName = religion.name + "_religion_old";
+    religion.oldNameLoc = `Old ${religion.nameLoc}`
+    religion.oldNameAdj = religion.name + "_religion_old";
+    religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+
+    entity.religion = religion;
+    world.religions.push(religion);
+
+    // Generate faiths based on divergeFaithLevel
+    generateFaiths(religion, entity);
+}
+
+// Generate faiths based on divergeFaithLevel
+function generateFaiths(religion, entity) {
+    const divergeLevel = settings.divergeFaithLevel;
+
+    if (divergeLevel === "empire" && entity.isEmpire) {
+        createFaith(religion, entity);
+    } else if (divergeLevel === "kingdom") {
+        if (entity.isEmpire) {
+            entity.kingdoms.forEach(kingdom => createFaith(religion, kingdom));
+        } else if (entity.isKingdom) {
+            createFaith(religion, entity);
+        }
+    } else if (divergeLevel === "duchy") {
+        if (entity.isEmpire) {
+            entity.kingdoms.forEach(kingdom => {
+                kingdom.duchies.forEach(duchy => createFaith(religion, duchy));
+            });
+        } else if (entity.isKingdom) {
+            entity.duchies.forEach(duchy => createFaith(religion, duchy));
+        } else if (entity.isDuchy) {
+            createFaith(religion, entity);
+        }
+    } else if (divergeLevel === "county") {
+        if (entity.isEmpire) {
+            entity.kingdoms.forEach(kingdom => {
+                kingdom.duchies.forEach(duchy => {
+                    duchy.counties.forEach(county => createFaith(religion, county));
+                });
+            });
+        } else if (entity.isKingdom) {
+            entity.duchies.forEach(duchy => {
+                duchy.counties.forEach(county => createFaith(religion, county));
+            });
+        } else if (entity.isDuchy) {
+            entity.counties.forEach(county => createFaith(religion, county));
+        } else if (entity.isCounty) {
+            createFaith(religion, entity);
+        }
+    }
+}
+
+function createFaith(religion, entity) {
+    let faith = {};
+    faith.language = entity.culture.language;
+    let faithIcon = pickFrom(faithIcons);
+    faith.icon = faithIcon[0];
+    faith.reformed_icon = faithIcon[1];
+    faith.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`;
+    let pref = rando()
+    faith.name = `${pref}_faith`;
+    let suff = translate(faith.language, "ism")
+    faith.nameLoc = capitalize(translate(faith.language, `${pref}`)) + suff;
+    let fOld = capitalize(translate(faith.language, "Old"));
+    faith.oldName = `${faith.name}_old`;
+    faith.oldNameLoc = `${fOld} ${faith.nameLoc}`;
+    faith.oldNameAdj = `${faith.name}_old_adj`;
+    faith.oldNameAdjLoc = `${fOld} ${faith.nameLoc}`;
+    faith.doctrines = ["unreformed_faith_doctrine"];
+    pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
+    pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
+    pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
+    faith.holySites = [];
+    for (let i = 0; i < 6; i++) {
+        pickUniqOrDiscard(entity.ownProvinces, faith.holySites);
+    }
+    religion.faiths.push(faith);
+    entity.faith = faith; // Assign faith to the entity
+
+    // Propagate faith property down to province level to track through later reassignments
+    if (entity.isKingdom) {
+        entity.duchies.forEach(duchy => {
+            duchy.faith = faith;
+            duchy.counties.forEach(county => {
+                county.faith = faith;
+                county.provinces.forEach(province => {
+                    province.faith = faith; // Set faith at province level
+                });
+            });
+        });
+    } else if (entity.isDuchy) {
+        entity.counties.forEach(county => {
+            county.faith = faith;
+            county.provinces.forEach(province => {
+                province.faith = faith; // Set faith at province level
+            });
+        });
+    } else if (entity.isCounty) {
+        entity.provinces.forEach(province => {
+            province.faith = faith; // Set faith at province level
+        });
+    }
+}
+
+
+function faithsSlideDown() {
+    for (let i = 0; i < world.empires.length; i++) {
+        let empire = world.empires[i]
+        if (empire.faith) {
+
+        } else {
+            empire.faith = empire.provinces[0].faith;
+        }
+        
+        for (let j = 0; j < empire.kingdoms.length; j++) {
+            let kingdom = empire.kingdoms[j]
+            if (kingdom.faith) {
+
+            } else {
+                kingdom.faith = kingdom.provinces[0].faith;
+            }
+            for (let n = 0; n < kingdom.duchies.length; n++) {
+                let duchy = kingdom.duchies[n];
+                if (duchy.faith) {
+
+                } else {
+                    duchy.faith = duchy.provinces[0].faith;
+                }
+                for (let z = 0; z < duchy.counties.length; z++) {
+                    let county = duchy.counties[z]
+                    if (county.faith) {
+
+                    } else {
+                        county.faith = county.provinces[0].faith
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 function religionOutputter() {
     let t = `${daBom}`
@@ -69,6 +280,9 @@ function religionOutputter() {
             for (let z = 0; z < f.holySites.length; z++) {
                 let hsIndex = f.holySites[z];
                 let prov = world.provinces[hsIndex]
+                console.log(f)
+                console.log(hsIndex)
+                console.log(prov)
                 t += `      holy_site = ${prov.titleName}\n`
                 holySites += `${prov.titleName} = {\n`
                 holySites += `  county = c_${prov.county.titleName}\n`
@@ -267,7 +481,6 @@ let faithTenets = [
     "tenet_sanctity_of_nature",
     "tenet_cthonic_redoubts",
     "tenet_communal_identity",
-    "tenet_sky_burials",
     "tenet_monasticism",
     "tenet_human_sacrifice",
     "tenet_esotericism",
@@ -323,108 +536,7 @@ let faithMAAS = [
     "bush_hunter",
 ]
 
-function createReligion(empire) {
-    let r = {};
-    //r.empire = empire;
-    //empire.religion = r;
-    r.name = `${rando()}_religion`;
-    r.isPagan = "yes"
-    r.graphical_faith = "pagan_gfx"
-    r.piety_icon_group = "pagan"
-    r.doctrine_background_icon = "core_tenet_banner_pagan.dds"
-    r.hostility_doctrine = "pagan_hostility_doctrine"
-    r.doctrines = []
-    r.doctrines.push(pickFrom(faithHeads))
-    r.doctrines.push(pickFrom(faithGendered))
-    r.doctrines.push(pickFrom(faithPluralism))
-    r.doctrines.push(pickFrom(faithTheocracy))
-    r.doctrines.push(pickFrom(faithConcubines))
-    r.doctrines.push(pickFrom(faithDivorce))
-    r.doctrines.push(pickFrom(faithConsan))
-    r.doctrines.push(pickFrom(faithHomosexuality))
-    r.doctrines.push(pickFrom(faithAdulteryMen))
-    r.doctrines.push(pickFrom(faithAdulteryWomen))
-    r.doctrines.push(pickFrom(faithKinslaying))
-    r.doctrines.push(pickFrom(faithDeviancy))
-    r.doctrines.push(pickFrom(faithWitchcraft))
-    r.doctrines.push(pickFrom(faithClerical1))
-    r.doctrines.push(pickFrom(faithClerical2))
-    r.doctrines.push(pickFrom(faithClerical3))
-    r.doctrines.push(pickFrom(faithClerical4))
-    r.doctrines.push(pickFrom(faithPilgrimages))
-    r.doctrines.push(pickFrom(funeralDoctrines))
-    r.virtueSins = []
-    pickUniqFromWithoutDelete(virtueSinPairs, r.virtueSins)
-    pickUniqFromWithoutDelete(virtueSinPairs, r.virtueSins)
-    pickUniqFromWithoutDelete(virtueSinPairs, r.virtueSins)
-    r.custom_faith_icons = `custom_faith_1 custom_faith_2 custom_faith_3 custom_faith_4 custom_faith_5 custom_faith_6 custom_faith_7 custom_faith_8 custom_faith_9 custom_faith_10 dualism_custom_1 zoroastrian_custom_1 zoroastrian_custom_2 buddhism_custom_1 buddhism_custom_2 buddhism_custom_3 buddhism_custom_4 taoism_custom_1 yazidi_custom_1 sunni_custom_2 sunni_custom_3 sunni_custom_4 muhakkima_1 muhakkima_2 muhakkima_4 muhakkima_5 muhakkima_6 judaism_custom_1 custom_faith_fp1_fenrir custom_faith_fp1_irminsul custom_faith_fp1_jormungandr custom_faith_fp1_odins_ravens custom_faith_fp1_runestone_moon custom_faith_fp1_thors_hammer custom_faith_fp1_valknut custom_faith_fp1_yggdrasil custom_faith_boromian_circles custom_faith_lotus custom_faith_aum_tibetan custom_faith_pentagram custom_faith_pentagram_inverted custom_faith_burning_bush custom_faith_allah custom_faith_gankyil custom_faith_eye_of_providence custom_faith_dove custom_faith_ichthys custom_faith_lamb custom_faith_black_sheep custom_faith_ankh custom_faith_chi_rho custom_faith_hamsa custom_faith_cool_s`
-    r.holy_order_names = [
-        "PLACEHOLDER",
-        "PLACEHOLDER"
-    ]
-    r.holy_order_maa = pickFrom(faithMAAS)
-    r.faiths = [];
-    for (let n = 0; n < empire.kingdoms.length; n++) {
-        //create faiths
-        let kingdom = empire.kingdoms[n]
-        let language = kingdom.culture.language;
-        let f = {};
-        kingdom.faith = f;
-        f.language = language
-        let faithIcon = pickFrom(faithIcons);
-        f.icon = faithIcon[0]
-        f.reformed_icon = faithIcon[1]
-        f.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`
-        if (n === 0) {
-            let old = capitalize(translate(language, "Old"))
-            r.nameLoc = capitalize(translate(language, "Religionity"))
-            //r.nameLoc = generateNamesBasedOnBigram(religionNamesList, 1)[0]
-            r.oldName = `${r.name}_old`;
-            r.oldNameAdj = `${r.name}_old_adj`;
-            r.oldNameLoc = `${old} ${r.nameLoc}`
-            r.oldNameAdjLoc = `${old} ${r.nameLoc}`
-            r.language = language
-        }
-        f.name = `${rando()}_religion`;
-        
-        
-        //f.nameLoc = generateNamesBasedOnBigram(religionNamesList, 1)[0]
-        f.nameLoc = capitalize(translate(language, "Faithism"))
-        let fOld = capitalize(translate(language, "Old"))
 
-        f.oldName = `${f.name}_old`
-        f.oldNameLoc = `${fOld} ${f.nameLoc}`
-
-        f.oldNameAdj = `${f.name}_old_adj`
-        f.oldNameAdjLoc = `${fOld} ${f.nameLoc}`
-        
-        
-        f.doctrines = [
-            "unreformed_faith_doctrine"
-        ]
-        pickUniqFromWithoutDelete(faithTenets, f.doctrines);
-        pickUniqFromWithoutDelete(faithTenets, f.doctrines);
-        pickUniqFromWithoutDelete(faithTenets, f.doctrines);
-        f.holySites = [];
-        for (let i = 0; i < 6; i++) {
-            pickUniqOrDiscard(empire.ownProvinces, f.holySites)
-        }
-        r.faiths.push(f)
-
-        //propogate faith property down to province level to track through later reassignments
-        for (let j = 0; j < kingdom.duchies.length; j++) {
-            let duchy = kingdom.duchies[j]
-            for (let n = 0; n < duchy.counties.length; n++) {
-                let county = duchy.counties[n]
-                for (let z = 0; z < county.provinces.length; z++) {
-                    let province = county.provinces[z]
-                    province.faith = kingdom.faith // really set at county level but for ease of use with possible province swapping
-                }
-            }
-        }
-    }
-    world.religions.push(r)
-}
 
 /*DOCTRINES*/
 
@@ -499,8 +611,8 @@ let faithAdulteryWomen = [
 ]
 
 let faithKinslaying = [
-    "doctrine_kinslaying_close_kin_accepted",
-    "doctrine_kinslaying_close_kin_shunned",
+    "doctrine_kinslaying_shunned",
+    "doctrine_kinslaying_accepted",
     "doctrine_kinslaying_close_kin_crime"
 ]
 

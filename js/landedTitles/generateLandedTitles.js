@@ -421,3 +421,32 @@ function assignTitleInfo() {
         giveColors(empire.kingdoms[0], empire)
     }
 }
+
+function bubbleUpProvinces() {
+    for (let i = 0; i < world.empires.length; i++) {
+        let empire = world.empires[i];
+        empire.isEmpire = true;
+        empire.provinces = []
+        for (let i = 0; i < empire.kingdoms.length; i++) {
+            let kingdom = empire.kingdoms[i];
+            kingdom.isKingdom = true;
+            kingdom.provinces = []
+            for (let j = 0; j < kingdom.duchies.length; j++) {
+                let duchy = kingdom.duchies[j]
+                duchy.isDuchy = true;
+                duchy.provinces = []
+                for (let n = 0; n < duchy.counties.length; n++) {
+                    let county = duchy.counties[n]
+                    county.isCounty = true;
+                    for (let l = 0; l < county.provinces.length; l++) {
+                        let province = county.provinces[l]
+                        province.isProvince = true;
+                        empire.provinces.push(province);
+                        kingdom.provinces.push(province);
+                        duchy.provinces.push(province)
+                    }
+                }
+            }
+        }
+    }
+}

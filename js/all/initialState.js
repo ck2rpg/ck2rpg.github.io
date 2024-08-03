@@ -166,6 +166,7 @@ let paintbrushTitleG = 0;
 let paintbrushTitleB = 0;
 let paintbrushAbsolute = false;
 let paintbrushLimit = 510
+let lowerPaintbrushLimit = 0;
 
 
 /*

@@ -6,24 +6,28 @@ function makeSimpleHistory() {
     world.day = getRandomInt(1, 28);
     world.personCounter = 1
     world.dynastyCounter = 1
+    //it works if you use kingdom for faith divergence but will throw errors otherwise at         chist += `\treligion = ${char.religion.name}\n`
     for (let i = 0; i < world.kingdoms.length; i++) {
         let kingdom = world.kingdoms[i];
-        let king = createCharacter(kingdom.culture, kingdom.faith);
+        console.log(kingdom)
+        let king = createCharacter(kingdom.culture, kingdom.provinces[0].faith);
         kingdom.holder = king
         for (let j = 0; j < kingdom.duchies.length; j++) {
             let duchy = kingdom.duchies[j]
+            console.log(duchy)
             if (j === 0) {
                 duchy.holder = king
             } else {
-                let duke = createCharacter(kingdom.culture, kingdom.faith)
+                let duke = createCharacter(duchy.culture, duchy.provinces[0].faith)
                 duchy.holder = duke
             }
             for (let n = 0; n < duchy.counties.length; n++) {
                 let county = duchy.counties[n]
+                console.log(county)
                 if (n === 0) {
                     county.holder = duchy.holder
                 } else {
-                    let count = createCharacter(kingdom.culture, kingdom.faith);
+                    let count = createCharacter(county.culture, county.provinces[0].faith);
                     county.holder = count
                 }
                 for (let l = 0; l < county.provinces.length; l++) {
@@ -35,8 +39,8 @@ function makeSimpleHistory() {
                         province.holdingType = false
                     }
                     if (province.holdingType) {
-                        province.culture = kingdom.culture;
-                        province.religion = kingdom.faith;
+                        province.culture = county.culture;
+                        province.religion = county.faith
                     }
                     
                 }
