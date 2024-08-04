@@ -21,6 +21,7 @@ settings.fillInLimit = 20
 settings.massBrushAdjuster = 1
 settings.overrideWithFlatmap = false;
 settings.elevationToHeightmap = 2;
+settings.historyHolderLevel = "random"
 
 
 let brush = {}

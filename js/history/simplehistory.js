@@ -6,47 +6,67 @@ function makeSimpleHistory() {
     world.day = getRandomInt(1, 28);
     world.personCounter = 1
     world.dynastyCounter = 1
+    let histLevel = settings.historyHolderLevel
+    let levels = ["empire", "kingdom", "duchy", "county"]
     //it works if you use kingdom for faith divergence but will throw errors otherwise at         chist += `\treligion = ${char.religion.name}\n`
-    for (let i = 0; i < world.kingdoms.length; i++) {
-        let kingdom = world.kingdoms[i];
-        console.log(kingdom)
-        let king = createCharacter(kingdom.culture, kingdom.provinces[0].faith);
-        kingdom.holder = king
-        for (let j = 0; j < kingdom.duchies.length; j++) {
-            let duchy = kingdom.duchies[j]
-            console.log(duchy)
-            if (j === 0) {
-                duchy.holder = king
-            } else {
-                let duke = createCharacter(duchy.culture, duchy.provinces[0].faith)
-                duchy.holder = duke
+    for (let z = 0; z < world.empires.length; z++) {
+        histLevel = pickFrom(levels)
+        let empire = world.empires[z]
+        let emperor;
+        if (histLevel === "empire") {
+            emperor = createCharacter(empire.provinces[0].culture, empire.provinces[0].faith)
+            empire.holder = emperor;
+        }
+        for (let i = 0; i < empire.kingdoms.length; i++) {
+            let kingdom = empire.kingdoms[i];
+            console.log(kingdom)
+            let king;
+            if (histLevel === "empire" && i === 0) {
+                kingdom.holder = emperor;
+                king = emperor;
+            } else if (histLevel === "empire" || histLevel === "kingdom") {
+                king = createCharacter(kingdom.culture, kingdom.provinces[0].faith);
+                kingdom.holder = king
             }
-            for (let n = 0; n < duchy.counties.length; n++) {
-                let county = duchy.counties[n]
-                console.log(county)
-                if (n === 0) {
-                    county.holder = duchy.holder
-                } else {
-                    let count = createCharacter(county.culture, county.provinces[0].faith);
-                    county.holder = count
+            for (let j = 0; j < kingdom.duchies.length; j++) {
+                let duchy = kingdom.duchies[j]
+                console.log(duchy)
+                let duke;
+                if (j === 0 && (histLevel === "empire" || histLevel === "kingdom")) {
+                    duchy.holder = king
+                    duke = king;
+                } else if (histLevel === "empire" || histLevel === "kingdom" || histLevel === "duchy") {
+                    duke = createCharacter(duchy.culture, duchy.provinces[0].faith)
+                    duchy.holder = duke
                 }
-                for (let l = 0; l < county.provinces.length; l++) {
-                    let province = county.provinces[l]
-                    province.county = county
-                    if (l === 0) {
-                        province.holdingType = "tribal_holding"
+                for (let n = 0; n < duchy.counties.length; n++) {
+                    let county = duchy.counties[n]
+                    console.log(county)
+                    if (n === 0 && (histLevel === "empire" || histLevel === "kingdom" || histLevel === "duchy")) {
+                        county.holder = duchy.holder
                     } else {
-                        province.holdingType = false
+                        let count = createCharacter(county.culture, county.provinces[0].faith);
+                        county.holder = count
                     }
-                    if (province.holdingType) {
-                        province.culture = county.culture;
-                        province.religion = county.faith
+                    for (let l = 0; l < county.provinces.length; l++) {
+                        let province = county.provinces[l]
+                        province.county = county
+                        if (l === 0) {
+                            province.holdingType = "tribal_holding"
+                        } else {
+                            province.holdingType = false
+                        }
+                        if (province.holdingType) {
+                            province.culture = county.culture;
+                            province.religion = county.faith
+                        }
+                        
                     }
-                    
                 }
             }
         }
     }
+
 }
 
 function outputCharacters() {
@@ -94,40 +114,59 @@ function outputCharacters() {
 function outputHistory() {
     let titleHistory = `${daBom}`;
     let provinceHistory = `${daBom}`
-    for (let i = 0; i < world.kingdoms.length; i++) {
-        let kingdom = world.kingdoms[i]
-        titleHistory += `k_${kingdom.titleName} = {\n`
-        titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
-        titleHistory += `\t\tholder = ${kingdom.holder.id}\n`
-        titleHistory += `\t}\n`
-        titleHistory += `}\n`
-        for (let j = 0; j < kingdom.duchies.length; j++) {
-            let duchy = kingdom.duchies[j]
-            titleHistory += `d_${duchy.titleName} = {\n`
-            titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
-            titleHistory += `\t\tholder = ${duchy.holder.id}\n`
-            titleHistory += `\t\tliege = k_${kingdom.titleName}`
-            titleHistory += `\t}\n`
-            titleHistory += `}\n`
-            for (let n = 0; n < duchy.counties.length; n++) {
-                let county = duchy.counties[n]
-                titleHistory += `c_${county.titleName} = {\n`
+    for (let z = 0; z < world.empires.length; z++) {
+        let empire = world.empires[z]
+        for (let i = 0; i < empire.kingdoms.length; i++) {
+            let kingdom = empire.kingdoms[i]
+            if (kingdom.holder) {
+                titleHistory += `k_${kingdom.titleName} = {\n`
                 titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
-                titleHistory += `\t\tholder = ${county.holder.id}\n`
-                titleHistory += `\t\tliege = d_${duchy.titleName}`
+                titleHistory += `\t\tholder = ${kingdom.holder.id}\n`
+                if (empire.holder) {
+                    titleHistory += `\t\tliege = e_${empire.titleName}`
+                }
                 titleHistory += `\t}\n`
                 titleHistory += `}\n`
-                for (let l = 0; l < county.provinces.length; l++) {
-                    let province = county.provinces[l]
-                    provinceHistory += `${province.id} = {\n`
-                    if (province.holdingType) {
-                        provinceHistory += `\tculture = ${kingdom.culture.id}\n`
-                        provinceHistory += `\treligion = ${kingdom.faith.name}\n`
-                        provinceHistory += `\tholding = ${province.holdingType}\n`
-                    } else {
-                        provinceHistory += `\tholding = none\n`
+            }
+            for (let j = 0; j < kingdom.duchies.length; j++) {
+                let duchy = kingdom.duchies[j]
+                if (duchy.holder) {
+                    titleHistory += `d_${duchy.titleName} = {\n`
+                    titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
+                    titleHistory += `\t\tholder = ${duchy.holder.id}\n`
+                    if (kingdom.holder) {
+                        titleHistory += `\t\tliege = k_${kingdom.titleName}`
                     }
-                    provinceHistory += `}\n`
+    
+                    titleHistory += `\t}\n`
+                    titleHistory += `}\n`
+                }
+    
+                for (let n = 0; n < duchy.counties.length; n++) {
+                    let county = duchy.counties[n]
+                    if (county.holder) {
+                        titleHistory += `c_${county.titleName} = {\n`
+                        titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
+                        titleHistory += `\t\tholder = ${county.holder.id}\n`
+                        if (duchy.holder) {
+                            titleHistory += `\t\tliege = d_${duchy.titleName}`
+                        }
+                        titleHistory += `\t}\n`
+                        titleHistory += `}\n`
+                    }
+    
+                    for (let l = 0; l < county.provinces.length; l++) {
+                        let province = county.provinces[l]
+                        provinceHistory += `${province.id} = {\n`
+                        if (province.holdingType) {
+                            provinceHistory += `\tculture = ${kingdom.culture.id}\n`
+                            provinceHistory += `\treligion = ${kingdom.faith.name}\n`
+                            provinceHistory += `\tholding = ${province.holdingType}\n`
+                        } else {
+                            provinceHistory += `\tholding = none\n`
+                        }
+                        provinceHistory += `}\n`
+                    }
                 }
             }
         }

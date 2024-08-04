@@ -989,3 +989,13 @@ religionFamilyLevelSelect.addEventListener('change', () => {
 divergeFaithLevelSelect.addEventListener('change', () => {
   settings.divergeFaithLevel = divergeFaithLevelSelect.value;
 });
+
+const historyHolderLevelSelect = GID("history-holder-level");
+
+historyHolderLevelSelect.addEventListener('change', () => {
+  updateHistoryHolderLevel();
+})
+
+function updateHistoryHolderLevel() {
+  settings.historyHolderLevel = historyHolderLevelSelect.value;
+}

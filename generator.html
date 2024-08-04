@@ -79,6 +79,7 @@
           <button class="tab-button" onclick="openTab(event, 'Titles')">Titles</button>
           <button class="tab-button" onclick="openTab(event, 'CultureSettings')">Cultures</button>
           <button class="tab-button" onclick="openTab(event, 'ReligionSettings')">Religions</button>
+          <button class="tab-button" onclick="openTab(event, 'HistorySettings')">History</button>
         </div>
       
         <div id="MassChanges" class="tab-content">
@@ -457,6 +458,27 @@
 
         </div>
 
+        
+        <div id="HistorySettings" class="tab-content">
+
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <div class="menu-section-content menu-hideable-area menu-setting">
+              <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+                <label for="history-holder-level">Generate Holders:</label>
+                <select name="religion-family-level" id="history-holder-level">
+                  <option value="random">Random</option>
+                  <option value="empire">Empire Level</option>
+                  <option value="kingdom">Kingdom Level</option>
+                  <option value="duchy">Duchy Level</option>
+                  <option value="county">County Level</option>
+                </select>
+                <span class="tool-tip">Set the level at which level and below titles will spawn holders in their history. For example, if set to empire level, all de jure empires and underlying titles will have a holder at game start. If set to random, it will vary within each de jure empire (e.g., only counties in one de jure empire may have holders but another empire will be fully formed at start).</span>
+              </span>
+            </div>
+          </div>
+
+        </div>
+
       </div>
       
     
@@ -596,6 +618,25 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.12.0 Release</p>
+            <p class="main-landing-text">Title History Variation</p>
+            <p class="main-landing-heading">0.12.0 Change Log</p>
+            <p class="main-landing-text">
+              I introduced a new History Tab, allowing users to customize the level at which title holders are generated within the game's history. This feature determines the occupancy of titles at the game's start.
+            </p><br>
+
+            <ul class="bulleted">
+              <li>Random Level: The generator will randomly determine the level for title generation within each de jure empire. In one empire, titles may be fragmented down to the county level, while in another, the empire might remain intact at the game's start.</li>
+              <li>Empire Level: Selecting this level ensures that each de jure empire, along with all subordinate titles, will have generated holders at the game's start.</li>
+              <li>Kingdom Level: Choosing this level ensures that each de jure kingdom, along with its subordinate titles, will have generated holders, offering a balanced starting point.</li>
+              <li>Duchy Level: This option generates holders for each de jure duchy and all subordinate titles, providing a more structured hierarchy at the game's start.</li>
+              <li>County Level: Selecting this option results in a completely fragmented world, with titles broken down to the county level.</li>
+            </ul>
+    
+
+
+
 
             <p class="text-intro">Alpha 0.11.0 Release</p>
             <p class="main-landing-text">Religion and Culture options</p>

@@ -1054,3 +1054,13 @@ button[type="submit"]:hover {
   color: var(--font-color);
   border: var(--border-color) 2px solid;
 }
+
+.bulleted {
+  font-size: 1.2em;
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.bulleted li {
+  margin-bottom: 10px;
+}
