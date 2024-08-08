@@ -574,6 +574,8 @@ async function createProvinces() {
 
     bubbleUpProvinces()
 
+    setCountyFavorability()
+
     assignTitleInfo();
     await updateDOM("Assigning Title Info", 23);
 

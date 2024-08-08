@@ -207,6 +207,25 @@ function overloadProvinceProperties() {
     analyzeAllRegions()
 }
 
+function setCountyFavorability() {
+    for (let i = 0; i < world.counties.length; i++) {
+        let county = world.counties[i];
+        county.totalExpansionFavorability = 0;
+        for (let j = 0; j < county.provinces.length; j++) {
+            let prov = county.provinces[j]
+            county.totalExpansionFavorability += parseInt(prov.expansionFavorability)
+        }
+        county.averageExpansionFavorability = Math.floor(county.totalExpansionFavorability / county.provinces.length);
+        if (Number.isNaN(county.averageExpansionFavorability)) {
+            county.averageExpansionFavorability = 0;
+        } else if (county.averageExpansionFavorability > 100) {
+            county.averageExpansionFavorability = 100
+        } else if (county.averageExpansionFavorability < 0) {
+            county.averageExpansionFavorability = 0
+        }
+    }
+}
+
 function explain() {
     floodFillWaterProvinces()
     clearFloodFillProvinces();

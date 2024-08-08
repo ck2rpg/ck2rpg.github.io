@@ -147,9 +147,10 @@ function outputHistory() {
                     if (county.holder) {
                         titleHistory += `c_${county.titleName} = {\n`
                         titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
+                        titleHistory += `\t\tchange_development_level = ${Math.floor(county.averageExpansionFavorability / 5)}\n`
                         titleHistory += `\t\tholder = ${county.holder.id}\n`
                         if (duchy.holder) {
-                            titleHistory += `\t\tliege = d_${duchy.titleName}`
+                            titleHistory += `\t\tliege = d_${duchy.titleName}\n`
                         }
                         titleHistory += `\t}\n`
                         titleHistory += `}\n`
