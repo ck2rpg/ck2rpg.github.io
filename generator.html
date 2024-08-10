@@ -382,10 +382,10 @@
             <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
               <label for="culture-per">Generate Culture per:</label>
               <select name="culture-per" id="culture-per">
-                <option value="county">County</option>
-                <option value="duchy">Duchy</option>
+                <option value="empire" selected>Empire</option>
                 <option value="kingdom">Kingdom</option>
-                <option value="empire">Empire</option>
+                <option value="duchy">Duchy</option>
+                <option value="county">County</option>
               </select>
               <span class="tool-tip">Generate an initial seed culture for every title at this level. Diverging cultures will have the same heritage.</span>
             </span>
@@ -393,7 +393,7 @@
           <div class="menu-section-content menu-hideable-area menu-setting">
             <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
               <label for="diverge-at-kingdom">Diverge at Kingdom</label>
-              <select name="diverge-at-kingdom" id="diverge-at-kingdom">
+              <select name="diverge-at-kingdom" id="diverge-at-kingdom" selected>
                 <option value="false">No</option>
                 <option value="true" selected>Yes</option>
               </select>
@@ -465,7 +465,7 @@
             <div class="menu-section-content menu-hideable-area menu-setting">
               <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
                 <label for="history-holder-level">Generate Holders:</label>
-                <select name="religion-family-level" id="history-holder-level">
+                <select name="history-holder-level" id="history-holder-level">
                   <option value="random">Random</option>
                   <option value="empire">Empire Level</option>
                   <option value="kingdom">Kingdom Level</option>
@@ -473,6 +473,21 @@
                   <option value="county">County Level</option>
                 </select>
                 <span class="tool-tip">Set the level at which level and below titles will spawn holders in their history. For example, if set to empire level, all de jure empires and underlying titles will have a holder at game start. If set to random, it will vary within each de jure empire (e.g., only counties in one de jure empire may have holders but another empire will be fully formed at start).</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="menu-section-content menu-hideable-area menu-setting">
+            <div class="menu-section-content menu-hideable-area menu-setting">
+              <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+                <label for="era-level">Era:</label>
+                <select name="era-level" id="era-level">
+                  <option value="tribal">Tribal</option>
+                  <option value="earlyMedieval">Early Medieval</option>
+                  <option value="highMedieval">High Medieval</option>
+                  <option value="lateMedieval">Late Medieval</option>
+                </select>
+                <span class="tool-tip">Set the starting era for each culture.</span>
               </span>
             </div>
           </div>
@@ -618,6 +633,22 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.13.0 Release</p>
+            <p class="main-landing-text">Development, Settable Eras, Innovations</p>
+            <p class="main-landing-heading">0.13.0 Change Log</p>
+            <p class="main-landing-text">
+              Alpha 0.13.0 introduces the following new features and bug fixes:
+            </p><br>
+
+            <ul class="bulleted">
+              <li>Set the era for each culture under the history tab. For now, there is no way to vary between cultures, but I am brainstorming ideas on that front.</li>
+              <li>For now, innovations are blanket assigned based on era. Due to limitations in the way files are named, these are added to the cultures through an on action instead of through generated history files.</li>
+              <li>Development levels are procedurally generated as a factor of the average favorability of a county's provinces and the set era. Favorability is based on terrain, resource access, adjacency to water, elevation, and certain favorability factors within a five province zone of that province.</li>
+              <li>Bug fix: Removed certain console logs that were used for testing but slowing down generation.</li>
+              <li>Bug hunt: On a few occasions, generated files have stalled the load for my map editor. I believe the issue is related to generating too many cultures (e.g., setting cultural divergence down to the county level). If you have experienced this or seen issues, please let me know. It is a difficult bug to track down because I have to run a new generation and get to map editor stage each time.</li>
+              <li>Unimplemented in this round: I am still working on more meaningful tradition assignment and didn't want folks to think I forgot about it in this update. Probably next update.</li>
+            </ul>
 
             <p class="text-intro">Alpha 0.12.0 Release</p>
             <p class="main-landing-text">Title History Variation</p>

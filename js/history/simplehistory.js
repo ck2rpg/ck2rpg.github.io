@@ -19,7 +19,6 @@ function makeSimpleHistory() {
         }
         for (let i = 0; i < empire.kingdoms.length; i++) {
             let kingdom = empire.kingdoms[i];
-            console.log(kingdom)
             let king;
             if (histLevel === "empire" && i === 0) {
                 kingdom.holder = emperor;
@@ -30,7 +29,6 @@ function makeSimpleHistory() {
             }
             for (let j = 0; j < kingdom.duchies.length; j++) {
                 let duchy = kingdom.duchies[j]
-                console.log(duchy)
                 let duke;
                 if (j === 0 && (histLevel === "empire" || histLevel === "kingdom")) {
                     duchy.holder = king
@@ -41,7 +39,6 @@ function makeSimpleHistory() {
                 }
                 for (let n = 0; n < duchy.counties.length; n++) {
                     let county = duchy.counties[n]
-                    console.log(county)
                     if (n === 0 && (histLevel === "empire" || histLevel === "kingdom" || histLevel === "duchy")) {
                         county.holder = duchy.holder
                     } else {
@@ -52,7 +49,11 @@ function makeSimpleHistory() {
                         let province = county.provinces[l]
                         province.county = county
                         if (l === 0) {
-                            province.holdingType = "tribal_holding"
+                            if (settings.eraLevel === "tribal") {
+                                province.holdingType = "tribal_holding"
+                            } else {
+                                province.holdingType = "castle_holding"
+                            }
                         } else {
                             province.holdingType = false
                         }
@@ -147,7 +148,7 @@ function outputHistory() {
                     if (county.holder) {
                         titleHistory += `c_${county.titleName} = {\n`
                         titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
-                        titleHistory += `\t\tchange_development_level = ${Math.floor(county.averageExpansionFavorability / 5)}\n`
+                        titleHistory += `\t\tchange_development_level = ${county.developmentLevel}\n`
                         titleHistory += `\t\tholder = ${county.holder.id}\n`
                         if (duchy.holder) {
                             titleHistory += `\t\tliege = d_${duchy.titleName}\n`

@@ -187,11 +187,15 @@ function outputEthnicities() {
 }
 
 function outputHeritageLocalization() {
+    let uniqueHeritages = []
     let output = `${daBom}l_english:\n`
     for (let i = 0; i < world.cultures.length; i++) {
         let culture = world.cultures[i]
         let heritage = culture.heritage
-        output += `${heritage}_name: "${culture.name}"\n`
+        if (uniqueHeritages.indexOf(heritage) === -1) {
+            uniqueHeritages.push(heritage)
+            output += `${heritage}_name: "${culture.name}"\n`
+        }
     }
     var data = new Blob([output], {type: 'text/yaml'})
     var url = window.URL.createObjectURL(data);
@@ -203,10 +207,14 @@ function outputHeritageLocalization() {
 
 function outputLanguagesLocalization() {
     let output = `${daBom}l_english:\n`
+    let uniqueLanguages = []
     for (let i = 0; i < world.cultures.length; i++) {
         let culture = world.cultures[i]
         let language = culture.language;
-        output += `${language.name}_name: "${capitalize(language.loc)}"\n`
+        if (uniqueLanguages.indexOf(language.name) === -1) {
+            uniqueLanguages.push(language.name);
+            output += `${language.name}_name: "${capitalize(language.loc)}"\n`
+        }
     }
     var data = new Blob([output], {type: 'text/yaml'})
     var url = window.URL.createObjectURL(data);
@@ -327,6 +335,551 @@ function outputCultures() {
     document.getElementById("download-links").innerHTML += `${link}`;
     document.getElementById(`cultures_link`).href = url
     document.getElementById(`cultures_link`).click();
+}
+
+let culturalInnovations = [
+    //TRIBAL
+    {
+        k: "innovation_motte",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_catapult",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_barracks",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_mustering_grounds",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_bannus",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_quilted_armor",
+        t: "culture_group_military",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_development_01",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_currency_01",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_gavelkind",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_crop_rotation",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_city_planning",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_casus_belli",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_plenary_assemblies",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_ledger",
+        t: "culture_group_civic",
+        e: "culture_era_tribal"
+    },
+    {
+        k: "innovation_table_of_princes",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_longboats",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_elephantry",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_war_camels",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_wootz_steel",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_african_canoes",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    //EARLY MEDIEVAL
+    {
+        k: "innovation_battlements",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_mangonel",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_burhs",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_house_soldiers",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_horseshoes",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_arched_saddle",
+        t: "culture_group_military",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_hereditary_rule",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_manorialism",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_development_02",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_currency_02",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_royal_prerogative",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_chronicle_writing",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_armilary_sphere",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_baliffs",
+        t: "culture_group_civic",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_reconquista",
+        t: "culture_group_regional",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_stem_duchies",
+        t: "culture_group_regional",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "innovation_ghilman",
+        t: "culture_group_regional",
+        e: "culture_era_early_medieval",
+    },
+    //HIGH MEDIEVAL
+    {
+        k: "innovation_hoardings",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_trebuchet",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_castle_baileys",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_men_at_arms",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_knighthood",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_advanced_bowmaking",
+        t: "culture_group_military",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_heraldry",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_windmills",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_divine_right",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_land_grants",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_scutage",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_guilds",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_development_03",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_currency_03",
+        t: "culture_group_civic",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_east_settling",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_seigneurialism",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_muladi",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_french_peerage",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    //LATE MEDIEVAL
+    {
+        k: "innovation_machicolations",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_bombard",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_royal_armory",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_standing_armies",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_sappers",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_plate_armor",
+        t: "culture_group_military",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_primogeniture",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_cranes",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_noblesse_oblige",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_rightful_ownership",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_ermine_cloaks",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_court_officials",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_development_04",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_currency_04",
+        t: "culture_group_civic",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_wierdijks",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_condottieri",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_deccan_unity",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    //CULTURAL MAA INNOVATIONS
+    {
+        k: "innovation_zweihanders",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_adaptive_militia",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_valets",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_pike_columns",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_legionnaires",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_desert_tactics",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_caballeros",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_hobbies",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_rectilinear_schiltron",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    {
+        k: "innovation_bamboo_bows",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_sahel_horsemen",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_sarawit",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+    {
+        k: "innovation_repeating_crossbow",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_pole_vault",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    //FP3 Innovations
+    {
+        k: "fp3_innovation_mural_sextant",
+        t: "culture_group_regional",
+        e: "culture_era_early_medieval",
+    },
+    {
+        k: "fp3_innovation_fritware",
+        t: "culture_group_regional",
+        e: "culture_era_late_medieval",
+    },
+    //FP1 Innovations
+    {
+        k: "innovation_varangian_adventurers",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    {
+        k: "innovation_all_things",
+        t: "culture_group_regional",
+        e: "culture_era_tribal",
+    },
+    //CE1 Innovations
+    {
+        k: "innovation_sanitation",
+        t: "culture_group_regional",
+        e: "culture_era_high_medieval",
+    },
+]
+
+let tribalNonRegionalInnovations = []
+let earlyMedievalNonRegionalInnovations = []
+let highMedievalNonRegionalInnovations = []
+let lateMedievalNonRegionalInnovations = []
+
+for (let i = 0; i < culturalInnovations.length; i++) {
+    let innovation = culturalInnovations[i]
+    let e = innovation.e
+    if (innovation.t === "culture_group_regional") {
+        //do nothing - figure these out later
+    } else {
+        if (e === "culture_era_tribal") {
+            tribalNonRegionalInnovations.push(innovation)
+        } else if (e === "culture_era_early_medieval") {
+            earlyMedievalNonRegionalInnovations.push(innovation)
+        } else if (e === "culture_era_high_medieval") {
+            highMedievalNonRegionalInnovations.push(innovation);
+        } else if (e === "culture_era_late_medieval") {
+            lateMedievalNonRegionalInnovations.push(innovation)
+        }
+    }
+}
+
+function outputCulturesHistory() {
+        //you can't output this as a history file, it has to be an on action (culture history files have to be named after culture or heritage, resulting in massive number of text file downloads, which bugs out the browser)
+    let t = `${daBom}`;
+    t += `on_game_start = {\n`
+    t += `\ton_actions = {\n`
+    t += `\t\ton_action_culture_seeding\n`
+    t += `\t}\n`
+    t += `}\n\n`
+
+    t += `on_action_culture_seeding = {\n`
+    t += `\teffect = {\n`
+    t += `\t\tevery_culture_global = {\n`
+    if (settings.eraLevel === "Tribal") {
+        t += `\t\t\tjoin_era = culture_era_tribal\n`
+    } else if (settings.eraLevel === "Early Medieval") {
+        t += `\t\t\tjoin_era = culture_era_early_medieval\n`
+        for (let n = 0; n < tribalNonRegionalInnovations.length; n++) {
+            let innovation = tribalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        }
+    } else if (settings.eraLevel === "High Medieval") {
+        t += `\t\t\tjoin_era = culture_era_high_medieval\n`
+        for (let n = 0; n < tribalNonRegionalInnovations.length; n++) {
+            let innovation = tribalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        }
+        for (let n = 0; n < earlyMedievalNonRegionalInnovations.length; n++) {
+            let innovation = earlyMedievalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        }
+    } else if (settings.eraLevel === "Late Medieval") {
+        t += `\t\t\tjoin_era = culture_era_late_medieval\n`
+        for (let n = 0; n < tribalNonRegionalInnovations.length; n++) {
+            let innovation = tribalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        }
+        for (let n = 0; n < earlyMedievalNonRegionalInnovations.length; n++) {
+            let innovation = earlyMedievalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        }
+        for (let n = 0; n < highMedievalNonRegionalInnovations.length; n++) {
+            let innovation = highMedievalNonRegionalInnovations[n]
+            t += `\t\t\tadd_innovation = ${innovation.k}\n`
+        } 
+    }
+    t += `\t\t}\n`//every culture global
+    t += `\t}\n` //effect
+    t += `}\n`//on action culture seeding
+    let data = new Blob([t], {type: 'text/plain'})
+    let url = window.URL.createObjectURL(data);
+    let link = `<a id="game_start_link" download="gen_game_start.txt" href="">Cultures</a><br>`
+    document.getElementById("download-links").innerHTML += `${link}`;
+    document.getElementById(`game_start_link`).href = url
+    document.getElementById(`game_start_link`).click();
 }
 
 function outputLanguages() {
@@ -1018,13 +1571,24 @@ function assignCultures() {
                         let province = county.provinces[z]
                         province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
                         province.culture = county.culture // really set at county level but for ease of use with possible province swapping
+                        county.culture.provinces.push(province)
                         //province.localizedTitle = placeName(kingdom.culture.language)
                     }
                 }
             }
         }
     }
+}
 
+function assignTraditionPossibilities() {
+    for (let i = 0; i < world.cultures.length; i++) {
+        let culture = world.cultures[i]
+        setTraditionPossibilities(culture)
+        culture.traditions = []
+        for (let n = 0; n < 3; n++) {
+            pickUniqFromWithoutDelete(culture.possibleTraditions, culture.traditions)
+        }
+    }
 }
 
 let cultureEthosList = [
@@ -1519,13 +2083,14 @@ function createCulture(parent) {
         culture.clothing_gfx = parent.clothing_gfx
         culture.unit_gfx = parent.unit_gfx
         culture.ethnicities = parent.ethnicities
-        culture.id = rando()
+        culture.id = `ccc${rando()}`
         let n1 = capitalize(translate(culture.language, culture.id));
         let n2 = capitalize(translate(culture.language, "People"));
         culture.name = `${n1} ${n2}`
         culture.name = romanizeText(culture.name)
         culture.name_list = `name_list_${culture.id}`
         culture.isChildCulture = true;
+        culture.provinces = []
     } else {
         culture.martial_custom = pickFrom(martialCustomRuleList)
         culture.ethos = pickFrom(cultureEthosList)
@@ -1538,8 +2103,9 @@ function createCulture(parent) {
         culture.ethnicities = getRandomEthnicities();
         culture.name = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
         culture.name = capitalize(romanizeText(culture.name))
-        culture.id = rando()
+        culture.id = `ccc${rando()}`
         culture.name_list = `name_list_${culture.id}`
+        culture.provinces = []
     }
     
     

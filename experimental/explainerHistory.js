@@ -250,6 +250,7 @@ function setTraditionPossibilities(c) {
     let landNeighbors = [];
     let waterNeighbors = [];
     let winterSeverities = [];
+    console.log(c)
 
     for (let i = 0; i < c.provinces.length; i++) {
         let p = c.provinces[i]
@@ -391,15 +392,18 @@ function setTraditionPossibilities(c) {
         possible.push("tradition_maritime_mercantilism")
         possible.push("tradition_polders")
     }
-
+    /*
     if (c.provinces.indexOf(c.home) === -1) {
         possible.push("tradition_diasporic")
     }
+    */
 
     if (ln < 1 && wn >= 1) {
         possible.push("tradition_isolationist");
         possible.push("tradition_practiced_pirates")
     }
+
+    //others
 
 
     c.possibleTraditions = possible

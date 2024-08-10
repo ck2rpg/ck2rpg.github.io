@@ -22,6 +22,7 @@ settings.massBrushAdjuster = 1
 settings.overrideWithFlatmap = false;
 settings.elevationToHeightmap = 2;
 settings.historyHolderLevel = "random"
+settings.eraLevel = "Tribal"
 
 
 let brush = {}

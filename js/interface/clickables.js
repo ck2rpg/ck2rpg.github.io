@@ -224,6 +224,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   functionsToExecute.push(() => writeLocators("activities"));
   functionsToExecute.push(() => outputCultures());
   functionsToExecute.push(() => makeSimpleHistory());
+  functionsToExecute.push(() => outputCulturesHistory());
   functionsToExecute.push(() => outputCharacters());
   functionsToExecute.push(() => outputHistory());
   functionsToExecute.push(() => writeTitleLocalization());
@@ -999,3 +1000,9 @@ historyHolderLevelSelect.addEventListener('change', () => {
 function updateHistoryHolderLevel() {
   settings.historyHolderLevel = historyHolderLevelSelect.value;
 }
+
+const eraLevelSelect = document.getElementById('era-level');
+
+eraLevelSelect.addEventListener('change', function() {
+    settings.eraLevel = eraLevelSelect.options[eraLevelSelect.selectedIndex].text;
+});

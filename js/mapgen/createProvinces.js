@@ -581,6 +581,7 @@ async function createProvinces() {
 
     assignCultures();
     await updateDOM("Assigning Cultures", 24);
+    //assignTraditionPossibilities()
 
     religionGenerator();
     faithsSlideDown()

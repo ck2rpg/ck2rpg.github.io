@@ -280,9 +280,6 @@ function religionOutputter() {
             for (let z = 0; z < f.holySites.length; z++) {
                 let hsIndex = f.holySites[z];
                 let prov = world.provinces[hsIndex]
-                console.log(f)
-                console.log(hsIndex)
-                console.log(prov)
                 t += `      holy_site = ${prov.titleName}\n`
                 holySites += `${prov.titleName} = {\n`
                 holySites += `  county = c_${prov.county.titleName}\n`

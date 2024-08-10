@@ -223,6 +223,19 @@ function setCountyFavorability() {
         } else if (county.averageExpansionFavorability < 0) {
             county.averageExpansionFavorability = 0
         }
+        setCountyDevelopmentLevel(county)
+    }
+}
+
+function setCountyDevelopmentLevel(county) {
+    if (settings.eraLevel === "Tribal") {
+        county.developmentLevel = Math.floor(county.averageExpansionFavorability / 5)
+    } else if (settings.eraLevel === "Early Medieval") {
+        county.developmentLevel = Math.floor(county.averageExpansionFavorability / 4)
+    } else if (settings.eraLevel === "High Medieval") {
+        county.developmentLevel = Math.floor(county.averageExpansionFavorability / 3)
+    }  else if (settings.eraLevel === "Late Medieval") {
+        county.developmentLevel = Math.floor(county.averageExpansionFavorability / 2)
     }
 }
 
