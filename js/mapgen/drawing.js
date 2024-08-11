@@ -52,6 +52,8 @@ function drawCell(x, y) {
       drawHeightmapType(cell);
     } else if (type === "rivermap") {
       drawRivermapType(cell);
+    } else if (type === "roguelike") {
+      drawRoguelike(cell)
     } else {
       drawSpecialType(cell, type);
     }
@@ -69,6 +71,63 @@ function drawCell(x, y) {
       g: Math.floor((elevation / 10) * 6),
       b: Math.floor((elevation / 10) * 4),
     };
+  }
+
+  function drawRoguelike(cell) {
+    const cellBiome = biome(cell);
+    let ascii = ""
+    if (cell.river) {
+      ascii = "≈"
+      const waterMod = 255 - Math.floor(getCorrectedColor(cell) * 0.6);
+      cell.rgb = `rgb(0, 0, ${waterMod})`;
+    } else if (cellBiome === "beach") {
+      ascii = "."
+      cell.rgb = `rgb(${194 - cell.elevation * 3}, ${178 - cell.elevation * 3}, ${128 - cell.elevation * 3})`;
+    } else if (cell.terrain === "forest") {
+      const el = cell.elevation;
+      ascii = "♠"
+      cell.rgb = `rgb(0, ${el / 3}, 0)`;
+    } else if (cell.elevation >= limits.mountains.lower) {
+      ascii = "^"
+      const mountainMod = cell.elevation - limits.mountains.lower;
+      cell.rgb = `rgb(${mountainMod}, ${mountainMod}, ${mountainMod})`;
+    } else if (cell.terrain === "taiga" || (cell.climateCategory === "cold" && cell.terrain === "hills")) {
+      const el = cell.elevation;
+        ascii = "."
+        cell.rgb = `rgb(${355 - el}, ${355 - el}, ${355 - el})`;
+    } else if (cell.terrain === "jungle") {
+      const el = cell.elevation;
+      ascii = "§"
+      cell.rgb = `rgb(0, ${el / 5}, 0)`;
+    } else if (cell.climateCategory === "tropical" && cell.terrain === "hills") {
+      const el = cell.elevation;
+      ascii = "§"
+      cell.rgb = `rgb(0, ${el / 5}, 0)`;
+    } else if (cell.terrain === "drylands") {
+      ascii = "~"
+      const el = cell.elevation;
+      cell.rgb = `rgb(${Math.floor(194 * (el / 255))}, ${Math.floor(178 * (el / 255))}, ${Math.floor(128 * (el / 255))})`;
+    } else if (cell.terrain === "steppe") {
+      ascii = `"`
+      cell.rgb = drawSteppeColor(cell);
+    } else if (cell.terrain === "desert" || cell.terrain === "drylands") {
+      ascii = "~"
+      const el = cell.elevation;
+      cell.rgb = `rgb(${Math.floor(194 * (el / 255))}, ${Math.floor(178 * (el / 255))}, ${Math.floor(128 * (el / 255))})`;
+    } else if (cell.terrain === "plains" || cell.terrain === "farmlands" || cell.terrain === "hills" || cell.terrain === "wetlands" || cell.terrain === "floodplains") {
+      ascii = "."
+      cell.rgb = drawGrassColor(cell);
+    } else if (cell.elevation <= limits.seaLevel.upper || cell.terrain === "oasis") {
+      ascii = "≈"
+      const waterMod = 255 - Math.floor(getCorrectedColor(cell) * 0.6);
+      cell.rgb = `rgb(0, 0, ${waterMod})`;
+    } else {
+      ascii = "."
+      cell.rgb = drawGrassColor(cell);
+    }
+    ctx.fillStyle = cell.rgb;
+    ctx.font = "16px serif";
+    ctx.fillText(ascii, cell.x * settings.pixelSize, cell.y * settings.pixelSize);
   }
   
   /**
@@ -974,7 +1033,15 @@ function drawWorld() {
   canvas.width = world.width * settings.pixelSize;
   canvas.height = world.height * settings.pixelSize;
 
-  if (world.drawingType === "black") { // use for empty masks so you don't have to repeat.
+  if (world.drawingType === "roguelike") {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < world.height; i++) {
+      for (let j = 0; j < world.width; j++) {
+        drawCell(j, i)
+      }
+    }
+  } else if (world.drawingType === "black") { // use for empty masks so you don't have to repeat.
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   } else if (world.drawingType === "white") {
