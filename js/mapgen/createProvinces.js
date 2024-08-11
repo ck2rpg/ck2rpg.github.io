@@ -425,11 +425,6 @@ function createProvince(x, y, landWater, cell) {
     province.terrainCount["wetlands"] = 0
     province.terrainCount["sea"] = 0
     province.terrainCount[`${cell.bigCell.terrain}`] += 1
-    if (cell.bigCell.adjacentToWater.length > 0) {
-        province.coastalCellCount = 1;
-    } else {
-        province.coastalCellCount = 0
-    }
     province.adjacentToWater = []
     province.rivers = []
     province.mountains = []
@@ -470,7 +465,22 @@ async function createProvinces() {
     world.coveredWater = 0;
     world.seedCells = [];
     createCellTerrains()
-    createSmallMap();
+    if (settings.width === world.width) {
+        world.smallMap = world.map;
+        for (let n = 0; n < world.map.length; n++) {
+            for (let j = 0; j < world.map[n].length; j++) {
+                let cell = world.map[n][j]
+                cell.bigCell = cell;
+                if (cell.elevation > limits.seaLevel.upper) {
+                    world.landCells.push(cell)
+                } else {
+                    world.waterCells += 1;
+                }
+            }
+        }
+    } else {
+        createSmallMap();
+    }
     createOverrideWaterProvinces()
     createOverrideLandProvinces()
 
@@ -683,7 +693,7 @@ function createSmallMap() {
             let bigX = Math.floor(j / settings.pixelSize)
             let bigY = Math.floor(i / settings.pixelSize)
             let bigCell = xy(bigX, bigY);
-            if (bigCell.elevation > limits.seaLevel.upper) {
+            if (bigCell.elevation > 36) { //limits.seaLevel.upper replacement
                 count += 1;
                 let cell = {};
                 cell.x = j;
@@ -1118,9 +1128,6 @@ function growCell(cell, target) {    //target is needed to allow you to set a ce
                 } else {
                     cell.parent.children.push(randomNeighbor)
                 }
-                if (randomNeighbor.bigCell.adjacentToWater.length > 0) {
-                    cell.province.coastalCellCount += 1;
-                }
                 cell.province.terrainCount[`${randomNeighbor.bigCell.terrain}`] += 1
                 if (randomNeighbor.y >= cell.province.farthestSouth.y) {
                     cell.province.farthestSouth = randomNeighbor;
@@ -1182,9 +1189,6 @@ function growCell(cell, target) {    //target is needed to allow you to set a ce
                         cell.parent.children.push(randomNeighbor)
                     }
                     world.coveredLand += 1;
-                    if (randomNeighbor.bigCell.adjacentToWater.length > 0) {
-                        cell.province.coastalCellCount += 1;
-                    }
                     cell.province.terrainCount[`${randomNeighbor.bigCell.terrain}`] += 1
                     if (randomNeighbor.y >= cell.province.farthestSouth.y) {
                         cell.province.farthestSouth = randomNeighbor;

@@ -107,20 +107,12 @@ function createWorld(w, h) {
     return {
       x: x,
       y: y,
-      ckX: x * settings.pixelSize, // top left corner of extended square
-      ckY: settings.height - (y * settings.pixelSize), // top left corner of extended square
-      tree: false,
       elevation: getRandomInt(-254, -200),
       magma: 0,
-      asteroidNames: [],
       river: false,
       lake: false,
       beach: false,
-      population: 0,
-      raindrops: 0,
       floodFilled: false,
-      dropToWater: false,
-      adjacentToWater: [],
     };
   }
   

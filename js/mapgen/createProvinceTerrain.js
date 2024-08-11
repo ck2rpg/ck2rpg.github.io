@@ -142,15 +142,8 @@ function isTropical(y, x) {
 
 function assignColdTerrain(p) {
     let bigCell = {};
-    if (p.ckX) {
-      bigCell = p
-      bigCell.adjacentToWater = []
-      let neighbors = getNeighbors(bigCell.x, bigCell.y)
-      for (let i = 0; i < neighbors.length; i++) {
-        if (neighbors[i].elevation <= limits.seaLevel.upper) {
-            bigCell.adjacentToWater = [1]
-        }
-      }  
+    if (p.magma) { // only big cells have magma
+      bigCell = p 
     } else {
         bigCell = xy(p.x, p.y)
     }
@@ -160,9 +153,9 @@ function assignColdTerrain(p) {
         p.terrain = "mountains"
     } else if (p.elevation >= limits.hills.lower) {
         p.terrain = "hills"  
-    } else if (p.adjacentToWater.length === 0) {
+    } else if (p.adjacentToWater && p.adjacentToWater.length === 0) {
         p.terrain = "taiga"
-    } else if (p.adjacentToWater.length > 0) {
+    } else if (p.adjacentToWater && p.adjacentToWater.length > 0) {
         p.terrain = "taiga" // come back to this issue later. THe masking is weird with the below
         /*if (isBelowPlainsLimit(p.y)) {
             p.terrain = "plains"
@@ -178,15 +171,8 @@ function assignColdTerrain(p) {
 function assignTemperateTerrain(p) {
     //add steppe and desert (cold)
     let bigCell;
-    if (p.ckX) {
+    if (p.magma) { // only big cells have magma
       bigCell = p
-      bigCell.adjacentToWater = []
-      let neighbors = getNeighbors(bigCell.x, bigCell.y)
-      for (let i = 0; i < neighbors.length; i++) {
-        if (neighbors[i].elevation <= limits.seaLevel.upper) {
-            bigCell.adjacentToWater = [1]
-        }
-      }  
     } else {
         bigCell = xy(p.x, p.y)
     }
@@ -209,15 +195,8 @@ function assignTemperateTerrain(p) {
 
 function assignSubTropicalTerrain(p) {
     let bigCell;
-    if (p.ckX) {
+    if (p.magma) { // only big cells have magma
       bigCell = p
-      bigCell.adjacentToWater = []
-      let neighbors = getNeighbors(bigCell.x, bigCell.y)
-      for (let i = 0; i < neighbors.length; i++) {
-        if (neighbors[i].elevation <= limits.seaLevel.upper) {
-            bigCell.adjacentToWater = [1]
-        }
-      }  
     } else {
         bigCell = xy(p.x, p.y)
     }
@@ -231,7 +210,7 @@ function assignSubTropicalTerrain(p) {
         p.terrain = "drylands"
     } else if (bigCell.moisture < 150) {
         p.terrain = "desert"
-    } else if (p.adjacentToWater.length > 0) {
+    } else if (p.adjacentToWater && p.adjacentToWater.length > 0) {
         p.terrain = "jungle"
     } else {
         p.terrain = "desert"
@@ -240,15 +219,8 @@ function assignSubTropicalTerrain(p) {
 
 function assignTropicalTerrain(p) {
     let bigCell;
-    if (p.ckX) {
-      bigCell = p
-      bigCell.adjacentToWater = []
-      let neighbors = getNeighbors(bigCell.x, bigCell.y)
-      for (let i = 0; i < neighbors.length; i++) {
-        if (neighbors[i].elevation <= limits.seaLevel.upper) {
-            bigCell.adjacentToWater = [1]
-        }
-      }  
+    if (p.magma) { // only big cells have magma
+      bigCell = p 
     } else {
         bigCell = xy(p.x, p.y)
     }
