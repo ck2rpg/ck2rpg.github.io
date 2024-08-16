@@ -71,9 +71,7 @@ function createReligion(entity) {
     } else {
         religion.language = entity.provinces[0].culture.language
     }
-    let prefix = capitalize(translate(religion.language, 'Rel'))
-    let translatedSuff = translate(religion.language, suff);
-    religion.nameLoc = prefix + translatedSuff
+    religion.nameLoc = makeFaithName(religion.language)
     religion.oldName = religion.name + "_religion_old";
     religion.oldNameLoc = `Old ${religion.nameLoc}`
     religion.oldNameAdj = religion.name + "_religion_old";
@@ -139,9 +137,8 @@ function createFaith(religion, entity) {
     faith.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`;
     let pref = rando()
     faith.name = `${pref}_faith`;
-    let suff = translate(faith.language, "ism")
-    faith.nameLoc = capitalize(translate(faith.language, `${pref}`)) + suff;
-    let fOld = capitalize(translate(faith.language, "Old"));
+    faith.nameLoc = makeFaithName(faith.language)
+    let fOld = makeRandomWord(faith.language)
     faith.oldName = `${faith.name}_old`;
     faith.oldNameLoc = `${fOld} ${faith.nameLoc}`;
     faith.oldNameAdj = `${faith.name}_old_adj`;
@@ -184,6 +181,7 @@ function createFaith(religion, entity) {
 
 
 function faithsSlideDown() {
+    console.log(world)
     for (let i = 0; i < world.empires.length; i++) {
         let empire = world.empires[i]
         if (empire.faith) {
@@ -833,32 +831,32 @@ function generateReligionLocalizationBlock(r) {
 function generateReligionLocalization(r) {
     let t = ""
     let language = r.language;
-    let highgod = capitalize(translate(language, "highgod"))
-    let devil = capitalize(translate(language, "devil"))
-    let death = capitalize(translate(language, "death"))
-    let temple = capitalize(translate(language, "temple"))
-    let holyBook = capitalize(translate(language, "holybook"))
-    let pope = capitalize(translate(language, "pope"))
-    let popeland = `${pope}` + translate(language, "land")
-    let devotee = translate(language, "devotee")
-    let mal = translate(language, "mal")
-    let fem = translate(language, "fem")
-    let priest = translate(language, "priest")
-    let bishop = translate(language, "bishop")
-    let heaven = translate(language, "heaven")
-    let hell = translate(language, "hell")
-    let hornedgod = translate(language, "hornedgod")
-    let healthgod = capitalize(translate(language, "healthgod"))
-    let fertility = capitalize(translate(language, "fertility"))
-    let wealth = capitalize(translate(language, "wealth"))
-    let household = capitalize(translate(language, "household"))
-    let fate = capitalize(translate(language, "fate"))
-    let knowledge = capitalize(translate(language, "knowledge"))
-    let war = capitalize(translate(language, "war"))
-    let trickster = capitalize(translate(language, "trickster"))
-    let night = capitalize(translate(language, "night"))
-    let water = capitalize(translate(language, "water"))
-    let symbol = translate(language, "symbol")
+    let highgod = makeCharacterName(language)
+    let devil = makeCharacterName(language)
+    let death = makeRandomWord(language)
+    let temple = makeRandomWord(language)
+    let holyBook = makeRandomWord(language)
+    let pope = makeRandomWord(language)
+    let popeland = `${pope}` + makeRandomWord(language)
+    let devotee = makeRandomWord(language)
+    let mal = makeRandomWord(language)
+    let fem = makeRandomWord(language)
+    let priest = makeRandomWord(language)
+    let bishop = makeRandomWord(language)
+    let heaven = makeRandomWord(language)
+    let hell = makeRandomWord(language)
+    let hornedgod = makeCharacterName(language)
+    let healthgod = makeCharacterName(language)
+    let fertility = makeRandomWord(language)
+    let wealth = makeRandomWord(language)
+    let household = makeRandomWord(language)
+    let fate = makeRandomWord(language)
+    let knowledge = makeRandomWord(language)
+    let war = makeRandomWord(language)
+    let trickster = makeCharacterName(language)
+    let night = makeRandomWord(language)
+    let water = makeRandomWord(language)
+    let symbol = makeRandomWord(language)
     t += `  ${r.name}_religion: "${r.nameLoc}"
   ${r.oldName}: "${r.oldNameLoc}"
   ${r.oldNameAdj}: "${r.oldNameAdjLoc}"

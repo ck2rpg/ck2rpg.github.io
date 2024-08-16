@@ -634,6 +634,14 @@
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
 
+            <p class="text-intro">Alpha 0.15.0 Release</p>
+            <p class="main-landing-text">Language and Perfromance updates</p>
+            <p class="main-landing-heading">0.15.0 Change Log</p>
+            <p class="main-landing-text">
+              Feature: Rebuilt language generation/naming from scratch. The new approach moves away from phonetics and syllable-based generation, which the old approach used, to probabilistic constraints based on seed languages. Essentially, a seed text is parsed for all possible initial, middle, and final consonants, vowels, and clusters. Constraints are then probabilistically applied to reduce those possibilities further. For example, an X probability that the letter "z" will not exist in this language. If met, "z" and every cluster including "z" will be removed from the language possibilities. I also focused on legibility to English speakers. The results, I think, are better than the old approach. I'm still fine-tuning but look forward to your thoughts on the changes.<br>
+              Performance Improvement: Took steps to free up memory before image downloads. Still working on the too-slow image downloads issue and troubleshooting/considering options.<br>
+            </p><br>
+
             <p class="text-intro">Alpha 0.14.0 Release</p>
             <p class="main-landing-text">Resolution Performance</p>
             <p class="main-landing-heading">0.14.0 Change Log</p>
@@ -911,6 +919,10 @@
     <script src="js/langgen/femalenames.js"></script>
     <script src="js/langgen/mostcommon.js"></script>
     <script src="js/langgen/britishplaces.js"></script>
+    <script src="js/langgen/frenchSeed.js"></script>
+    <script src="js/langgen/germanSeed.js"></script>
+    <script src="js/langgen/portugueseSeed.js"></script>
+    <script src="js/langgen/quechuaSeed.js"></script>
 
 
 
@@ -946,6 +958,7 @@
     <script src="js/mapgen/rivers.js"></script>
     <script src="js/mapgen/parchMap.js"></script>
     <script src="js/langgen/lang2.js"></script>
+    <script src="js/langgen/lang3.js"></script>
     <script src="js/landedTitles/generateLandedTitles.js"></script>
     <script src="js/mapgen/createProvinces.js"></script>
     <script src="js/mapgen/createProvinceTerrain.js"></script>

@@ -116,3 +116,20 @@ function createWorld(w, h) {
     };
   }
   
+  function clearWorld() {
+    world.continents = []
+    world.continentsByProvince = []
+    world.counties = []
+    world.cultures = []
+    world.duchies = []
+    world.empires = []
+    world.kingdoms = []
+    world.landCells = []
+    world.mountains = [];
+    world.populatedCells = [];
+    world.provinces = [];
+    world.religions = []
+    world.seedCells = []
+    world.tectonics = [];
+    world.waterBodies = []
+  }

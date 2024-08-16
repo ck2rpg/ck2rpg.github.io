@@ -199,9 +199,9 @@ function createCharacter(culture, faith) {
     o.religion = faith;
     if (o.gender === "male") {
         //o.name = pickFrom(culture.maleNames)
-        o.name = generateWordFromTrigrams(maleNameTrigrams, maleNames)
+        o.name = makeCharacterName(culture.language)
     } else {
-        o.name = generateWordFromTrigrams(femaleNameTrigrams, femaleNames)
+        o.name = makeCharacterName(culture.language)
         //o.name = pickFrom(culture.femaleNames)
     }
     world.characters.push(o)

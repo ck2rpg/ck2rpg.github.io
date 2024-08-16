@@ -37,6 +37,7 @@ function drawAndDownload(type, filename, callback) {
   
 
   function downloadAllImages() {
+    clearWorld()
     const functionsToExecute = [];
     /*functionsToExecute.push(() => {
       drawProvinceMapWithoutOceans()

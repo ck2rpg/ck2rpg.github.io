@@ -251,7 +251,7 @@ function outputNameLists() {
         t += `\tmale_names = {\n`
         for (let n = 0; n < culture.maleNames.length; n++) {
             //let name = culture.maleNames[n]
-            let name = generateWordFromTrigrams(maleNameTrigrams, maleNames)
+            let name = makeCharacterName(culture.language)
             t += `${name} `
             onlyUniques.add(name)
         }
@@ -260,7 +260,7 @@ function outputNameLists() {
         t += `\tfemale_names = {\n`
         for (let n = 0; n < culture.femaleNames.length; n++) {
             //let name = culture.femaleNames[n]
-            let name = generateWordFromTrigrams(femaleNameTrigrams, femaleNames)
+            let name = makeCharacterName(culture.language)
             t += `${name} `
             onlyUniques.add(name)
         }
@@ -1462,6 +1462,7 @@ function assignCultures() {
         if (settings.culturePer === "empire") {
             culture = createCulture()
             empire.culture = culture;
+            empire.localizedTitle = makePlaceName(culture.language)
             if (world.cultures) {
                 world.cultures.push(culture)
             } else {
@@ -1498,7 +1499,10 @@ function assignCultures() {
                 kingdomCulture = kingdom.culture
             }
             //kingdom.localizedTitle = placeName(kingdom.culture.language)
-            kingdom.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+            if (i === 0 && !settings.culturePer === "empire") {
+                empire.localizedTitle = makePlaceName(kingdom.culture.language)
+            }
+            kingdom.localizedTitle = makePlaceName(kingdom.culture.language)
             for (let j = 0; j < kingdom.duchies.length; j++) {
                 let duchy = kingdom.duchies[j]
                 let duchyCulture;
@@ -1532,7 +1536,7 @@ function assignCultures() {
                     duchyCulture = duchy.culture;
                 }
                 //duchy.localizedTitle = placeName(kingdom.culture.language)
-                duchy.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                duchy.localizedTitle = makePlaceName(duchy.culture.language)
                 for (let n = 0; n < duchy.counties.length; n++) {
                     let county = duchy.counties[n]
                     if (duchyCulture) {
@@ -1566,10 +1570,10 @@ function assignCultures() {
                         }
                     }
                     //county.localizedTitle = placeName(kingdom.culture.language)
-                    county.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                    county.localizedTitle = makePlaceName(county.culture.language)
                     for (let z = 0; z < county.provinces.length; z++) {
                         let province = county.provinces[z]
-                        province.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+                        province.localizedTitle = makePlaceName(county.culture.language)
                         province.culture = county.culture // really set at county level but for ease of use with possible province swapping
                         county.culture.provinces.push(province)
                         //province.localizedTitle = placeName(kingdom.culture.language)
@@ -2084,25 +2088,26 @@ function createCulture(parent) {
         culture.unit_gfx = parent.unit_gfx
         culture.ethnicities = parent.ethnicities
         culture.id = `ccc${rando()}`
-        let n1 = capitalize(translate(culture.language, culture.id));
-        let n2 = capitalize(translate(culture.language, "People"));
+        let n1 = capitalize(makeRandomWord(culture.language))
+        let n2 = capitalize(makeRandomWord(culture.language))
         culture.name = `${n1} ${n2}`
-        culture.name = romanizeText(culture.name)
+        culture.name = capitalize(makeRandomWord(culture.language))
         culture.name_list = `name_list_${culture.id}`
         culture.isChildCulture = true;
         culture.provinces = []
     } else {
         culture.martial_custom = pickFrom(martialCustomRuleList)
         culture.ethos = pickFrom(cultureEthosList)
-        culture.language = createLanguage();
+        let cons = pickFrom([consSet, frenchConsSet, germanConsSet, portugueseConsSet, quechuaConsSet])
+        let vow = pickFrom([vowelSet, frenchVowelSet, germanVowelSet, portugueseVowelSet, quechuaVowelSet])
+        culture.language = makeLanguage(cons, vow)
         culture.traditions = setRandomCultureTraditions()
         culture.coa_gfx = getRandomCOA()
         culture.buildings_gfx = getRandomCultureBuildings();
         culture.clothing_gfx = getRandomCultureClothing();
         culture.unit_gfx = getRandomCultureUnit();
         culture.ethnicities = getRandomEthnicities();
-        culture.name = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
-        culture.name = capitalize(romanizeText(culture.name))
+        culture.name = capitalize(makeRandomWord(culture.language))
         culture.id = `ccc${rando()}`
         culture.name_list = `name_list_${culture.id}`
         culture.provinces = []
@@ -2129,16 +2134,12 @@ function createCulture(parent) {
 function seedNames(culture) {
     culture.maleNames = [];
     culture.femaleNames = [];
-    for (let i = 0; i < worldHistory.maleNames.length; i++) {
-        let name = worldHistory.maleNames[i]
-        let translated = translate(culture.language, name)
-        translated = capitalize(romanizeText(translated))
+    for (let i = 0; i < 100; i++) {
+        let translated = capitalize(makeCharacterName(culture.language))
         culture.maleNames.push(translated);
     }
-    for (let i = 0; i < worldHistory.femaleNames.length; i++) {
-        let name = worldHistory.femaleNames[i]
-        let translated = translate(culture.language, name)
-        translated = capitalize(romanizeText(translated))
+    for (let i = 0; i < 100; i++) {
+        let translated = capitalize(makeCharacterName(culture.language))
         culture.femaleNames.push(translated);
     }
 }
