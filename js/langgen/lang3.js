@@ -1,7 +1,6 @@
 function extractConsonantClusters(text) {
-    // Define regex patterns for consonants and vowel sequences
-    const consonantPattern = /[bcdfghjklmnpqrstvwxz]+/gi;
-    const vowelPattern = /[aeioyu]+/gi;
+    // Define regex patterns for consonants including those in other languages
+    const consonantPattern = /[bcçdfghjklmnñpqrßtvwxz]+/gi;
 
     // Arrays to hold consonant clusters at different positions
     let initialConsonants = [];
@@ -9,7 +8,7 @@ function extractConsonantClusters(text) {
     let finalConsonants = [];
 
     // Split the text into words
-    text = text.toLowerCase()
+    text = text.toLowerCase();
     const words = text.split(/\s+/);
 
     words.forEach(word => {
@@ -44,9 +43,8 @@ function extractConsonantClusters(text) {
 }
 
 function extractVowelClusters(text) {
-    // Define regex patterns for vowels and consonant sequences
-    const vowelPattern = /[aeiouy]+/gi;
-    const consonantPattern = /[bcdfghjklmnpqrstvwxz]+/gi;
+    // Define regex patterns for vowels including those in other languages
+    const vowelPattern = /[aeiouyàáâãäåæèéêëìíîïòóôõöøùúûüýÿœ]+/gi;
 
     // Arrays to hold vowel clusters at different positions
     let initialVowels = [];
@@ -54,7 +52,7 @@ function extractVowelClusters(text) {
     let finalVowels = [];
 
     // Split the text into words
-    text = text.toLowerCase()
+    text = text.toLowerCase();
     const words = text.split(/\s+/);
 
     words.forEach(word => {
@@ -662,12 +660,19 @@ let quechuaConsSet = reduceClustersToSets(quechuaCons);
 let quechuaVowels = extractVowelClusters(quechuaSeed);
 let quechuaVowelSet = reduceClustersToSets(quechuaVowels);
 
-/*
+let arabicCons = extractConsonantClusters(arabicSeed);
+let arabicConsSet = reduceClustersToSets(arabicCons);
+let arabicVowels = extractVowelClusters(arabicSeed);
+let arabicVowelSet = reduceClustersToSets(arabicVowels);
+
+
+
 let lang = makeLanguage(consSet, vowelSet);
 let lang2 = makeLanguage(frenchConsSet, frenchVowelSet);
 let lang3 = makeLanguage(germanConsSet, germanVowelSet);
 let lang4 = makeLanguage(portugueseConsSet, portugueseVowelSet)
 let lang5 = makeLanguage(quechuaConsSet, quechuaVowelSet)
+let lang6 = makeLanguage(arabicConsSet, arabicVowelSet)
 
 for (let i = 0; i < 1000; i++) {
     console.log(generateReligiousSentence(lang))
@@ -675,8 +680,9 @@ for (let i = 0; i < 1000; i++) {
     console.log(generateReligiousSentence(lang3))
     console.log(generateReligiousSentence(lang4))
     console.log("Quechua: " + generateReligiousSentence(lang5))
+    console.log("Arabic: " + generateReligiousSentence(lang5))
 }
-    */
+
 
 function generateReligiousSentence() {
     let t = `${makeCharacterName(lang)} practices ${makeFaithName(lang)} in the land of ${makePlaceName(lang)}`
