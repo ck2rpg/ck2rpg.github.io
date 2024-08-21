@@ -24,7 +24,7 @@ function createProvinceTerrainNew() {
                     assignColdTerrain(p)
                 }
               } else {
-                p.terrain= "sea"
+                p.terrain = "sea"
                 p.seaType = "sea"
               }
         }
@@ -72,7 +72,7 @@ function createCellTerrains() { // understand that you are passing two different
                     assignColdTerrain(cell)
                 }
               } else {
-                cell.terrain= "sea"
+                cell.terrain = "sea"
               }
           }
         }
@@ -177,16 +177,36 @@ function assignTemperateTerrain(p) {
         bigCell = xy(p.x, p.y)
     }
     p.climateCategory = "temperate"
-    let n = noise(bigCell.x, bigCell.y)
+    //the randX/randY and corrX corrY approach gives a scattershot look to the generated terrain
+    let negWS = settings.wetlandScattershot * -1
+    let randX = getRandomInt(negWS, settings.wetlandScattershot)
+    let randY = getRandomInt(negWS, settings.wetlandScattershot)
+    let corrX = Math.floor((bigCell.x + randX) / settings.wetlandChunk);
+    let corrY = Math.floor((bigCell.y + randY) / settings.wetlandChunk);
+
+    let negFS = settings.farmlandScattershot * -1;
+    let randX2 = getRandomInt(negFS, settings.farmlandScattershot);
+    let randY2 = getRandomInt(negFS, settings.farmlandScattershot);
+    let corrX2 = Math.floor((bigCell.x + randX2) / settings.farmlandChunk);
+    let corrY2 = Math.floor((bigCell.y + randY2) / settings.farmlandChunk);
+
+
+    let n = noise(corrX, corrY)
+    let n2 = genericNoise(corrX2, corrY2, simp2);
+    let n3 = genericNoise(bigCell.x, bigCell.y, simp3);
+    let n4 = genericNoise(bigCell.x, bigCell.y, simp4);
+    let n5 = genericNoise(bigCell.x, bigCell.y, simp5)
     if (p.elevation >= limits.mountains.lower) {
         p.terrain = "mountains"
     } else if (p.elevation >= limits.hills.lower) {
         p.terrain = "hills"
-    } else if (bigCell.highPointRiver && bigCell.elevation > 40 && bigCell.elevation < 70 && bigCell.desert === false && ((n > 0.1 && n < 0.4) || (n > 0.6 && n < 0.9))) {
+    } else if (bigCell.elevation < settings.wetlandElevation && bigCell.moisture > 120 && n > 0.3 && n < 0.7) {
+        p.terrain = "wetlands"
+    } else if (bigCell.elevation < settings.farmlandElevation && bigCell.moisture > 100 && n2 < 0.6) {
         p.terrain = "farmlands"
     } else if (bigCell.moisture < 40) {
         p.terrain = "steppe"
-    } else if ((n > 0.1 && n < 0.2) || (n > 0.6 && n < 0.9)) {
+    } else if (bigCell.moisture > 80 && n < 0.4) {
         p.terrain = "forest"
     } else {
         p.terrain = "plains"
@@ -225,7 +245,6 @@ function assignTropicalTerrain(p) {
         bigCell = xy(p.x, p.y)
     }
     p.climateCategory = "tropical"
-    let n = noise(bigCell.x, bigCell.y)
     if (p.elevation >= limits.mountains.lower) {
         p.terrain = "mountains"
     } else if (p.elevation >= limits.hills.lower) {

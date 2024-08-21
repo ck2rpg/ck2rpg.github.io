@@ -54,12 +54,12 @@ document.getElementById('imageUpload').addEventListener('change', function(event
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
                     cell.elevation = Math.floor(getGreyscalePixelAt(imageData, j, i)); //5 for CK map
-                    if (cell.elevation > 37) {
+                    if (cell.elevation > 36) {
                         cell.elevation += parseInt(heightmapAdjuster * 2)
                         cell.elevation /= divider
                         cell.elevation *= multiplier
-                        if (cell.elevation < 38) {
-                            cell.elevation = 38
+                        if (cell.elevation < 37) {
+                            cell.elevation = 37
                         }
                     } else {
                         cell.elevation *= multiplier
@@ -68,6 +68,7 @@ document.getElementById('imageUpload').addEventListener('change', function(event
             }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             world.drawingType = "heightmap"
+            setMoisture()
             drawWorld()
         };
         img.src = event.target.result;

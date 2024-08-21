@@ -195,6 +195,7 @@ function createCharacter(culture, faith) {
     o.birth = `${world.year - o.age}.1.1`
     o.id = `gen_${world.personCounter}`
     o.dyn = `dynn_gen_${world.dynastyCounter}`
+    o.dynName = makeCharacterName(culture.language)
     o.culture = culture;
     o.religion = faith;
     if (o.gender === "male") {

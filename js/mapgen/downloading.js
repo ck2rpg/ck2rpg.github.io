@@ -59,7 +59,7 @@ function drawAndDownload(type, filename, callback) {
       //if (document.getElementById('beach02PebblesMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("beach_02_pebbles_mask", "beach_02_pebbles_mask.png"));
       //if (document.getElementById('coastlineCliffBrownMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("coastline_cliff_brown_mask", "coastline_cliff_brown_mask.png"));
       //if (document.getElementById('coastlineCliffDesertMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("coastline_cliff_desert_mask", "coastline_cliff_desert_mask.png"));
-      //if (document.getElementById('coastlineCliffGreyMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("coastline_cliff_grey_mask", "coastline_cliff_grey_mask.png"));
+      functionsToExecute.push(() => drawAndDownload("coastline_cliff_grey_mask", "coastline_cliff_grey_mask.png"));
       functionsToExecute.push(() => drawAndDownload("desert_01_mask", "desert_01_mask.png"));
       functionsToExecute.push(() => drawAndDownload("desert_02_mask", "desert_02_mask.png"));
       functionsToExecute.push(() => drawAndDownload("desert_cracked_mask", "desert_cracked_mask.png"));
@@ -71,7 +71,7 @@ function drawAndDownload(type, filename, callback) {
       //if (document.getElementById('drylands01GrassyMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("drylands_01_grassy_mask", "drylands_01_grassy_mask.png"));
       functionsToExecute.push(() => drawAndDownload("drylands_01_mask", "drylands_01_mask.png"));
       functionsToExecute.push(() => drawAndDownload("farmland_01_mask", "farmland_01_mask.png"));
-      //if (document.getElementById('floodplains01MaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("floodplains_01_mask", "floodplains_01_mask.png"));
+      functionsToExecute.push(() => drawAndDownload("floodplains_01_mask", "floodplains_01_mask.png"));
       functionsToExecute.push(() => drawAndDownload("forest_jungle_01_mask", "forest_jungle_01_mask.png"));
       //if (document.getElementById('forestLeaf01MaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("forest_leaf_01_mask", "forest_leaf_01_mask.png"));
       functionsToExecute.push(() => drawAndDownload("forest_pine_01_mask", "forest_pine_01_mask.png"));
@@ -113,7 +113,7 @@ function drawAndDownload(type, filename, callback) {
       functionsToExecute.push(() => drawAndDownload("steppe_01_mask", "steppe_01_mask.png"));
       functionsToExecute.push(() => drawAndDownload("steppe_bushes_mask", "steppe_bushes_mask.png"));
       functionsToExecute.push(() => drawAndDownload("steppe_rocks_mask", "steppe_rocks_mask.png"));
-      //if (document.getElementById('wetlands02MaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("wetlands_02_mask", "wetlands_02_mask.png"));
+      functionsToExecute.push(() => drawAndDownload("wetlands_02_mask", "wetlands_02_mask.png"));
       //if (document.getElementById('wetlands02MudMaskCheckbox').checked) functionsToExecute.push(() => drawAndDownload("wetlands_02_mud_mask", "wetlands_02_mud_mask.png"));
       //if (document.getElementById('bookCheckbox').checked) functionsToExecute.push(() => drawAndDownload("book", "book.png"));
     }

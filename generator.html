@@ -279,6 +279,43 @@
               <input type="number" id="snow-line" min="37" max="510" value="450" oninput="snowLineAdjuster()">
               <span class="tool-tip">When the generator reaches this elevation, mountains change to snow line with snow masking.</span>
             </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="farmland-elevation">Farmland Max Elevation:</label>
+              <input type="number" id="farmland-elevation" min="37" max="510" value="65" oninput="farmlandElevationAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, farmlands will not produce.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="farmland-chunk">Farmland Chunk Size:</label>
+              <input type="number" id="farmland-chunk" min="1" max="200" value="16" oninput="farmlandChunkAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, farmlands will not produce.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="farmland-scattershot">Farmland Scattershot</label>
+              <input type="number" id="farmland-scattershot" min="0" max="400" value="16" oninput="farmlandScattershotAdjuster()">
+              <span class="tool-tip">Increasing this will make farmland more scattershot but less cohesive.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="wetland-elevation">Wetland Max Elevation:</label>
+              <input type="number" id="wetland-elevation" min="37" max="510" value="65" oninput="wetlandElevationAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, wetlands will not produce.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="wetland-chunk">Wetland Chunk Size:</label>
+              <input type="number" id="wetland-chunk" min="1" max="200" value="16" oninput="wetlandChunkAdjuster()">
+              <span class="tool-tip">When the generator reaches this elevation, wetlands will not produce.</span>
+            </span>
+
+            <span class="flex-spread-evenly flex-align-vertically menu-setting has-tool-tip">
+              <label for="wetland-scattershot">Wetlands Scattershot</label>
+              <input type="number" id="wetland-scattershot" min="0" max="400" value="16" oninput="wetlandScattershotAdjuster()">
+              <span class="tool-tip">Increasing this will make wetlands more scattershot but less cohesive.</span>
+            </span>
+
           </div>
         </div>
       
@@ -634,6 +671,22 @@
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
 
+            <p class="text-intro">Alpha 0.16.0 Release</p>
+            <p class="main-landing-text">Language Fixes</p>
+            <p class="main-landing-heading">0.16.0 Change Log</p>
+            <p class="main-landing-text">
+              Feature: River generation now works for all map sizes.<br>
+              Feature: Map and resolution Size now must be paired. This is necessary for the river fix.<br>
+              Feature: Wetlands and farmlands generation are now based on a noise-based approach that looks at elevation, chunk size, and scattershot settings. These settings can be toggled under the "Features" tab. I did not add floodplains back in with this update because they are too persnickety and the masking always looks awful.<br>
+              Geography fix: Taiga no longer shows up as an arctic ever-snow terrain mask. Instead, you will see much more variation in taiga. The arctic/snow mono-terrain has been removed but might be added back in the future as impassable ice caps or just faaaaaar north low development areas? We'll see what the community wants on that front.<br>
+              Bug fix: Fixed a bug that was causing maps of less than vanilla map size to have unassigned terrain mask areas (areas showing as pink/transparent in map editor and black in game). One aspect of the fix requires downloading an additional file called settings.txt, which the revised python script now reads. You MUST use the new python postprocessing script on Github, which has been updated with it.<br>
+              Bug fix: Fixed inconsistent references to sea level in a few places in code, which was causing difficult to track terrain bugs.<br>
+              Bug fix: Dynasty names now use the language of the culture instead of the old trigram approach.<br>
+              Bug fix: An earlier performance improvement changed the way that the low res map is mapped to the map size. This introduced an issue with the timing of cell terrain mask assignment that was causing abnormal assignments. I fixed this issue.<br>
+              Bug fix: A typo of a misplaced equals sign was causing ocean provinces to not have their placeholder "sea" terrain assigned properly, which caused issues in tracking oceans. This typo has been corrected, and oceans are now correctly tracked.<br>
+              Bug fix: I previously removed file saving for several terrain masks that the generator does not use but accidentally removed some that it does or would soon again. "Where have all the farmlands and wetlands gone?" you might ask... They're back!<br>
+            </p><br>
+
             <p class="text-intro">Alpha 0.15.1 Release</p>
             <p class="main-landing-text">Language Fixes</p>
             <p class="main-landing-heading">0.15.1 Change Log</p>
@@ -986,6 +1039,7 @@
     <script src="js/textFileWriters/writeLandedTitles.js"></script>
     <script src="js/textFileWriters/writeLocators.js"></script>
     <script src="js/textFileWriters/writeTitleLocalization.js"></script>
+    <script src="js/textFileWriters/writeSettings.js"></script>
     <script src="js/interface/clickables.js"></script>
     <script src="js/loregen/koppenClimate.js"></script>
     <script src="js/loregen/agriculturalProductivity.js"></script>

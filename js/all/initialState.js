@@ -9,7 +9,7 @@ settings.horizontalSpread = false; // the new try, not working
 settings.verticalSpread = true; //the original I've been using
 settings.fixBlockiness = false; // setting to true will allow land provinces to override water
 settings.equator = (settings.height - settings.height / 10)
-settings.riversDistance = 1000
+settings.riversDistance = 10
 settings.riverIntoOcean = 1
 settings.ethnicities = "vanilla"
 settings.varyElevation = false;
@@ -223,4 +223,13 @@ let simp = new SimplexNoise()
 
 function noise(nx, ny) {
     return simp.noise2D(nx, ny) / 2 + 0.5;
+}
+
+let simp2 = new SimplexNoise()
+let simp3 = new SimplexNoise()
+let simp4 = new SimplexNoise()
+let simp5 = new SimplexNoise();
+
+function genericNoise(nx, ny, s) {
+  return s.noise2D(nx, ny) / 2 + 0.5;
 }

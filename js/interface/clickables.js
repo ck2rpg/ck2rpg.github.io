@@ -255,6 +255,7 @@ GID("write-all-checked-texts-button").onclick = function() {
   functionsToExecute.push(() => writeGenerators());
   functionsToExecute.push(() => writeDefines());
   functionsToExecute.push(() => writeHeightmapHeightmap())
+  functionsToExecute.push(() => writeSettings())
   
   const delayBetweenDownloads = 200;
   downloadWithDelay(0, functionsToExecute, delayBetweenDownloads);
@@ -757,27 +758,83 @@ document.getElementById('overrideSelect').addEventListener('change', function() 
 let elevationToHeightmapAdjuster = debounce(() => adjustElevationToHeightmap())
 
 function adjustElevationToHeightmap() {
-  settings.elevationToHeightmap = GID("elevation-to-heightmap").value;
+  settings.elevationToHeightmap = parseInt(GID("elevation-to-heightmap").value);
 }
 
 let hillAdjuster = debounce(() => adjustHillLimits())
 
 function adjustHillLimits() {
-  limits.hills.lower = GID("hills-line").value;
+  limits.hills.lower = parseInt(GID("hills-line").value);
 }
 
 let mountainAdjuster = debounce(() => adjustMountainLimits())
 
 function adjustMountainLimits() {
-  limits.mountains.lower = GID("mountain-line").value;
+  limits.mountains.lower = parseInt(GID("mountain-line").value);
   limits.hills.upper = limits.mountains.lower - 1;
 }
 
 let snowLineAdjuster = debounce(() => adjustSnowLine())
 
 function adjustSnowLine() {
-  limits.mountains.snowLine = GID("snow-line").value;
+  limits.mountains.snowLine = parseInt(GID("snow-line").value);
 }
+
+let farmlandElevationAdjuster = debounce(() => adjustFarmlandElevation())
+
+function adjustFarmlandElevation() {
+  settings.farmlandElevation = parseInt(GID("farmland-elevation").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+let farmlandChunkAdjuster = debounce(() => adjustFarmlandChunk())
+
+function adjustFarmlandChunk() {
+  settings.farmlandChunk = parseInt(GID("farmland-chunk").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+let farmlandScattershotAdjuster = debounce(() => adjustFarmlandScattershot())
+
+function adjustFarmlandScattershot() {
+  settings.farmlandScattershot = parseInt(GID("farmland-scattershot").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+settings.farmlandElevation = parseInt(GID("farmland-elevation").value)
+settings.farmlandChunk = parseInt(GID("farmland-chunk").value)
+settings.farmlandScattershot = parseInt(GID("farmland-scattershot").value)
+
+let wetlandElevationAdjuster = debounce(() => adjustWetlandElevation())
+
+function adjustWetlandElevation() {
+  settings.wetlandElevation = parseInt(GID("wetland-elevation").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+let wetlandChunkAdjuster = debounce(() => adjustWetlandChunk())
+
+function adjustWetlandChunk() {
+  settings.wetlandChunk = parseInt(GID("wetland-chunk").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+let wetlandScattershotAdjuster = debounce(() => adjustWetlandScattershot())
+
+function adjustWetlandScattershot() {
+  settings.wetlandScattershot = parseInt(GID("wetland-scattershot").value)
+  createCellTerrains()
+  drawWorld()
+}
+
+settings.wetlandElevation = parseInt(GID("wetland-elevation").value)
+settings.wetlandChunk = parseInt(GID("wetland-chunk").value)
+settings.wetlandScattershot = parseInt(GID("wetland-scattershot").value)
 
 let updateLowerLimitSliderValue = debounce(() => adjustLowerLimitSlider())
 

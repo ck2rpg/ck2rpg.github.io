@@ -3,14 +3,11 @@ function writeDynastyLocalization() {
     for (let i = 0; i < world.characters.length; i++) {
         let char = world.characters[i]
         let dyn = char.dyn;
-        let lang = char.culture.language
-        let name = generateWordFromTrigrams(surnameTrigrams, parsedSurnames)
+        let dynName = char.dynName
         //let name = capitalize(translate(lang, dyn))
-        t += `\t${dyn}: "${name}"\n`
+        t += `\t${dyn}: "${dynName}"\n`
     }
-    for (let i = 0; i < dgCount; i++) {
-        t += `\tdg${i}: "${generateWordFromTrigrams(surnameTrigrams, parsedSurnames)}"\n`
-    }
+    //check back at deletion here if you start getting dynasty name bugs.
     var data = new Blob([t], {type: 'text/yaml'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="dynasty_name_localization_link" download="gen_dynasty_names_l_english.yml" href="">Download History</a><br>`

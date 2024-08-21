@@ -121,7 +121,7 @@ function drawRiver(x, y) {
           running = false
         }
       }
-      if (reachedOcean || (tm)) {
+      if (reachedOcean) {
         if (tm) {
   
         } else {
@@ -158,6 +158,30 @@ function drawRiver(x, y) {
     
     
   }
+
+  function setRiver(cell, run, used) {
+    used.push(cell)
+    cell.riverRun = run;
+    let neighbors = getCardinalNeighbors(cell.x, cell.y);
+    let possibleNext = [];
+    for (let i = 0; i < neighbors.length; i++) {
+      if (neighbors[i].riverRun > -1 || neighbors[i].adjacentToRiver) {
+        // don't add to possibleNext if it is a river or is adjacent to a river
+      } else {
+        possibleNext.push(neighbors[i])
+      }
+      neighbors[i].adjacentToRiver = true;
+    }
+    if (possibleNext.length > 0) {
+      possibleNext.sort((a, b) => (a.elevation < b.elevation) ? 1 : -1)
+      if (possibleNext[0].elevation < 37) {
+        //end underwater
+      } else if (possibleNext[0].elevation < cell.elevation) {
+        let r = cell.riverRun + 1;
+        setRiver(possibleNext[0], r, [])
+      }
+    }
+  }
   
   function rerunRivers() {
     world.rivers = [];
@@ -179,26 +203,29 @@ function drawRiver(x, y) {
     }
     arr.sort((a, b) => (a.elevation < b.elevation) ? 1 : -1)
     for (let i = 0; i < arr.length; i++) {
-  
-      let tooClose = false
-      let wet = arr[i].moisture > 100 ? true : false
-      for (let n = 0; n < world.rivers.length; n++) {
-        try {
-          let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
-          if (dist < settings.riversDistance) {
-            tooClose = true
+      let cell = arr[i]
+      let wet = cell.moisture > 100 ? true : false
+      if (cell.elevation > limits.hills.lower && wet) {
+        let tooClose = false
+        let wet = arr[i].moisture > 100 ? true : false
+        for (let n = 0; n < world.rivers.length; n++) {
+          try {
+            let dist = getDistance(arr[i].x, arr[i].y, world.rivers[n].startingX, world.rivers[n].startingY);
+            if (dist < settings.riversDistance) {
+              tooClose = true
+            }
+          } catch {
+            tooClose = true;
           }
-        } catch {
-          tooClose = true;
+    
         }
-  
-      }
-      if (tooClose === false && wet) {
-        let cell = xy(arr[i].x, arr[i].y)
-        if (cell.elevation < limits.seaLevel.upper) {
-  
-        } else {
-          drawRiver(cell.x, cell.y)
+        if (tooClose === false && wet && cell.riverRun === -1) {
+          if (cell.elevation < limits.seaLevel.upper) {
+    
+          } else {
+            let used = []
+            generateRiver(cell, world)
+          }
         }
       }
     }
@@ -791,4 +818,186 @@ function drawRiver(x, y) {
     riverPixel(cell.x, cell.y)
   }
 
-  
+  function generateRiver(startCell, world) {
+    // Initialize the river object
+    let river = {};
+    river.cells = [];
+    river.startingX = startCell.x;
+    river.startingY = startCell.y;
+
+    let currentCell = startCell;
+    currentCell.riverStartGreen = true
+    currentCell.riverRun = 1; // Start the river
+    let riverRun = 1;
+    river.cells.push(currentCell);
+
+    // Directions for moving to orthogonally adjacent cells (right, down, left, up)
+    const directions = [
+        { dx: 1, dy: 0 },  // right
+        { dx: 0, dy: 1 },  // down
+        { dx: -1, dy: 0 }, // left
+        { dx: 0, dy: -1 }  // up
+    ];
+
+    let reachedOcean = false;  // Flag to track if the river reaches the ocean
+    let fromDirection = null;  // Track the direction from which we came
+
+    // Create a Set to track the cells that are part of the current river
+    let visitedCells = new Set();
+    visitedCells.add(`${currentCell.x},${currentCell.y}`);
+
+    // Helper function to count orthogonal river neighbors, excluding the origin cell
+    function countOrthogonalRiverNeighbors(cell, originCell) {
+        let count = 0;
+        for (const dir of directions) {
+            const neighborX = cell.x + dir.dx;
+            const neighborY = cell.y + dir.dy;
+            // Ensure neighbor coordinates are within valid bounds
+            if (neighborX >= 0 && neighborY >= 0 && neighborX < world.width && neighborY < world.height) {
+                const neighbor = xy(neighborX, neighborY);
+                if (neighbor && neighbor !== originCell && neighbor.riverRun > -1) {
+                    count++;
+                    if (neighbor.riverObject === originCell.riverObject) {
+                      count = 10000
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    // Main loop for river generation
+    while (true) {
+        // Find the next valid cell to move to
+        let nextCell = null;
+        let minElevation = Infinity;  // Start with a very high elevation
+        let incomingDirection = null;  // Track the direction from which we are moving
+
+        for (const [index, dir] of directions.entries()) {
+            const neighborX = currentCell.x + dir.dx;
+            const neighborY = currentCell.y + dir.dy;
+            // Ensure neighbor coordinates are within valid bounds
+            if (neighborX >= 0 && neighborY >= 0 && neighborX < world.width && neighborY < world.height) {
+                const neighbor = xy(neighborX, neighborY);
+                if (neighbor) {
+                    // Skip the cell we just came from
+                    if (fromDirection && fromDirection.dx === -dir.dx && fromDirection.dy === -dir.dy) {
+                        continue;
+                    }
+
+                    // Skip the neighbor if it is already part of the current river (avoid circular logic)
+                    if (visitedCells.has(`${neighbor.x},${neighbor.y}`)) {
+                        continue;
+                    }
+
+                    // Check if the neighbor is the ocean
+                    if (neighbor.elevation !== undefined && neighbor.elevation < 37) {
+                        nextCell = neighbor;
+                        reachedOcean = true;
+                        incomingDirection = dir;
+                        break;
+                    }
+
+                    // If the neighbor is already part of another river
+                    if (neighbor.riverRun > -1) {
+                        if (river.cells.length < 5) {
+                            // Undo the changes: reset riverRun for all river cells
+                            for (let c of river.cells) {
+                                c.riverRun = -1;
+                                delete c.riverObject;
+                                delete c.isTributary;
+                                if (c.riverStartGreen) {
+                                  delete c.riverStartGreen
+                                }
+                            }
+                            river.cells = []; // Clear the cells array to fully discard the river
+                            return;  // Stop the river generation
+                        } else {
+                            // Allow merging by temporarily relaxing the orthogonal adjacency rule
+                            const nextCellRiverCount = countOrthogonalRiverNeighbors(neighbor, currentCell);
+                            if (nextCellRiverCount < 3) {
+                              currentCell.isTributary = true;
+                              river.endingX = currentCell.x;
+                              river.endingY = currentCell.y;
+                              river.cells.push(currentCell);
+                              delete river.cells[0].riverStartGreen
+                              river.tributary = true;
+                              world.rivers.push(river);
+                              river.id = `Placeholder River Name ${world.rivers.length}`;
+                              return;  // Stop the river generation
+                            } else {
+                              for (let c of river.cells) {
+                                c.riverRun = -1;
+                                delete c.riverObject;
+                                delete c.isTributary;
+                                if (c.riverStartGreen) {
+                                  delete c.riverStartGreen
+                                }
+                            }
+                            river.cells = []; // Clear the cells array to fully discard the river
+                            return;  // Stop the river generation
+                            }
+                        }
+                    }
+
+                    // Check if adding this cell would violate the adjacency constraints, excluding the origin cell
+                    const nextCellRiverCount = countOrthogonalRiverNeighbors(neighbor, currentCell);
+                    if (nextCellRiverCount <= 1 && neighbor.elevation < minElevation && neighbor.riverRun === -1) {
+                        minElevation = neighbor.elevation;
+                        nextCell = neighbor;
+                        incomingDirection = dir;  // Track the direction for the next loop
+                    }
+                }
+            }
+        }
+
+        // If no valid next cell is found, end the river
+        if (!nextCell) {
+            break;
+        }
+
+        // Move to the next cell
+        riverRun++;
+        nextCell.riverRun = riverRun;
+        currentCell = nextCell;
+        river.cells.push(currentCell);
+
+        // Mark the cell as visited
+        visitedCells.add(`${currentCell.x},${currentCell.y}`);
+
+        // Update the direction we came from
+        fromDirection = incomingDirection;
+
+        // Stop if we've reached the ocean
+        if (reachedOcean) {
+            river.endingX = currentCell.x;
+            river.endingY = currentCell.y;
+            break;
+        }
+    }
+
+    // Check if the river reached the ocean
+    if (!reachedOcean) {
+        // Undo the changes: reset riverRun for all river cells
+        for (let c of river.cells) {
+            c.riverRun = -1;
+            if (c.riverStartGreen) {
+              delete c.riverStartGreen
+            }
+            delete c.riverObject;
+            delete c.isTributary;
+        }
+        river.cells = []; // Clear the cells array to fully discard the river
+        return;  // Do not add the river to the world if it didn't reach the ocean
+    }
+
+    // Assign the river object to each cell in the river
+    for (let z = 0; z < river.cells.length; z++) {
+        let c = river.cells[z];
+        c.riverObject = river;
+    }
+
+    // Add the river to the world
+    world.rivers.push(river);
+    river.id = `Placeholder River Name ${world.rivers.length}`;
+}

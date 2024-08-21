@@ -474,15 +474,49 @@ function drawCell(x, y) {
     return { r: c, g: c, b: c };
   }
 
-  function getRivermapColor(cell) {
-    const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
-    if (c) {
-      return { r: 255, g: 255, b: 255 };
-    } else {
-      return { r: 255, g: 0, b: 128 };
+function getRivermapColor(cell) {
+  const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
+  cell.rgb = c;
+  let ran = cell.riverRun
+  //need to check whether actually river
+  if (ran > -1) {
+    if (cell.riverStartGreen) {
+      return { r: 0, g: 255, b: 0}
+    } else if (cell.isTributary) {
+      return { r: 255, g: 0, b: 0}
+    } else if (ran < 3) {
+      return { r: 0, g: 225, b: 225}
+    } else if (ran < 7) {
+      return { r: 0, g: 200, b: 255}
+    } else if (ran < 9) {
+      return { r: 0, g: 150, b: 255}
+    } else if (ran < 11) {
+      return { r: 0, g: 100, b: 255}
+    } else if (ran < 13) {
+      return { r: 0, g: 0, b: 255}
+    } else if (ran < 15) {
+      return { r: 0, g: 0, b: 225}
+    } else if (ran < 17) {
+      return { r: 0, g: 0, b: 200}
+    } else if (ran < 23) {
+      return { r: 0, g: 0, b: 150}
+    } else if (ran < 25) {
+      return { r: 0, g: 0, b: 100}
+    } else if (ran < 27) {
+      return { r: 0, g: 85, b: 0 }
+    } else if (ran < 29) {
+      return { r: 0, g: 125, b: 0 }
+    } else if (ran < 31) {
+      return { r: 0, g: 158, b: 0 }
+    } else if (ran > 30) {
+      return { r: 24, g: 206, b: 0 }
     }
-
+  } else if (c) {
+    return { r: 255, g: 255, b: 255 };
+  } else {
+    return { r: 255, g: 0, b: 128 };
   }
+}
 
   function getSpecialColor(cell, type) {
     const maskValue = cell[type];

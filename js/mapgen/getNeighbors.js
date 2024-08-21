@@ -55,3 +55,31 @@ function getNeighbors(x, y) {
   }
   return neighbors;
 }
+
+function getCardinalNeighbors(x, y) {
+  let neighbors = [];
+  try {
+    neighbors.push(xy(x - 1, y));
+  } catch {
+
+  }
+  try {
+    neighbors.push(xy(x + 1, y));
+  } catch {
+
+  }
+
+
+  try {
+    neighbors.push(xy(x, y + 1));
+  } catch {
+
+  }
+  try {
+    neighbors.push(xy(x, y - 1));
+  } catch {
+
+  }
+
+  return neighbors;
+}

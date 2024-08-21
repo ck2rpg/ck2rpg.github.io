@@ -464,7 +464,6 @@ async function createProvinces() {
     world.coveredLand = 0;
     world.coveredWater = 0;
     world.seedCells = [];
-    createCellTerrains()
     if (settings.width === world.width) {
         world.smallMap = world.map;
         for (let n = 0; n < world.map.length; n++) {
@@ -481,6 +480,7 @@ async function createProvinces() {
     } else {
         createSmallMap();
     }
+    createCellTerrains()
     createOverrideWaterProvinces()
     createOverrideLandProvinces()
 
