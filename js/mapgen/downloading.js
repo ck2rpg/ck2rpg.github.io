@@ -120,8 +120,7 @@ function drawAndDownload(type, filename, callback) {
     functionsToExecute.push(() => drawAndDownload("papyrus", "papyrus.png"));
     functionsToExecute.push(() => {
       world.drawingType = "rivermap";
-      drawWorld();
-      drawHPRivers();
+      rerunRivers()
       downloadImage(canvas, "rivers.png");
     });
     functionsToExecute.push(() => {

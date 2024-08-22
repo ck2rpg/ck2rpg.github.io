@@ -484,7 +484,10 @@ function getRivermapColor(cell) {
       return { r: 0, g: 255, b: 0}
     } else if (cell.isTributary) {
       return { r: 255, g: 0, b: 0}
-    } else if (ran < 3) {
+    } else {
+      return { r: 0, g: 225, b: 255}
+    } //the below is what you would use if you want the fatter rivers, but simplifying for now to be closer to vanilla 
+    /*else if (ran < 3) {
       return { r: 0, g: 225, b: 225}
     } else if (ran < 7) {
       return { r: 0, g: 200, b: 255}
@@ -510,7 +513,7 @@ function getRivermapColor(cell) {
       return { r: 0, g: 158, b: 0 }
     } else if (ran > 30) {
       return { r: 24, g: 206, b: 0 }
-    }
+    }*/
   } else if (c) {
     return { r: 255, g: 255, b: 255 };
   } else {

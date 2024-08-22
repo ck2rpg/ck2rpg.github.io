@@ -74,7 +74,7 @@ function createReligion(entity) {
     religion.nameLoc = makeFaithName(religion.language)
     religion.oldName = religion.name + "_religion_old";
     religion.oldNameLoc = `Old ${religion.nameLoc}`
-    religion.oldNameAdj = religion.name + "_religion_old";
+    religion.oldNameAdj = religion.name + "_religion_old_adj";
     religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
     pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
     pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
