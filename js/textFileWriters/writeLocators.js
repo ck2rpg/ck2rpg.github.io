@@ -18,13 +18,22 @@ function writeLocators(type) {
         let p = world.provinces[i]
         if (p.cells > 0) {
             count += 1;
-            if (p.land && !p.isImpassable) {
+            if (p.land) {
                 t += `    {\n`
                 t += `      id=${count}\n`
                 t += `      position={ ${p.x}.000000 0.000000 ${settings.height - p.y}.000000 }\n`
                 t += `      rotation={ -0.000000 -0.000000 -0.000000 1.000000 }\n`
                 t += `      scale={ 1.000000 1.000000 1.000000 }\n`
                 t += `    }\n`
+            } else {
+                if (type === "combat" || type === "unit_stack_player_owned" || type === "unit_stack_other_owned") {
+                    t += `    {\n`
+                    t += `      id=${count}\n`
+                    t += `      position={ ${p.x}.000000 0.000000 ${settings.height - p.y}.000000 }\n`
+                    t += `      rotation={ -0.000000 -0.000000 -0.000000 1.000000 }\n`
+                    t += `      scale={ 1.000000 1.000000 1.000000 }\n`
+                    t += `    }\n`
+                }
             }
         }
     }
