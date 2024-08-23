@@ -521,6 +521,16 @@ function getRivermapColor(cell) {
   }
 }
 
+function getRiverMapColorLowRes(cell) {
+  const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
+  cell.rgb = c;
+  if (c) {
+    return { r: 255, g: 255, b: 255 };
+  } else {
+    return { r: 255, g: 0, b: 128 };
+  }
+}
+
   function getSpecialColor(cell, type) {
     const maskValue = cell[type];
     if (maskValue) {
@@ -1134,6 +1144,9 @@ function drawCellToImageData(imageData, x, y) {
       break;
     case "rivermap":
       color = getRivermapColor(cell);
+      break;
+    case "rivermapLowRes":
+      color = getRiverMapColorLowRes(cell);
       break;
     default:
       color = getSpecialColor(cell, world.drawingType);

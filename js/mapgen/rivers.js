@@ -236,7 +236,13 @@ function drawRiver(x, y) {
   }
   
   function riversFromHighPoints() {
-    let arr = world.tectonics.spreadingLine;
+    let arr = []
+    for (let i = 0; i < world.height; i++) {
+      for (let j = 0; j < world.width; j++) {
+        let cell = xy(j, i)
+        arr.push(cell);
+      }
+    }
     arr.sort((a, b) => (a.elevation < b.elevation) ? 1 : -1)
     for (let i = 0; i < 2000; i++) {
       let tooClose = false

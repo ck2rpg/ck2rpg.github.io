@@ -120,7 +120,17 @@ function drawAndDownload(type, filename, callback) {
     functionsToExecute.push(() => drawAndDownload("papyrus", "papyrus.png"));
     functionsToExecute.push(() => {
       world.drawingType = "rivermap";
-      rerunRivers()
+      if (world.width === settings.width && world.height === settings.height) {
+        rerunRivers()
+      } else if (world.width === 512 && world.height === 256 && settings.width === 8192 && settings.height === 4096) {
+        world.drawingType = "rivermapLowRes"
+        riversFromHighPoints()
+        drawWorld()
+        drawHPRivers()
+      } else {
+        world.drawingType = "rivermap";
+        drawWorld();
+      }
       downloadImage(canvas, "rivers.png");
     });
     functionsToExecute.push(() => {
