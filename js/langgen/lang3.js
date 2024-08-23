@@ -1,6 +1,6 @@
 function extractConsonantClusters(text) {
     // Define regex patterns for consonants including those in other languages
-    const consonantPattern = /[bcçdfghjklmnñpqrßtvwxz]+/gi;
+    const consonantPattern = /[bcdfghjklmnpqrtvwxz]+/gi;
 
     // Arrays to hold consonant clusters at different positions
     let initialConsonants = [];
@@ -44,7 +44,7 @@ function extractConsonantClusters(text) {
 
 function extractVowelClusters(text) {
     // Define regex patterns for vowels including those in other languages
-    const vowelPattern = /[aeiouyàáâãäåæèéêëìíîïòóôõöøùúûüýÿœ]+/gi;
+    const vowelPattern = /[aeiouy]+/gi;
 
     // Arrays to hold vowel clusters at different positions
     let initialVowels = [];

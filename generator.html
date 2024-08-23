@@ -671,6 +671,15 @@
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
 
+            <p class="text-intro">Alpha 0.16.3 Release</p>
+            <p class="main-landing-text">Fixed CTD bug and other bug fixes.</p>
+            <p class="main-landing-heading">0.16.3 Change Log</p>
+            <p class="main-landing-text">
+              Bug fix: After probably 15 hours of bug hunting a silent CTD error, I found the issue. A recent change to the Gimp postprocessing script removed some code necessary for proper transfer of object masks (left one out). The map editor would try to make it work but mostly just CTD without noting an error. Finally, after hundreds of attempts at fixing other possible issues, the map editor was able to spit into the log that one of the masks was too large. I tracked it back to the python script.<br>
+              Bug fix: I removed many vowels and consonants from the language generator because they were throwing errors in the log when used as keys. I need to rework that aspect of the generation to use generic keys and then reintroduce.<br>
+              Bug fix: With the gimp script fix, I also was able to implement my previous solution to the blurring problem. Now, your masks will not blur if you have same size/resolution map. Heightmap will have minor blurring applied to avoid massive drops near water.<br>
+            </p><br>
+
             <p class="text-intro">Alpha 0.16.2 Release</p>
             <p class="main-landing-text">Allow low res maps</p>
             <p class="main-landing-heading">0.16.2 Change Log</p>
