@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CK3 Procedural Map Generator Roadmap</title>
+    <link rel="stylesheet" href="css/roadmap.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px 10%;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 10%;
+        }
+        section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        section h2 {
+            font-size: 1.8em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        section p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul > li {
+            background: #ecf0f1;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+        ul > li:hover {
+            background: #bdc3c7;
+        }
+        ul > li ul {
+            margin-top: 10px;
+        }
+        ul > li ul > li {
+            background: #fff;
+            margin: 5px 0;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Procedural Map Generator Roadmap to Beta</h1>
+</header>
+
+<main>
+    <section>
+        <h2>Philosophy</h2>
+        <p>Do not generate for the sake of generation. For every feature, ask, "How does it tie in to the game mechanics or planned game mechanics?"</p>
+    </section>
+
+    <section>
+        <h2>Performance</h2>
+        <ul>
+            <li>Implement performance improvements targeted at being able to generate vanilla size and resolution on 32GB RAM</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Compatibility</h2>
+        <ul>
+            <li>Work on ways to touch fewer vanilla files.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Settings</h2>
+        <ul>
+            <li>Add zoom based on redraw of a smaller section of the map instead of the current zoom based on browser zoom</li>
+            <li>Add the ability to save and restore place in generator, if possible.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Brushes</h2>
+        <ul>
+            <li>Impassable terrain brush</li>
+            <li>Navigable river brush</li>
+            <li>Non-navigable river brush</li>
+            <li>Religious family brush</li>
+            <li>Religion brush</li>
+            <li>Heritage brush</li>
+            <li>Culture brush</li>
+            <li>Title brush</li>
+            <li>Blur brush</li>
+            <li>Bucket fill</li>
+            <li>Fix bug where brush applies elsewhere from click.</li>
+            <li>Add ability to overlay an image for tracing.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Mass Effects</h2>
+        <ul>
+            <li>Improve the speed and quality of the "Spread" option for higher resolution maps.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Map Types</h2>
+        <ul>
+            <li>Make the "Roguelike" option from CK3RL available through interface</li>
+            <li>Add a fantasy map option</li>
+            <li>Add a maps app style map option</li>
+            <li>Add a labeled option</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Terrain</h2>
+        <ul>
+            <li>Add savannah terrain</li>
+            <li>Separate the ability to draw terrain and masks as an option alongside the current approach.</li>
+        </ul>
+        <h2>Terrain Masks</h2>
+        <ul>
+            <li>Vary desert terrain mask.</li>
+            <li>Vary jungle terrain mask.</li>
+            <li>Add savannah and other transitional terrain masks.</li>
+            <li>Add road masking between capitals with slight modifiers.</li>
+            <li>Add volcanic terrain mask</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Religion</h2>
+        <ul>
+            <li>Add option to use vanilla religions</li>
+            <li>Fix holy site localization</li>
+            <li>Add broader religious regions (currently capped at empire-based)</li>
+            <li>Meaningful constraints on tenet selection</li>
+            <li>Generate snippets of holy books</li>
+            <li>Add religious events and rewrite existing event localization</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Culture</h2>
+        <ul>
+            <li>Add option to use vanilla cultures</li>
+            <li>Meaningful constraints on tradition generation</li>
+            <li>Ethnicity Generation</li>
+            <ul>
+                <li>Add option to generate ethnicities with a "weirdness" factor (e.g., one gene can vary by x amount from vanilla)</li>
+                <li>Allow the user to pre-assign ethnicities from other mods.</li>
+            </ul>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Buildings</h2>
+        <ul>
+            <li>Make generic versions of special buildings that can be reskinned to new cultures</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>General History Generation</h2>
+        <ul>
+            <li>Counties that feel alive and aware of their place in the world</li>
+            <li>Generate history and lore with extensive use of game concepts</li>
+            <li>Struggles, Artifacts, MAAs, Death reasons, Mythology and Folklore, Legends, Nicknames, Laws</li>
+            <li>Overhaul funerary rites and weddings based on cultural and religious generation</li>
+            <li>Global events, Holidays/Feast Days with frequency options in the generator</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Events</h2>
+        <ul>
+            <li>Procedurally generate modifications to vanilla events incorporating changes to religion, culture, etc.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Graphics</h2>
+        <ul>
+            <li>Generate decals</li>
+            <li>Generate clothing textures and colors meaningfully</li>
+            <li>Include blendshapes in templates with the option to delete via postprocessor</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>R2P</h2>
+        <ul>
+            <li>Procedural town generation for the town visits</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Bookmarks</h2>
+        <ul>
+            <li>Generate image for bookmark</li>
+            <li>Generate multiple bookmarks</li>
+            <li>Generate characters and DNA for bookmarks</li>
+            <li>Replace placeholder</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Province and Title Generation</h2>
+        <ul>
+            <li>Add voronoi option</li>
+            <li>Constraint province growth based on geography</li>
+            <li>Avoid baronies on overly steep slopes</li>
+            <li>Influence province density directly</li>
+            <li>Make sea tiles much larger than land tiles</li>
+            <li>Select empire/kingdom/duchy/county and regenerate internal provinces</li>
+            <li>Add minimum size limit for titles</li>
+            <li>Allow user to upload province image</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Language</h2>
+        <ul>
+            <li>Fix non-English vowel bug</li>
+            <li>Add phonetic parsing using IPA-Dict to produce language-like languages</li>
+            <li>Use the new tooltip from R2P for sprinkling in flavor from the languages</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Miscellaneous Bug Fixes</h2>
+        <ul>
+            <li>Fix "Caliph of" nothing bug/flavorization issue</li>
+            <li>Reduce error log to as close to vanilla as possible</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Template</h2>
+        <ul>
+            <li>Upload to Github if possible</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>New Systems</h2>
+        <ul>
+            <li>Use already set Koppen Climate classification modifiers</li>
+            <ul>
+                <li>Flora</li>
+                <li>Fauna</li>
+            </ul>
+            <li>Natural Disasters</li>
+            <li>Weather System</li>
+            <li>Trade System</li>
+            <li>New eras</li>
+            <ul>
+                <li>Prehistory</li>
+                <li>Renaissance</li>
+            </ul>
+            <li>Extensive TechTree/Innovation Tree Option</li>
+            <li>Colonization/Settlement (stretch goal due to compatibility issues)</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Post Processing</h2>
+        <ul>
+            <li>Determine if possible to run Python script without opening Gimp.</li>
+            <li>Perfect the approach to blurring.</li>
+            <li>Add a Scenario Reroller that regenerates everything except the map locally in the replacers file.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Community</h2>
+        <ul>
+            <li>Move written tutorial to Github pages.</li>
+            <li>Add a video tutorial</li>
+            <li>Find more volunteer mods for Discord</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Code</h2>
+        <ul>
+            <li>Refactor</li>
+            <li>Update documentation</li>
+            <li>Seek additional contributors</li>
+        </ul>
+    </section>
+</main>
+
+</body>
+</html>
