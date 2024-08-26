@@ -45,7 +45,7 @@ function writeDefaultMap() {
             t += `${province.id} `
         }
         if (world.needsPlaceholder) {
-            let num = world.provinces.length
+            let num = world.provinces.length + 1
             t += `${num} `
         }
         t += ` }\n`
