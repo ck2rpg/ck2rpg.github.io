@@ -44,6 +44,10 @@ function writeDefaultMap() {
 
             t += `${province.id} `
         }
+        if (world.needsPlaceholder) {
+            let num = world.provinces.length
+            t += `${num} `
+        }
         t += ` }\n`
     }
     if (impassable.length > 0) {

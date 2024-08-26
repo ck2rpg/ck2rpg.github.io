@@ -803,6 +803,8 @@ function bruteFillIn() {
                     cell.colorR = last.colorR
                     cell.colorG = last.colorG;
                     cell.colorB = last.colorB
+                } else {
+                    world.needsPlaceholder = true;
                 }
             }
             last = cell;

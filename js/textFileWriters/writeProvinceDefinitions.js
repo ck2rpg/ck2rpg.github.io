@@ -23,8 +23,10 @@ function writeProvinceDefinitions() {
         }
         
     }
-    //count += 1;
-    //t += `${count};75;75;75;OCEAN;x;\n` // this is necessary for now to deal with placeholder color from unfilled areas
+    if (world.needsPlaceholder) {
+        count += 1;
+        t += `${count};75;75;75;OCEAN;x;\n` // this is necessary for now to deal with placeholder color from unfilled areas
+    }
     var data = new Blob([t], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="definition-download-link" download="definition.csv" href="">Download Province Definitions</a><br>`
