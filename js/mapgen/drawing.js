@@ -579,10 +579,14 @@ function getRiverMapColorLowRes(cell) {
   function drawParchmentType(cell, r, g, b) {
     const cellBiome = biome(cell);
   
-    if (cellBiome === "beach") {
+    if (cell.elevation > 20 && cell.elevation < 37) {
       cell.rgb = `rgb(0, 0, 0)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-    } else if (cell.wetlands) {
+    } else if (cell.terrain === "forest") {
+      cell.rgb = `rgb(255, 255, 255)`;
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
+      drawInkTree(cell);
+    } else if (cell.terrain === "wetlands") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
       drawInkMarsh(cell);
@@ -1081,6 +1085,14 @@ function drawWorld() {
   canvas.height = world.height * settings.pixelSize;
 
   if (world.drawingType === "roguelike") {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < world.height; i++) {
+      for (let j = 0; j < world.width; j++) {
+        drawCell(j, i)
+      }
+    }
+  } else if (world.drawingType === "parchment") {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let i = 0; i < world.height; i++) {
