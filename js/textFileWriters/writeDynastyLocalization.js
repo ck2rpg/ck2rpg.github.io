@@ -1,11 +1,9 @@
 function writeDynastyLocalization() {
     let t = `${daBom}l_english:\n`
-    for (let i = 0; i < world.characters.length; i++) {
-        let char = world.characters[i]
-        let dyn = char.dyn;
-        let dynName = char.dynName
+    for (let i = 0; i < world.dynasties.length; i++) {
         //let name = capitalize(translate(lang, dyn))
-        t += `\t${dyn}: "${dynName}"\n`
+        let dyn = world.dynasties[i]
+        t += `\t${dyn.k}: "${dyn.v}"\n`
     }
     //check back at deletion here if you start getting dynasty name bugs.
     var data = new Blob([t], {type: 'text/yaml'})

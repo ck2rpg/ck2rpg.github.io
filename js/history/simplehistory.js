@@ -188,14 +188,19 @@ function outputHistory() {
     document.getElementById(`title_history_link`).click();
 }
 
+world.dynasties = []
+
 function createCharacter(culture, faith) {
     let o = {};
     o.gender = pickFrom(["male", "female"])
     o.age = getRandomInt(6, 80)
     o.birth = `${world.year - o.age}.1.1`
     o.id = `gen_${world.personCounter}`
-    o.dyn = `dynn_gen_${world.dynastyCounter}`
-    o.dynName = makeCharacterName(culture.language)
+    let dg = `dynn_gen_${world.dynasties.length}`
+    o.dyn = dg
+    let dgLoc = makeCharacterName(culture.language)
+    o.dynName = dgLoc
+    world.dynasties.push({k: o.dyn, v: dgLoc})
     o.culture = culture;
     o.religion = faith;
     if (o.gender === "male") {
@@ -207,7 +212,6 @@ function createCharacter(culture, faith) {
     }
     world.characters.push(o)
     world.personCounter += 1
-    world.dynastyCounter += 1;
     return o;
 }
 

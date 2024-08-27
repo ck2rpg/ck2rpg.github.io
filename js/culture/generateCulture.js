@@ -236,15 +236,20 @@ function outputNameLists() {
         //placeholder for cadet and dynasty names
         t += `\tcadet_dynasty_names = {\n`
         for (let z = 0; z < 100; z++) {
-            t += `\t\t"dg${dgCount}"`
-            dgCount += 1;
+            let dg = `dynn_gen_${world.dynasties.length}`
+            let dgLoc = makeCharacterName(culture.language)
+            world.dynasties.push({k: dg, v: dgLoc})
+            t += `\t\t"${dg}"`
         }
         
         t += `\t}\n`
         t += `\tdynasty_names = {\n`
         for (let z = 0; z < 100; z++) {
-            t += `\t\t"dg${dgCount}"`
-            dgCount += 1;
+            let dg = `dynn_gen_${world.dynasties.length}`
+            let dgLoc = makeCharacterName(culture.language)
+            world.dynasties.push({k: dg, v: dgLoc})
+            t += `\t\t"${dg}"`
+            world.dynastyCounter += 1;
         }
         
         t += `\t}\n`
