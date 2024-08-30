@@ -30,38 +30,6 @@ GID("raiseLand").onclick = function() {
   drawWorld()
 }
 
-GID("noiseMap").onclick = function() {
-  let singSimp = new SimplexNoise()
-  let singSimp2 = new SimplexNoise();
-  let singSimp3 = new SimplexNoise();
-  let min = getRandomInt(100, 300)
-  let max = getRandomInt(300, 765);
-  function singNoise(nx, ny) {
-      return singSimp.noise2D(nx, ny) / 2 + 0.5;
-  }
-  function singNoise2(nx, ny) {
-    return singSimp2.noise2D(nx, ny) / 2 + 0.5;
-  }
-  function singNoise3(nx, ny) {
-    return singSimp3.noise2D(nx, ny) / 2 + 0.5;
-  }
-  for (let i = 0; i < world.height; i++) {
-    for (let j = 0; j < world.width; j++) {
-      let cell = world.map[i][j]
-      let n = singNoise(j, i)
-      let n2 = singNoise3(j, i)
-      if (n < 0.3 || n2 < 0.3) {
-        n = 15
-      } else {
-        n = n * 510
-      }
-      cell.elevation = n
-    }
-  }
-  cleanupAll()
-  drawWorld()
-}
-
 GID("undoMap").onclick = function() {
   undoMapChange();
 }
@@ -722,6 +690,8 @@ document.getElementById('generator-resolution').addEventListener('change', funct
   createWorld(width, height)
   settings.pixelSize = settings.height / world.height
   resetClimateLimits()
+  randomMap()
+  cleanupAll()
   drawWorld()
 });
 
@@ -1063,3 +1033,9 @@ const eraLevelSelect = document.getElementById('era-level');
 eraLevelSelect.addEventListener('change', function() {
     settings.eraLevel = eraLevelSelect.options[eraLevelSelect.selectedIndex].text;
 });
+
+GID("randomNoiseMap").onclick = function() {
+  randomMap()
+  cleanupAll()
+  drawWorld()
+}

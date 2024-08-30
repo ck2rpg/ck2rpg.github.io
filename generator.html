@@ -59,6 +59,7 @@
         <div id="zoom-in" class="zoom-button has-tool-tip">+<span class="tool-tip">Zoom In</span></div>
         <div id="zoom-out" class="zoom-button has-tool-tip">-<span class="tool-tip">Zoom Out</span></div>
         <div id="fullscreen" class="fullscreen-button has-tool-tip">⛶<span class="tool-tip">Wrap</span></div>
+        <div id="randomNoiseMap" class="fullscreen-button has-tool-tip"><img src="icons/globe.png" style="width: 65%; height: 65%"><span class="tool-tip">Random Map</span></div>
       </div>
       <!-- Main Side Panel -->
       <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
@@ -671,6 +672,17 @@
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
 
+            <p class="text-intro">Alpha 0.18.0 Release</p>
+            <p class="main-landing-text">Initial Noise Solution</p>
+            <p class="main-landing-heading">Alpha 0.18.0 Release</p>
+            <p class="main-landing-text">
+              Template Change: I uploaded a noise-based map to the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3320451649">workshop</a> and <a href="https://mods.paradoxplaza.com/mods/88801/Any">Paradox Mods</a>. I suggest using it or the (Not) Afria map for your new template. This avoids the bug, mentioned in previous updates, causing larger than 4096x2048 maps to crash for some users.
+              Feature: Added a "Random Map" button to the top right of the generator screen. When you click on it, it will use simplex noise to produce a map. The current approach is based on hotspots and noise. Customization options will be added in the future.<br>
+              Feature: When you change resolutions, instead of running a spread process to generate a new map, it will runt he random map function discussed above. This will address the spreading lines with only ocean that you often see on resolution change.<br>
+              Note: The generated "Random Maps" currently do not play nice with the "Spread" process. I suggest using other editing functions.<br>
+              Note: The generated "Random Map" often contains very small islands that do not end up getting land provinced. I'm fine with this because I just see those islands as uninhabitable. If you don't want this, you may need to drop the islands by hand for now<br>
+            </p><br>
+
             <p class="text-intro">Alpha 0.17.4 Release</p>
             <p class="main-landing-text">Fixed dynasty localization bug</p>
             <p class="main-landing-heading">0.17.4 Change Log</p>
@@ -1128,12 +1140,16 @@
     <script src="js/ethnicitygen/vanilla.js"></script>
     <script src="experimental/drawRoguelike.js"></script>
     <script src="js/mapgen/provinceEditor.js"></script>
+    <script src="js/all/math.js"></script>
     <script src="js/textFileWriters/writeHeightmapHeightmap.js"></script>
     <script src="js/shared/ui/moveable-element.js"></script>
     <script src="js/shared/ui/hideable-element.js"></script>
     <script src="js/interface/zoom.js"></script>
     <script src="js/randomKeys/randomAdjectives.js"></script>
     <script src="js/randomKeys/randomNouns.js"></script>
+    <script src="js/external_libraries/voronoi.js"></script>
+    <script src="js/interface/voronoiProvinces.js"></script>
+    <script src="js/external_libraries/quadtree.js"></script>
 
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>

@@ -674,15 +674,6 @@ let lang4 = makeLanguage(portugueseConsSet, portugueseVowelSet)
 let lang5 = makeLanguage(quechuaConsSet, quechuaVowelSet)
 let lang6 = makeLanguage(arabicConsSet, arabicVowelSet)
 
-for (let i = 0; i < 1000; i++) {
-    console.log(generateReligiousSentence(lang))
-    console.log(generateReligiousSentence(lang2))
-    console.log(generateReligiousSentence(lang3))
-    console.log(generateReligiousSentence(lang4))
-    console.log("Quechua: " + generateReligiousSentence(lang5))
-    console.log("Arabic: " + generateReligiousSentence(lang5))
-}
-
 
 function generateReligiousSentence() {
     let t = `${makeCharacterName(lang)} practices ${makeFaithName(lang)} in the land of ${makePlaceName(lang)}`
