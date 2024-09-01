@@ -10,7 +10,9 @@ function makeSimpleHistory() {
     let levels = ["empire", "kingdom", "duchy", "county"]
     //it works if you use kingdom for faith divergence but will throw errors otherwise at         chist += `\treligion = ${char.religion.name}\n`
     for (let z = 0; z < world.empires.length; z++) {
-        histLevel = pickFrom(levels)
+        if (histLevel === "random") {
+            histLevel = pickFrom(levels)
+        }
         let empire = world.empires[z]
         let emperor;
         if (histLevel === "empire") {
@@ -117,6 +119,13 @@ function outputHistory() {
     let provinceHistory = `${daBom}`
     for (let z = 0; z < world.empires.length; z++) {
         let empire = world.empires[z]
+        if (empire.holder) {
+            titleHistory += `e_${empire.titleName} = {\n`
+            titleHistory += `\t${world.year}.${world.month}.${world.day} = {\n`
+            titleHistory += `\t\tholder = ${empire.holder.id}\n`
+            titleHistory += `\t}\n`
+            titleHistory += `}\n`
+        }
         for (let i = 0; i < empire.kingdoms.length; i++) {
             let kingdom = empire.kingdoms[i]
             if (kingdom.holder) {
