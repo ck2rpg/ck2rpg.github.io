@@ -894,6 +894,7 @@ const culturePerSelect = GID("culture-per");
 const divergeAtKingdomSelect = GID("diverge-at-kingdom");
 const divergeAtDuchySelect = GID("diverge-at-duchy");
 const divergeAtCountySelect = GID("diverge-at-county");
+const paletteSelect = GID("palettes");
 
 function updateDivergenceOptions() {
   const culturePerValue = culturePerSelect.value;
@@ -957,6 +958,16 @@ culturePerSelect.addEventListener('change', () => {
   settings.culturePer = culturePerSelect.value;
   updateDivergenceOptions();
 });
+
+ethnicitiesSelect.addEventListener('change', () => {
+  settings.ethnicities = ethnicitiesSelect.value
+})
+
+paletteSelect.addEventListener('change', () => {
+  settings.palettes = paletteSelect.value
+})
+
+
 
 
 const religionFamilyLevelSelect = GID("religion-family-level")

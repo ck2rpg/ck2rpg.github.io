@@ -121,3 +121,7 @@ function downloadAllPalettes() {
         drawAndDownloadPalette(p)
     }
 }
+
+function hidePalette() {
+    eCanvas.style.display = "none"
+}
