@@ -12,6 +12,11 @@ function eqDist(y) {
   return distanceFromEquator;
 }
 
+// Helper function to get a random decimal between min and max
+function getRandomDecimal(min, max) {
+  return parseFloat((Math.random() * (max - min) + min).toFixed(2));
+}
+
 function calculateDistanceFromEquator(province) {
   const mapHeight = settings.height; // The height of the map
   const equatorY = mapHeight / 2; // The y-coordinate of the equator

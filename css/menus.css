@@ -9,26 +9,28 @@
 
 #menus-main{
   position: fixed;
-  top: 20px;
-  left: 20px;
+  bottom: 20px;
+  right: 20px;
   display: flex;
   display: inline-block;
   width:450px;
   color:var(--font-color);
   font-size: 16px;
   font-family: Arial, Helvetica, sans-serif;
+  z-index: 2;
 }
 
 #menus-map-modes{
     position: fixed;
-    right: 20px;
+    left: 20px;
     bottom: 20px;
     display: flex;
     display: inline-block;
-    width:350px;
+    width: fit-content;
     color:var(--font-color);
     font-size: 12px;
     font-family: Arial, Helvetica, sans-serif;
+    z-index: 2;
 }
 
 .ck-style-tray{
@@ -80,14 +82,15 @@
   background-color: #555;
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: 15px;
   border-radius: 6px;
+  font-size: 0.8em;
 
   position: absolute;
   z-index: 1;
   bottom: 125%;
   left: 50%;
-  margin-left: -60px;
+  margin-left: -30px;
 
   opacity: 0;
   transition: opacity 0.3s;
@@ -184,4 +187,12 @@
   display: none;
   padding: 6px 12px;
   border-top: none;
+}
+
+.right-menu-heading {
+  text-align: center;
+  color: white;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: 1.2em;
 }

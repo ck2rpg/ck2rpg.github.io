@@ -81,3 +81,33 @@ document.getElementById('imageUpload').addEventListener('change', function(event
         reader.readAsDataURL(file);
     }
 });
+
+
+document.getElementById('overlayUpload').addEventListener('change', function(event) {
+    //const canvas = document.getElementById('heightmap-upload-canvas');
+    const canvas = document.getElementById('overlay-canvas');
+    const ctx = canvas.getContext('2d');
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            // Calculate the dimensions to fit the image within 512x512
+            let width = settings.width;
+            let height = settings.height;
+
+            // Clear the canvas and draw the image
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, width, height);
+        };
+        img.src = event.target.result;
+
+    };
+
+    
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+});

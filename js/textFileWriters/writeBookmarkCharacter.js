@@ -1,50 +1,11 @@
-function writeBookmark() {
-    let c;
-    for (let i = 0; i < world.provinces.length; i++) {
-        let p = world.provinces[i]
-        if (p.isImpassable || p.isOcean || p.isRiver || p.isImpassableSea) {
+function writeBookmarkCharacter() {
 
-        } else {
-            c = p.county;
-            break;
-        }
-    }
-    let t = `${daBom}bm_mod_placeholder = {\n`
-    t += `  start_date = ${world.year}.${world.month}.${world.day}\n`
-    t += `  is_playable = yes\n`
-    t += `  group = bm_mod_group\n`
-    t += `  weight = { value = 100 }\n`
-    t += `
-    character = {\n
-		name = "bookmark_ck2rpg\n"
-		dynasty = ${c.holder.dyn}\n
-		dynasty_splendor_level = 1\n
-		type = ${c.holder.gender}\n
-		birth = ${c.holder.birth}\n
-		title = c_${c.titleName}\n
-		government = tribal_government\n
-		culture = ${c.holder.culture.id}\n
-		religion = ${c.holder.religion.name}\n
-		difficulty = "BOOKMARK_CHARACTER_DIFFICULTY_EASY"\n
-		history_id = ${c.holder.id}\n
-		position = { 500 1000 }\n
-
-		animation = happiness\n
-	}\n
-}`
-    var data = new Blob([t], {type: 'text/plain'})
-    var url = window.URL.createObjectURL(data);
-    let link = `<a id="bm-download-link" download="00_bookmarks.txt" href="">Bookmark</a><br>`
-    document.getElementById("download-links").innerHTML += `${link}`;
-    document.getElementById('bm-download-link').href = url
-    document.getElementById('bm-download-link').click() 
-
-    let t2 = `${daBom}`
-    t2 = `
+    let t = `${daBom}`
+    t = `
 bookmark_ck2rpg={
-    type=${c.gender}
-    id=${c.id}
-    age=0.${c.age}0000
+    type=male
+    id=66
+    age=0.270000
     genes={ 		
         hair_color={ 99 231 74 244 }
         skin_color={ 138 155 125 147 }
@@ -160,46 +121,10 @@ bookmark_ck2rpg={
     entity={ 807438772 807438772 }
 }
     `
-    var data2 = new Blob([t2], {type: 'text/plain'})
-    var url2 = window.URL.createObjectURL(data2);
-    let link2 = `<a id="bm-character-download-link" download="bookmark_ck2rpg.txt" href="">Bookmark Character</a><br>`
-    document.getElementById("download-links").innerHTML += `${link2}`;
-    document.getElementById('bm-character-download-link').href = url2
+    var data = new Blob([t], {type: 'text/plain'})
+    var url = window.URL.createObjectURL(data);
+    let link = `<a id="bm-character-download-link" download="bookmark_ck2rpg.txt" href="">Bookmark Character</a><br>`
+    document.getElementById("download-links").innerHTML += `${link}`;
+    document.getElementById('bm-character-download-link').href = url
     document.getElementById('bm-character-download-link').click() 
-}
-
-function writeBookmarkLocalization() {
-    let t = `${daBom}l_english:\n`
-    let namelist = `${daBom}l_english:\n`
-    t += `bm_mod_group:0 "Procedural Map Generator\n`
-    t += `bm_mod_placeholder:0 "The Beginning of History\n`
-    t += `bm_mod_placeholder_desc:0 "This is the first bookmark"\n`
-    t += `start_year_${world.year}_${world.month}_${world.day}_desc:0 "History"`
-    for (let i = 0; i < world.cultures.length; i++) {
-        let culture = world.cultures[i]
-        t += `${culture.id}_group: "${culture.name}"\n`
-        t += `${culture.id}_group_collective_nooun: "${culture.name}"\n`
-        t += `${culture.id}_prefix: "${culture.name}"\n`
-        t += `${culture.id}: "${culture.name}"\n`
-        t += `${culture.id}_collective_noun: "${culture.name}"\n`
-        namelist += `${culture.name_list}: "${culture.name}"\n`
-    }
-    var data = new Blob([t], {type: 'text/yaml'})
-    var url = window.URL.createObjectURL(data);
-    let link = `<a id="culture_loc_link" download="gen_cultures_l_english.yml" href="">Download Culture Localization</a><br>`
-    document.getElementById("download-links").innerHTML += `${link}`;
-    document.getElementById(`culture_loc_link`).href = url
-    document.getElementById(`culture_loc_link`).click();
-}
-
-function writeBookmarkGroup() {
-    let n = `${daBom}bm_mod_group = {\n`
-    n += `  default_start_date = ${world.year}.${world.month}.${world.day}\n`
-    n += `}`
-    var data = new Blob([n], {type: 'text/plain'})
-    var url = window.URL.createObjectURL(data);
-    let link = `<a id="bm-group-download-link" download="00_bookmark_groups.txt" href="">Bookmark Group</a><br>`
-    document.getElementById("download-links").innerHTML += `${link}`;
-    document.getElementById('bm-group-download-link').href = url
-    document.getElementById('bm-group-download-link').click()
 }

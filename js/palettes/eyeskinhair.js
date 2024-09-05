@@ -12,6 +12,14 @@ function colorToHex({ r, g, b }) {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+function rgbStringToHex(rgbString) {
+    // Extract the numbers from the string using a regular expression
+    const result = rgbString.match(/\d+/g).map(Number);
+    
+    // Convert the RGB values to hex
+    return "#" + ((1 << 24) + (result[0] << 16) + (result[1] << 8) + result[2]).toString(16).slice(1).toUpperCase();
+}
+
 function colorDistance(color1, color2) {
     // Calculates the Euclidean distance between two colors in RGB space
     return Math.sqrt(

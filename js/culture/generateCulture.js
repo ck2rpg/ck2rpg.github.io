@@ -94,6 +94,27 @@ let coa_gfx_list = [
     "west_slavic_group_coa_gfx western_coa_gfx"
 ]
 
+function setRandomGenesForCulture(culture) {
+    // Ensure the culture has a genes object to store the gene properties
+    if (!culture.genes) {
+        culture.genes = {};
+    }
+    
+    // Iterate through the geneticProperties array to randomly assign values
+    geneticProperties.forEach(gene => {
+        // If the gene has options (o), pick a random option
+        if (gene.o && gene.o.length > 0) {
+            const randomIndex = Math.floor(Math.random() * gene.o.length);
+            culture.genes[gene.n] = gene.o[randomIndex];
+        } else {
+            // If no options, assign a range with a random low and high value
+            const low = getRandomDecimal(0.0, 0.8); // Random lower bound
+            const high = getRandomDecimal(low + 0.1, 1.0); // Upper bound at least 0.1 higher
+            culture.genes[gene.n] = { low: low, high: high };
+        }
+    });
+}
+
 function getRandomColorPair() { // { xlow ylow xhigh yhigh}
     let lowX1 = getRandomInt(0, 8)
     let uppedX = lowX1 + 1;
@@ -2083,6 +2104,7 @@ function createCulture(parent) {
     let culture = {};
     if (parent) {
         //fix this to where it makes language based on parent - then discard placeholder below, name list, etc. if you don't, you get duplicates
+        culture.eth = parent.eth
         culture.martial_custom = parent.martial_custom
         culture.ethos = parent.ethos
         culture.traditions = parent.traditions
@@ -2101,6 +2123,7 @@ function createCulture(parent) {
         culture.isChildCulture = true;
         culture.provinces = []
     } else {
+        culture.eth = setRandomGenesForCulture(culture)
         culture.martial_custom = pickFrom(martialCustomRuleList)
         culture.ethos = pickFrom(cultureEthosList)
         let cons = pickFrom([consSet, frenchConsSet, germanConsSet, portugueseConsSet, quechuaConsSet])
@@ -2143,6 +2166,22 @@ function seedNames(culture) {
         let translated = capitalize(makeCharacterName(culture.language))
         culture.maleNames.push(translated);
     }
+    for (let i = 0; i < 100; i++) {
+        let translated = capitalize(makeCharacterName(culture.language))
+        culture.femaleNames.push(translated);
+    }
+}
+
+function seedMaleNames(culture) {
+    culture.maleNames = [];
+    for (let i = 0; i < 100; i++) {
+        let translated = capitalize(makeCharacterName(culture.language))
+        culture.maleNames.push(translated);
+    }
+}
+
+function seedFemaleNames(culture) {
+    culture.femaleNames = [];
     for (let i = 0; i < 100; i++) {
         let translated = capitalize(makeCharacterName(culture.language))
         culture.femaleNames.push(translated);

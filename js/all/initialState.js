@@ -150,9 +150,15 @@ world.lastCounter = -1
 
 var canvas = document.getElementById("canvas");
 //canvas.style.width = '95vw';  // Example display size
-canvas.style.width = '100vw'
+canvas.style.width = '85vw'
 canvas.style.height = '100vh';  // Example display size
 var ctx = canvas.getContext('2d')
+
+var overlayCanvas = document.getElementById("overlay-canvas");
+//canvas.style.width = '95vw';  // Example display size
+overlayCanvas.style.width = '85vw'
+overlayCanvas.style.height = '100vh';  // Example display size
+var overlayCtx = overlayCanvas.getContext('2d')
 
 //let paintbrush = "raiseLand"
 let paintbrush = "raiseLand"

@@ -134,14 +134,6 @@ GID("rainErosion").onclick = function() {
 }
 */
 
-GID("magnify").onclick = function() {
-  if (settings.info === "on") {
-    settings.info = "off"
-  } else {
-    settings.info = "on"
-  }
-}
-
 GID("broom").onclick = function() {
   cleanupAll()
   drawWorld()
@@ -253,6 +245,11 @@ GID("river-map-icon").onclick = function() {
 
 GID("papyrus-map-icon").onclick = function() {
   world.drawingType = "papyrus"
+  drawWorld()
+}
+
+GID("roguelike-icon").onclick = function() {
+  world.drawingType = "roguelike"
   drawWorld()
 }
 
@@ -598,6 +595,22 @@ GID("title-color").addEventListener('change', setTitleColor);
 GID("provmap-icon").onclick = function() {
   world.drawingType = "smallProv"
   paintbrush = "provinceOverride"
+  setTitleColor()
+  drawWorld()
+}
+
+GID("culturemap-icon").onclick = function() {
+  updateCultureColorColumn()
+  world.drawingType = "smallCulture"
+  paintbrush = "cultureOverride"
+  setTitleColor()
+  drawWorld()
+}
+
+GID("faithmap-icon").onclick = function() {
+  updateFaithColorColumn()
+  world.drawingType = "smallFaith"
+  paintbrush = "faithOverride"
   setTitleColor()
   drawWorld()
 }
@@ -1050,3 +1063,35 @@ GID("randomNoiseMap").onclick = function() {
   cleanupAll()
   drawWorld()
 }
+
+GID("save-settings").onclick = function() {
+  writeGeneratorSettings()
+}
+
+GID('loadSettingsInput').addEventListener('change', function(event) {
+  console.log("CLICKED LOAD")
+  const file = event.target.files[0];
+  loadGeneratorSettings(file);
+  let width = world.width;
+  let height = world.height;
+  world = {}
+  world.width = width;
+  world.height = height
+  createWorld()
+  settings.pixelSize = settings.height / world.height
+  //resetClimateLimits()
+  randomMap()
+  cleanupAll()
+  world.drawingType = "colorful"
+  drawWorld()
+});
+
+function closeEditor(culture) {
+  updateCultureValues(culture); // Save the current changes back to the culture object
+  document.getElementById('culture-editor').style.display = 'none'; // Hide the editor
+}
+
+// Event listener for the close button
+document.getElementById('close-editor').addEventListener('click', () => {
+  closeEditor(settings.currentCulture); // Assuming currentCulture is defined globally
+});

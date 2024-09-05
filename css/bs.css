@@ -492,6 +492,17 @@ table {
   top: 0px;
 }
 
+#overlay-canvas {
+  position: absolute;
+  z-index: 1;
+  left: 0px;
+  top: 0px;
+  width: 85vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0.1;
+}
+
 #province-drawn-proceed {
   position: absolute;
   left: 40vw;
@@ -1018,15 +1029,18 @@ button[type="submit"]:hover {
   border: var(--border-color) 2px solid;
 }
 
-
+.sidebar-icon {
+  width: 50%;
+  height: 50%;
+}
 
 .zoom-container {
   display: flex;
   flex-direction: column;
   z-index: 30000;
   position: fixed;
-  right: 10px;
-  top: 10px;
+  left: 10px;
+  top: 10vh;
 }
 
 .brush-container {
@@ -1063,4 +1077,224 @@ button[type="submit"]:hover {
 
 .bulleted li {
   margin-bottom: 10px;
+}
+
+#main-generator-editor {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 15vw;
+  height: 100vh;
+  background: #131315;
+  color: white;
+}
+
+.override-editor {
+  position: absolute;
+  left: 5vh;
+  top: 5vh;
+  width: 90vw;
+  height: 90vh;
+  background: #131315;
+  border: 5px solid var(--border-color);
+  z-index: 100000;
+  display: none;
+}
+
+/* Container for the entire culture editor */
+
+#culture-editor {
+  display: none;
+  border: 1px solid #ccc; /* Optional border */
+  background-color: #f9f9f9; /* Light background for contrast */
+  overflow: scroll; /* Prevent content overflow */
+}
+
+
+#culture-editor-content {
+  display: none;
+  grid-template-columns: 1fr 1fr 1fr; /* Three equal-width columns */
+  gap: 20px; /* Space between columns */
+  padding: 20px; /* Padding around the content */
+  max-height: 90vh; /* Limit the height of the entire editor to 90% of the viewport */
+}
+
+/* Each individual column */
+#culture-editor-content > div {
+  padding: 10px;
+  border: 1px solid #ddd; /* Border around each column */
+  border-radius: 8px; /* Rounded corners for aesthetics */
+  background-color: #fff; /* White background */
+  max-height: 80vh; /* Limit the height of each column to 80% of the viewport */
+  overflow-y: auto; /* Make the content scrollable vertically */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for a 3D effect */
+}
+
+/* Section headers (for each section like traditions, genes, etc.) */
+#culture-editor-content h2, #culture-editor-content h3 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #333; /* Dark text color for contrast */
+}
+
+/* Labels for dropdowns and input fields */
+#culture-editor-content label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555; /* Slightly lighter text for labels */
+}
+
+/* Dropdown styling */
+#culture-editor-content select {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 1em;
+  color: #333;
+}
+
+/* Input fields for names and other text inputs */
+#culture-editor-content input[type="text"], 
+#culture-editor-content input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 1em;
+  color: #333;
+}
+
+/* Buttons */
+#culture-editor-content button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+}
+
+/* Button hover effect */
+#culture-editor-content button:hover {
+  background-color: #0056b3;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+  padding: 5px;
+  border-radius: 50%;
+  background-color: #f1f1f1;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: #d9534f;
+  color: white;
+}
+
+.right-menu-header {
+  text-align: center;
+  color: white;
+  font-size: 1.2em;
+  text-decoration: underline;
+}
+
+/* Faith Editor Container */
+#faith-editor {
+  display: none;
+  border: 1px solid #ccc; /* Optional border */
+  background-color: #f9f9f9; /* Light background for contrast */
+  overflow: scroll; /* Prevent content overflow */
+}
+
+/* Faith Editor Content - Grid Layout */
+#faith-editor-content {
+  display: none;
+  grid-template-columns: 1fr 1fr 1fr; /* Three equal-width columns */
+  gap: 20px; /* Space between columns */
+  padding: 20px; /* Padding around the content */
+  max-height: 90vh; /* Limit the height of the entire editor to 90% of the viewport */
+}
+
+/* Each individual column in Faith Editor */
+#faith-editor-content > div {
+  padding: 10px;
+  border: 1px solid #ddd; /* Border around each column */
+  border-radius: 8px; /* Rounded corners for aesthetics */
+  background-color: #fff; /* White background */
+  max-height: 80vh; /* Limit the height of each column to 80% of the viewport */
+  overflow-y: auto; /* Make the content scrollable vertically */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for a 3D effect */
+}
+
+/* Section headers (for each section like doctrines, virtues/sins, etc.) */
+#faith-editor-content h2, #faith-editor-content h3 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #333; /* Dark text color for contrast */
+}
+
+/* Labels for dropdowns and input fields */
+#faith-editor-content label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555; /* Slightly lighter text for labels */
+}
+
+/* Dropdown styling */
+#faith-editor-content select {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 1em;
+  color: #333;
+}
+
+/* Input fields for names and other text inputs */
+#faith-editor-content input[type="text"], 
+#faith-editor-content input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  font-size: 1em;
+  color: #333;
+}
+
+/* Buttons */
+#faith-editor-content button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+}
+
+/* Button hover effect */
+#faith-editor-content button:hover {
+  background-color: #0056b3;
 }

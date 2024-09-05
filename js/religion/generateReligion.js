@@ -66,74 +66,95 @@ function createReligion(entity) {
         holy_order_maa: pickFrom(faithMAAS),
         faiths: []
     };
-    if (entity.culture) {
-        religion.language = entity.culture.language
+    if (entity) {
+        if (entity.culture) {
+            religion.language = entity.culture.language
+        } else {
+            religion.language = entity.provinces[0].culture.language
+        }
     } else {
-        religion.language = entity.provinces[0].culture.language
+        religion.language = makeLanguage(consSet, vowelSet)
+        religion.nameLoc = makeFaithName(religion.language)
+        religion.oldName = religion.name + "_religion_old";
+        religion.oldNameLoc = `Old ${religion.nameLoc}`
+        religion.oldNameAdj = religion.name + "_religion_old_adj";
+        religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
+        setReligionLocalization(religion)
     }
-    religion.nameLoc = makeFaithName(religion.language)
-    religion.oldName = religion.name + "_religion_old";
-    religion.oldNameLoc = `Old ${religion.nameLoc}`
-    religion.oldNameAdj = religion.name + "_religion_old_adj";
-    religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
-    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
-    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
-    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
 
-    entity.religion = religion;
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+    pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
+    if (entity) {
+        entity.religion = religion;
+    }
+
+    
     world.religions.push(religion);
 
     // Generate faiths based on divergeFaithLevel
     generateFaiths(religion, entity);
+    return religion
 }
 
 // Generate faiths based on divergeFaithLevel
 function generateFaiths(religion, entity) {
-    const divergeLevel = settings.divergeFaithLevel;
+    if (entity) {
+        const divergeLevel = settings.divergeFaithLevel;
 
-    if (divergeLevel === "empire" && entity.isEmpire) {
-        createFaith(religion, entity);
-    } else if (divergeLevel === "kingdom") {
-        if (entity.isEmpire) {
-            entity.kingdoms.forEach(kingdom => createFaith(religion, kingdom));
-        } else if (entity.isKingdom) {
+        if (divergeLevel === "empire" && entity.isEmpire) {
             createFaith(religion, entity);
-        }
-    } else if (divergeLevel === "duchy") {
-        if (entity.isEmpire) {
-            entity.kingdoms.forEach(kingdom => {
-                kingdom.duchies.forEach(duchy => createFaith(religion, duchy));
-            });
-        } else if (entity.isKingdom) {
-            entity.duchies.forEach(duchy => createFaith(religion, duchy));
-        } else if (entity.isDuchy) {
-            createFaith(religion, entity);
-        }
-    } else if (divergeLevel === "county") {
-        if (entity.isEmpire) {
-            entity.kingdoms.forEach(kingdom => {
-                kingdom.duchies.forEach(duchy => {
+        } else if (divergeLevel === "kingdom") {
+            if (entity.isEmpire) {
+                entity.kingdoms.forEach(kingdom => createFaith(religion, kingdom));
+            } else if (entity.isKingdom) {
+                createFaith(religion, entity);
+            }
+        } else if (divergeLevel === "duchy") {
+            if (entity.isEmpire) {
+                entity.kingdoms.forEach(kingdom => {
+                    kingdom.duchies.forEach(duchy => createFaith(religion, duchy));
+                });
+            } else if (entity.isKingdom) {
+                entity.duchies.forEach(duchy => createFaith(religion, duchy));
+            } else if (entity.isDuchy) {
+                createFaith(religion, entity);
+            }
+        } else if (divergeLevel === "county") {
+            if (entity.isEmpire) {
+                entity.kingdoms.forEach(kingdom => {
+                    kingdom.duchies.forEach(duchy => {
+                        duchy.counties.forEach(county => createFaith(religion, county));
+                    });
+                });
+            } else if (entity.isKingdom) {
+                entity.duchies.forEach(duchy => {
                     duchy.counties.forEach(county => createFaith(religion, county));
                 });
-            });
-        } else if (entity.isKingdom) {
-            entity.duchies.forEach(duchy => {
-                duchy.counties.forEach(county => createFaith(religion, county));
-            });
-        } else if (entity.isDuchy) {
-            entity.counties.forEach(county => createFaith(religion, county));
-        } else if (entity.isCounty) {
-            createFaith(religion, entity);
+            } else if (entity.isDuchy) {
+                entity.counties.forEach(county => createFaith(religion, county));
+            } else if (entity.isCounty) {
+                createFaith(religion, entity);
+            }
         }
+    } else {
+        createFaith(religion)
     }
+
 }
 
 function createFaith(religion, entity) {
     let faith = {};
-    faith.language = entity.culture.language;
+    if (entity) {
+        faith.language = entity.culture.language;
+    } else {
+        faith.language = religion.language
+    }
+
     let faithIcon = pickFrom(faithIcons);
     faith.icon = faithIcon[0];
     faith.reformed_icon = faithIcon[1];
+    faith.religion = religion
     faith.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`;
     let pref = rando()
     faith.name = `${pref}_faith`;
@@ -148,34 +169,38 @@ function createFaith(religion, entity) {
     pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
     pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
     faith.holySites = [];
-    for (let i = 0; i < 6; i++) {
-        pickUniqOrDiscard(entity.ownProvinces, faith.holySites);
+    if (entity) {
+        for (let i = 0; i < 6; i++) {
+            pickUniqOrDiscard(entity.ownProvinces, faith.holySites);
+        }
     }
     religion.faiths.push(faith);
-    entity.faith = faith; // Assign faith to the entity
+    if (entity) {
+        entity.faith = faith; // Assign faith to the entity
 
-    // Propagate faith property down to province level to track through later reassignments
-    if (entity.isKingdom) {
-        entity.duchies.forEach(duchy => {
-            duchy.faith = faith;
-            duchy.counties.forEach(county => {
+        // Propagate faith property down to province level to track through later reassignments
+        if (entity.isKingdom) {
+            entity.duchies.forEach(duchy => {
+                duchy.faith = faith;
+                duchy.counties.forEach(county => {
+                    county.faith = faith;
+                    county.provinces.forEach(province => {
+                        province.faith = faith; // Set faith at province level
+                    });
+                });
+            });
+        } else if (entity.isDuchy) {
+            entity.counties.forEach(county => {
                 county.faith = faith;
                 county.provinces.forEach(province => {
                     province.faith = faith; // Set faith at province level
                 });
             });
-        });
-    } else if (entity.isDuchy) {
-        entity.counties.forEach(county => {
-            county.faith = faith;
-            county.provinces.forEach(province => {
+        } else if (entity.isCounty) {
+            entity.provinces.forEach(province => {
                 province.faith = faith; // Set faith at province level
             });
-        });
-    } else if (entity.isCounty) {
-        entity.provinces.forEach(province => {
-            province.faith = faith; // Set faith at province level
-        });
+        }
     }
 }
 
@@ -948,3 +973,217 @@ function generateReligionLocalization(r) {
     return t;
 }
 
+function setReligionLocalization(r) {
+    let language = r.language;
+    let highgod = makeCharacterName(language);
+    let devil = makeCharacterName(language);
+    let death = makeRandomWord(language);
+    let temple = makeRandomWord(language);
+    let holyBook = makeRandomWord(language);
+    let pope = makeRandomWord(language);
+    let popeland = `${pope} ${makeRandomWord(language)}`;
+    let devotee = makeRandomWord(language);
+    let mal = makeRandomWord(language);
+    let fem = makeRandomWord(language);
+    let priest = makeRandomWord(language);
+    let bishop = makeRandomWord(language);
+    let heaven = makeRandomWord(language);
+    let hell = makeRandomWord(language);
+    let hornedgod = makeCharacterName(language);
+    let healthgod = makeCharacterName(language);
+    let fertility = makeRandomWord(language);
+    let wealth = makeRandomWord(language);
+    let household = makeRandomWord(language);
+    let fate = makeRandomWord(language);
+    let knowledge = makeRandomWord(language);
+    let war = makeRandomWord(language);
+    let trickster = makeCharacterName(language);
+    let night = makeRandomWord(language);
+    let water = makeRandomWord(language);
+    
+    let localization = {
+        religion: r.nameLoc,
+        oldName: r.oldNameLoc,
+        oldNameAdj: r.oldNameAdjLoc,
+        adj: r.nameLoc,
+        adherent: r.nameLoc,
+        adherent_plural: r.nameLoc,
+        desc: r.nameLoc,
+        high_god_name: highgod,
+        high_god_name_2: highgod,
+        high_god_name_3: highgod,
+        high_god_name_possessive: `${highgod}'s`,
+        high_god_name_alternate: highgod,
+        high_god_name_alternate_possessive: `${highgod}'s`,
+        good_god_jesus: highgod,
+        good_god_christ: highgod,
+        devil_name: devil,
+        devil_name_possessive: `${devil}'s`,
+        evil_god_drought: devil,
+        evil_god_lucifer: devil,
+        evil_god_beelzebub: devil,
+        evil_god_mephistopheles: devil,
+        evil_god_decay: devil,
+        evil_god_decay_possessive: `${devil}'s`,
+        death_deity_name: death,
+        death_deity_name_possessive: `${death}'s`,
+        house_of_worship: temple,
+        house_of_worship_plural: `${temple}s`,
+        religious_symbol: `${makeRandomWord(language)} of ${highgod}`,
+        religious_text: holyBook,
+        religious_head: pope,
+        religious_head_title_name: popeland,
+        devotee_male: `${devotee}${mal.toLowerCase()}`,
+        devotee_female: `${devotee}${fem.toLowerCase()}`,
+        devotee_neuter: devotee,
+        devotee_neuter_plural: `${devotee}s`,
+        priest: priest,
+        bishop: bishop,
+        positive_afterlife: heaven,
+        negative_afterlife: hell,
+        witchgodname_the_horned_god: hornedgod,
+        creator_god_name: highgod,
+        creator_god_name_possessive: `${highgod}'s`,
+        health_god_name: healthgod,
+        health_god_name_possessive: `${healthgod}'s`,
+        fertility_god_name: fertility,
+        fertility_god_name_possessive: `${fertility}'s`,
+        wealth_god_name: wealth,
+        wealth_god_name_possessive: `${wealth}'s`,
+        household_god_name: household,
+        household_god_name_possessive: `${household}'s`,
+        fate_god_name: fate,
+        fate_god_name_possessive: `${fate}'s`,
+        knowledge_god_name: knowledge,
+        knowledge_god_name_possessive: `${knowledge}'s`,
+        war_god_name: war,
+        war_god_name_possessive: `${war}'s`,
+        trickster_god_name: trickster,
+        trickster_god_name_possessive: `${trickster}'s`,
+        night_god_name: night,
+        night_god_name_possessive: `${night}'s`,
+        water_god_name: water,
+        water_god_name_possessive: `${water}'s`
+    };
+
+    // Set the localization object on the religion
+    r.localization = localization;
+    console.log(r.localization)
+}
+
+const virtuesList = [
+    "brave",
+    "calm",
+    "chaste",
+    "content",
+    "diligent",
+    "forgiving",
+    "generous",
+    "gregarious",
+    "honest",
+    "humble",
+    "just",
+    "patient",
+    "temperate",
+    "trusting",
+    "zealous",
+    "compassionate",
+    "fickle" // Add any additional virtues as needed
+];
+
+const sinsList = [
+    "craven",
+    "wrathful",
+    "lustful",
+    "ambitious",
+    "lazy",
+    "vengeful",
+    "greedy",
+    "shy",
+    "deceitful",
+    "arrogant",
+    "arbitrary",
+    "impatient",
+    "gluttonous",
+    "paranoid",
+    "cynical",
+    "callous",
+    "sadistic",
+    "stubborn" // Add any additional sins as needed
+];
+
+const doctrinesList = [
+    { n: "doctrine_no_head", group: "Faith Head" },
+    { n: "doctrine_spiritual_head", group: "Faith Head" },
+    { n: "doctrine_temporal_head", group: "Faith Head" },
+    { n: "doctrine_gender_male_dominated", group: "Gender" },
+    { n: "doctrine_gender_female_dominated", group: "Gender" },
+    { n: "doctrine_gender_equal", group: "Gender" },
+    { n: "doctrine_pluralism_righteous", group: "Pluralism" },
+    { n: "doctrine_pluralism_pluralistic", group: "Pluralism" },
+    { n: "doctrine_pluralism_fundamentalist", group: "Pluralism" },
+    { n: "doctrine_theocracy_temporal", group: "Theocracy" },
+    { n: "doctrine_theocracy_lay_clergy", group: "Theocracy" },
+    { n: "doctrine_concubines", group: "Marriage" },
+    { n: "doctrine_polygamy", group: "Marriage" },
+    { n: "doctrine_monogamy", group: "Marriage" },
+    { n: "doctrine_divorce_allowed", group: "Divorce" },
+    { n: "doctrine_divorce_disallowed", group: "Divorce" },
+    { n: "doctrine_consanguinity_cousins", group: "Consanguinity" },
+    { n: "doctrine_consanguinity_aunt_nephew_and_uncle_niece", group: "Consanguinity" },
+    { n: "doctrine_consanguinity_restricted", group: "Consanguinity" },
+    { n: "doctrine_consanguinity_unrestricted", group: "Consanguinity" },
+    { n: "doctrine_homosexuality_accepted", group: "Homosexuality" },
+    { n: "doctrine_homosexuality_shunned", group: "Homosexuality" },
+    { n: "doctrine_homosexuality_crime", group: "Homosexuality" },
+    { n: "doctrine_adultery_men_accepted", group: "Adultery Men" },
+    { n: "doctrine_adultery_men_shunned", group: "Adultery Men" },
+    { n: "doctrine_adultery_men_crime", group: "Adultery Men" },
+    { n: "doctrine_adultery_women_accepted", group: "Adultery Women" },
+    { n: "doctrine_adultery_women_shunned", group: "Adultery Women" },
+    { n: "doctrine_adultery_women_crime", group: "Adultery Women" },
+    { n: "doctrine_kinslaying_shunned", group: "Kinslaying" },
+    { n: "doctrine_kinslaying_accepted", group: "Kinslaying" },
+    { n: "doctrine_kinslaying_close_kin_crime", group: "Kinslaying" },
+    { n: "doctrine_deviancy_accepted", group: "Deviancy" },
+    { n: "doctrine_deviancy_shunned", group: "Deviancy" },
+    { n: "doctrine_deviancy_crime", group: "Deviancy" },
+    { n: "doctrine_witchcraft_accepted", group: "Witchcraft" },
+    { n: "doctrine_witchcraft_shunned", group: "Witchcraft" },
+    { n: "doctrine_witchcraft_crime", group: "Witchcraft" },
+    { n: "doctrine_clerical_function_recruitment", group: "Clerical Function" },
+    { n: "doctrine_clerical_function_taxation", group: "Clerical Function" },
+    { n: "doctrine_clerical_function_alms_and_pacification", group: "Clerical Function" },
+    { n: "doctrine_clerical_gender_either", group: "Clerical Gender" },
+    { n: "doctrine_clerical_gender_male_only", group: "Clerical Gender" },
+    { n: "doctrine_clerical_gender_female_only", group: "Clerical Gender" },
+    { n: "doctrine_clerical_marriage_allowed", group: "Clerical Marriage" },
+    { n: "doctrine_clerical_marriage_disallowed", group: "Clerical Marriage" },
+    { n: "doctrine_clerical_succession_temporal_appointment", group: "Clerical Succession" },
+    { n: "doctrine_clerical_succession_temporal_fixed_appointment", group: "Clerical Succession" },
+    { n: "doctrine_clerical_succession_spiritual_fixed_appointment", group: "Clerical Succession" },
+    { n: "doctrine_clerical_succession_spiritual_appointment", group: "Clerical Succession" },
+    { n: "doctrine_pilgrimage_encouraged", group: "Pilgrimages" },
+    { n: "doctrine_pilgrimage_forbidden", group: "Pilgrimages" },
+    { n: "doctrine_funeral_sky_burial", group: "Funerals" },
+    { n: "doctrine_funeral_cremation", group: "Funerals" },
+    { n: "doctrine_funeral_bewailment", group: "Funerals" },
+    { n: "doctrine_funeral_stoic", group: "Funerals" },
+    { n: "doctrine_funeral_mummification", group: "Funerals" }
+];
+
+const pietyIconGroupList = [
+    "pagan",
+    "catholic",
+    "islamic",
+    "orthodox"
+    // Add more as needed
+];
+
+const graphicalFaithList = [
+    "pagan_gfx",
+    "catholic_gfx",
+    "islamic_gfx",
+    "orthodox_gfx"
+    // Add more as needed
+];

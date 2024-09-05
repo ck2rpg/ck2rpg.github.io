@@ -6,10 +6,10 @@ function makeSimpleHistory() {
     world.day = getRandomInt(1, 28);
     world.personCounter = 1
     world.dynastyCounter = 1
-    let histLevel = settings.historyHolderLevel
     let levels = ["empire", "kingdom", "duchy", "county"]
     //it works if you use kingdom for faith divergence but will throw errors otherwise at         chist += `\treligion = ${char.religion.name}\n`
     for (let z = 0; z < world.empires.length; z++) {
+        let histLevel = settings.historyHolderLevel
         if (histLevel === "random") {
             histLevel = pickFrom(levels)
         }

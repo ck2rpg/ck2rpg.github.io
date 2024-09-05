@@ -46,8 +46,23 @@
       Be patient, your provinces are generating.
     </div>
 
+    <div class="override-editor" id="culture-editor" style="display: none;">
+      <div class="close-btn" id="close-editor">✖</div>
+      <div id="culture-editor-content">
+          <!-- Dynamic culture content goes here -->
+      </div>
+    </div>
+    <div class="override-editor" id="faith-editor" style="display: none;">
+      <div class="close-btn" id="close-faith-editor">✖</div>
+      <div id="faith-editor-content">
+          <!-- Dynamic culture content goes here -->
+      </div>
+    </div>
 
+    </div>
     <div id="main-generator-div">
+      <div id="main-generator-editor"></div>
+      <canvas id="overlay-canvas"></canvas>
       <canvas id="canvas"></canvas>
       <!--
       <div id="brush-container" class="brush-container">
@@ -56,6 +71,12 @@
       -->
 
       <div id="zoom-container" class="zoom-container">
+        <div id="save-settings" class="fullscreen-button has-tool-tip"><img class="sidebar-icon" src="icons/download.png"/><span class="tool-tip">Save Settings</span></div>
+        <div class="file-upload-wrapper has-tool-tip">
+          <button class="fullscreen-button has-tool-tip"><img class="sidebar-icon" src="icons/upload.png" style="width: 70%; height: 60%"/><span class="tool-tip">Load Settings</span></button>
+          <input type="file" id="loadSettingsInput" />
+        </div>
+        
         <div id="zoom-in" class="zoom-button has-tool-tip">+<span class="tool-tip">Zoom In</span></div>
         <div id="zoom-out" class="zoom-button has-tool-tip">-<span class="tool-tip">Zoom Out</span></div>
         <div id="fullscreen" class="fullscreen-button has-tool-tip">⛶<span class="tool-tip">Wrap</span></div>
@@ -87,7 +108,6 @@
           <div class="menu-section-content menu-hideable-area menu-setting">
             <div class="icon-tray">
               <div class="icon-clickable icon-tools has-tool-tip"><img id="startup" src="icons/newmap.png"><span class="tool-tip">Create a New Map</span></div>
-              <div class="icon-clickable icon-tools has-tool-tip"><img id="magnify" src="icons/magnifyingglass.png"><span class="tool-tip">Zoom In</span></div>
               <div class="icon-clickable icon-tools has-tool-tip"><img id="droptowater" src="icons/droptowater.png"><span class="tool-tip">Drop All Cells to Ocean</span></div>
               <div class="icon-clickable icon-tools has-tool-tip"><img id="broom" src="icons/broom.png"><span class="tool-tip">Clean Up Any Isolated Single Cells</span></div>
               <div class="icon-clickable icon-tools has-tool-tip"><img id="spread-icon" src="icons/spread-icon.png"><span class="tool-tip">Spread Elevation From Spreading Centers</span></div>
@@ -324,17 +344,17 @@
           <div class="menu-section-content menu-hideable-area menu-setting">
             <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
               <label for="max-land-province-setting">Max Land Provinces</label>
-              <input type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)">
+              <input id="max-land-province-setting" type="number" min="100" max="20000" value="8000" oninput="updateMaxLandProvinces(this.value)">
               <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: Max land provinces is an upper limit, which may not be reached, to the number of generated land provinces. Reducing the maximumn number of land provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
             </span>
             <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
               <label for="max-water-province-setting">Max Water Provinces</label>
-              <input type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)">
+              <input id="max-water-province-setting" type="number" min="100" max="20000" value="8000" oninput="updateMaxWaterProvinces(this.value)">
               <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: Max water provinces is an upper limit, which may not be reached, to the number of generated water provinces. Reducing the maximumn number of water provinces requires a higher fill. Even then, you may see bad results (provinces that bleed too far or maps that don't have sufficient province coverage).</span>
             </span>
             <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
               <label for="max-fill-in-setting">Max Fill In Attempts</label>
-              <input type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)">
+              <input id="max-fill-in-setting" type="number" min="1" max="10000" value="20" oninput="updateMaxFill(this.value)">
               <span class="tool-tip">EXPERIMENTAL FEATURE WARNING: The province generation algorithm works by seeding cells across the map and then filling in from there until the seed cell's growth bumps into other cell growths. This is a general function to control how many times the algorithm will attempt to fill in before stopping. A higher number will result in more likely fill in of the map without resorting to default colors or bleeding the province across the map through a brute fill in process.</span>
             </span>
           </div>
@@ -360,6 +380,10 @@
             <div class="file-upload-wrapper">
               <button class="ck-button">Import Heightmap</button>
               <input type="file" class="ck-button" id="imageUpload" accept="image/*" />
+            </div>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Overlay</button>
+              <input type="file" class="ck-button" id="overlayUpload" accept="image/*" />
             </div>
           </div>
         </div>
@@ -561,6 +585,9 @@
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="culturemap-icon" src="icons/candlestick.png"><span class="tool-tip">Culture Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="faithmap-icon" src="icons/religion.png"><span class="tool-tip">Faith Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="roguelike-icon" src="icons/roguelike-icon.png"><span class="tool-tip">Roguelike Map</span></div>
         </div>      
       </div>
 
@@ -681,6 +708,19 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.20.0 Release Change Log</p>
+            <p class="main-landing-text">
+              Feature: Added Culture and Faith map modes to the map generation screen, which allows you to draw cultures and faiths onto the map. The designated territories of the cultures and faiths will encompass any generated province locators that fall within that territory.<br>
+              Feature: Added culture and faith editors to the new drawing mode. You will see this new menu on the right side of your screen. When you click on a color swatch for a culture or faith, it will switch to that culture or faith's color. When you click on the name of the culture or faith, it will bring up an editor.<br> 
+              Feature: Added title drawing mode and editor.<br>
+              Feature: Automatically generate a bookmark image (your flatmap) to replace white placeholder screen. This has been implemented through changes to the Gimp script.<br>
+              Feature: Added a "Roguelike" map mode on the map generation screen.<br>
+              Feature: Added a button to save your generator settings as a text file that can later be loaded into the generator.<br>
+              Bug Fix: Users identified a bug with random holder selection, which resulted in a random holder level being selected across the board instead of for each landed title hierarchy. This bug has been fixed. Now, each a random holder level is selected for each title hierarchy (e.g., all titles within X de jure empire will have holders generated at duchy level and no higher).<br>
+              Bug Fix: Removed outdated relic magnify button from menu.<br>
+              Bug fix: Fixed flavorization bug causing "Caliph of" nothing localization for princes.<br>
+            </p><br>
 
             <p class="text-intro">Alpha 0.19.0 Release</p>
             <p class="main-landing-text">Ethnicities and Palettes</p>
@@ -1143,6 +1183,7 @@
     <script src="js/textFileWriters/writeLocators.js"></script>
     <script src="js/textFileWriters/writeTitleLocalization.js"></script>
     <script src="js/textFileWriters/writeSettings.js"></script>
+    <script src="js/textFileWriters/writeGeneratorSettings.js"></script>
     <script src="js/interface/clickables.js"></script>
     <script src="js/loregen/koppenClimate.js"></script>
     <script src="js/loregen/agriculturalProductivity.js"></script>

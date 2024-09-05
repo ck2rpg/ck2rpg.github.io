@@ -73,6 +73,55 @@ function drawCell(x, y) {
     };
   }
 
+  function getFantasyColor(cell) {
+    let rgb = { r: 255, g: 255, b: 255 }; // Default white
+    const cellBiome = biome(cell);
+    let ascii = ""
+    if (cell.river) {
+      rgb = { r: 0, g: 0, b: 255 }; // Default white
+    } else if (cellBiome === "beach") {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.terrain === "forest") {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.elevation >= limits.mountains.lower) {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.terrain === "taiga" || (cell.climateCategory === "cold" && cell.terrain === "hills")) {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.terrain === "jungle") {
+      let red = 10 + getRandomInt(-15, 15)
+      let blue = 70 + getRandomInt(-15, 15)
+      let green = 70 + getRandomInt(-15, 15)
+      rgb = { r: red, g: green, b: blue };
+    } else if (cell.climateCategory === "tropical" && cell.terrain === "hills") {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.terrain === "drylands") {
+      let red = 10 + getRandomInt(-15, 15)
+      let blue = 230 + getRandomInt(-15, 15)
+      let green = 230 + getRandomInt(-15, 15)
+      rgb = { r: red, g: green, b: blue };
+    } else if (cell.terrain === "steppe") {
+      let red = 10 + getRandomInt(-15, 15)
+      let blue = 230 + getRandomInt(-15, 15)
+      let green = 230 + getRandomInt(-15, 15)
+      rgb = { r: red, g: green, b: blue };
+    } else if (cell.terrain === "desert" || cell.terrain === "drylands") {
+      let red = 10 + getRandomInt(-15, 15)
+      let blue = 230 + getRandomInt(-15, 15)
+      let green = 230 + getRandomInt(-15, 15)
+      rgb = { r: red, g: green, b: blue };
+    } else if (cell.terrain === "plains" || cell.terrain === "farmlands" || cell.terrain === "hills" || cell.terrain === "wetlands" || cell.terrain === "floodplains") {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    } else if (cell.elevation <= limits.seaLevel.upper || cell.terrain === "oasis") {
+      let red = 20 + getRandomInt(-15, 15)
+      let blue = 140 + getRandomInt(-15, 15)
+      let green = 93 + getRandomInt(-15, 15)
+      rgb = { r: red, g: green, b: blue };
+    } else {
+      rgb = { r: 255, g: 255, b: 255 }; // Default white
+    }
+    return rgb;
+  }
+
   function drawRoguelike(cell) {
     const cellBiome = biome(cell);
     let ascii = ""
@@ -116,7 +165,11 @@ function drawCell(x, y) {
       cell.rgb = `rgb(${Math.floor(194 * (el / 255))}, ${Math.floor(178 * (el / 255))}, ${Math.floor(128 * (el / 255))})`;
     } else if (cell.terrain === "plains" || cell.terrain === "farmlands" || cell.terrain === "hills" || cell.terrain === "wetlands" || cell.terrain === "floodplains") {
       ascii = "."
-      cell.rgb = drawGrassColor(cell);
+      cell.rgb = {
+       r: 0,
+       g: 255,
+       b: 0, 
+      }//drawGrassColor(cell);
     } else if (cell.elevation <= limits.seaLevel.upper || cell.terrain === "oasis") {
       ascii = "≈"
       const waterMod = 255 - Math.floor(getCorrectedColor(cell) * 0.6);
@@ -126,7 +179,7 @@ function drawCell(x, y) {
       cell.rgb = drawGrassColor(cell);
     }
     ctx.fillStyle = cell.rgb;
-    ctx.font = "16px serif";
+    ctx.font = `${settings.pixelSize}px monospace`;
     ctx.fillText(ascii, cell.x * settings.pixelSize, cell.y * settings.pixelSize);
   }
   
@@ -1083,6 +1136,8 @@ function drawWorld() {
   // Set the canvas dimensions based on the world's size and pixel size
   canvas.width = world.width * settings.pixelSize;
   canvas.height = world.height * settings.pixelSize;
+  overlayCanvas.width = world.width * settings.pixelSize;
+  overlayCanvas.height = world.height * settings.pixelSize;
 
   if (world.drawingType === "roguelike") {
     ctx.fillStyle = "black";
@@ -1112,6 +1167,11 @@ function drawWorld() {
       drawTerrainSmallMap();
     } else if (world.drawingType === "smallProv" || world.drawingType === "smallWater") {
       drawTitleSmallMap("province");
+    } else if (world.drawingType === "smallCulture") {
+      drawTitleSmallMap("culture");
+    } else if (world.drawingType === "smallFaith") {
+      console.log("SMALL FAITH")
+      drawTitleSmallMap("faith")
     } else {
       const imageData = ctx.createImageData(canvas.width, canvas.height);
       for (let y = 0; y < world.height; y++) {
@@ -1119,6 +1179,7 @@ function drawWorld() {
           drawCellToImageData(imageData, x, y);
         }
       }
+      console.log("DRAWN")
       ctx.putImageData(imageData, 0, 0);
       if (world.drawingType === "colorful") {
         ctx.beginPath(); // Start a new path
@@ -1159,6 +1220,9 @@ function drawCellToImageData(imageData, x, y) {
       break;
     case "rivermapLowRes":
       color = getRiverMapColorLowRes(cell);
+      break;
+    case "fantasy":
+      color = getFantasyColor(cell)
       break;
     default:
       color = getSpecialColor(cell, world.drawingType);
