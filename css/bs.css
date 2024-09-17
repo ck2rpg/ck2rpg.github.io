@@ -1298,3 +1298,8 @@ button[type="submit"]:hover {
 #faith-editor-content button:hover {
   background-color: #0056b3;
 }
+
+
+.change-log-list {
+  list-style: circle;
+}

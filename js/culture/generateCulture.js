@@ -1475,140 +1475,216 @@ let placeNameSuffixes = [
     { n: 'quag', t: 'wetlands' }
 ]
 
-
-function assignCultures() {
-
-    for (let i = 0;i < world.empires.length; i++) {
-        let empire = world.empires[i]
-        empire.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces)
+function getCultureFromColor(r, g, b) {
+    r = parseInt(r);
+    g = parseInt(g);
+    b = parseInt(b);
+    for (let i = 0; i < cultureOverrideKeys.length; i++) {
+        let colorObj = cultureOverrideKeys[i];
+        if (colorObj.r === r && colorObj.g === g && colorObj.b === b) {
+            return colorObj.culture;
+        }
     }
-    for (let z = 0; z < world.empires.length; z++) {
-        let culture;
-        let empire = world.empires[z]
-        if (settings.culturePer === "empire") {
-            culture = createCulture()
-            empire.culture = culture;
-            empire.localizedTitle = makePlaceName(culture.language)
-            if (world.cultures) {
-                world.cultures.push(culture)
+    return null; // Return null if no matching culture is found
+}
+
+function assignOverrideCultures() {
+    if (!world.cultures) {
+        world.cultures = [];
+    }
+    for (let i = 0; i < world.counties.length; i++) {
+        let county = world.counties[i];
+        let capital = county.provinces[0];
+        let cell = world.smallMap[capital.y][capital.x].bigCell;
+        if (cell.cultureOverride) {
+            let culture = getCultureFromColor(cell.cultureOverrideR, cell.cultureOverrideG, cell.cultureOverrideB);
+            if (culture) {
+                county.culture = culture;
+                // Propagate the culture up the hierarchy if it's the first county
+                let duchy = county.duchy;
+                let kingdom = duchy.kingdom;
+                let empire = kingdom.empire;
+                if (duchy.counties[0] === county) {
+                    duchy.culture = county.culture;
+                    if (kingdom.duchies[0] === duchy) {
+                        kingdom.culture = county.culture;
+                        if (empire.kingdoms[0] === kingdom) {
+                            empire.culture = county.culture;
+                        }
+                    }
+                }
             } else {
-                world.cultures = [];
-                world.cultures.push(culture)
+                console.log("Culture not found for color", cell.cultureOverrideR, cell.cultureOverrideG, cell.cultureOverrideB);
             }
         }
+    }
+}
+
+function assignCultures() {
+    // Ensure world.cultures is initialized
+    if (!world.cultures) {
+        world.cultures = [];
+    }
+
+    // First, generate names for empires that don't have localized titles
+    for (let i = 0; i < world.empires.length; i++) {
+        let empire = world.empires[i];
+        if (!empire.localizedTitle) {
+            empire.localizedTitle = generateWordFromTrigrams(britishPlacesTrigrams, britishPlaces);
+        }
+    }
+
+    for (let z = 0; z < world.empires.length; z++) {
+        let culture;
+        let empire = world.empires[z];
+
+        // If the empire already has a culture assigned, use it
+        if (empire.culture) {
+            culture = empire.culture;
+        }
+
+        // Assign culture to empire based on settings
+        if (settings.culturePer === "empire") {
+            if (!culture) {
+                culture = createCulture();
+                empire.culture = culture;
+                world.cultures.push(culture);
+            }
+            if (!empire.localizedTitle) {
+                empire.localizedTitle = makePlaceName(culture.language);
+            }
+        }
+
+        // Process kingdoms within the empire
         for (let i = 0; i < empire.kingdoms.length; i++) {
             let kingdom = empire.kingdoms[i];
-            let kingdomCulture;
-            if (culture) {
-                if (settings.divergeCulturesAtKingdom) {
-                    kingdom.culture = createCulture(empire.culture)
-                    if (world.cultures) {
-                        world.cultures.push(kingdom.culture)
-                    } else {
-                        world.cultures = [];
-                        world.cultures.push(kingdom.culture)
-                    }
-                } else {
-                    kingdom.culture = culture;
-                }
-                kingdomCulture = kingdom.culture
+            let kingdomCulture = kingdom.culture;
+
+            // If kingdom already has a culture, use it
+            if (kingdomCulture) {
+                culture = kingdomCulture;
+            } else if (settings.divergeCulturesAtKingdom && culture) {
+                // Diverge culture at kingdom level
+                kingdomCulture = createCulture(culture);
+                kingdom.culture = kingdomCulture;
+                world.cultures.push(kingdomCulture);
+            } else if (settings.culturePer === "kingdom") {
+                // Assign new culture per kingdom
+                kingdomCulture = createCulture();
+                kingdom.culture = kingdomCulture;
+                culture = kingdomCulture;
+                world.cultures.push(kingdomCulture);
+            } else {
+                // Inherit culture from empire
+                kingdomCulture = culture;
+                kingdom.culture = kingdomCulture;
             }
-            if (settings.culturePer === "kingdom") {
-                culture = createCulture()
-                kingdom.culture = culture;
-                if (world.cultures) {
-                    world.cultures.push(kingdom.culture)
-                } else {
-                    world.cultures = [];
-                    world.cultures.push(kingdom.culture)
-                }
-                kingdomCulture = kingdom.culture
+
+            // Assign localized title if not already set
+            if (!kingdom.localizedTitle) {
+                kingdom.localizedTitle = makePlaceName(kingdomCulture.language);
             }
-            //kingdom.localizedTitle = placeName(kingdom.culture.language)
-            if (i === 0 && !settings.culturePer === "empire") {
-                empire.localizedTitle = makePlaceName(kingdom.culture.language)
-            }
-            kingdom.localizedTitle = makePlaceName(kingdom.culture.language)
+
+            // Process duchies within the kingdom
             for (let j = 0; j < kingdom.duchies.length; j++) {
-                let duchy = kingdom.duchies[j]
-                let duchyCulture;
-                if (kingdomCulture) {
-                    if (settings.divergeCulturesAtDuchy) {
-                        duchy.culture = createCulture(kingdom.culture)
-                        if (world.cultures) {
-                            world.cultures.push(duchy.culture)
-                        } else {
-                            world.cultures = [];
-                            world.cultures.push(duchy.culture)
-                        }
-                    } else {
-                        duchy.culture = kingdomCulture
-                    }
-                    duchyCulture = duchy.culture;
-                }
-                if (settings.culturePer === "duchy") {
-                    culture = createCulture()
+                let duchy = kingdom.duchies[j];
+                let duchyCulture = duchy.culture;
+
+                // If duchy already has a culture, use it
+                if (duchyCulture) {
+                    // Do nothing, use existing culture
+                } else if (settings.divergeCulturesAtDuchy && kingdomCulture) {
+                    // Diverge culture at duchy level
+                    duchyCulture = createCulture(kingdomCulture);
+                    duchy.culture = duchyCulture;
+                    world.cultures.push(duchyCulture);
+                } else if (settings.culturePer === "duchy") {
+                    // Assign new culture per duchy
+                    duchyCulture = createCulture();
+                    duchy.culture = duchyCulture;
+                    culture = duchyCulture;
+
+                    // Update kingdom and empire cultures if this is the first duchy
                     if (j === 0) {
-                        kingdom.culture = culture;
-                        empire.culture = culture;
+                        kingdom.culture = duchyCulture;
+                        empire.culture = duchyCulture;
                     }
-                    duchy.culture = culture;
-                    if (world.cultures) {
-                        world.cultures.push(culture)
-                    } else {
-                        world.cultures = [];
-                        world.cultures.push(culture)
-                    }
-                    duchyCulture = duchy.culture;
+
+                    world.cultures.push(duchyCulture);
+                } else {
+                    // Inherit culture from kingdom
+                    duchyCulture = kingdomCulture;
+                    duchy.culture = duchyCulture;
                 }
-                //duchy.localizedTitle = placeName(kingdom.culture.language)
-                duchy.localizedTitle = makePlaceName(duchy.culture.language)
+
+                // Assign localized title if not already set
+                if (!duchy.localizedTitle) {
+                    duchy.localizedTitle = makePlaceName(duchyCulture.language);
+                }
+
+                // Process counties within the duchy
                 for (let n = 0; n < duchy.counties.length; n++) {
-                    let county = duchy.counties[n]
-                    if (duchyCulture) {
-                        if (settings.divergeCulturesAtCounty) {
-                            county.culture = createCulture(duchy.culture)
-                            if (world.cultures) {
-                                world.cultures.push(county.culture)
-                            } else {
-                                world.cultures = [];
-                                world.cultures.push(county.culture)
-                            }
-                        } else {
-                            county.culture = duchyCulture
+                    let county = duchy.counties[n];
+                    let countyCulture = county.culture;
+
+                    // If county already has a culture, use it
+                    if (countyCulture) {
+                        // Do nothing, use existing culture
+                    } else if (settings.divergeCulturesAtCounty && duchyCulture) {
+                        // Diverge culture at county level
+                        countyCulture = createCulture(duchyCulture);
+                        county.culture = countyCulture;
+                        world.cultures.push(countyCulture);
+                    } else if (settings.culturePer === "county") {
+                        // Assign new culture per county
+                        countyCulture = createCulture();
+                        county.culture = countyCulture;
+                        culture = countyCulture;
+
+                        // Update higher-level cultures if this is the first county
+                        if (n === 0) {
+                            duchy.culture = countyCulture;
+                            kingdom.culture = countyCulture;
+                            empire.culture = countyCulture;
                         }
 
+                        world.cultures.push(countyCulture);
+                    } else {
+                        // Inherit culture from duchy
+                        countyCulture = duchyCulture;
+                        county.culture = countyCulture;
                     }
-                    if (settings.culturePer === "county") {
-                        county.culture = createCulture()
-                        if (n === 0) {
-                            duchy.culture = county.culture;
-                            kingdom.culture = county.culture;
-                            if (empire) {
-                                empire.culture = county.culture;     
-                            }
-                        }
-                        if (world.cultures) {
-                            world.cultures.push(county.culture)
-                        } else {
-                            world.cultures = [];
-                            world.cultures.push(county.culture)
-                        }
+
+                    // Assign localized title if not already set
+                    if (!county.localizedTitle) {
+                        county.localizedTitle = makePlaceName(countyCulture.language);
                     }
-                    //county.localizedTitle = placeName(kingdom.culture.language)
-                    county.localizedTitle = makePlaceName(county.culture.language)
+
+                    // Process provinces within the county
                     for (let z = 0; z < county.provinces.length; z++) {
-                        let province = county.provinces[z]
-                        province.localizedTitle = makePlaceName(county.culture.language)
-                        province.culture = county.culture // really set at county level but for ease of use with possible province swapping
-                        county.culture.provinces.push(province)
-                        //province.localizedTitle = placeName(kingdom.culture.language)
+                        let province = county.provinces[z];
+
+                        // If province already has a culture, use it
+                        if (province.culture) {
+                            // Add province to culture's provinces list
+                            province.culture.provinces.push(province);
+                        } else {
+                            // Assign culture from county
+                            province.culture = countyCulture;
+                            countyCulture.provinces.push(province);
+                        }
+
+                        // Assign localized title if not already set
+                        if (!province.localizedTitle) {
+                            province.localizedTitle = makePlaceName(province.culture.language);
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 function assignTraditionPossibilities() {
     for (let i = 0; i < world.cultures.length; i++) {
@@ -2105,6 +2181,7 @@ function createCulture(parent) {
     if (parent) {
         //fix this to where it makes language based on parent - then discard placeholder below, name list, etc. if you don't, you get duplicates
         culture.eth = parent.eth
+        culture.genes = parent.genes
         culture.martial_custom = parent.martial_custom
         culture.ethos = parent.ethos
         culture.traditions = parent.traditions

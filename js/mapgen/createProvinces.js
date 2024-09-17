@@ -282,7 +282,9 @@ function getCellSmallCells(cell) {
             let y = cell.y * settings.pixelSize + i;
             let x = cell.x * settings.pixelSize + j;
             let smallCell = world.smallMap[y][x];
-            arr.push(smallCell);
+            if (smallCell) {
+                arr.push(smallCell);
+            }
         }
     }
     return arr;
@@ -318,17 +320,21 @@ function createOverrideLandProvinces() {
                     smallCell.colorG = selectedColorObject.g;
                     smallCell.colorB = selectedColorObject.b;
                     smallCell.elevation = smallCell.bigCell.elevation + getRandomInt(-3, 3);
-                    let prov = createProvince(ckX, ckY, "l", smallCell);
+                    //let prov = createProvince(ckX, ckY, "l", smallCell);
                     console.log(`Created province color ${selectedColor}. world.provinces is ${world.provinces.length} now`)
-                    smallCell.province = prov;
+                    smallCell.province = cell.province
                     smallCell.children = [];
                     smallCell.children.push(smallCell);
                     smallCell.parent = smallCell;
                     smallCell.seedCell = true;
                     world.populatedCells.push(cell);
                     world.seedCells.push(smallCell);
-                    provinceKeys[color] = prov; // Ensure province is added to provinceKeys
-
+                    provinceKeys[color] = cell.province; // Ensure province is added to provinceKeys
+                    cell.province.seed = smallCell
+                    cell.province.farthestEast = smallCell;
+                    cell.province.farthestWest = smallCell;
+                    cell.province.farthestNorth = smallCell;
+                    cell.province.farthestSouth = smallCell
                     let arr = getCellSmallCells(cell);
                     for (let n = 0; n < arr.length; n++) {
                         let next = arr[n];
@@ -589,6 +595,8 @@ async function createProvinces() {
     assignTitleInfo();
     await updateDOM("Assigning Title Info", 23);
 
+    assignOverrideCultures();
+
     assignCultures();
     await updateDOM("Assigning Cultures", 24);
     //assignTraditionPossibilities()
@@ -745,6 +753,9 @@ function createRealCounties() {
                 prov.duchy = duchy
             }
             duchy.counties[j] = c
+            c.duchy = duchy;
+            c.kingdom = duchy.kingdom;
+            c.empire = c.kingdom.empire
             countyArr.push(c)
         }
     }
@@ -796,7 +807,7 @@ function bruteFillIn() {
         let last = {};
         for (let j = 0; j < settings.width; j++) {
             let cell = world.smallMap[i][j]
-            if (cell.colorR) {
+            if (cell.colorR || cell.provinceOverride) {
 
             } else {
                 if (last.colorR) {
@@ -939,7 +950,7 @@ function growWaterCell(cell, target) {
 
 function seedAndGrowCell() {
     let cell = world.landCells[getRandomInt(0, world.landCells.length - 1)]
-    if (cell.colorR) {
+    if (cell.colorR || cell.provinceOverride) {
         //do nothing if province already applied
     } else {
         let generating = true;
@@ -963,7 +974,7 @@ function seedAndGrowCell() {
 
 function seedCell(x, y, landWater) {
     let cell = world.smallMap[y][x]
-    if (cell.colorR) {
+    if (cell.colorR || cell.provinceOverride) {
 
     } else {
         let randColor = getUniqueColor()
@@ -1088,7 +1099,7 @@ function growCell(cell, target) {    //target is needed to allow you to set a ce
             randomNeighbor = target
         }
         
-        if (randomNeighbor && randomNeighbor.colorR) {
+        if (randomNeighbor && (randomNeighbor.colorR || randomNeighbor.provinceOverride)) {
             //do nothing if assigned
         } else {
             if (randomNeighbor && cell.bigCell.elevation > limits.seaLevel.upper && randomNeighbor.bigCell.elevation > limits.seaLevel.upper) {

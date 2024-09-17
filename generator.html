@@ -588,6 +588,7 @@
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="culturemap-icon" src="icons/candlestick.png"><span class="tool-tip">Culture Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="faithmap-icon" src="icons/religion.png"><span class="tool-tip">Faith Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="roguelike-icon" src="icons/roguelike-icon.png"><span class="tool-tip">Roguelike Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="titlesmap-icon" src="icons/roguelike-icon.png"><span class="tool-tip">Title Map</span></div>
         </div>      
       </div>
 
@@ -617,6 +618,7 @@
             <p>Blue: <span id="b"></span></p>
         </div>
         <div class="sbtn prov-btn" id="full-province-map">Draw Full Province Map</div>
+        <div class="sbtn prov-btn" id="labeled-province-map">Draw Labeled Province Map</div>
         <div class="sbtn prov-btn" id="only-land-map">Draw Only Land Provinces Map</div>
         <div class="sbtn prov-btn" id="only-water-map">Draw Only Water Provinces Map</div>
         <div class="sbtn prov-btn" id="county-map">Draw County Map</div>
@@ -711,15 +713,21 @@
 
             <p class="text-intro">Alpha 0.20.0 Release Change Log</p>
             <p class="main-landing-text">
-              Feature: Added Culture and Faith map modes to the map generation screen, which allows you to draw cultures and faiths onto the map. The designated territories of the cultures and faiths will encompass any generated province locators that fall within that territory.<br>
-              Feature: Added culture and faith editors to the new drawing mode. You will see this new menu on the right side of your screen. When you click on a color swatch for a culture or faith, it will switch to that culture or faith's color. When you click on the name of the culture or faith, it will bring up an editor.<br> 
-              Feature: Added title drawing mode and editor.<br>
-              Feature: Automatically generate a bookmark image (your flatmap) to replace white placeholder screen. This has been implemented through changes to the Gimp script.<br>
-              Feature: Added a "Roguelike" map mode on the map generation screen.<br>
-              Feature: Added a button to save your generator settings as a text file that can later be loaded into the generator.<br>
-              Bug Fix: Users identified a bug with random holder selection, which resulted in a random holder level being selected across the board instead of for each landed title hierarchy. This bug has been fixed. Now, each a random holder level is selected for each title hierarchy (e.g., all titles within X de jure empire will have holders generated at duchy level and no higher).<br>
-              Bug Fix: Removed outdated relic magnify button from menu.<br>
-              Bug fix: Fixed flavorization bug causing "Caliph of" nothing localization for princes.<br>
+              <ul class="change-log-list">
+                <li>Feature: Added Culture and Faith map modes to the map generation screen, which allows you to draw cultures and faiths onto the map. The designated territories of the cultures and faiths will encompass any generated province locators that fall within that territory.</li>
+                <li>Feature: Added culture and faith editors to the new drawing mode. You will see this new menu on the right side of your screen. When you click on a color swatch for a culture or faith, it will switch to that culture or faith's color. When you click on the name of the culture or faith, it will bring up an editor.</li> 
+                <li>Feature: Added title drawing mode and editor.</li>
+                <li>Feature: When drawing a title, the generator will look to your culture and faith generation settings. In other words, if a culture is supposed to be assigned per kingdom, each kingdom you draw will automatically spawn a culture and cultural territory. You can change these options dynamically between drawing different elements (e.g., move from culture per kingdom to culture per county for an area). Any spawned cultures will then be visible on the culture map mode.</li>
+                <li>Feature: Automatically generate a bookmark image (your flatmap) to replace white placeholder screen. This has been implemented through changes to the Gimp script.</li>
+                <li>Feature: Added a "Roguelike" map mode on the map generation screen.</li>
+                <li>Feature: Added a button to save your generator settings as a text file that can later be loaded into the generator.</li>
+                <li>Feature: Added an image overlay import to allow tracing from an image.</li>
+                <li>Feature: Added a "Draw Labeled Province Map" button to the province editing screen.</li>
+                <li>Bug Fix: Users identified a bug with random holder selection, which resulted in a random holder level being selected across the board instead of for each landed title hierarchy. This bug has been fixed. Now, each a random holder level is selected for each title hierarchy (e.g., all titles within X de jure empire will have holders generated at duchy level and no higher).</li>
+                <li>Bug Fix: Removed outdated relic magnify button from menu.</li>
+                <li>Bug fix: Fixed flavorization bug causing "Caliph of" nothing localization for princes.</li>
+              </ul>
+
             </p><br>
 
             <p class="text-intro">Alpha 0.19.0 Release</p>

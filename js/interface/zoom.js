@@ -84,7 +84,7 @@ document.addEventListener('touchend', (event) => {
 
 fullscreenButton.addEventListener('click', (event) => {
   event.preventDefault();
-  canvas.style.width = `100vw`;
+  canvas.style.width = `85vw`;
   canvas.style.height = `100vh`;
 });
 

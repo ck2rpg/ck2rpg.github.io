@@ -11,17 +11,17 @@ function writeLandedTitles() {
         let empire = world.empires[j]
         t += `e_${empire.titleName} = {\n`
         t += `  color = {${empire.colorR} ${empire.colorG} ${empire.colorB}}\n`
-        t += `  capital = c_${empire.capital}\n`
+        t += `  capital = c_${empire.capital.titleName}\n`
         for (let i = 0; i < empire.kingdoms.length; i++) {
             let kingdom = empire.kingdoms[i]
             t += `  k_${kingdom.titleName} = {\n`
             t += `    color = {${kingdom.colorR} ${kingdom.colorG} ${kingdom.colorB}}\n`
-            t += `    capital = c_${kingdom.capital}\n`
+            t += `    capital = c_${kingdom.capital.titleName}\n`
             for (let n = 0; n < kingdom.duchies.length; n++) {
                 let duchy = kingdom.duchies[n]
                 t += `    d_${duchy.titleName} = {\n`
                 t += `      color = { ${duchy.colorR} ${duchy.colorG} ${duchy.colorB} }\n`
-                t += `      capital = c_${duchy.capital}\n`
+                t += `      capital = c_${duchy.capital.titleName}\n`
                 for (let z = 0; z < duchy.counties.length; z++) {
                     let county = duchy.counties[z]
                     t += `      c_${county.titleName} = {\n`

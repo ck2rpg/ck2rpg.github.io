@@ -1172,6 +1172,16 @@ function drawWorld() {
     } else if (world.drawingType === "smallFaith") {
       console.log("SMALL FAITH")
       drawTitleSmallMap("faith")
+    } else if (world.drawingType === "smallEmpire") {
+      drawTitleSmallMap("empire")
+    } else if (world.drawingType === "smallKingdom") {
+      drawTitleSmallMap("kingdom")
+    } else if (world.drawingType === "smallDuchy") {
+      drawTitleSmallMap("duchy")
+    } else if (world.drawingType === "smallCounty") {
+      drawTitleSmallMap("county")
+    } else if (world.drawingType === "smallProvince") {
+      drawTitleSmallMap("province")
     } else {
       const imageData = ctx.createImageData(canvas.width, canvas.height);
       for (let y = 0; y < world.height; y++) {
@@ -1279,7 +1289,7 @@ function setPixel(imageData, x, y, color) {
     drawTinyPixel(ctx, x, y, `rgb(${c}, ${c}, ${c})`)
   }
 
-function drawProvinceMap() {
+function drawProvinceMap(labels) {
   let count = 0
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.rect(0, 0, settings.width, settings.height);
@@ -1303,6 +1313,21 @@ function drawProvinceMap() {
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(pixels, 0, 0)
+  if (labels) {
+    ctx.font = "12px Arial";
+    for (let i = 0; i < world.provinces.length; i++) {
+      let province = world.provinces[i]
+      if (province.localizedTitle) {
+        ctx.beginPath();
+        ctx.arc(province.x, province.y, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.fillStyle = "black"
+        ctx.fillText(province.localizedTitle, province.x - 13, province.y - 4);
+      }
+      
+    }
+  }
   //pixels = null
   //world.smallMap = null
 }
@@ -1437,6 +1462,18 @@ function drawTitlePixel(x, y, convTitleType) {
   } else {
     if (cell[`${convTitleType}`]) { //does it have an overide?
       color = cell[`${convTitleType}`]
+      drawSmallPixel(ctx, x, y, color)
+    } else if (convTitleType === "kingdomOverride" && cell["empireOverride"]) {
+      color = cell["empireOverride"]
+      drawSmallPixel(ctx, x, y, color)
+    } else if (convTitleType === "duchyOverride" && cell["kingdomOverride"]) {
+      color = cell["kingdomOverride"]
+      drawSmallPixel(ctx, x, y, color)
+    } else if (convTitleType === "countyOverride" && cell["duchyOverride"]) {
+      color = cell["duchyOverride"]
+      drawSmallPixel(ctx, x, y, color)
+    } else if (convTitleType === "provinceOverride" && cell["countyOverride"]) {
+      color = cell["countyOverride"]
       drawSmallPixel(ctx, x, y, color)
     } else {
       if (cell.terrain === "plains") {

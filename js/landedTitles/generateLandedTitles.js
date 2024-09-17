@@ -26,14 +26,26 @@ function sanitizeAdjacencies(province) {
 }
 
 function createCounties(world) {
+
+    const visited = new Set();
+    const counties = [];
+    for (let i = 0; i < world.counties.length; i++) {
+        let arr = []
+        let county = world.counties[i]
+        for (let n = 0; n < county.provinces.length; n++) {
+            let provId = county.provinces[n].nonDefID;
+            arr.push(provId)
+        }
+        counties.push(arr)
+    }
+
     world.provinces.forEach(province => {
         province.adjacencies = province.adjacencies
             .map(adj => parseInt(adj))
             .filter(adj => !isNaN(adj) && adj !== province.index);
     });
 
-    const visited = new Set();
-    const counties = [];
+
 
     function getRandomUpperLimit() {
         let lim = Math.random() * (maxProvincesInCounty) + 1;
@@ -44,7 +56,7 @@ function createCounties(world) {
     }
 
     function dfs(provinceIndex, currentCounty, upperLimit, firstProvinceIndex) {
-        if (currentCounty.length >= upperLimit || visited.has(provinceIndex) || !world.provinces[provinceIndex].land || world.provinces[provinceIndex].doNotCreateLandedTitles) {
+        if (currentCounty.length >= upperLimit || visited.has(provinceIndex) || !world.provinces[provinceIndex].land || world.provinces[provinceIndex].doNotCreateLandedTitles || world.provinces[provinceIndex].brushColor) {
             return;
         }
 
@@ -62,7 +74,7 @@ function createCounties(world) {
     }
 
     for (let i = 0; i < world.provinces.length; i++) {
-        if (!visited.has(i) && world.provinces[i].land) {
+        if (!visited.has(i) && world.provinces[i].land && !world.provinces[i].brushColor) {
             const upperLimit = getRandomUpperLimit();
             const currentCounty = [];
             dfs(i, currentCounty, upperLimit, i);
@@ -396,6 +408,70 @@ function giveColors(giver, taker) {
 }
 
 function assignTitleInfo() {
+    let kingdomExists = false;
+    let duchyExists = false;
+    let countyExists = false;
+    let provinceExists = false;
+    let worldEmpires = [];
+    let worldKingdoms = [];
+    let worldDuchies = [];
+    let worldCounties = []
+    for (let i = 0; i < world.empires.length; i++) {
+        let empireProvinceExists = false;
+        let empire = world.empires[i]
+        let kingdomArr = []
+        for (let n = 0; n < empire.kingdoms.length; n++) {
+            let kingdomProvinceExists = false;
+            let duchyArr = []
+            kingdomExists = true;
+            let kingdom = empire.kingdoms[n]
+            for (let z = 0; z < kingdom.duchies.length; z++) {
+                let duchyProvinceExists = false;
+                let countyArr = []
+                duchyExists = true;
+                let duchy = kingdom.duchies[z];
+                for (let j = 0; j < duchy.counties.length; j++) {
+                    let countyProvinceExists = false;
+                    countyExists = true;
+                    let county = duchy.counties[j]
+                    let provinceArr = []
+                    for (let b = 0; b < county.provinces.length; b++) {
+                        countyProvinceExists = true;
+                        duchyProvinceExists = true;
+                        kingdomProvinceExists = true;
+                        empireProvinceExists = true;
+                        provinceExists = true;
+                        let province = county.provinces[b]
+                        provinceArr.push(province)
+                    }
+                    if (countyProvinceExists) {
+                        worldCounties.push(county)
+                        countyArr.push(county)
+                    }
+                    county.provinces = provinceArr
+                }
+                if (duchyProvinceExists) {
+                    worldDuchies.push(duchy);
+                    duchyArr.push(duchy)
+                }
+                duchy.counties = countyArr
+            }
+            if (kingdomProvinceExists) {
+                worldKingdoms.push(kingdom);
+                kingdomArr.push(kingdom)
+            }
+            kingdom.duchies = duchyArr
+        }
+        if (empireProvinceExists) {
+            worldEmpires.push(empire)
+        }
+        empire.kingdoms = kingdomArr;
+    }
+    world.empires = worldEmpires;
+    world.kingdoms = worldKingdoms;
+    world.duchies = worldDuchies;
+    world.counties = worldCounties
+
     for (let i = 0; i < world.counties.length; i++) {
         let county = world.counties[i]
         let prov = county.provinces[0]
@@ -404,7 +480,7 @@ function assignTitleInfo() {
     }
     for (let i = 0; i < world.duchies.length; i++) {
         let duchy = world.duchies[i]
-        duchy.capital = duchy.counties[0].titleName
+        duchy.capital = duchy.counties[0]
         duchy.titleName = duchy.counties[0].titleName
         giveColors(duchy.counties[0], duchy)
     }

@@ -61,6 +61,16 @@ function createWorld(w, h) {
     world.desertPointTop = Math.floor(world.height / 2) + Math.floor(world.height / 10);
     world.desertPointBottom = Math.floor(world.height / 2) - Math.floor(world.height / 10);
   }
+
+  function invertWorld() {
+    for (let i = 0; i < world.height; i++) {
+      for (let j = 0; j < world.width; j++) {
+        let cell = xy(j, i);
+        cell.elevation *= -1
+      }
+    }
+    drawWorld()
+  }
   
   /**
    * Initializes arrays to hold various features of the world such as maps, rivers,
@@ -81,6 +91,10 @@ function createWorld(w, h) {
     world.populatedCells = [];
     world.provinces = [];
     world.clothingTypes = {}
+    world.empires = []
+    world.kingdoms = []
+    world.duchies = []
+    world.counties = []
   }
   
   /**

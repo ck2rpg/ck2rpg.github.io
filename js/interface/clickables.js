@@ -615,6 +615,14 @@ GID("faithmap-icon").onclick = function() {
   drawWorld()
 }
 
+GID("titlesmap-icon").onclick = function() {
+  updateEmpireColorColumn();
+  world.drawingType = "smallEmpire"
+  paintbrush = "empireOverride"
+  setTitleColor();
+  drawWorld()
+}
+
 GID("watermap-icon").onclick = function() {
   world.drawingType = "smallWater"
   paintbrush = "waterOverride"
@@ -624,6 +632,13 @@ GID("watermap-icon").onclick = function() {
 
 GID("full-province-map").onclick = function() {
   drawProvinceMap()
+  GID("province-drawn-proceed").style.display = "none"
+  GID("province-menu").style.display = "block"
+  startProvinceEditor()
+}
+
+GID("labeled-province-map").onclick = function() {
+  drawProvinceMap(true)
   GID("province-drawn-proceed").style.display = "none"
   GID("province-menu").style.display = "block"
   startProvinceEditor()
