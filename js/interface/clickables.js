@@ -258,6 +258,7 @@ GID("create-provinces").onclick = function() {
   GID("main-generator-div").style.display = "none";
   GID("menus-main").style.display = "none"
   GID("menus-map-modes").style.display = "none"
+  GID("zoom-container").style.display = "none"
   GID("province-creation-screen").style.display = "block";
   // Delay the createProvinces function call
   setTimeout(function() {
@@ -432,6 +433,7 @@ GID("province-edits-done-proceed").onclick = function() {
   GID("canvas").style.display = "none"
   GID("province-menu").style.display = "none"
   GID("province-drawn-proceed").style.display = "none"
+  GID("main-generator-editor").style.display = "none"
   GID("text-download-settings").style.display = "block"
 }
 

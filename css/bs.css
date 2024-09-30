@@ -61,6 +61,10 @@ table {
   background: olive;
 }
 
+.right-menu-editor {
+  overflow: scroll;
+}
+
 #prov-btn {
   font-size: 1.2em;
   background:#3f6a97;
@@ -1069,6 +1073,10 @@ button[type="submit"]:hover {
   border: var(--border-color) 2px solid;
 }
 
+.hide-these-for-now {
+  display: none;
+}
+
 .bulleted {
   font-size: 1.2em;
   list-style-type: disc;
@@ -1087,6 +1095,7 @@ button[type="submit"]:hover {
   height: 100vh;
   background: #131315;
   color: white;
+  overflow: scroll;
 }
 
 .override-editor {
