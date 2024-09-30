@@ -5,29 +5,39 @@ Note that doctrines that allow more than one pick can not be defined on a religi
 function religionGenerator() {
     // Generate religions based on the religionFamilyLevel setting
     if (settings.religionFamilyLevel === "empire") {
-        world.empires.forEach(empire => createReligion(empire));
+        world.empires.forEach(empire => {
+            createReligion(empire, true)
+    });
     } else if (settings.religionFamilyLevel === "kingdom") {
         world.empires.forEach(empire => {
-            empire.kingdoms.forEach(kingdom => createReligion(kingdom));
+            empire.kingdoms.forEach(kingdom => createReligion(kingdom, true));
         });
     } else if (settings.religionFamilyLevel === "duchy") {
         world.empires.forEach(empire => {
             empire.kingdoms.forEach(kingdom => {
-                kingdom.duchies.forEach(duchy => createReligion(duchy));
+                kingdom.duchies.forEach(duchy => createReligion(duchy, true));
             });
         });
     } else if (settings.religionFamilyLevel === "county") {
         world.empires.forEach(empire => {
             empire.kingdoms.forEach(kingdom => {
                 kingdom.duchies.forEach(duchy => {
-                    duchy.counties.forEach(county => createReligion(county));
+                    duchy.counties.forEach(county => {
+                        if (!county.religion) {
+                            createReligion(county, true)
+                        }
+                    });
                 });
             });
         });
     }
 }
 
-function createReligion(entity) {
+function revampedReligion() {
+    
+}
+
+function createReligion(entity, genFaiths) {
     let suff = rando()
     let religion = {
         name: `${suff}`,
@@ -72,6 +82,12 @@ function createReligion(entity) {
         } else {
             religion.language = entity.provinces[0].culture.language
         }
+        religion.nameLoc = makeFaithName(religion.language)
+        religion.oldName = religion.name + "_religion_old";
+        religion.oldNameLoc = `Old ${religion.nameLoc}`
+        religion.oldNameAdj = religion.name + "_religion_old_adj";
+        religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
+        setReligionLocalization(religion)
     } else {
         religion.language = makeLanguage(consSet, vowelSet)
         religion.nameLoc = makeFaithName(religion.language)
@@ -93,7 +109,9 @@ function createReligion(entity) {
     world.religions.push(religion);
 
     // Generate faiths based on divergeFaithLevel
-    generateFaiths(religion, entity);
+    if (genFaiths) {
+        generateFaiths(religion, entity);
+    }
     return religion
 }
 
@@ -124,23 +142,58 @@ function generateFaiths(religion, entity) {
             if (entity.isEmpire) {
                 entity.kingdoms.forEach(kingdom => {
                     kingdom.duchies.forEach(duchy => {
-                        duchy.counties.forEach(county => createFaith(religion, county));
+                        duchy.counties.forEach(county => {
+                            if (!county.faith) {
+                                createFaith(religion, county)               
+                            }
+                        });
                     });
                 });
             } else if (entity.isKingdom) {
                 entity.duchies.forEach(duchy => {
-                    duchy.counties.forEach(county => createFaith(religion, county));
+                    duchy.counties.forEach(county => {
+                        if (!county.faith) {
+                            createFaith(religion, county)
+                        }
+                    });
                 });
             } else if (entity.isDuchy) {
-                entity.counties.forEach(county => createFaith(religion, county));
+                entity.counties.forEach(county => {
+                    if (!county.faith) {
+                        createFaith(religion, county)
+                    }
+                });
             } else if (entity.isCounty) {
-                createFaith(religion, entity);
+                if (!entity.faith) {
+                    createFaith(religion, entity);
+                }
             }
         }
     } else {
         createFaith(religion)
     }
 
+}
+
+function assignHolySites() {
+    for (let i = 0; i < world.faiths.length; i++) {
+        let f = world.faiths[i]
+        if (f.holySites && f.holySites[0]) {
+
+        } else {
+            f.holySites = []
+            let arr = []
+            console.log(f.provinces)
+            for (let i = 0; i < 6; i++) {
+                pickUniqOrDiscard(f.provinces, arr)
+            }
+            for (let i = 0; i < arr.length; i++) {
+                console.log(arr)
+                let prov = arr[i]
+                f.holySites.push(prov.nonDefID)
+            }
+        }
+    }
 }
 
 function createFaith(religion, entity) {
@@ -169,6 +222,10 @@ function createFaith(religion, entity) {
     pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
     pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
     faith.holySites = [];
+    faith.holy_order_names = religion.holy_order_names
+    faith.virtueSins = religion.virtueSins
+    faith.localization = religion.localization
+    faith.provinces = []
     if (entity) {
         for (let i = 0; i < 6; i++) {
             pickUniqOrDiscard(entity.ownProvinces, faith.holySites);
@@ -176,33 +233,87 @@ function createFaith(religion, entity) {
     }
     religion.faiths.push(faith);
     if (entity) {
-        entity.faith = faith; // Assign faith to the entity
+        if (!entity.faith) {
+            entity.faith = faith
+        }
 
         // Propagate faith property down to province level to track through later reassignments
         if (entity.isKingdom) {
             entity.duchies.forEach(duchy => {
                 duchy.faith = faith;
                 duchy.counties.forEach(county => {
-                    county.faith = faith;
-                    county.provinces.forEach(province => {
-                        province.faith = faith; // Set faith at province level
-                    });
+                    if (!county.faith) {
+                        county.faith = faith;
+                        county.provinces.forEach(province => {
+                            province.faith = faith; // Set faith at province level
+                            faith.provinces.push(province)
+                        });
+                    }
                 });
             });
         } else if (entity.isDuchy) {
             entity.counties.forEach(county => {
-                county.faith = faith;
-                county.provinces.forEach(province => {
-                    province.faith = faith; // Set faith at province level
-                });
+                if (!county.faith) {
+                    county.faith = faith;
+                    county.provinces.forEach(province => {
+                        province.faith = faith; // Set faith at province level
+                        faith.provinces.push(province)
+                    });
+                }
             });
         } else if (entity.isCounty) {
-            entity.provinces.forEach(province => {
-                province.faith = faith; // Set faith at province level
-            });
+            if (entity.faith) {
+
+            } else {
+                entity.provinces.forEach(province => {
+                    province.faith = faith; // Set faith at province level
+                    faith.provinces.push(province)
+                });
+            }
+        }
+    }
+    world.faiths.push(faith)
+    return faith
+}
+
+function getFaithFromColor(r, g, b) {
+    r = parseInt(r);
+    g = parseInt(g);
+    b = parseInt(b);
+    for (let i = 0; i < faithOverrideKeys.length; i++) {
+        let colorObj = faithOverrideKeys[i];
+        if (colorObj.r === r && colorObj.g === g && colorObj.b === b) {
+            return colorObj.faith;
+        }
+    }
+    return null; // Return null if no matching culture is found
+}
+
+function assignOverrideFaiths() {
+    if (!world.faiths) {
+        world.faiths = []
+    }
+    for (let i = 0; i < world.counties.length; i++) {
+        let county = world.counties[i];
+        let capital = county.provinces[0];
+        let cell = world.smallMap[capital.y][capital.x].bigCell;
+        if (cell.faithOverride) {
+            let faith = getFaithFromColor(cell.faithOverrideR, cell.faithOverrideG, cell.faithOverrideB);
+            if (faith) {
+                console.log("GOT ONE!")
+                county.faith = faith
+                county.religion = county.faith.religion
+                for (let i = 0; i < county.provinces.length; i++) {
+                    let prov = county.provinces[i]
+                    prov.faith = county.faith;
+                    prov.religion = county.religion;
+                    faith.provinces.push(prov)
+                }
+            }
         }
     }
 }
+
 
 
 function faithsSlideDown() {

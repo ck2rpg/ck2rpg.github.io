@@ -50,6 +50,9 @@ function makeSimpleHistory() {
                     for (let l = 0; l < county.provinces.length; l++) {
                         let province = county.provinces[l]
                         province.county = county
+                        province.duchy = duchy;
+                        province.kingdom = kingdom;
+                        province.empire = empire
                         if (l === 0) {
                             if (settings.eraLevel === "tribal") {
                                 province.holdingType = "tribal_holding"
@@ -87,6 +90,8 @@ function outputCharacters() {
         chist += `\tculture = "${char.culture.id}"\n`
         let birthYear = world.year - char.age;
         let deathYear = world.year + getRandomInt(5, 40);
+        char.birthYear = birthYear;
+        char.deathYear = deathYear
         chist += `\t${birthYear}.${world.month}.${world.day} = {\n`
         chist += `\t\tbirth = yes\n`
         chist += `\t}\n`
@@ -99,6 +104,25 @@ function outputCharacters() {
         dyns += `\tculture = ${char.culture.id}\n`
         dyns += `}\n`
     }
+    let first = world.characters[0]
+    chist += `
+ck2rpg = {
+	name = "ck2rpg"
+	dynasty = ${first.dyn}
+	religion = ${first.religion.name}
+	culture = "${first.culture.id}"
+	${first.birthYear}.${world.month}.${world.day} = {
+		birth = yes
+		effect = {
+			set_landless_government_effect = yes
+			add_character_flag = do_not_generate_starting_family
+		}
+	}
+	${first.deathYear}.${world.month}.${world.day} ={
+		death = yes
+	}
+}    
+    `
     var data = new Blob([chist], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="characters_link" download="gen_characters.txt" href="">Download History</a><br>`
@@ -182,6 +206,30 @@ function outputHistory() {
             }
         }
     }
+    let next = parseInt(world.year) + 1
+    let nextMonth = parseInt(world.month) + 1
+    titleHistory += `
+d_ck2rpg = { 
+	${world.year}.${world.month}.${world.day} = {
+		liege = 0
+		holder = ck2rpg
+		government = landless_adventurer_government
+		succession_laws = { landless_adventurer_succession_law }
+		effect = {
+			create_landless_adventurer_title_history_effect = yes
+			set_variable = { name = adventurer_creation_reason value = flag:historical }
+		}
+	}
+	${next}.${world.month}.${world.day} = {
+		effect = {
+			destroy_landless_title_no_dlc_effect = { DATE = 280.1.1 }
+		}
+	}
+	${next}.${nextMonth}.${world.day}= {
+		holder = 0
+	}
+}
+    `
     var data = new Blob([provinceHistory], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="province_history_link" download="k_generated.txt" href="">Download History</a><br>`

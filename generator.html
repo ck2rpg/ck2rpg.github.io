@@ -45,7 +45,12 @@
     <div id="province-creation-screen">
       Be patient, your provinces are generating.
     </div>
-
+    <div class="override-editor" id="title-editor" style="display: none">
+      <div class="close-btn" id="close-title-editor">✖</div>
+      <div id="title-editor-content">
+          <!-- Dynamic culture content goes here -->
+      </div>
+    </div>
     <div class="override-editor" id="culture-editor" style="display: none;">
       <div class="close-btn" id="close-editor">✖</div>
       <div id="culture-editor-content">
@@ -583,12 +588,13 @@
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
-          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
+          <!--Removing Province icon for now to try only hierarchical drawing out and test community response-->
+          <div style="display: none" class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="culturemap-icon" src="icons/candlestick.png"><span class="tool-tip">Culture Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="faithmap-icon" src="icons/religion.png"><span class="tool-tip">Faith Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="roguelike-icon" src="icons/roguelike-icon.png"><span class="tool-tip">Roguelike Map</span></div>
-          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="titlesmap-icon" src="icons/roguelike-icon.png"><span class="tool-tip">Title Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="titlesmap-icon" src="icons/titles-icon.png"><span class="tool-tip">Title Map</span></div>
         </div>      
       </div>
 
@@ -718,11 +724,10 @@
                 <li>Feature: Added culture and faith editors to the new drawing mode. You will see this new menu on the right side of your screen. When you click on a color swatch for a culture or faith, it will switch to that culture or faith's color. When you click on the name of the culture or faith, it will bring up an editor.</li> 
                 <li>Feature: Added title drawing mode and editor.</li>
                 <li>Feature: When drawing a title, the generator will look to your culture and faith generation settings. In other words, if a culture is supposed to be assigned per kingdom, each kingdom you draw will automatically spawn a culture and cultural territory. You can change these options dynamically between drawing different elements (e.g., move from culture per kingdom to culture per county for an area). Any spawned cultures will then be visible on the culture map mode.</li>
-                <li>Feature: Automatically generate a bookmark image (your flatmap) to replace white placeholder screen. This has been implemented through changes to the Gimp script.</li>
                 <li>Feature: Added a "Roguelike" map mode on the map generation screen.</li>
                 <li>Feature: Added a button to save your generator settings as a text file that can later be loaded into the generator.</li>
                 <li>Feature: Added an image overlay import to allow tracing from an image.</li>
-                <li>Feature: Added a "Draw Labeled Province Map" button to the province editing screen.</li>
+                <li>Feature: The generator will generate a single placeholder landless title and character to avoid error log spam.</li>
                 <li>Bug Fix: Users identified a bug with random holder selection, which resulted in a random holder level being selected across the board instead of for each landed title hierarchy. This bug has been fixed. Now, each a random holder level is selected for each title hierarchy (e.g., all titles within X de jure empire will have holders generated at duchy level and no higher).</li>
                 <li>Bug Fix: Removed outdated relic magnify button from menu.</li>
                 <li>Bug fix: Fixed flavorization bug causing "Caliph of" nothing localization for princes.</li>

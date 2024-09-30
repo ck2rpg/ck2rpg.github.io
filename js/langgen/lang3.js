@@ -608,7 +608,6 @@ function makeCharacterName(lang) {
 
 function makePlaceName(lang) {
     let vowels = ["a", "e", "i", "o", "u"]
-    console.log(lang)
     let initial = pickFrom(lang.initialConsonants);
     let medial = pickFrom(lang.medialConsonants);
     let final = pickFrom(lang.finalConsonants);

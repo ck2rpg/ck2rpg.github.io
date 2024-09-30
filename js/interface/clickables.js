@@ -590,6 +590,38 @@ function setTitleColor() {
   paintbrushTitle = `rgb(${paintbrushTitleR}, ${paintbrushTitleG}, ${paintbrushTitleB})`
 }
 
+function setRandomPaintbrushColor() {
+  // Generate random values for red, green, and blue
+  let r = Math.floor(Math.random() * 256);
+  let g = Math.floor(Math.random() * 256);
+  let b = Math.floor(Math.random() * 256);
+
+  // Convert each component to a two-character hex string
+  let hexR = r.toString(16).padStart(2, '0');
+  let hexG = g.toString(16).padStart(2, '0');
+  let hexB = b.toString(16).padStart(2, '0');
+
+  // Combine the hex values to create the hex color code
+  let hexColor = `#${hexR}${hexG}${hexB}`;
+
+  // Set the hex value for the input element with id 'title-color'
+  GID('title-color').value = hexColor;
+
+  // Set the RGB format for the paintbrush title
+}
+
+// Add event listener for keydown event
+document.addEventListener('keydown', function(event) {
+  if (event && settings.currentStage !== "provincesGenerated") { // Keycode 9 corresponds to 'Tab'
+      let key = event.key
+      if (key === "Tab") {
+        event.preventDefault(); // Prevent default tab behavior (optional)
+        setRandomPaintbrushColor(); // Run the function when Tab is pressed
+        setTitleColor()
+      }
+  }
+});
+
 GID("title-color").addEventListener('change', setTitleColor);
 
 GID("provmap-icon").onclick = function() {
@@ -715,6 +747,7 @@ document.getElementById('generator-resolution').addEventListener('change', funct
   const selectedValue = event.target.value;
   const [width, height] = selectedValue.split('x').map(Number);
   world = {}
+  world.faiths = []
   createWorld(width, height)
   settings.pixelSize = settings.height / world.height
   resetClimateLimits()
@@ -1074,6 +1107,10 @@ eraLevelSelect.addEventListener('change', function() {
 });
 
 GID("randomNoiseMap").onclick = function() {
+  world = {}
+  createWorld(world.width, world.height)
+  world.faiths = []
+  resetClimateLimits()
   randomMap()
   cleanupAll()
   drawWorld()
@@ -1093,6 +1130,7 @@ GID('loadSettingsInput').addEventListener('change', function(event) {
   world.width = width;
   world.height = height
   createWorld()
+  world.faiths = []
   settings.pixelSize = settings.height / world.height
   //resetClimateLimits()
   randomMap()

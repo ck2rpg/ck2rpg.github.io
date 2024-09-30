@@ -7,6 +7,7 @@
  */
 function writeLandedTitles() {
     let t = `${daBom}`
+    let landless = `c_${world.counties[0].titleName}`
     for (let j = 0; j < world.empires.length; j++) {
         let empire = world.empires[j]
         t += `e_${empire.titleName} = {\n`
@@ -45,6 +46,19 @@ function writeLandedTitles() {
         }
         t += `}\n`
     }
+    t += `
+d_ck2rpg = {
+    color = { 100 100 100 }
+	capital = ${landless}
+	definite_form = yes
+	landless = yes
+	require_landless = yes
+	ruler_uses_title_name = no
+	no_automatic_claims = yes
+	destroy_if_invalid_heir = yes
+	ai_primary_priority = { add = @never_primary_score }
+}  
+`
     var data = new Blob([t], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
     let link = `<a id="title-download-link" download="00_landed_titles.txt" href="">Download Landed Titles</a><br>`

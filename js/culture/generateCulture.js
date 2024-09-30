@@ -943,6 +943,7 @@ function outputHeritages() {
         let culture = world.cultures[i]
         t += `${culture.heritage} = {\n`
         t += `\ttype = heritage\n`
+        t += `\taudio_parameter = european`
         t += `}`
     }
     var data = new Blob([t], {type: 'text/plain'})

@@ -16,7 +16,7 @@ let monthList = [
   function startClock() {
     let clock = {};
     clock.year = getRandomInt(1, 1000)
-    clock.month = getRandomInt(1, 12)
+    clock.month = getRandomInt(1, 11)
     clock.day = getRandomInt(1, 28);
     clock.hour = 9;
     clock.minutes = 55;

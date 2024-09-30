@@ -240,6 +240,8 @@ const overrideProps = {
   "empireOverride": "empireOverride"
 };
 
+let workableLandCell;
+
 function applyOverrideBrushType(brushType, nextCell) {
   //So you're applying this on front end before doing anything
   const overrideProp = overrideProps[brushType];
@@ -272,11 +274,18 @@ function applyOverrideBrushType(brushType, nextCell) {
       nextCell[`${overrideProp}G`] = paintbrushTitleG;
       nextCell[`${overrideProp}B`] = paintbrushTitleB;
 
-      if (selectedEmpire.culture && !nextCell[`cultureOverride`]) {
+      if (selectedEmpire.culture) {
         nextCell[`cultureOverride`] = paintbrushTitle;
         nextCell[`cultureOverrideR`] = paintbrushTitleR;
         nextCell[`cultureOverrideG`] = paintbrushTitleG;
         nextCell[`cultureOverrideB`] = paintbrushTitleB;
+      }
+
+      if (selectedEmpire.faith) {
+        nextCell[`faithOverride`] = paintbrushTitle;
+        nextCell[`faithOverrideR`] = paintbrushTitleR;
+        nextCell[`faithOverrideG`] = paintbrushTitleG;
+        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "kingdomOverride") {
@@ -286,12 +295,17 @@ function applyOverrideBrushType(brushType, nextCell) {
       nextCell[`${overrideProp}R`] = paintbrushTitleR;
       nextCell[`${overrideProp}G`] = paintbrushTitleG;
       nextCell[`${overrideProp}B`] = paintbrushTitleB;
-
-      if (selectedKingdom.culture && !nextCell[`cultureOverride`]) {
+      if (selectedKingdom.culture && settings.divergeCulturesAtKingdom) {
         nextCell[`cultureOverride`] = paintbrushTitle;
         nextCell[`cultureOverrideR`] = paintbrushTitleR;
         nextCell[`cultureOverrideG`] = paintbrushTitleG;
         nextCell[`cultureOverrideB`] = paintbrushTitleB;
+      }
+      if (settings.divergeFaithLevel === "kingdom") {
+        nextCell[`faithOverride`] = paintbrushTitle;
+        nextCell[`faithOverrideR`] = paintbrushTitleR;
+        nextCell[`faithOverrideG`] = paintbrushTitleG;
+        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "duchyOverride") {
@@ -302,11 +316,18 @@ function applyOverrideBrushType(brushType, nextCell) {
       nextCell[`${overrideProp}G`] = paintbrushTitleG;
       nextCell[`${overrideProp}B`] = paintbrushTitleB;
 
-      if (selectedDuchy.culture && !nextCell[`cultureOverride`]) {
+      if (selectedDuchy.culture && settings.divergeCulturesAtDuchy) {
         nextCell[`cultureOverride`] = paintbrushTitle;
         nextCell[`cultureOverrideR`] = paintbrushTitleR;
         nextCell[`cultureOverrideG`] = paintbrushTitleG;
         nextCell[`cultureOverrideB`] = paintbrushTitleB;
+      }
+
+      if (settings.divergeFaithLevel === "duchy") {
+        nextCell[`faithOverride`] = paintbrushTitle;
+        nextCell[`faithOverrideR`] = paintbrushTitleR;
+        nextCell[`faithOverrideG`] = paintbrushTitleG;
+        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "countyOverride") {
@@ -317,11 +338,18 @@ function applyOverrideBrushType(brushType, nextCell) {
       nextCell[`${overrideProp}G`] = paintbrushTitleG;
       nextCell[`${overrideProp}B`] = paintbrushTitleB;
 
-      if (selectedCounty.culture && !nextCell[`cultureOverride`]) {
+      if (selectedCounty.culture && settings.divergeCulturesAtCounty) {
         nextCell[`cultureOverride`] = paintbrushTitle;
         nextCell[`cultureOverrideR`] = paintbrushTitleR;
         nextCell[`cultureOverrideG`] = paintbrushTitleG;
         nextCell[`cultureOverrideB`] = paintbrushTitleB;
+      }
+
+      if (settings.divergeFaithLevel === "county") {
+        nextCell[`faithOverride`] = paintbrushTitle;
+        nextCell[`faithOverrideR`] = paintbrushTitleR;
+        nextCell[`faithOverrideG`] = paintbrushTitleG;
+        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "provinceOverride") {
@@ -330,14 +358,15 @@ function applyOverrideBrushType(brushType, nextCell) {
       if (!selectedProvince.x) {
         setProvinceLocatorProperties(selectedProvince, nextCell)
       }
-      if (!selectedProvince.seed) {
+      /*if (!selectedProvince.seed) {
         nextCell.isSeedCell = true;
-        //selectedProvince.seed = nextCell
+        selectedProvince.seed = nextCell
         selectedProvince.elevation = nextCell.elevation
         selectedProvince.hemisphere = setHemisphere(selectedProvince)
         selectedProvince.distanceFromEquator = calculateDistanceFromEquator(selectedProvince);
         selectedProvince.bigCell = nextCell;
       }
+      */
       nextCell[overrideProp] = paintbrushTitle;
       nextCell[`${overrideProp}R`] = paintbrushTitleR;
       nextCell[`${overrideProp}G`] = paintbrushTitleG;
@@ -389,6 +418,8 @@ function createEmpire(brushColor) {
   empire.ownProvinces = [];
   empire.provinces = []
   empire.brushColor = brushColor
+  empire.isEmpire = true;
+
   if (settings.culturePer === "empire") {
     let culture = createCulture()
     culture.brushColor = brushColor
@@ -402,6 +433,15 @@ function createEmpire(brushColor) {
         world.cultures.push(culture)
     }
   }
+
+  if (settings.religionFamilyLevel === "empire") {
+    let religion = createReligion(empire)
+    if (settings.divergeFaithLevel === "empire") {
+      let faith = createFaith(religion, empire)
+      addFaithColorIfNotExists(brushColor, faith)
+    }
+  }
+
   world.empires.push(empire)
   return empire;
 }
@@ -413,7 +453,9 @@ function createKingdom(brushColor) {
   kingdom.ownProvinces = [];
   kingdom.provinces = []
   kingdom.brushColor = brushColor
-  kingdom.empire = selectedEmpire //bug check - is the resetting going to lead to bad results?
+  kingdom.empire = selectedEmpire 
+  kingdom.isKingdom = true;
+
   if (kingdom.empire.culture) {
     if (settings.divergeCulturesAtKingdom) {
       kingdom.culture = createCulture(kingdom.empire.culture)
@@ -428,6 +470,7 @@ function createKingdom(brushColor) {
     } else {
         kingdom.culture = kingdom.empire.culture;
     }
+
     kingdom.localizedTitle = makePlaceName(kingdom.culture.language)
   } else if (settings.culturePer === "kingdom") {
     let culture = createCulture()
@@ -445,6 +488,19 @@ function createKingdom(brushColor) {
     }
     kingdom.localizedTitle = makePlaceName(kingdom.culture.language)
   }
+  let religion
+  if (settings.religionFamilyLevel === "kingdom") {
+    religion = createReligion(kingdom)
+  }
+  if (settings.divergeFaithLevel === "kingdom") {
+    if (settings.religionFamilyLevel === "empire") {
+      religion = kingdom.empire.religion
+    } else if (settings.religionFamilyLevel === "kingdom") {
+      religion = kingdom.religion
+    }
+    let faith = createFaith(religion, kingdom)
+    addFaithColorIfNotExists(brushColor, faith)
+  }
   world.kingdoms.push(kingdom)
   return kingdom;
 }
@@ -457,6 +513,7 @@ function createDuchy(brushColor) {
   duchy.provinces = []
   duchy.kingdom = selectedKingdom;
   duchy.brushColor = brushColor
+  duchy.isDuchy = true;
 
   if (duchy.kingdom.culture) {
     if (settings.divergeCulturesAtDuchy) {
@@ -488,9 +545,26 @@ function createDuchy(brushColor) {
       duchy.kingdom.empire.localizedTitle = makePlaceName(culture.language)
       duchy.kingdom.localizedTitle = makePlaceName(culture.language)
     }
+    if (settings.religionFamilyLevel === "duchy") {
+      let religion = createReligion(duchy)
+    }
     duchy.localizedTitle = makePlaceName(duchy.culture.language)
   }
-
+  let religion
+  if (settings.religionFamilyLevel === "duchy") {
+    religion = createReligion(duchy)
+  }
+  if (settings.divergeFaithLevel === "duchy") {
+    if (settings.religionFamilyLevel === "empire") {
+      religion = duchy.kingdom.empire.religion
+    } else if (settings.religionFamilyLevel === "kingdom") {
+      religion = duchy.kingdom.religion
+    } else if (settings.religionFamilyLevel === "duchy") {
+      religion = duchy.religion
+    }
+    let faith = createFaith(religion, duchy)
+    addFaithColorIfNotExists(brushColor, faith)
+  }
   world.duchies.push(duchy)
   return duchy;
 }
@@ -518,6 +592,7 @@ function createCounty(brushColor) {
   county.provinces = []
   county.duchy = selectedDuchy;
   county.brushColor = brushColor
+  county.isCounty = true;
 
   if (county.duchy.culture) {
     if (settings.divergeCulturesAtCounty) {
@@ -552,12 +627,30 @@ function createCounty(brushColor) {
     }
     county.localizedTitle = makePlaceName(county.culture.language)
   }
+  let religion
+  if (settings.religionFamilyLevel === "county") {
+    religion = createReligion(county)
+  }
+  if (settings.divergeFaithLevel === "county") {
+    if (settings.religionFamilyLevel === "empire") {
+      religion = county.duchy.kingdom.empire.religion
+    } else if (settings.religionFamilyLevel === "kingdom") {
+      religion = county.duchy.kingdom.religion
+    } else if (settings.religionFamilyLevel === "duchy") {
+      religion = county.duchy.religion
+    } else if (settings.religionFamilyLevel === "county") {
+      religion = county.religion
+    }
+    let faith = createFaith(religion, county)
+    addFaithColorIfNotExists(brushColor, faith)
+  }
   world.counties.push(county)
   return county;
 }
 
 function createDummyProvince(brushColor) {
   let province = {};
+  province.isProvince = true;
   province.seed = undefined;
   province.farthestNorth = undefined;
   province.farthestSouth = undefined;
@@ -592,6 +685,7 @@ function createDummyProvince(brushColor) {
   province.colorR = o.r
   province.colorG = o.g
   province.colorB = o.b
+  provinceKeys[`${o.r}, ${o.g}, ${o.b}`] = province
   province.land = true;
   province.titleName = `R${province.colorR}G${province.colorG}B${province.colorB}`
   province.localizedTitle = makePlaceName(selectedCounty.culture.language)
@@ -615,6 +709,7 @@ function createDummyProvince(brushColor) {
   selectedCounty.provinces.push(province)
   province.brushColor = brushColor
   world.provinces.push(province)
+  province.nonDefId = world.provinces.length
   return province;
 }
 
@@ -729,16 +824,28 @@ function debounceDraw() {
 
 let faithOverrideKeys = [];
 
+
 // Helper function to check if faith exists in the list of override colors and add it if not
-function addFaithIfNotExists(faithColor) {
+function addFaithColorIfNotExists(faithColor, faith) {
   // Check if the faith color already exists in the list
-  const exists = faithOverrideKeys.some(color => 
-    color.r === faithColor.r && color.g === faithColor.g && color.b === faithColor.b
-  );
+  if (faithColor.r) {
+
+  } else {
+    faithColor = getColorObjectFromString(faithColor)
+  }
+  const exists = faithOverrideKeys.some(color => areColorsEqual(color, faithColor));
 
   // If the faith does not exist, add it to the list
   if (!exists) {
-    faithColor.faith = createReligion();
+    if (faith) {
+      faithColor.faith = faith
+    } else {
+      let religion = createReligion()
+      faithColor.faith = createFaith(religion)
+    }
+    faithColor.r = parseInt(faithColor.r);
+    faithColor.g = parseInt(faithColor.g);
+    faithColor.b = parseInt(faithColor.b)
     faithOverrideKeys.push(faithColor);
   }
 }
@@ -1304,7 +1411,7 @@ function updateCultureColorColumn() {
 
 function updatePaintbrushTitle(culture) {
   GID("title-color").value = rgbStringToHex(culture.brushColor)
-  paintbrushTitle = culture.brushColor;
+  setTitleColor()
 }
 
 function redrawAffectedCells() {
@@ -1342,7 +1449,7 @@ function redrawAffectedCells() {
           g: cell.faithOverrideG,
           b: cell.faithOverrideB
         };
-        addFaithIfNotExists(faithColor);
+        addFaithColorIfNotExists(faithColor);
         clearCell(x, y, context);
         drawTitlePixel(x, y, "faithOverride");
       }
@@ -1461,78 +1568,6 @@ function clearCell(x, y, context) {
 canvas.addEventListener('mousedown', onMouseDown);
 canvas.addEventListener('mousemove', onMouseMove);
 canvas.addEventListener('mouseup', onMouseUp);
-
-function randomizeReligion(religion) {
-  religion.name = rando();
-  religion.isPagan = "yes"
-  religion.graphical_faith = "pagan_gfx"
-  religion.piety__icon_group = "pagan"
-  religion.doctrine_background_icon = "core_tenet_banner_pagan.dds"
-  religion.hostility_doctrine = "pagan_hostility_doctrine"
-  religion.doctrines = [
-    pickFrom(faithHeads),
-    pickFrom(faithGendered),
-    pickFrom(faithPluralism),
-    pickFrom(faithTheocracy),
-    pickFrom(faithConcubines),
-    pickFrom(faithDivorce),
-    pickFrom(faithConsan),
-    pickFrom(faithHomosexuality),
-    pickFrom(faithAdulteryMen),
-    pickFrom(faithAdulteryWomen),
-    pickFrom(faithKinslaying),
-    pickFrom(faithDeviancy),
-    pickFrom(faithWitchcraft),
-    pickFrom(faithClerical1),
-    pickFrom(faithClerical2),
-    pickFrom(faithClerical3),
-    pickFrom(faithClerical4),
-    pickFrom(faithPilgrimages),
-    pickFrom(funeralDoctrines)
-  ]
-  religion.virtueSins = []
-  religion.custom_faith_icons = `custom_faith_1 custom_faith_2 custom_faith_3 custom_faith_4 custom_faith_5 custom_faith_6 custom_faith_7 custom_faith_8 custom_faith_9 custom_faith_10 dualism_custom_1 zoroastrian_custom_1 zoroastrian_custom_2 buddhism_custom_1 buddhism_custom_2 buddhism_custom_3 buddhism_custom_4 taoism_custom_1 yazidi_custom_1 sunni_custom_2 sunni_custom_3 sunni_custom_4 muhakkima_1 muhakkima_2 muhakkima_4 muhakkima_5 muhakkima_6 judaism_custom_1 custom_faith_fp1_fenrir custom_faith_fp1_irminsul custom_faith_fp1_jormungandr custom_faith_fp1_odins_ravens custom_faith_fp1_runestone_moon custom_faith_fp1_thors_hammer custom_faith_fp1_valknut custom_faith_fp1_yggdrasil custom_faith_boromian_circles custom_faith_lotus custom_faith_aum_tibetan custom_faith_pentagram custom_faith_pentagram_inverted custom_faith_burning_bush custom_faith_allah custom_faith_gankyil custom_faith_eye_of_providence custom_faith_dove custom_faith_ichthys custom_faith_lamb custom_faith_black_sheep custom_faith_ankh custom_faith_chi_rho custom_faith_hamsa custom_faith_cool_s`
-  religion.holy_order_names = [
-    "PLACEHOLDER",
-    "PLACEHOLDER"
-  ]
-  religion.holy_order_maa = pickFrom(faithMAAS)
-  religion.language = "PLACEHOLDER"
-  religion.nameLoc = "PLACEHOLDER"
-  religion.oldName = religion.name + "_religion_old";
-  religion.oldNameLoc = `Old ${religion.nameLoc}`
-  religion.oldNameAdj = religion.name + "_religion_old_adj";
-  religion.oldNameAdjLoc = `Old ${religion.nameLoc}`
-  pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
-  pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
-  pickUniqFromWithoutDelete(virtueSinPairs, religion.virtueSins);
-  religion.faiths = []
-  religion.faiths.push(randomFaith(religion))
-}
-
-function randomFaith(religion) {
-  let faith = {};
-  faith.language = "PLACEHOLDER"
-  let faithIcon = pickFrom(faithIcons);
-  faith.icon = faithIcon[0];
-  faith.reformed_icon = faithIcon[1];
-  faith.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`;
-  let pref = rando()
-  faith.name = `${pref}_faith`;
-  faith.nameLoc = "PLACEHOLDER"
-  let fOld = "PLACEHOLDER"
-  faith.oldName = `${faith.name}_old`;
-  faith.oldNameLoc = `${fOld} ${faith.nameLoc}`;
-  faith.oldNameAdj = `${faith.name}_old_adj`;
-  faith.oldNameAdjLoc = `${fOld} ${faith.nameLoc}`;
-  faith.doctrines = ["unreformed_faith_doctrine"];
-  pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
-  pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
-  pickUniqFromWithoutDelete(faithTenets, faith.doctrines);
-  faith.holySites = []; // PLACEHOldER
-  religion.faiths.push(faith);
-  return faith;
-}
 
 function closeFaithEditor() {
   GID("faith-editor").style.display = "none";
@@ -1820,7 +1855,42 @@ function createDropdown(label, options, selectedOption, dataAttribute, id) {
   return container;
 }
 
+function createFontSizeToggle() {
+  const fontSizeDiv = document.createElement('div');
+  fontSizeDiv.style.display = 'flex';
+  fontSizeDiv.style.alignItems = 'center';
+  fontSizeDiv.style.marginBottom = '5px';
+
+  const label = document.createElement('label');
+  label.textContent = 'Toponym Font Size:';
+  label.style.marginRight = '10px';
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.value = settings.labelFontSize || 16; // Default value if not set
+  input.style.width = '50px';
+
+  const debouncedChange = debounce(function() {
+    const fontSize = parseInt(input.value, 10);
+    if (!isNaN(fontSize)) {
+      settings.labelFontSize = fontSize;
+      drawWorld();
+    }
+  });
+
+  input.oninput = debouncedChange; 
+
+  fontSizeDiv.appendChild(label);
+  fontSizeDiv.appendChild(input);
+  return fontSizeDiv;
+}
+
+
+let column;
+
 function updateEmpireColorColumn() {
+  column = "empire"
+  selectedCounty = undefined;
   const editorDiv = document.getElementById('main-generator-editor');
   editorDiv.innerHTML = '';
   editorDiv.innerHTML += "<h1 class='right-menu-header'>Empires</h1>";
@@ -1829,126 +1899,309 @@ function updateEmpireColorColumn() {
     const titleDiv = createTitleEntry(empire)
     editorDiv.appendChild(titleDiv);
   }
+  editorDiv.appendChild(createFontSizeToggle())
 }
 
 function updateKingdomColorColumn() {
+  column = "kingdom"
+  selectedCounty = undefined;
   const editorDiv = document.getElementById('main-generator-editor');
   editorDiv.innerHTML = '';
-  editorDiv.innerHTML += "<h1 class='right-menu-header'>Kingdoms</h1>";
+  editorDiv.innerHTML += "<h1 class='right-menu-header'><span id='back-arrow'>◀</span> Kingdoms</h1>";
   for (let i = 0; i < selectedEmpire.kingdoms.length; i++) {
     let kingdom = selectedEmpire.kingdoms[i]
     const titleDiv = createTitleEntry(kingdom);
     editorDiv.appendChild(titleDiv);
   }
+  editorDiv.appendChild(createFontSizeToggle())
+  GID("back-arrow").onclick = function() {
+    updateEmpireColorColumn()
+  }
 }
 
 function updateDuchyColorColumn() {
+  column = "duchy"
+  selectedCounty = undefined;
   const editorDiv = document.getElementById('main-generator-editor');
   editorDiv.innerHTML = '';
-  editorDiv.innerHTML += "<h1 class='right-menu-header'>Duchies</h1>";
+  editorDiv.innerHTML += "<h1 class='right-menu-header'><span id='back-arrow'>◀</span> Duchies</h1>";
   for (let i = 0; i < selectedKingdom.duchies.length; i++) {
     let duchy = selectedKingdom.duchies[i]
     const titleDiv = createTitleEntry(duchy);
     editorDiv.appendChild(titleDiv);
   }
+  editorDiv.appendChild(createFontSizeToggle())
+  GID("back-arrow").onclick = function() {
+    updateKingdomColorColumn()
+  }
 }
 
 function updateCountyColorColumn() {
+  column = "county"
   const editorDiv = document.getElementById('main-generator-editor');
   editorDiv.innerHTML = '';
-  editorDiv.innerHTML += "<h1 class='right-menu-header'>Counties</h1>";
+  editorDiv.innerHTML += "<h1 class='right-menu-header'><span id='back-arrow'>◀</span> Counties</h1>";
   for (let i = 0; i < selectedDuchy.counties.length; i++) {
     let county = selectedDuchy.counties[i]
     const titleDiv = createTitleEntry(county);
     editorDiv.appendChild(titleDiv);
   }
+  editorDiv.appendChild(createFontSizeToggle())
+  GID("back-arrow").onclick = function() {
+    updateDuchyColorColumn()
+  }
 }
 
 function updateProvinceColorColumn() {
+  column = "province"
   const editorDiv = document.getElementById('main-generator-editor');
   editorDiv.innerHTML = '';
-  editorDiv.innerHTML += "<h1 class='right-menu-header'>Provinces</h1>";
+  editorDiv.innerHTML += "<h1 class='right-menu-header'><span id='back-arrow'>◀</span> Provinces</h1>";
   for (let i = 0; i < selectedCounty.provinces.length; i++) {
     let province = selectedCounty.provinces[i]
     const titleDiv = createTitleEntry(province);
     editorDiv.appendChild(titleDiv);
   }
+  editorDiv.appendChild(createFontSizeToggle())
+  GID("back-arrow").onclick = function() {
+    updateCountyColorColumn()
+  }
 }
 
+function getParentTitle(title) {
+  let parentTitle
+  if (title.isKingdom) {
+    parentTitle = title.empire;
+  } else if (title.isDuchy) {
+    parentTitle = title.kingdom;
+  } else if (title.isCounty) {
+    parentTitle = title.duchy;
+  } else if (title.isProvince) {
+    parentTitle = title.county;
+  } else {
+    parentTitle = title
+  }
+  return parentTitle
+}
 
-function createTitleEntry(title, color, onArrowClick) {
+function createTitleEntry(title) {
   const titleDiv = document.createElement('div');
   titleDiv.style.display = 'flex';
   titleDiv.style.alignItems = 'center';
   titleDiv.style.marginBottom = '5px';
+
+  // Create the left arrow for moving up the hierarchy
+  if (title.kingdoms) {
+
+  } else {
+    const leftArrow = document.createElement('span');
+    leftArrow.textContent = '◀';
+    leftArrow.style.marginRight = '10px';
+    leftArrow.style.cursor = 'pointer';
+    
+    let parentTitle;
+    parentTitle = getParentTitle(title)
+    console.log(title);
+    console.log(parentTitle)
+    
+    if (parentTitle) {
+      let t = parentTitle;
+      leftArrow.onclick = function() {
+        if (parentTitle.kingdoms) {
+          console.log("Updating empire")
+          selectedEmpire = t;
+          world.drawingType = "smallEmpire";
+          paintbrush = "empireOverride";
+          drawWorld();
+          updateEmpireColorColumn();
+        } else if (parentTitle.duchies) {
+          console.log("Updating kingdoms")
+          selectedKingdom = t;
+          world.drawingType = "smallKingdom";
+          paintbrush = "kingdomOverride";
+          drawWorld();
+          updateKingdomColorColumn();
+        } else if (parentTitle.counties) {
+          selectedDuchy = t;
+          world.drawingType = "smallDuchy";
+          paintbrush = "duchyOverride";
+          drawWorld();
+          updateDuchyColorColumn();
+        } else if (parentTitle.provinces) {
+          selectedCounty = t;
+          world.drawingType = "smallCounty";
+          paintbrush = "countyOverride";
+          drawWorld();
+          updateCountyColorColumn();
+        } else {
+          selectedProvince = t;
+          world.drawingType = "smallProvince";
+          paintbrush = "provinceOverride";
+          drawWorld();
+          updateProvinceColorColumn();
+        }
+      }
+    }
+    titleDiv.appendChild(leftArrow);
+  }
 
   const colorSwatch = document.createElement('div');
   colorSwatch.style.backgroundColor = title.brushColor;
   colorSwatch.style.width = '20px';
   colorSwatch.style.height = '20px';
   colorSwatch.style.marginRight = '10px';
+  colorSwatch.style.marginLeft = '10px'
   colorSwatch.onclick = function() {
-    paintbrushTitle = title.brushColor
-    GID("title-color").value = rgbStringToHex(title.brushColor)
-  }
+    GID("title-color").value = rgbStringToHex(title.brushColor);
+    setTitleColor()
+  };
 
   const titleName = document.createElement('span');
-  titleName.textContent = `${title.localizedTitle}`
+  titleName.id = "open-title-editor"
+  titleName.textContent = `${title.localizedTitle}`;
 
-  // Create the right arrow for navigation
-  const arrow = document.createElement('span');
-  arrow.textContent = '▶';
-  arrow.style.marginLeft = 'auto';
-  arrow.style.cursor = 'pointer';
-  let titles
-  let curr
+  // Create the right arrow for moving down the hierarchy
+
+  const rightArrow = document.createElement('span');
+  rightArrow.textContent = '▶';
+  rightArrow.style.marginLeft = 'auto';
+  rightArrow.style.cursor = 'pointer';
+  let titles;
+  let curr;
   if (title.kingdoms) {
-    titles = title.kingdoms
-    curr = "kingdoms"
+    titles = title.kingdoms;
+    curr = "kingdoms";
   } else if (title.duchies) {
     titles = title.duchies;
-    curr = "duchies"
+    curr = "duchies";
   } else if (title.counties) {
     titles = title.counties;
-    curr = "counties"
+    curr = "counties";
   } else if (title.provinces) {
     titles = title.provinces;
-    curr = "provinces"
+    curr = "provinces";
   }
   if (titles) {
     let t = title;
-    arrow.onclick = function() {
+    rightArrow.onclick = function() {
       if (curr === "kingdoms") {
         selectedEmpire = t;
-        world.drawingType = "smallKingdom"
-        paintbrush = "kingdomOverride"
-        drawWorld()
-        updateKingdomColorColumn()
+        world.drawingType = "smallKingdom";
+        paintbrush = "kingdomOverride";
+        drawWorld();
+        updateKingdomColorColumn();
       } else if (curr === "duchies") {
         selectedKingdom = t;
-        world.drawingType = "smallDuchy"
-        paintbrush = "duchyOverride"
-        drawWorld()
-        updateDuchyColorColumn()
+        world.drawingType = "smallDuchy";
+        paintbrush = "duchyOverride";
+        drawWorld();
+        updateDuchyColorColumn();
       } else if (curr === "counties") {
         selectedDuchy = t;
-        world.drawingType = "smallCounty"
-        paintbrush = "countyOverride"
-        drawWorld()
-        updateCountyColorColumn()
+        world.drawingType = "smallCounty";
+        paintbrush = "countyOverride";
+        drawWorld();
+        updateCountyColorColumn();
       } else if (curr === "provinces") {
         selectedCounty = t;
-        world.drawingType = "smallProvince"
-        paintbrush = "provinceOverride"
-        drawWorld()
-        updateProvinceColorColumn()
+        world.drawingType = "smallProvince";
+        paintbrush = "provinceOverride";
+        drawWorld();
+        updateProvinceColorColumn();
       }
-    }
+    };
   }
+
+  // Append all elements in order: leftArrow, colorSwatch, titleName, rightArrow
 
   titleDiv.appendChild(colorSwatch);
   titleDiv.appendChild(titleName);
-  titleDiv.appendChild(arrow);
-
+  titleDiv.appendChild(rightArrow);
+  titleName.onclick = function() {
+    showTitleEditor(title);
+  };
   return titleDiv;
+}
+
+// Function to handle the click on a title to bring up the title editor
+function showTitleEditor(title) {
+  settings.currentTitle = title;
+  GID("title-editor").style.display = "block"
+  const editorDiv = document.getElementById('title-editor-content');
+
+  // Clear the existing content
+  editorDiv.innerHTML = '';
+
+  // Add Localized Title field
+  const localizedTitleSection = document.createElement('div');
+  localizedTitleSection.style.marginBottom = '20px';
+  localizedTitleSection.innerHTML = `<h3>Localized Title</h3>`;
+  const localizedTitleInput = document.createElement('input');
+  localizedTitleInput.type = 'text';
+  localizedTitleInput.value = title.localizedTitle;
+  localizedTitleInput.id = 'localized-title-input';  // ID for future reference
+  localizedTitleSection.appendChild(localizedTitleInput);
+  editorDiv.appendChild(localizedTitleSection);
+
+  // Additional settings for provinces
+  if (title.isProvince) {
+    const provinceSettingsSection = document.createElement('div');
+    provinceSettingsSection.style.marginTop = '20px';
+    provinceSettingsSection.innerHTML = `<h3>Province Settings</h3>`;
+
+    // Create checkboxes for province-specific flags
+    const flags = [
+      { name: 'isOcean', label: 'Is Ocean' },
+      { name: 'isLake', label: 'Is Lake' },
+      { name: 'isImpassableSea', label: 'Is Impassable Sea' },
+      { name: 'isImpassable', label: 'Is Impassable' },
+      { name: 'isRiver', label: 'Is River' }
+    ];
+
+    flags.forEach(flag => {
+      const flagDiv = document.createElement('div');
+      const flagLabel = document.createElement('label');
+      flagLabel.textContent = flag.label;
+      const flagCheckbox = document.createElement('input');
+      flagCheckbox.type = 'checkbox';
+      flagCheckbox.checked = title[flag.name];
+      flagCheckbox.id = `province-${flag.name}-input`;  // Unique ID for each checkbox
+      flagCheckbox.onchange = function() {
+        title[flag.name] = flagCheckbox.checked;  // Update the title object when toggled
+      };
+
+      flagDiv.appendChild(flagCheckbox);
+      flagDiv.appendChild(flagLabel);
+      provinceSettingsSection.appendChild(flagDiv);
+    });
+
+    editorDiv.appendChild(provinceSettingsSection);
+  }
+  GID("close-title-editor").onclick = function() {
+    saveTitleEdits(title)
+    GID("title-editor").style.display = "none"
+    drawWorld()
+  }
+}
+
+function saveTitleEdits(title) {
+  title.localizedTitle = document.getElementById('localized-title-input').value;
+  if (title.isProvince) {
+    title.isOcean = document.getElementById('province-isOcean-input').checked;
+    title.isLake = document.getElementById('province-isLake-input').checked;
+    title.isImpassableSea = document.getElementById('province-isImpassableSea-input').checked;
+    title.isImpassable = document.getElementById('province-isImpassable-input').checked;
+    title.isRiver = document.getElementById('province-isRiver-input').checked;
+  }
+  if (title.kingdoms) {
+    updateEmpireColorColumn()
+  } else if (title.duchies) {
+    updateKingdomColorColumn();
+  } else if (title.counties) {
+    updateDuchyColorColumn()
+  } else if (title.provinces) {
+    updateCountyColorColumn();
+  } else {
+    updateProvinceColorColumn()
+  }
 }

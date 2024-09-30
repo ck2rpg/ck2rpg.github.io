@@ -1453,6 +1453,7 @@ function drawProvinceMapWithoutLand() {
 function drawTitlePixel(x, y, convTitleType) {
   let color = "rgb(255, 255, 255)"
   let cell = world.map[y][x]
+
   if (cell.elevation <= limits.seaLevel.upper) {
     if (cell.waterOverride) {
       color = `rgb(${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB})`
@@ -1460,53 +1461,81 @@ function drawTitlePixel(x, y, convTitleType) {
     }
     //do nothing because you drew water above
   } else {
-    if (cell[`${convTitleType}`]) { //does it have an overide?
-      color = cell[`${convTitleType}`]
-      drawSmallPixel(ctx, x, y, color)
-    } else if (convTitleType === "kingdomOverride" && cell["empireOverride"]) {
-      color = cell["empireOverride"]
-      drawSmallPixel(ctx, x, y, color)
-    } else if (convTitleType === "duchyOverride" && cell["kingdomOverride"]) {
-      color = cell["kingdomOverride"]
-      drawSmallPixel(ctx, x, y, color)
-    } else if (convTitleType === "countyOverride" && cell["duchyOverride"]) {
-      color = cell["duchyOverride"]
-      drawSmallPixel(ctx, x, y, color)
-    } else if (convTitleType === "provinceOverride" && cell["countyOverride"]) {
-      color = cell["countyOverride"]
-      drawSmallPixel(ctx, x, y, color)
-    } else {
-      if (cell.terrain === "plains") {
-        color = `rgb(204, 163, 102)`
-      } else if (cell.terrain === "desert") {
-        color = `rgb(255, 230, 0)`
-      } else if (cell.terrain === "drylands") {
-        color = `rgb(220, 45, 120)`
-      } else if (cell.terrain === "floodplains") {
-        color = `rgb(55, 31, 153)`
-      } else if (cell.terrain === `hills`) {
-        color = `rgb(90, 50, 12)`
-      } else if (cell.terrain === "mountains") {
-        color = `rgb(100, 100, 100)`
-      } else if (cell.terrain === "taiga") {
-        color = `rgb(46, 153, 89)`
-      } else if (cell.terrain === "desert_mountains") {
-        color = `rgb(23, 19, 38)`
-      } else if (cell.terrain === "farmlands") {
-        color = `rgb(255, 0, 0)`
-      } else if (cell.terrain === "forest") {
-        color = `rgb(71, 179, 45)`
-      } else if (cell.terrain === "jungle") {
-        color = `rgb(10, 60, 35)`
-      } else if (cell.terrain === "oasis") {
-        color = `rgb(155, 143, 204)`
-      } else if (cell.terrain === "steppe") {
-        color = `rgb(200, 100, 25)`
-      } else if (cell.terrain === "wetlands") {
-        color = `rgb(77, 153, 153)`
+    let drawn = false;
+    let p;
+    if (settings.currentStage === "provincesGenerated") {
+      let smallX = x * settings.pixelSize
+      let smallY = y * settings.pixelSize;
+      let smallCell = world.smallMap[smallY][smallX]
+      p = smallCell.province;
+      if (p) {
+        if (convTitleType === "empireOverride" && p.empire && p.empire.brushColor) {
+          drawSmallPixel(ctx, x, y, p.empire.brushColor)
+          drawn = true
+        } else if (convTitleType === "kingdomOverride" && p.kingdom && p.kingdom.brushColor && selectedEmpire && selectedEmpire.brushColor === p.empire.brushColor) {
+          drawSmallPixel(ctx, x, y, p.kingdom.brushColor)
+          drawn = true
+        } else if (convTitleType === "duchyOverride" && p.duchy && p.duchy.brushColor && selectedKingdom && selectedKingdom.brushColor === p.kingdom.brushColor) {
+          drawSmallPixel(ctx, x, y, p.duchy.brushColor)
+          drawn = true
+        } else if (convTitleType === "countyOverride" && p.county && p.county.brushColor && selectedDuchy && selectedDuchy.brushColor === p.duchy.brushColor) {
+          drawSmallPixel(ctx, x, y, p.county.brushColor)
+          drawn = true
+        } else if (p.brushColor && p.county && selectedCounty && selectedCounty.brushColor === p.county.brushColor) {
+          drawSmallPixel(ctx, x, y, p.brushColor)
+          drawn = true
+        }
       }
-      //color = `rgb(255, 255, 255)`
-      drawSmallPixel(ctx, x, y, color)
+    }
+    if (drawn === false) {
+      if (cell[`${convTitleType}`]) { //does it have an overide?
+        color = cell[`${convTitleType}`]
+        drawSmallPixel(ctx, x, y, color)
+      } else if (convTitleType === "kingdomOverride" && cell["empireOverride"]) {
+        color = cell["empireOverride"]
+        drawSmallPixel(ctx, x, y, color)
+      } else if (convTitleType === "duchyOverride" && cell["kingdomOverride"]) {
+        color = cell["kingdomOverride"]
+        drawSmallPixel(ctx, x, y, color)
+      } else if (convTitleType === "countyOverride" && cell["duchyOverride"]) {
+        color = cell["duchyOverride"]
+        drawSmallPixel(ctx, x, y, color)
+      } else if (convTitleType === "provinceOverride" && cell["countyOverride"]) {
+        color = cell["countyOverride"]
+        drawSmallPixel(ctx, x, y, color)
+      } else {
+        if (cell.terrain === "plains") {
+          color = `rgb(204, 163, 102)`
+        } else if (cell.terrain === "desert") {
+          color = `rgb(255, 230, 0)`
+        } else if (cell.terrain === "drylands") {
+          color = `rgb(220, 45, 120)`
+        } else if (cell.terrain === "floodplains") {
+          color = `rgb(55, 31, 153)`
+        } else if (cell.terrain === `hills`) {
+          color = `rgb(90, 50, 12)`
+        } else if (cell.terrain === "mountains") {
+          color = `rgb(100, 100, 100)`
+        } else if (cell.terrain === "taiga") {
+          color = `rgb(46, 153, 89)`
+        } else if (cell.terrain === "desert_mountains") {
+          color = `rgb(23, 19, 38)`
+        } else if (cell.terrain === "farmlands") {
+          color = `rgb(255, 0, 0)`
+        } else if (cell.terrain === "forest") {
+          color = `rgb(71, 179, 45)`
+        } else if (cell.terrain === "jungle") {
+          color = `rgb(10, 60, 35)`
+        } else if (cell.terrain === "oasis") {
+          color = `rgb(155, 143, 204)`
+        } else if (cell.terrain === "steppe") {
+          color = `rgb(200, 100, 25)`
+        } else if (cell.terrain === "wetlands") {
+          color = `rgb(77, 153, 153)`
+        }
+        color = `rgb(255, 255, 255)`
+        drawSmallPixel(ctx, x, y, color)
+      }
     }
   } 
 }
@@ -1520,6 +1549,50 @@ function drawTitleSmallMap(titleType) { // This function is too cute in trying t
   for (let i = 0; i < world.height; i++) {
     for (let j = 0; j < world.width; j++) {
       drawTitlePixel(j, i, convTitleType)
+    }
+  }
+  let labels = true; //placeholder for optional later
+  let titles;
+  if (titleType === "empire") {
+    titles = world.empires;
+  } else if (titleType === "kingdom") {
+    titles = world.kingdoms;
+  } else if (titleType === "duchy") {
+    titles = world.duchies;
+  } else if (titleType === "county") {
+    titles = world.counties;
+  } else {
+    titles = world.provinces;
+  }
+  console.log(titles)
+  if (labels) {
+    ctx.font = `${settings.labelFontSize}px Arial`;
+    if (titleType === "province") {
+      for (let i = 0; i < world.provinces.length; i++) {
+        let province = world.provinces[i]
+        if (province.localizedTitle) {
+          ctx.beginPath();
+          ctx.arc(province.x, province.y, 2, 0, 2 * Math.PI);
+          ctx.fillStyle = "red";
+          ctx.fill();
+          ctx.fillStyle = "black"
+          ctx.fillText(province.localizedTitle, province.x - 13, province.y - 4);
+        }
+      }
+    } else {
+      for (let i = 0; i < titles.length; i++) {
+        if (titles[i].provinces) {
+          let capital = titles[i].provinces[0];
+          if (capital) {
+            ctx.beginPath();
+            ctx.arc(capital.x, capital.y, 2, 0, 2 * Math.PI);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.fillStyle = "black"
+            ctx.fillText(titles[i].localizedTitle, capital.x - 13, capital.y - 4);
+          }
+        }
+      }
     }
   }
 }

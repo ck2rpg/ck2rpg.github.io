@@ -26,222 +26,6 @@ const funnyMessages = [
     "Telling swamps to stay in their lanes."
   ];
 
-/*function createProvinces() {
-    world.coveredLand = 0;
-    world.coveredWater = 0;
-    world.seedCells = []
-    createSmallMap()
-    console.log("Small Map Created")
-    let addProvinceCounter = 0;
-    addProvinces();
-    let addingProvinces = true
-    while (addingProvinces === true) {
-        addProvinceCounter += 1;
-        addProvinces();
-
-        if ((world.coveredLand >= world.landCells.length) || addProvinceCounter === 10 || world.provinces.length > 8000) {
-            addingProvinces = false;
-        }
-    }
-    setTimeout(function() {
-        GID("province-creation-screen").innerHTML = pickFrom(funnyMessages)
-    }, 1); // A delay of 0ms still allows the browser to update the DOM first
-    addWaterProvinces();
-    addWaterProvinces();
-    addWaterProvinces();
-    console.log("Deleting too small provinces")
-    deleteSmallProvinces();
-    for (let i = 0; i < 20; i++) {
-        fillIn();
-        console.log("Filling in")
-    }
-    console.log("Adding Provinces")
-    addProvinces();
-    bruteFillIn();
-    console.log("Assigning province ids")
-    assignProvinceIds();
-    assignNonDefIds();
-    console.log("Setting west-east adjacency")
-    setWestEastAdjacency();
-    console.log("Setting north-south adjacency");
-    setNorthSouthAdjacency();
-    console.log("Assigning adjacency to provinces")
-    assignAdjacenciesToProvinces();
-    console.log("Flattening adjacency arrays")
-    flattenAdjacencyArrays();
-    resetLand(world)
-    console.log("creating province terrain")
-    createProvinceTerrainNew()
-
-    console.log("identifying waterbodies")
-    floodFillWaterProvinces()
-
-    
-    clearFloodFillProvinces();
-    console.log("identifying continents")
-    floodFillContinents()
-    console.log("mapping provinces to continents")
-    mapProvincesToContinents()
-    console.log("mapping the province's place in the world")
-    assignDaylight()
-    createWinterSeverity()
-    setProvinceDirections()
-
-
-    //here is where you would intercept with different code after province generation
-    world.counties = createCounties(world)
-    world.duchies = createDuchies(world.counties, world) // duchies are later changed in createMyKingdoms function. Not ideal, but was a quick patch
-    world.kingdoms = createMyKingdoms(world)
-    world.empires = createEmpires(world)
-    createRealCounties()
-    assignTitleInfo()
-    assignCultures();
-    religionGenerator()
-    console.log("Drawing province map")
-    drawProvinceMap()
-}
-
-*/
-
-/*
-async function createProvinces() {
-    world.coveredLand = 0;
-    world.coveredWater = 0;
-    world.seedCells = [];
-    createSmallMap();
-    console.log("Small Map Created");
-
-    await updateDOM("Adding Provinces");
-
-    let addProvinceCounter = 0;
-    addProvinces();
-    let addingProvinces = true;
-    while (addingProvinces === true) {
-        addProvinceCounter += 1;
-        addProvinces();
-
-        if ((world.coveredLand >= world.landCells.length) || addProvinceCounter === 10 || world.provinces.length > 8000) {
-            addingProvinces = false;
-        }
-    }
-
-    await updateDOM("Adding Water Provinces");
-
-    addWaterProvinces();
-    addWaterProvinces();
-    addWaterProvinces();
-    console.log("Deleting too small provinces");
-    deleteSmallProvinces();
-
-    await updateDOM("Deleting Too Small Provinces");
-
-    for (let i = 0; i < 20; i++) {
-        fillIn();
-        await updateDOM(`Filling In (${i + 1}/20)`);
-    }
-
-    console.log("Adding Provinces");
-    addProvinces();
-    await updateDOM("Adding Provinces Again");
-
-    bruteFillIn();
-    console.log("Assigning province ids");
-    assignProvinceIds();
-    await updateDOM("Assigning Province IDs");
-
-    assignNonDefIds();
-    console.log("Setting west-east adjacency");
-    setWestEastAdjacency();
-    await updateDOM("Setting West-East Adjacency");
-
-    console.log("Setting north-south adjacency");
-    setNorthSouthAdjacency();
-    await updateDOM("Setting North-South Adjacency");
-
-    console.log("Assigning adjacency to provinces");
-    assignAdjacenciesToProvinces();
-    await updateDOM("Assigning Adjacency to Provinces");
-
-    console.log("Flattening adjacency arrays");
-    flattenAdjacencyArrays();
-    await updateDOM("Flattening Adjacency Arrays");
-
-    resetLand(world);
-    console.log("Creating province terrain");
-    createProvinceTerrainNew();
-    await updateDOM("Creating Province Terrain");
-
-    console.log("Identifying waterbodies");
-    floodFillWaterProvinces();
-    await updateDOM("Identifying Waterbodies");
-
-    clearFloodFillProvinces();
-    console.log("Identifying continents");
-    floodFillContinents();
-    await updateDOM("Identifying Continents");
-
-    console.log("Mapping provinces to continents");
-    mapProvincesToContinents();
-    await updateDOM("Mapping Provinces to Continents");
-
-    console.log("Mapping the province's place in the world");
-    assignDaylight();
-    await updateDOM("Assigning Daylight");
-
-    createWinterSeverity();
-    await updateDOM("Creating Winter Severity");
-
-    setProvinceDirections();
-    await updateDOM("Setting Province Directions");
-
-    world.counties = createCounties(world);
-    await updateDOM("Creating Counties");
-
-    world.duchies = createDuchies(world.counties, world);
-    await updateDOM("Creating Duchies");
-
-    world.kingdoms = createMyKingdoms(world);
-    await updateDOM("Creating Kingdoms");
-
-    world.empires = createEmpires(world);
-    await updateDOM("Creating Empires");
-
-    createRealCounties();
-    await updateDOM("Creating Real Counties");
-
-    assignTitleInfo();
-    await updateDOM("Assigning Title Info");
-
-    assignCultures();
-    await updateDOM("Assigning Cultures");
-
-    religionGenerator();
-    await updateDOM("Generating Religions");
-
-    console.log("Drawing province map");
-    drawProvinceMap();
-    await updateDOM("Drawing Province Map");
-
-    // Ensuring the funny message is displayed after all operations are done
-    GID("sidebars").style.display = "block";
-    GID("main-generator-div").style.display = "block";
-}
-
-// Mock function to update the DOM and wait for the next paint
-function updateDOM(message) {
-    return new Promise(resolve => {
-        GID("province-creation-screen").innerHTML = message;
-        setTimeout(resolve, 0); // Allows the browser to update the DOM
-    });
-}
-
-*/
-
-/**
- * Determines the dominant terrain for each province based on terrain counts.
- * Excludes "sea" from the count.
- */
-
 function getDominantTerrain(provinces) {
     // List of terrains to consider, excluding "sea"
     const terrainTypes = ["desert", "drylands", "floodplains", "hills", "mountains", "plains", "taiga", "desert_mountains", "farmlands", "forest", "jungle", "oasis", "steppe", "wetlands"];
@@ -291,6 +75,7 @@ function getCellSmallCells(cell) {
 }
 
 function createOverrideLandProvinces() {
+    //set items on provinces that can't be set until after creation
     for (let i = 0; i < world.height; i++) {
         for (let j = 0; j < world.width; j++) {
             let cell = world.map[i][j];
@@ -298,14 +83,67 @@ function createOverrideLandProvinces() {
                 let color = `${cell.provinceOverrideR}, ${cell.provinceOverrideG}, ${cell.provinceOverrideB}`;
                 if (provinceKeys[color]) { //if province colors already exist on provinceKeys
                     let prov = provinceKeys[color];
-                    let seed = prov.seed;
+                    cell.province = prov
+                    let ckX = cell.x * settings.pixelSize;
+                    let ckY = cell.y * settings.pixelSize;
+                    let smallCell = world.smallMap[ckY][ckX];
+                    smallCell.bigCell = cell
+                    smallCell.color = color
+                    smallCell.colorR = cell.provinceOverrideR;
+                    smallCell.colorG = cell.provinceOverrideG;
+                    smallCell.colorB = cell.provinceOverrideB;
+                    smallCell.province = prov
+                    smallCell.elevation = smallCell.bigCell.elevation + getRandomInt(-3, 3);
+
+                    if (prov.seed) {
+                        prov.seed.children.push(smallCell)
+                        smallCell.parent = prov.seed
+                    } else {
+                        smallCell.children = [];
+                        cell.province.seed = smallCell
+                        cell.province.farthestEast = smallCell;
+                        cell.province.farthestWest = smallCell;
+                        cell.province.farthestNorth = smallCell;
+                        cell.province.farthestSouth = smallCell
+                        cell.province.x = ckX
+                        cell.province.y = ckY
+                        smallCell.parent = smallCell;
+                        smallCell.children.push(smallCell);
+                        smallCell.seedCell = true;
+                        world.populatedCells.push(cell);
+                        world.seedCells.push(smallCell);
+                        prov.seed = smallCell;
+                        /*
+                        let county = prov.county;
+                        let duchy = prov.duchy;
+                        let kingdom = prov.kingdom;
+                        let empire = prov.empire
+
+                        //have to come back and set faiths because can't do it in first instance?
+                        if (county.faith) {
+                            prov.faith = county.faith
+                        } else if (duchy.faith) {
+                            prov.faith = duchy.faith;
+                            county.faith = duchy.faith;
+                        } else if (kingdom.faith) {
+                            prov.faith = kingdom.faith;
+                            county.faith = kingdom.faith;
+                            duchy.faith = kingdom.faith;
+                        } else if (empire.faith) {
+                            prov.faith = empire.faith;
+                            county.faith = empire.faith;
+                            duchy.faith = empire.faith;
+                            kingdom.faith = empire.faith
+                        }
+                        */
+                    }
                     let arr = getCellSmallCells(cell);
                     for (let n = 0; n < arr.length; n++) {
                         let next = arr[n];
-                        if (next === seed) {
+                        if (next === smallCell) {
                             // Don't do anything if it is the seed cell
                         } else {
-                            growCell(seed, next);
+                            growCell(smallCell, next);
                         }
                     }
                 } else {
@@ -335,6 +173,8 @@ function createOverrideLandProvinces() {
                     cell.province.farthestWest = smallCell;
                     cell.province.farthestNorth = smallCell;
                     cell.province.farthestSouth = smallCell
+                    cell.province.x = ckX
+                    cell.province.y = ckY
                     let arr = getCellSmallCells(cell);
                     for (let n = 0; n < arr.length; n++) {
                         let next = arr[n];
@@ -572,34 +412,53 @@ async function createProvinces() {
 
     overloadProvinceProperties();
     await updateDOM("Creating Regional Information", 17)
-
-    world.counties = createCounties(world);
+    let counties = createCounties(world);
     await updateDOM("Creating Counties", 18);
 
-    world.duchies = createDuchies(world.counties, world);
+    let duchies = createDuchies(counties, world);
     await updateDOM("Creating Duchies", 19);
 
-    world.kingdoms = createMyKingdoms(world);
+    let dk = createMyKingdoms(duchies, world);
     await updateDOM("Creating Kingdoms", 20);
 
-    world.empires = createEmpires(world);
+    let empires = createEmpires(dk.k, world);
     await updateDOM("Creating Empires", 21);
 
-    createRealCounties();
+    let realCounties = createRealCounties(dk.d); // creates objects from indices arrays
+    for (let i = 0; i < empires.length; i++) {
+        world.empires.push(empires[i])
+    }
+    for (let i = 0; i < dk.k.length; i++) {
+        let kingdom = dk.k[i]
+        world.kingdoms.push(kingdom)
+    }
+    for (let i = 0; i < dk.d.length; i++) {
+        let duchy = dk.d[i]
+        world.duchies.push(duchy);
+    }
+    for (let i = 0; i < realCounties.length; i++) {
+        world.counties.push(realCounties[i])
+    }
+    console.log(world.empires)
     await updateDOM("Creating Real Counties", 22);
 
     bubbleUpProvinces()
 
-    setCountyFavorability()
-
     assignTitleInfo();
     await updateDOM("Assigning Title Info", 23);
+
+    setCountyFavorability()
+
+
 
     assignOverrideCultures();
 
     assignCultures();
     await updateDOM("Assigning Cultures", 24);
     //assignTraditionPossibilities()
+
+    assignOverrideFaiths()
+    assignHolySites()
 
     religionGenerator();
     faithsSlideDown()
@@ -611,6 +470,11 @@ async function createProvinces() {
     downloadImage(canvas, "provinces.png")
     GID("province-drawn-proceed").style.display = "block"
     GID("main-generator-div").style.display = "block";
+    settings.currentStage = "provincesGenerated"
+    world.drawingType = "smallEmpire";
+    paintbrush = "empireOverride";
+    drawWorld();
+    updateEmpireColorColumn();
 }
 
 // Function to initialize all messages in red
@@ -736,10 +600,10 @@ function createSmallMap() {
     }
 }
 
-function createRealCounties() {
+function createRealCounties(duchies) {
     let countyArr = []
-    for (let i = 0; i < world.duchies.length; i++) {
-        let duchy = world.duchies[i]
+    for (let i = 0; i < duchies.length; i++) {
+        let duchy = duchies[i]
         for (let j = 0; j < duchy.counties.length; j++) {
             let county = duchy.counties[j]
             let c = {};
@@ -759,7 +623,7 @@ function createRealCounties() {
             countyArr.push(c)
         }
     }
-    world.counties = countyArr
+    return countyArr
 }
 
 function isOnContinent(x, y, continent) {

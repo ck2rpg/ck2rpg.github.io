@@ -23,6 +23,7 @@ settings.overrideWithFlatmap = false;
 settings.elevationToHeightmap = 2;
 settings.historyHolderLevel = "random"
 settings.eraLevel = "Tribal"
+settings.labelFontSize = 16
 
 
 let brush = {}
@@ -147,6 +148,7 @@ world.coveredWater = 0;
 world.waterCells = 0
 world.lastMaps = []
 world.lastCounter = -1
+world.faiths = []
 
 var canvas = document.getElementById("canvas");
 //canvas.style.width = '95vw';  // Example display size

@@ -18,12 +18,13 @@ function saveLastProvince() {
         currentProvince.g = parseInt(document.getElementById("g").innerHTML);
         currentProvince.b = parseInt(document.getElementById("b").innerHTML);
         if (currentProvince.county) {
+            console.log(currentProvince)
             currentProvince.county.localizedTitle = document.getElementById("countyLocBox").value
-            currentProvince.duchy.localizedTitle = document.getElementById("duchyLocBox").value
-            currentProvince.kingdom.localizedTitle = document.getElementById("kingdomLocBox").value
-            currentProvince.empire.localizedTitle = document.getElementById("empireLocBox").value
-            currentProvince.faith.nameLoc = GID("faithbox").value; 
-            currentProvince.culture.name = GID("culturebox").value;
+            currentProvince.county.duchy.localizedTitle = document.getElementById("duchyLocBox").value
+            currentProvince.county.duchy.kingdom.localizedTitle = document.getElementById("kingdomLocBox").value
+            currentProvince.county.duchy.kingdom.empire.localizedTitle = document.getElementById("empireLocBox").value
+            //currentProvince.faith.nameLoc = GID("faithbox").value; 
+            //currentProvince.culture.name = GID("culturebox").value;
         }
     }
 }
@@ -114,9 +115,9 @@ function startProvinceEditor() {
             document.getElementById("b").innerHTML = currentProvince.colorB;
             if (currentProvince.county) {
                 document.getElementById("countyLocBox").value = currentProvince.county.localizedTitle
-                document.getElementById("duchyLocBox").value = currentProvince.duchy.localizedTitle
-                document.getElementById("kingdomLocBox").value = currentProvince.kingdom.localizedTitle
-                document.getElementById("empireLocBox").value = currentProvince.empire.localizedTitle
+                document.getElementById("duchyLocBox").value = currentProvince.county.duchy.localizedTitle
+                document.getElementById("kingdomLocBox").value = currentProvince.county.duchy.kingdom.localizedTitle
+                document.getElementById("empireLocBox").value = currentProvince.county.duchy.kingdom.empire.localizedTitle
                 GID("faithbox").value = currentProvince.faith.nameLoc 
                 GID("culturebox").value = currentProvince.culture.name
             } else {
@@ -153,6 +154,23 @@ function startProvinceEditor() {
                 riverCheck = false;
             }
             redoCheckboxes(null)
+            if (column === "empire") {
+                selectedEmpire = currentProvince.empire
+                updateKingdomColorColumn()
+                drawTitleSmallMap("kingdom")
+            } else if (column === "kingdom") {
+                selectedKingdom = currentProvince.kingdom
+                updateDuchyColorColumn()
+                drawTitleSmallMap("duchy")
+            } else if (column === "duchy") {
+                selectedDuchy = currentProvince.duchy
+                updateCountyColorColumn()
+                drawTitleSmallMap("county")
+            } else if (column === "county") {
+                selectedCounty = currentProvince.county
+                updateProvinceColorColumn()
+                drawTitleSmallMap("province")
+            }
         } else {
             console.log("No province found for color:", colorKey);
         }
