@@ -254,6 +254,7 @@ GID("roguelike-icon").onclick = function() {
 }
 
 GID("create-provinces").onclick = function() {
+  clearCanvases()
   world.lastMaps = null
   GID("main-generator-div").style.display = "none";
   GID("menus-main").style.display = "none"

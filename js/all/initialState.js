@@ -213,7 +213,12 @@ uniqueColorSet = [...uniqueColorSet]
 
 let uniqueColorCount = 0;
 
+let empireKeys = {};
+let kingdomKeys = {};
+let duchyKeys = {};
+let countyKeys = {};
 let provinceKeys = {}
+
 
 function getUniqueColor() {
     let randColor = uniqueColorSet[uniqueColorCount]

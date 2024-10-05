@@ -93,13 +93,7 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
           }
           if (brushType === "province-eraser") {
             nextCell.provinceOverride = undefined;
-            nextCell.provinceOverrideR = undefined;
-            nextCell.provinceOverrideG = undefined;
-            nextCell.provinceOverrideB = undefined;
             nextCell.waterOverride = undefined;
-            nextCell.waterOverrideR = undefined;
-            nextCell.waterOverrideG = undefined;
-            nextCell.waterOverrideB = undefined;
 
           } else if (brushType === "dropLand") {
             if (nextCell.elevation < lowerPaintbrushLimit) {
@@ -276,16 +270,10 @@ function applyOverrideBrushType(brushType, nextCell) {
 
       if (selectedEmpire.culture) {
         nextCell[`cultureOverride`] = paintbrushTitle;
-        nextCell[`cultureOverrideR`] = paintbrushTitleR;
-        nextCell[`cultureOverrideG`] = paintbrushTitleG;
-        nextCell[`cultureOverrideB`] = paintbrushTitleB;
       }
 
       if (selectedEmpire.faith) {
         nextCell[`faithOverride`] = paintbrushTitle;
-        nextCell[`faithOverrideR`] = paintbrushTitleR;
-        nextCell[`faithOverrideG`] = paintbrushTitleG;
-        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "kingdomOverride") {
@@ -297,15 +285,9 @@ function applyOverrideBrushType(brushType, nextCell) {
       nextCell[`${overrideProp}B`] = paintbrushTitleB;
       if (selectedKingdom.culture && settings.divergeCulturesAtKingdom) {
         nextCell[`cultureOverride`] = paintbrushTitle;
-        nextCell[`cultureOverrideR`] = paintbrushTitleR;
-        nextCell[`cultureOverrideG`] = paintbrushTitleG;
-        nextCell[`cultureOverrideB`] = paintbrushTitleB;
       }
       if (settings.divergeFaithLevel === "kingdom") {
         nextCell[`faithOverride`] = paintbrushTitle;
-        nextCell[`faithOverrideR`] = paintbrushTitleR;
-        nextCell[`faithOverrideG`] = paintbrushTitleG;
-        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "duchyOverride") {
@@ -318,16 +300,10 @@ function applyOverrideBrushType(brushType, nextCell) {
 
       if (selectedDuchy.culture && settings.divergeCulturesAtDuchy) {
         nextCell[`cultureOverride`] = paintbrushTitle;
-        nextCell[`cultureOverrideR`] = paintbrushTitleR;
-        nextCell[`cultureOverrideG`] = paintbrushTitleG;
-        nextCell[`cultureOverrideB`] = paintbrushTitleB;
       }
 
       if (settings.divergeFaithLevel === "duchy") {
         nextCell[`faithOverride`] = paintbrushTitle;
-        nextCell[`faithOverrideR`] = paintbrushTitleR;
-        nextCell[`faithOverrideG`] = paintbrushTitleG;
-        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "countyOverride") {
@@ -340,16 +316,10 @@ function applyOverrideBrushType(brushType, nextCell) {
 
       if (selectedCounty.culture && settings.divergeCulturesAtCounty) {
         nextCell[`cultureOverride`] = paintbrushTitle;
-        nextCell[`cultureOverrideR`] = paintbrushTitleR;
-        nextCell[`cultureOverrideG`] = paintbrushTitleG;
-        nextCell[`cultureOverrideB`] = paintbrushTitleB;
       }
 
       if (settings.divergeFaithLevel === "county") {
         nextCell[`faithOverride`] = paintbrushTitle;
-        nextCell[`faithOverrideR`] = paintbrushTitleR;
-        nextCell[`faithOverrideG`] = paintbrushTitleG;
-        nextCell[`faithOverrideB`] = paintbrushTitleB;
       }
     }
   } else if (overrideProp === "provinceOverride") {
@@ -709,7 +679,7 @@ function createDummyProvince(brushColor) {
   selectedCounty.provinces.push(province)
   province.brushColor = brushColor
   world.provinces.push(province)
-  province.nonDefId = world.provinces.length
+  province.nonDefID = world.provinces.length
   return province;
 }
 
@@ -1444,10 +1414,11 @@ function redrawAffectedCells() {
       cell.y = y;
 
       if (cell.faithOverride) {
+        let c = getColorObjectFromString(cell.faithOverride)
         let faithColor = {
-          r: cell.faithOverrideR,
-          g: cell.faithOverrideG,
-          b: cell.faithOverrideB
+          r: c.r,
+          g: c.g,
+          b: c.b
         };
         addFaithColorIfNotExists(faithColor);
         clearCell(x, y, context);
@@ -1463,10 +1434,11 @@ function redrawAffectedCells() {
       cell.y = y;
 
       if (cell.cultureOverride) {
+        let c = getColorObjectFromString(cell.cultureOverride)
         let cultureColor = {
-          r: cell.cultureOverrideR,
-          g: cell.cultureOverrideG,
-          b: cell.cultureOverrideB
+          r: c.r,
+          g: c.g,
+          b: c.b
         };
         addCultureIfNotExists(cultureColor);
         clearCell(x, y, context);

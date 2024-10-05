@@ -1456,7 +1456,8 @@ function drawTitlePixel(x, y, convTitleType) {
 
   if (cell.elevation <= limits.seaLevel.upper) {
     if (cell.waterOverride) {
-      color = `rgb(${cell.waterOverrideR}, ${cell.waterOverrideG}, ${cell.waterOverrideB})`
+      let c = getColorObjectFromString(cell.waterOverride)
+      color = `rgb(${c.r}, ${cell.g}, ${cell.b})`
       drawSmallPixel(ctx, x, y, color)
     }
     //do nothing because you drew water above
@@ -1468,20 +1469,24 @@ function drawTitlePixel(x, y, convTitleType) {
       let smallY = y * settings.pixelSize;
       let smallCell = world.smallMap[smallY][smallX]
       p = smallCell.province;
-      if (p) {
-        if (convTitleType === "empireOverride" && p.empire && p.empire.brushColor) {
-          drawSmallPixel(ctx, x, y, p.empire.brushColor)
+      if (p && p.county) {
+        let empire = p.county.duchy.kingdom.empire;
+        let kingdom = p.county.duchy.kingdom;
+        let duchy = p.county.duchy;
+        let county = p.county;
+        if (convTitleType === "empireOverride" && empire && empire.brushColor) {
+          drawSmallPixel(ctx, x, y, empire.brushColor)
           drawn = true
-        } else if (convTitleType === "kingdomOverride" && p.kingdom && p.kingdom.brushColor && selectedEmpire && selectedEmpire.brushColor === p.empire.brushColor) {
-          drawSmallPixel(ctx, x, y, p.kingdom.brushColor)
+        } else if (convTitleType === "kingdomOverride" && kingdom && kingdom.brushColor && selectedEmpire && selectedEmpire.brushColor === empire.brushColor) {
+          drawSmallPixel(ctx, x, y, kingdom.brushColor)
           drawn = true
-        } else if (convTitleType === "duchyOverride" && p.duchy && p.duchy.brushColor && selectedKingdom && selectedKingdom.brushColor === p.kingdom.brushColor) {
-          drawSmallPixel(ctx, x, y, p.duchy.brushColor)
+        } else if (convTitleType === "duchyOverride" && duchy && duchy.brushColor && selectedKingdom && selectedKingdom.brushColor === kingdom.brushColor) {
+          drawSmallPixel(ctx, x, y, duchy.brushColor)
           drawn = true
-        } else if (convTitleType === "countyOverride" && p.county && p.county.brushColor && selectedDuchy && selectedDuchy.brushColor === p.duchy.brushColor) {
-          drawSmallPixel(ctx, x, y, p.county.brushColor)
+        } else if (convTitleType === "countyOverride" && county && county.brushColor && selectedDuchy && selectedDuchy.brushColor === duchy.brushColor) {
+          drawSmallPixel(ctx, x, y, county.brushColor)
           drawn = true
-        } else if (p.brushColor && p.county && selectedCounty && selectedCounty.brushColor === p.county.brushColor) {
+        } else if (p.brushColor && county && selectedCounty && selectedCounty.brushColor === county.brushColor) {
           drawSmallPixel(ctx, x, y, p.brushColor)
           drawn = true
         }

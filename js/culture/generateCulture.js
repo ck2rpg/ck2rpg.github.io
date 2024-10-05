@@ -1498,7 +1498,8 @@ function assignOverrideCultures() {
         let capital = county.provinces[0];
         let cell = world.smallMap[capital.y][capital.x].bigCell;
         if (cell.cultureOverride) {
-            let culture = getCultureFromColor(cell.cultureOverrideR, cell.cultureOverrideG, cell.cultureOverrideB);
+            let c = getColorObjectFromString(cell.cultureOverride)
+            let culture = getCultureFromColor(c.r, c.g, c.b);
             if (culture) {
                 county.culture = culture;
                 // Propagate the culture up the hierarchy if it's the first county
@@ -1515,7 +1516,7 @@ function assignOverrideCultures() {
                     }
                 }
             } else {
-                console.log("Culture not found for color", cell.cultureOverrideR, cell.cultureOverrideG, cell.cultureOverrideB);
+                console.log("Culture not found for color", cell.cultureOverride);
             }
         }
     }

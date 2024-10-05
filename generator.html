@@ -390,6 +390,27 @@
               <button class="ck-button">Import Overlay</button>
               <input type="file" class="ck-button" id="overlayUpload" accept="image/*" />
             </div>
+
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Empire Map</button>
+              <input type="file" class="ck-button" id="empireUpload" accept="image/*" />
+            </div>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Kingdom Map</button>
+              <input type="file" class="ck-button" id="kingdomUpload" accept="image/*" />
+            </div>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Duchy Map</button>
+              <input type="file" class="ck-button" id="duchyUpload" accept="image/*" />
+            </div>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import County Map</button>
+              <input type="file" class="ck-button" id="countyUpload" accept="image/*" />
+            </div>
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Province Map</button>
+              <input type="file" class="ck-button" id="provinceUpload" accept="image/*" />
+            </div>
           </div>
         </div>
       
@@ -715,7 +736,17 @@
                 
         </div>
         <div id="landing-release-notes">
-          <div id="landing-release-notes-details">
+          <div id="landing-release-notes-details">      
+
+
+            <p class="text-intro">Alpha 0.21.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Update: Alpha 0.21.0 is a work in progress release of the title importer. I am releasing it in this WIP form because my time this weekend is limited, and user testing would be helpful. In its current form you can upload your title hierarchy. Your image MUST be the same size as the generator resolution, or you will have blurring and bad results. For an uploaded image, black is water, and any other color is a title. Currently, you MUST upload every level of the hierarchy and must do so in order (empire -> kingdom -> duchy -> county -> province). When you upload the empire image, it will reset all underlying land to sea level. and water to 0.</li>
+                <li>Performance: I made some properties of map cells redundant through refactoring and culled those properties from map cells. I am hoping this will improve performance and am on the hunt for more improvements.</li>
+              </ul>
+
+            </p><br>
 
             <p class="text-intro">Alpha 0.20.1 Release Change Log</p>
             <p class="main-landing-text">

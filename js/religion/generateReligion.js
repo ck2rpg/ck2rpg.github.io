@@ -298,7 +298,8 @@ function assignOverrideFaiths() {
         let capital = county.provinces[0];
         let cell = world.smallMap[capital.y][capital.x].bigCell;
         if (cell.faithOverride) {
-            let faith = getFaithFromColor(cell.faithOverrideR, cell.faithOverrideG, cell.faithOverrideB);
+            let c = getColorObjectFromString(cell.faithOverride)
+            let faith = getFaithFromColor(c.r, c.g, c.b);
             if (faith) {
                 console.log("GOT ONE!")
                 county.faith = faith
@@ -1179,7 +1180,6 @@ function setReligionLocalization(r) {
 
     // Set the localization object on the religion
     r.localization = localization;
-    console.log(r.localization)
 }
 
 const virtuesList = [
