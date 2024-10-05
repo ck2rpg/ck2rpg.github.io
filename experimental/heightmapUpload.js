@@ -111,30 +111,6 @@ document.getElementById('overlayUpload').addEventListener('change', function(eve
     }
 });
 
-document.getElementById('empireUpload').addEventListener('change', function(event) {
-    settings.titleUploadType = "empire"
-    uploadTitle(event)
-});
-
-document.getElementById('kingdomUpload').addEventListener('change', function(event) {
-    settings.titleUploadType = "kingdom"
-    uploadTitle(event)
-});
-
-document.getElementById('duchyUpload').addEventListener('change', function(event) {
-    settings.titleUploadType = "duchy"
-    uploadTitle(event)
-});
-
-document.getElementById('countyUpload').addEventListener('change', function(event) {
-    settings.titleUploadType = "county"
-    uploadTitle(event)
-});
-
-document.getElementById('provinceUpload').addEventListener('change', function(event) {
-    settings.titleUploadType = "province"
-    uploadTitle(event)
-});
 
 
 
@@ -336,3 +312,28 @@ function clearCanvases() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
 }
+
+document.getElementById('empireUpload').addEventListener('change', function(event) {
+    settings.titleUploadType = "empire"
+    uploadTitle(event)
+});
+
+document.getElementById('kingdomUpload').addEventListener('change', function(event) {
+    settings.titleUploadType = "kingdom"
+    uploadTitle(event)
+});
+
+document.getElementById('duchyUpload').addEventListener('change', function(event) {
+    settings.titleUploadType = "duchy"
+    uploadTitle(event)
+});
+
+document.getElementById('countyUpload').addEventListener('change', function(event) {
+    settings.titleUploadType = "county"
+    uploadTitle(event)
+});
+
+document.getElementById('provinceUpload').addEventListener('change', function(event) {
+    settings.titleUploadType = "province"
+    uploadTitle(event)
+});
