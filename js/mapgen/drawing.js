@@ -527,6 +527,21 @@ function drawCell(x, y) {
     return { r: c, g: c, b: c };
   }
 
+  function getRivermapColorPapyrus(cell) {
+    const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
+    cell.rgb = c;
+    let ran = cell.riverRun
+    //need to check whether actually river
+    if (ran > -1) {
+      let rgb = {
+        r: 100 + Math.floor(cell.elevation / 5),
+        g: 120 + Math.floor(cell.elevation / 5),
+        b: 140 + Math.floor(cell.elevation / 5),
+      };
+      return rgb
+    }
+  }
+
 function getRivermapColor(cell) {
   const c = cell.elevation > limits.seaLevel.upper ? true : false; // white for land, pink for water
   cell.rgb = c;
@@ -631,11 +646,7 @@ function getRiverMapColorLowRes(cell) {
    */
   function drawParchmentType(cell, r, g, b) {
     const cellBiome = biome(cell);
-  
-    if (cell.elevation > 20 && cell.elevation < 37) {
-      cell.rgb = `rgb(0, 0, 0)`;
-      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-    } else if (cell.terrain === "forest") {
+    if (cell.terrain === "forest") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
       drawInkTree(cell);
@@ -974,7 +985,6 @@ function drawInkTree(cell) {
     const roundedX = Math.round(cell.x);
     const roundedY = Math.round(cell.y);
     const img = GID(`tree${getRandomInt(1, 4)}`);
-    console.log("DRAWING INK TREE");
     ctx.drawImage(img, roundedX * settings.pixelSize, roundedY * settings.pixelSize, 16, 16);
   }
   
@@ -1217,7 +1227,11 @@ function drawCellToImageData(imageData, x, y) {
       color = getPaperColor(cell, r, g, b);
       break;
     case "papyrus":
-      color = getPapyrusColor(cell, r, g, b);
+      if (cell.riverRun > -1) {
+        color = getRivermapColorPapyrus(cell)
+      } else {
+        color = getPapyrusColor(cell, r, g, b);
+      }
       break;
     case "colorful":
       color = getColorfulColor(cell);

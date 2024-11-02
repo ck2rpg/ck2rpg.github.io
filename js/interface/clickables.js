@@ -248,6 +248,11 @@ GID("papyrus-map-icon").onclick = function() {
   drawWorld()
 }
 
+GID("parchment-icon").onclick = function() {
+  world.drawingType = "parchment"
+  drawWorld()
+}
+
 GID("roguelike-icon").onclick = function() {
   world.drawingType = "roguelike"
   drawWorld()
@@ -745,6 +750,41 @@ GID("absoluteBrush").addEventListener('change', function(event) {
     paintbrushAbsolute = false;
   }
 })
+
+
+let drawingTypes = [
+  "parchment",
+  "colorful",
+  "papyrus",
+  "terrainMap",
+]
+
+GID("roller").onclick = function() {
+  //EROSION_RATE = 0.005
+  //deposition_rate = 0.0025
+  //let intervalId = setInterval(rollNewMap, 1000)
+  rollNewMap()
+}
+
+function rollNewMap() {
+  let intervalID = setInterval(function() {
+    createWorld();
+    for (let i = 0; i < 10; i++) {
+      spreadingCenterEmits();
+      spread();
+    }
+    spreadProcess(20);
+    cleanupAll()
+    getBeaches();
+    setMoisture();
+    //hpRivers();
+    floodFillMountains();
+    world.drawingType = pickFrom(drawingTypes)
+    drawWorld();
+  }, 1000); 
+
+ startup()
+}
 
 document.getElementById('generator-resolution').addEventListener('change', function(event) {
   const selectedValue = event.target.value;

@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>CK3 Procedural Map Generator</title>
+    <title>Procedural Map Generator</title>
     <link rel="stylesheet" href="css/bs.css"></link>
     <link rel="stylesheet" href="css/menus.css"></link>
     <link rel="stylesheet" href="css/landing.css"></link>
@@ -86,11 +86,12 @@
         <div id="zoom-out" class="zoom-button has-tool-tip">-<span class="tool-tip">Zoom Out</span></div>
         <div id="fullscreen" class="fullscreen-button has-tool-tip">⛶<span class="tool-tip">Wrap</span></div>
         <div id="randomNoiseMap" class="fullscreen-button has-tool-tip"><img src="icons/globe.png" style="width: 65%; height: 65%"><span class="tool-tip">Random Map</span></div>
+        <div id="roller" class="fullscreen-button has-tool-tip"><img src="icons/redo-icon.png" style="width: 65%; height: 65%"><span class="tool-tip">Roll Random Maps</span></div>
       </div>
       <!-- Main Side Panel -->
       <div id="menus-main" class="moveable-element menu-hideable ck-style-tray">
         <div class="display-horizontal flex-spread-evenly">
-          <span>CK3 Map Generator</span>
+          <span>Procedural Map Generator</span>
           <div>
             <div id="anchor" class="icon-clickable icon-extra-small moveable-element-anchor"><img src="icons/ui/move.png"></div>
           </div>
@@ -609,6 +610,7 @@
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="parchment-icon" src="icons/parchment-icon.png"><span class="tool-tip">Paper Map</span></div>
           <!--Removing Province icon for now to try only hierarchical drawing out and test community response-->
           <div style="display: none" class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="provmap-icon" src="icons/prov-icon.png"><span class="tool-tip">Province Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="watermap-icon" src="icons/watermap-icon.png"><span class="tool-tip">Water Province Map</span></div>
@@ -702,7 +704,7 @@
     <div id="landing-screen">
       <div id="landing-info">
         <div id="landing-generate">
-          <h1 class="landing-header">Crusader Kings 3 Procedural Map Generator</h1>
+          <h1 class="landing-header">Procedural Map Generator</h1>
           <p class="main-landing-text">A <a href="https://discord.gg/JwxuuK7HrV">TUTORIAL</a> is available on the discord. This project is in early Alpha - please adjust your expectations accordingly. Your feedback and support are invaluable as we continue to develop and refine this tool.</p><br><br>
           <button class="ck-button" id="start-generator-button">Generate a New World</button><br>
         </div>
@@ -738,6 +740,17 @@
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">      
 
+            <p class="text-intro">Alpha 0.22.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Feature: Paper map mode with mini-icons at 512x256 resolution</li>
+                <li>Feature: Added a random reroller button that repeatedly spits out a new map every second for testing purposes.</li>
+                <li>Meta: Renamed from "CK3 Procedural Map Generator" to just "Procedural Map Generator"</li>
+                <li>Bug fix: Fixed a problem where erosion brush applying off map would cause errors.</li>
+                <li></li>
+              </ul>
+
+            </p><br>  
 
             <p class="text-intro">Alpha 0.21.0 Release Change Log</p>
             <p class="main-landing-text">

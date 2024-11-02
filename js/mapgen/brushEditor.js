@@ -9,7 +9,7 @@ const canvasHeight = canvas.height;
 
 // Define erosion parameters
 let EROSION_RATE = 0.1; // Rate of erosion
-const DEPOSITION_RATE = 0.05; // Rate of sediment deposition
+let DEPOSITION_RATE = 0.05; // Rate of sediment deposition
 const MAX_ITERATIONS = 200; // Max iterations for erosion simulation
 
 function applySquareBrush(pos, brushSize, brushType, brushHardness) {
@@ -124,6 +124,38 @@ function applyBrush(pos, brushSize, brushType, brushHardness) {
   }
 }
 
+function applyErosionHighPoints() {
+  let arr = world.tectonics.spreadingLine;
+  for (let i = 0; i < world.tectonics.spreadingLine.length; i++) {
+    let cell = arr[i]
+    applyErosionCell(cell)
+  }
+}
+
+function applyErosionCell(cell) {
+  let radius = 5;
+  let radiusSquared = 5 * 5;
+  const startY = Math.floor(cell.y - radius);
+  const endY = Math.ceil(cell.y + radius);
+  const startX = Math.floor(cell.x - radius);
+  const endX = Math.ceil(cell.x + radius);
+
+  for (let i = startY; i <= endY; i++) {
+    for (let j = startX; j <= endX; j++) {
+      const dx = j - cell.x;
+      const dy = i - cell.y;
+      const dist = dx * dx + dy * dy;
+
+      if (dist <= radiusSquared) {
+        let nextCell = xy(j, i);
+        if (nextCell) {
+          applyErosion(nextCell, EROSION_RATE, DEPOSITION_RATE);
+        }
+      }
+    }
+  }
+}
+
 // Function to simulate erosion
 function applyErosionBrush(pos, brushSize) {
   EROSION_RATE = 0.1 * paintbrushHardness
@@ -158,43 +190,45 @@ function applyErosion(cell, erosionRate, depositionRate) {
   let sediment = 0;
 
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
-    let neighbors = getErosionNeighbors(cell.x, cell.y);
-    let steepestSlope = null;
-    let maxSlope = -Infinity;
-
-    // Find the steepest downhill neighbor
-    for (let neighbor of neighbors) {
-      let slope = cell.elevation - neighbor.elevation;
-      if (slope > maxSlope) {
-        maxSlope = slope;
-        steepestSlope = neighbor;
+    if (cell) {
+      let neighbors = getErosionNeighbors(cell.x, cell.y);
+      let steepestSlope = null;
+      let maxSlope = -Infinity;
+  
+      // Find the steepest downhill neighbor
+      for (let neighbor of neighbors) {
+        let slope = cell.elevation - neighbor.elevation;
+        if (slope > maxSlope) {
+          maxSlope = slope;
+          steepestSlope = neighbor;
+        }
       }
-    }
-
-    if (steepestSlope && maxSlope > 0) {
-      // Erode material from the current cell
-      let erodedMaterial = Math.min(maxSlope * erosionRate, cell.elevation);
-      cell.elevation -= erodedMaterial;
-      sediment += erodedMaterial;
-
-      // Move to the steepest downhill neighbor
-      cell = steepestSlope;
-
-      // Deposit sediment if erosion brush
-      if (paintbrush === "erosion") {
-        let depositedMaterial = sediment * depositionRate;
-        cell.elevation += depositedMaterial;
-        sediment -= depositedMaterial;
-      } else {
-        if (cell.elevation > limits.seaLevel.upper) {
+  
+      if (steepestSlope && maxSlope > 0) {
+        // Erode material from the current cell
+        let erodedMaterial = Math.min(maxSlope * erosionRate, cell.elevation);
+        cell.elevation -= erodedMaterial;
+        sediment += erodedMaterial;
+  
+        // Move to the steepest downhill neighbor
+        cell = steepestSlope;
+  
+        // Deposit sediment if erosion brush
+        if (paintbrush === "erosion") {
           let depositedMaterial = sediment * depositionRate;
           cell.elevation += depositedMaterial;
           sediment -= depositedMaterial;
+        } else {
+          if (cell.elevation > limits.seaLevel.upper) {
+            let depositedMaterial = sediment * depositionRate;
+            cell.elevation += depositedMaterial;
+            sediment -= depositedMaterial;
+          }
         }
+      } else {
+        // No downhill neighbor or maximum slope is zero
+        break;
       }
-    } else {
-      // No downhill neighbor or maximum slope is zero
-      break;
     }
   }
 }
@@ -214,10 +248,15 @@ function getErosionNeighbors(x, y) {
   ];
 
   for (let dir of directions) {
-    let neighbor = xy(x + dir.dx, y + dir.dy);
-    if (neighbor) {
-      neighbors.push(neighbor);
+    try {
+      let neighbor = xy(x + dir.dx, y + dir.dy);
+      if (neighbor) {
+        neighbors.push(neighbor);
+      }
+    } catch {
+
     }
+
   }
 
   return neighbors;
