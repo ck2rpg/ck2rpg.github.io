@@ -9,7 +9,7 @@ const canvasHeight = canvas.height;
 
 // Define erosion parameters
 let EROSION_RATE = 0.1; // Rate of erosion
-let DEPOSITION_RATE = 0.05; // Rate of sediment deposition
+let DEPOSITION_RATE = 0; // Rate of sediment deposition
 const MAX_ITERATIONS = 200; // Max iterations for erosion simulation
 
 function applySquareBrush(pos, brushSize, brushType, brushHardness) {
@@ -190,7 +190,7 @@ function applyErosion(cell, erosionRate, depositionRate) {
   let sediment = 0;
 
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
-    if (cell) {
+    if (cell && cell.elevation > limits.seaLevel.upper) {
       let neighbors = getErosionNeighbors(cell.x, cell.y);
       let steepestSlope = null;
       let maxSlope = -Infinity;
@@ -1559,6 +1559,17 @@ function redrawAffectedCells() {
       ctx.fillRect(adjX, adjY, settings.pixelSize, settings.pixelSize);
       let cell = world.map[y][x];
       drawRoguelike(cell);
+    });
+  } else if (world.drawingType === "relief") {
+    affectedCells.forEach(cellKey => {
+      const [x, y] = cellKey.split(',').map(Number);
+      clearCell(x, y, context);
+      let cell = world.map[y][x]
+      let color = getReliefColor(cell);
+      let adjX = x * settings.pixelSize;
+      let adjY = y * settings.pixelSize;
+      ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
+      ctx.fillRect(adjX, adjY, settings.pixelSize, settings.pixelSize);
     });
   } else {
     affectedCells.forEach(cellKey => {

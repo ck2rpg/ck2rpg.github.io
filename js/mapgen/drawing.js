@@ -357,9 +357,539 @@ function drawCell(x, y) {
     return rgb;
   }
 
-  function getColorfulColor(cell) {
+
+  function getReliefColor(cell) {
     let rgb = { r: 255, g: 255, b: 255 }; // Default white
   
+    if (cell.elevation < -230) {
+      rgb = {
+        r: 39,
+        g: 22,
+        b: 123,
+      }; 
+    } else if (cell.elevation < -205) {
+      rgb = {
+        r: 47,
+        g: 37,
+        b: 152,
+      }; 
+    } else if (cell.elevation < -180) {
+      rgb = {
+        r: 56,
+        g: 52,
+        b: 179,
+      }; 
+    } else if (cell.elevation < -155) {
+      rgb = {
+        r: 66,
+        g: 66,
+        b: 205,
+      }; 
+    } else if (cell.elevation < - 130) {
+      rgb = {
+        r: 70,
+        g: 74,
+        b: 214,
+      }; 
+    } else if (cell.elevation < -105) {
+      rgb = {
+        r: 74,
+        g: 86,
+        b: 214,
+      }; 
+    } else if (cell.elevation < -80) {
+      rgb = {
+        r: 78,
+        g: 96,
+        b: 217,
+      }; 
+    } else if (cell.elevation < -55) {
+      rgb = {
+        r: 85,
+        g: 108,
+        b: 220,
+      }; 
+    } else if (cell.elevation < -30) {
+      rgb = {
+        r: 101,
+        g: 130,
+        b: 233,
+      }; 
+    } else if (cell.elevation < -5) {
+      rgb = {
+        r: 125,
+        g: 154,
+        b: 230,
+      }; 
+    } else if (cell.elevation <= limits.seaLevel.upper) {
+      rgb = {
+        r: 155,
+        g: 184,
+        b: 237,
+      }; 
+    } else if (cell.elevation < 60) {
+      rgb = {
+        r: 32,
+        g: 59,
+        b: 39,
+      }
+    } else if (cell.elevation < 90) {
+      rgb = {
+        r: 45,
+        g: 86,
+        b: 56,
+      }
+    } else if (cell.elevation < 120) {
+      rgb = {
+        r: 95,
+        g: 146,
+        b: 94,
+      }
+    } else if (cell.elevation < 150) {
+      rgb = {
+        r: 130,
+        g: 163,
+        b: 103,
+      }
+    } else if (cell.elevation < 180) {
+      rgb = {
+        r: 166,
+        g: 182,
+        b: 110,
+      }
+    } else if (cell.elevation < 205) {
+      rgb = {
+        r: 201,
+        g: 200,
+        b: 118,
+      }
+    } else if (cell.elevation < 209) {
+      rgb = {
+        r: 226,
+        g: 213,
+        b: 124,
+      }
+    } else if (cell.elevation < 213) {
+      rgb = {
+        r: 231,
+        g: 214,
+        b: 124,
+      }
+    } else if (cell.elevation < 217) {
+      rgb = {
+        r: 228,
+        g: 206,
+        b: 118,
+      }
+    } else if (cell.elevation < 221) {
+      rgb = {
+        r: 222,
+        g: 193,
+        b: 107,
+      }
+    } else if (cell.elevation < 225) {
+      rgb = {
+        r: 215,
+        g: 179,
+        b: 95,
+      }
+    } else if (cell.elevation < 229) {
+      rgb = {
+        r: 208,
+        g: 164,
+        b: 84,
+      }
+    } else if (cell.elevation < 233) {
+      rgb = {
+        r: 202,
+        g: 151,
+        b: 71,
+      }
+    } else if (cell.elevation < 237) {
+      rgb = {
+        r: 195,
+        g: 138,
+        b: 60,
+      }
+    } else if (cell.elevation < 241) {
+      rgb = {
+        r: 188,
+        g: 124,
+        b: 48,
+      }
+    } else if (cell.elevation < 245) {
+      rgb = {
+        r: 182,
+        g: 109,
+        b: 37,
+      }
+    } else if (cell.elevation < 249) {
+      rgb = {
+        r: 176,
+        g: 96,
+        b: 24,
+      }
+    } else if (cell.elevation < 253) {
+      rgb = {
+        r: 160,
+        g: 66,
+        b: 1,
+      }
+    } else if (cell.elevation < 257) {
+      rgb = {
+        r: 158,
+        g: 63,
+        b: 3,
+      }
+    } else if (cell.elevation < 261) {
+      rgb = {
+        r: 156,
+        g: 61,
+        b: 4,
+      }
+    } else if (cell.elevation < 265) {
+      rgb = {
+        r: 151,
+        g: 59,
+        b: 4,
+      }
+    } else if (cell.elevation < 269) {
+      rgb = {
+        r: 144,
+        g: 57,
+        b: 5,
+      }
+    } else if (cell.elevation < 273) {
+      rgb = {
+        r: 137,
+        g: 53,
+        b: 6,
+      }
+    } else if (cell.elevation < 277) {
+      rgb = {
+        r: 130,
+        g: 49,
+        b: 8,
+      }
+    } else if (cell.elevation < 281) {
+      rgb = {
+        r: 123,
+        g: 46,
+        b: 8,
+      }
+    } else if (cell.elevation < 285) {
+      rgb = {
+        r: 115,
+        g: 43,
+        b: 10,
+      }
+    } else if (cell.elevation < 289) {
+      rgb = {
+        r: 101,
+        g: 37,
+        b: 11,
+      }
+    } else if (cell.elevation < 293) {
+      rgb = {
+        r: 93,
+        g: 34,
+        b: 12,
+      }
+    } else if (cell.elevation < 297) {
+      rgb = {
+        r: 90,
+        g: 31,
+        b: 13,
+      }
+    } else if (cell.elevation < 301) {
+      rgb = {
+        r: 89,
+        g: 32,
+        b: 13,
+      }
+    } else if (cell.elevation < 305) {
+      rgb = {
+        r: 90,
+        g: 31,
+        b: 12,
+      }
+    } else if (cell.elevation < 309) {
+      rgb = {
+        r: 90,
+        g: 40,
+        b: 23,
+      }
+    } else if (cell.elevation < 313) {
+      rgb = {
+        r: 92,
+        g: 45,
+        b: 28,
+      }
+    } else if (cell.elevation < 317) {
+      rgb = {
+        r: 92,
+        g: 48,
+        b: 33,
+      }
+    } else if (cell.elevation < 321) {
+      rgb = {
+        r: 93,
+        g: 52,
+        b: 38,
+      }
+    } else if (cell.elevation < 325) {
+      rgb = {
+        r: 94,
+        g: 57,
+        b: 44,
+      }
+    } else if (cell.elevation < 329) {
+      rgb = {
+        r: 95,
+        g: 61,
+        b: 50,
+      }
+    } else if (cell.elevation < 333) {
+      rgb = {
+        r: 95,
+        g: 65,
+        b: 55,
+      }
+    } else if (cell.elevation < 337) {
+      rgb = {
+        r: 96,
+        g: 70,
+        b: 61,
+      }
+    } else if (cell.elevation < 341) {
+      rgb = {
+        r: 97,
+        g: 73,
+        b: 65,
+      }
+    } else if (cell.elevation < 345) {
+      rgb = {
+        r: 97,
+        g: 77,
+        b: 71,
+      }
+    } else if (cell.elevation < 349) {
+      rgb = {
+        r: 98,
+        g: 82,
+        b: 76,
+      }
+    } else if (cell.elevation < 353) {
+      rgb = {
+        r: 100,
+        g: 86,
+        b: 82,
+      }
+    } else if (cell.elevation < 357) {
+      rgb = {
+        r: 100,
+        g: 90,
+        b: 86,
+      }
+    } else if (cell.elevation < 361) {
+      rgb = {
+        r: 100,
+        g: 94,
+        b: 92,
+      }
+    } else if (cell.elevation < 365) {
+      rgb = {
+        r: 101,
+        g: 98,
+        b: 97,
+      }
+    } else if (cell.elevation < 369) {
+      rgb = {
+        r: 105,
+        g: 107,
+        b: 108,
+      }
+    } else if (cell.elevation < 373) {
+      rgb = {
+        r: 104,
+        g: 109,
+        b: 109,
+      }
+    } else if (cell.elevation < 377) {
+      rgb = {
+        r: 105,
+        g: 110,
+        b: 111,
+      }
+    } else if (cell.elevation < 381) {
+      rgb = {
+        r: 107,
+        g: 112,
+        b: 113,
+      }
+    } else if (cell.elevation < 385) {
+      rgb = {
+        r: 108,
+        g: 113,
+        b: 115,
+      }
+    } else if (cell.elevation < 389) {
+      rgb = {
+        r: 108,
+        g: 115,
+        b: 117,
+      }
+    } else if (cell.elevation < 393) {
+      rgb = {
+        r: 110,
+        g: 118,
+        b: 119,
+      }
+    } else if (cell.elevation < 397) {
+      rgb = {
+        r: 110,
+        g: 119,
+        b: 120,
+      }
+    } else if (cell.elevation < 401) {
+      rgb = {
+        r: 116,
+        g: 124,
+        b: 127,
+      }
+    } else if (cell.elevation < 405) {
+      rgb = {
+        r: 120,
+        g: 128,
+        b: 130,
+      }
+    } else if (cell.elevation < 409) {
+      rgb = {
+        r: 123,
+        g: 131,
+        b: 133,
+      }
+    } else if (cell.elevation < 413) {
+      rgb = {
+        r: 127,
+        g: 135,
+        b: 136,
+      }
+    } else if (cell.elevation < 417) {
+      rgb = {
+        r: 131,
+        g: 138,
+        b: 140,
+      }
+    } else if (cell.elevation < 421) {
+      rgb = {
+        r: 119,
+        g: 126,
+        b: 127,
+      }
+    } else if (cell.elevation < 425) {
+      rgb = {
+        r: 145,
+        g: 152,
+        b: 154,
+      }
+    } else if (cell.elevation < 429) {
+      rgb = {
+        r: 148,
+        g: 155,
+        b: 156,
+      }
+    } else if (cell.elevation < 433) {
+      rgb = {
+        r: 152,
+        g: 159,
+        b: 160,
+      }
+    } else if (cell.elevation < 437) {
+      rgb = {
+        r: 155,
+        g: 161,
+        b: 163,
+      }
+    } else if (cell.elevation < 441) {
+      rgb = {
+        r: 159,
+        g: 165,
+        b: 167,
+      }
+    } else if (cell.elevation < 445) {
+      rgb = {
+        r: 163,
+        g: 169,
+        b: 170,
+      }
+    } else if (cell.elevation < 449) {
+      rgb = {
+        r: 166,
+        g: 171,
+        b: 173,
+      }
+    } else if (cell.elevation < 453) {
+      rgb = {
+        r: 170,
+        g: 175,
+        b: 176,
+      }
+    } else if (cell.elevation < 457) {
+      rgb = {
+        r: 173,
+        g: 178,
+        b: 179,
+      }
+    } else if (cell.elevation < 461) {
+      rgb = {
+        r: 177,
+        g: 181,
+        b: 182,
+      }
+    } else if (cell.elevation < 465) {
+      rgb = {
+        r: 180,
+        g: 185,
+        b: 186,
+      }
+    } else if (cell.elevation < 469) {
+      rgb = {
+        r: 185,
+        g: 189,
+        b: 190,
+      }
+    } else if (cell.elevation < 473) {
+      rgb = {
+        r: 188,
+        g: 191,
+        b: 192,
+      }
+    } else if (cell.elevation < 477) {
+      rgb = {
+        r: 191,
+        g: 195,
+        b: 196,
+      }
+    } else if (cell.elevation < 481) {
+      rgb = {
+        r: 194,
+        g: 199,
+        b: 199,
+      }
+    } else {
+      rgb = {
+        r: 200,
+        g: 203,
+        b: 203,
+      }
+    }
+    return rgb
+  }
+
+
+  function getColorfulColor(cell) {
+    let rgb = { r: 255, g: 255, b: 255 }; // Default white
     if (cell.elevation < limits.seaLevel.upper) {
       rgb = {
         r: 100 + Math.floor(cell.elevation / 5),
@@ -397,7 +927,6 @@ function drawCell(x, y) {
         rgb = drawGrassColor(cell);
       }
     }
-  
     return rgb;
   }
   
@@ -1199,8 +1728,9 @@ function drawWorld() {
           drawCellToImageData(imageData, x, y);
         }
       }
-      console.log("DRAWN")
       ctx.putImageData(imageData, 0, 0);
+      console.log("DRAWN")
+
       if (world.drawingType === "colorful") {
         ctx.beginPath(); // Start a new path
         ctx.moveTo(0, settings.equator);
@@ -1221,7 +1751,11 @@ function drawCellToImageData(imageData, x, y) {
       color = getBookColor(cell);
       break;
     case "parchment":
+      if (cell.elevation >= 37) {
       color = getParchmentColor(cell, r, g, b);
+      } else {
+        color = "skip"
+      }
       break;
     case "paper":
       color = getPaperColor(cell, r, g, b);
@@ -1232,6 +1766,9 @@ function drawCellToImageData(imageData, x, y) {
       } else {
         color = getPapyrusColor(cell, r, g, b);
       }
+      break;
+    case "relief":
+      color = getReliefColor(cell);
       break;
     case "colorful":
       color = getColorfulColor(cell);
@@ -1252,8 +1789,9 @@ function drawCellToImageData(imageData, x, y) {
       color = getSpecialColor(cell, world.drawingType);
       break;
   }
-
+  if (color !== "skip") {
   setBlock(imageData, x * settings.pixelSize, y * settings.pixelSize, settings.pixelSize, color);
+  }
 }
 
 function setBlock(imageData, startX, startY, size, color) {

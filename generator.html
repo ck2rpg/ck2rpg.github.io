@@ -607,6 +607,7 @@
         <div class="menu-cat flex-spread-evenly">
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="colorswatch" src="icons/terrainmap.png"><span class="tool-tip">Terrain Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="color-map-icon" src="icons/colormapicon.png"><span class="tool-tip">Pixel Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="relief-map-icon" src="icons/relief-icon.png"><span class="tool-tip">Relief Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
@@ -738,7 +739,16 @@
                 
         </div>
         <div id="landing-release-notes">
-          <div id="landing-release-notes-details">      
+          <div id="landing-release-notes-details">     
+            
+            <p class="text-intro">Alpha 0.23.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Feature: Added a relief map mode</li>
+                <li>Feature: Improved erosion brush to avoid deposition because it made function useless and far too messy.</li>
+              </ul>
+
+            </p><br>  
 
             <p class="text-intro">Alpha 0.22.0 Release Change Log</p>
             <p class="main-landing-text">
@@ -1223,7 +1233,6 @@
     <script src="js/mapgen/createWorld.js"></script>
     <script src="js/mapgen/drawing.js"></script>
     <script src="js/mapgen/getFeatures.js"></script>
-    
     <script src="js/mapgen/rain.js"></script>
     <script src="js/mapgen/changeElevation.js"></script>
     <script src="js/mapgen/cleanup.js"></script>

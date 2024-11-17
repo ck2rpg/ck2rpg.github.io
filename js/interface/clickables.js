@@ -232,6 +232,11 @@ GID("color-map-icon").onclick = function() {
   drawWorld()
 }
 
+GID("relief-map-icon").onclick = function() {
+  world.drawingType = "relief"
+  drawWorld()
+}
+
 GID("heightmap-icon").onclick = function() {
   world.drawingType = "heightmap"
   drawWorld()
