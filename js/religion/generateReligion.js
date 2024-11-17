@@ -33,12 +33,68 @@ function religionGenerator() {
     }
 }
 
+// Global state for religion and faith indexes
+let availableReligionIndexes = [];
+let availableFaithIndexes = [];
+const MAX_RELIGION_INDEX = 43;
+const MAX_FAITH_INDEX = 12;
+
+// Initialize/reset available religion indexes
+function resetReligionIndexes() {
+    availableReligionIndexes = Array.from(
+        {length: MAX_RELIGION_INDEX}, 
+        (_, i) => i + 1
+    );
+}
+
+// Initialize/reset available faith indexes
+function resetFaithIndexes() {
+    availableFaithIndexes = Array.from(
+        {length: MAX_FAITH_INDEX}, 
+        (_, i) => i + 1
+    );
+}
+
+// Get next available religion index
+function getNextReligionIndex() {
+    if (availableReligionIndexes.length === 0) {
+        resetReligionIndexes();
+    }
+    const randomIndex = getRandomInt(0, availableReligionIndexes.length - 1);
+    return availableReligionIndexes.splice(randomIndex, 1)[0];
+}
+
+// Get next available faith index
+function getNextFaithIndex(isFirstFaith) {
+    if (availableFaithIndexes.length === 0) {
+        resetFaithIndexes();
+    }
+    
+    if (isFirstFaith && availableFaithIndexes.includes(1)) {
+        availableFaithIndexes = availableFaithIndexes.filter(i => i !== 1);
+        return 1;
+    }
+    
+    const randomIndex = getRandomInt(0, availableFaithIndexes.length - 1);
+    return availableFaithIndexes.splice(randomIndex, 1)[0];
+}
+
+// Generate custom icons string for religion
+function getCustomIconsForReligion(religionIndex) {
+    return `rel_fam${religionIndex}_faith1_custom rel_fam${religionIndex}_faith2_custom rel_fam${religionIndex}_faith3_custom rel_fam${religionIndex}_faith4_custom`;
+}
+
+// Initialize indexes on script load
+resetReligionIndexes();
+resetFaithIndexes();
+
 function revampedReligion() {
     
 }
 
 function createReligion(entity, genFaiths) {
     let suff = rando()
+    let relIndex = getNextReligionIndex();
     let religion = {
         name: `${suff}`,
         isPagan: "yes",
@@ -46,6 +102,7 @@ function createReligion(entity, genFaiths) {
         piety_icon_group: "pagan",
         doctrine_background_icon: "core_tenet_banner_pagan.dds",
         hostility_doctrine: "pagan_hostility_doctrine",
+        relIndex: relIndex, // Store for faith generation
         doctrines: [
             pickFrom(faithHeads),
             pickFrom(faithGendered),
@@ -68,7 +125,7 @@ function createReligion(entity, genFaiths) {
             pickFrom(funeralDoctrines)
         ],
         virtueSins: [],
-        custom_faith_icons: `custom_faith_1 custom_faith_2 custom_faith_3 custom_faith_4 custom_faith_5 custom_faith_6 custom_faith_7 custom_faith_8 custom_faith_9 custom_faith_10 dualism_custom_1 zoroastrian_custom_1 zoroastrian_custom_2 buddhism_custom_1 buddhism_custom_2 buddhism_custom_3 buddhism_custom_4 taoism_custom_1 yazidi_custom_1 sunni_custom_2 sunni_custom_3 sunni_custom_4 muhakkima_1 muhakkima_2 muhakkima_4 muhakkima_5 muhakkima_6 judaism_custom_1 custom_faith_fp1_fenrir custom_faith_fp1_irminsul custom_faith_fp1_jormungandr custom_faith_fp1_odins_ravens custom_faith_fp1_runestone_moon custom_faith_fp1_thors_hammer custom_faith_fp1_valknut custom_faith_fp1_yggdrasil custom_faith_boromian_circles custom_faith_lotus custom_faith_aum_tibetan custom_faith_pentagram custom_faith_pentagram_inverted custom_faith_burning_bush custom_faith_allah custom_faith_gankyil custom_faith_eye_of_providence custom_faith_dove custom_faith_ichthys custom_faith_lamb custom_faith_black_sheep custom_faith_ankh custom_faith_chi_rho custom_faith_hamsa custom_faith_cool_s`,
+        custom_faith_icons: getCustomIconsForReligion(relIndex),
         holy_order_names: [
             "PLACEHOLDER",
             "PLACEHOLDER"
@@ -204,10 +261,12 @@ function createFaith(religion, entity) {
         faith.language = religion.language
     }
 
-    let faithIcon = pickFrom(faithIcons);
-    faith.icon = faithIcon[0];
-    faith.reformed_icon = faithIcon[1];
-    faith.religion = religion
+    const isFirstFaith = religion.faiths.length === 0;
+    const faithIndex = getNextFaithIndex(isFirstFaith);
+    
+    faith.icon = `rel_fam${religion.relIndex}_faith${faithIndex}`;
+    faith.reformed_icon = `rel_fam${religion.relIndex}_faith${faithIndex}`;
+    faith.religion = religion;
     faith.color = `0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)} 0.${getRandomInt(1, 9)}`;
     let pref = rando()
     faith.name = `${pref}_faith`;

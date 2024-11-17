@@ -43,7 +43,7 @@ function drawAndDownload(type, filename, callback) {
       drawProvinceMapWithoutOceans()
       downloadImage(canvas, "landProvinces.png");
     })*/
-    if (settings.palettes === "random") {
+    if ((settings.palettes === "random")||(settings.palettes === "immersion")) {
       functionsToExecute.push(() => downloadAllPalettes())
       functionsToExecute.push(() => hidePalette())
     }
