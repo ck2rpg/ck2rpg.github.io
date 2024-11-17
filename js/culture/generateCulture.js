@@ -126,7 +126,10 @@ function getRandomColorPair() { // { xlow ylow xhigh yhigh}
     let highY1 = getRandomInt(uppedY, 9)
     let highX2 = getRandomInt(0, 9);
     let highY2 = getRandomInt(0, 9)
-    return `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${settings.palettes === 'immersion'? uppedX : highX1 }${highX2} 0.${settings.palettes === 'immersion' ? uppedX : highY1}${highY2} }`
+    return settings.palettes === 'immersion'
+            ? `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${uppedX}${lowX2} 0.${uppedX}${lowY2} }`
+            : `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${highX1}${highX2} 0.${highY1}${highY2} }`
+    
 }
 
 let ethnicities = []
