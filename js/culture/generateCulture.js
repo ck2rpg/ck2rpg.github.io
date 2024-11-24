@@ -126,7 +126,10 @@ function getRandomColorPair() { // { xlow ylow xhigh yhigh}
     let highY1 = getRandomInt(uppedY, 9)
     let highX2 = getRandomInt(0, 9);
     let highY2 = getRandomInt(0, 9)
-    return `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${highX1}${highX2} 0.${highY1}${highY2} }`
+    return settings.palettes === 'immersion'
+            ? `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${uppedX}${lowX2} 0.${uppedX}${lowY2} }`
+            : `{ 0.${lowX1}${lowX2} 0.${lowY1}${lowY2} 0.${highX1}${highX2} 0.${highY1}${highY2} }`
+    
 }
 
 let ethnicities = []
@@ -138,66 +141,85 @@ let headShapes = [
     "warthog_head"
 ]
 
-function createRandomEthnicity(culture) {
-    let t = `${culture.id}_eth = {\n`
-    t += `\tskin_color = {\n`
-        t += `\t\t10 = ${getRandomColorPair()}\n`
-        t += `\t}\n`
-        t += `\teye_color = {\n`
-        t += `\t\t10 = ${getRandomColorPair()}\n`
-        t += `\t}\n`
-        t += `\thair_color = {\n`
-        t += `\t\t10 = ${getRandomColorPair()}\n`
-        t += `\t}\n`
-    for (let i = 0; i < geneticProperties.length; i++) {
-        let low = getRandomInt(0, 8);
-        let upped = low + 1
-        let high = getRandomInt(upped, 9)
-        let g = geneticProperties[i]
+const vanillaEthnicityTemplates = [
+    "african", "east_african", 
+    "arab",
+    "byzantine", "mediterranean",
+    "indian",
+    "asian",
+    "caucasian",
+    "circumpolar",
+    "slavic"
+]
+
+function createRandomEthnicity(heritage) {
+    let t = `${heritage}_eth = {\n`;
+
+    t += `\tskin_color = {\n`;
+    t += `\t\t10 = ${getRandomColorPair()}\n`;
+    t += `\t}\n`;
+    t += `\teye_color = {\n`;
+    t += `\t\t10 = ${getRandomColorPair()}\n`;
+    t += `\t}\n`;
+    t += `\thair_color = {\n`;
+    t += `\t\t10 = ${getRandomColorPair()}\n`;
+    t += `\t}\n`;
+
+    let selectedGeneProperties = geneticProperties;
+    if (settings.ethnicities === 'immersion') {
+        t += `\ttemplate = "${vanillaEthnicityTemplates[Math.floor(Math.random() * vanillaEthnicityTemplates.length)]}"\n`
+        const availableGenes = [...geneticProperties];
+        // Shuffle array
+        for (let i = availableGenes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availableGenes[i], availableGenes[j]] = [availableGenes[j], availableGenes[i]];
+        }
+        // Take first 13 genes for template use
+        selectedGeneProperties = availableGenes.slice(0, 13);      
+    }
+    // Process each gene
+    for (let i = 0; i < selectedGeneProperties.length; i++) {
+        let g = selectedGeneProperties[i];
         let str;
-        if (g.o.length === 0) { // pos neg traits
-            let posNeg = ["pos", "neg"][getRandomInt(0, 1)]
+        if (g.o.length === 0) {
+            let posNeg = ["pos", "neg"][getRandomInt(0, 1)];
             if (g.n.includes("_bs_")) {
-                str = g.n.replace("gene_bs_", "")
+                str = g.n.replace("gene_bs_", "");
             } else if (g.n.includes("gene_")) {
-                str = g.n.replace("gene_", "")
+                str = g.n.replace("gene_", "");
             } else if (g.n.includes("face_detail_")) {
-                str = g.n.replace("face_detail_", "")
+                str = g.n.replace("face_detail_", "");
             }
-            t += `\t${g.n} = {\n`
-            t += `\t\t10 = { name = ${str}_${posNeg}\trange = { 0.${low} 0.${high} } }\n`
-            t += `\t}\n`    
+            t += `\t${g.n} = {\n`;
+            t += `\t\t10 = { name = ${str}_${posNeg} range = { ${getRandomRange()} } }\n`;
+            t += `\t}\n`;
         } else {
-            str = g.n
-            let p = pickFrom(g.o)
-            t += `\t${g.n} = {\n`
-            t += `\t\t10 = { name = ${p}\trange = { 0.${low} 0.${high} } }\n`
-            t += `\t}\n`   
+            str = g.n;
+            let p = pickFrom(g.o);
+            t += `\t${g.n} = {\n`;
+            t += `\t\t10 = { name = ${p} range = { ${getRandomRange()} } }\n`;
+            t += `\t}\n`;
         }
     }
-    //beast
-    /*
-    let rand = getRandomInt(1, 10);
-    if (rand === 5) {
-        let low = getRandomInt(0, 8);
-        let upped = low + 1
-        let high = getRandomInt(upped, 9)
-        let hs = pickFrom(headShapes);
-        t += `\tbeast_head = {\n`
-        t += `\t\t10 = { name = ${hs} range = { 0.${low} 0.${high} } }\n`
-        t += `\t}\n`
-    }
-        */
-
-    t += `}\n`
+    t += `}\n`;
     return t;
 }
 
+function getRandomRange() {
+    const low = getRandomInt(0, 8);
+    const high = getRandomInt(low + 1, 9);
+    return `0.${low} 0.${high}`;
+}
+
 function outputEthnicities() {
+    let uniqueHeritages = []
     let output = `${daBom}`
     for (let i = 0; i < world.cultures.length; i++) {
-        let culture = world.cultures[i]
-        output += createRandomEthnicity(culture);
+        let heritage = world.cultures[i].heritage
+        if (uniqueHeritages.indexOf(heritage) === -1) {
+            uniqueHeritages.push(heritage)
+            output += createRandomEthnicity(heritage);
+        }
     }
     var data = new Blob([output], {type: 'text/plain'})
     var url = window.URL.createObjectURL(data);
@@ -339,8 +361,8 @@ function outputCulture(t, c) {
     if (settings.ethnicities === "vanilla") {
         let e = pickFrom(vanillaEthnicityList)
         t += `10 = ${e.n}\n`
-    } else if (settings.ethnicities === "random") {
-        t += `\t\t10 = ${c.id}_eth\n`
+    } else if ((settings.ethnicities === "random") || (settings.ethnicities === "immersion")) {
+        t += `\t\t10 = ${c.heritage}_eth\n`
     }
 
     
