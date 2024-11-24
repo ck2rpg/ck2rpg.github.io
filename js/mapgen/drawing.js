@@ -1175,14 +1175,22 @@ function getRiverMapColorLowRes(cell) {
    */
   function drawParchmentType(cell, r, g, b) {
     const cellBiome = biome(cell);
-    if (cell.terrain === "forest") {
+    if (cell.elevation > 37 && cell.elevation < 50 && world.height !== 256) {
+      cell.rgb = `rgb(0, 0, 0)`;
+      drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
+    } else if (cell.terrain === "forest") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-      drawInkTree(cell);
+      if (world.height === 256) {
+        drawInkTree(cell);
+      }
+
     } else if (cell.terrain === "wetlands") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-      drawInkMarsh(cell);
+      if (world.height === 256) {
+        drawInkMarsh(cell);
+      }
     } else if (cellBiome === "river" || cellBiome === "lake" || cellBiome === "ocean") {
       cell.rgb = `rgb(200, 200, 200)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
@@ -1190,11 +1198,16 @@ function getRiverMapColorLowRes(cell) {
     } else if (cellBiome === "mountain") {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-      drawInkMountain(cell);
+      if (world.height === 256) {
+        drawInkMountain(cell);
+      }
+
     } else if (cell.tree) {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
-      drawInkTree(cell);
+      if (world.height === 256) {
+        drawInkTree(cell);
+      }
     } else {
       cell.rgb = `rgb(255, 255, 255)`;
       drawSmallPixel(ctx, cell.x, cell.y, cell.rgb);
@@ -2311,3 +2324,532 @@ function drawTerrainDotMapBlackBig() {
   */
   alert("done")
 }
+
+function getIcePlanetColor(cell) {
+  let rgb = { r: 255, g: 255, b: 255 }; // Default white
+  if (cell.elevation < -230) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 80,
+    }; 
+  } else if (cell.elevation < -205) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 100,
+    }; 
+  } else if (cell.elevation < -180) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 120,
+    }; 
+  } else if (cell.elevation < -155) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 140,
+    }; 
+  } else if (cell.elevation < -130) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 160,
+    }; 
+  } else if (cell.elevation < -105) {
+    rgb = {
+      r: 0,
+      g: 50,
+      b: 180,
+    }; 
+  } else if (cell.elevation < -80) {
+    rgb = {
+      r: 0,
+      g: 100,
+      b: 200,
+    }; 
+  } else if (cell.elevation < -55) {
+    rgb = {
+      r: 0,
+      g: 150,
+      b: 220,
+    }; 
+  } else if (cell.elevation < -30) {
+    rgb = {
+      r: 0,
+      g: 200,
+      b: 240,
+    }; 
+  } else if (cell.elevation < -5) {
+    rgb = {
+      r: 135,
+      g: 206,
+      b: 250,
+    }; 
+  } else if (cell.elevation <= limits.seaLevel.upper) {
+    rgb = {
+      r: 173,
+      g: 216,
+      b: 230,
+    }; 
+  } else if (cell.elevation < 60) {
+    rgb = {
+      r: 224,
+      g: 255,
+      b: 255,
+    };
+  } else if (cell.elevation < 90) {
+    rgb = {
+      r: 240,
+      g: 248,
+      b: 255,
+    };
+  } else if (cell.elevation < 120) {
+    rgb = {
+      r: 245,
+      g: 245,
+      b: 245,
+    };
+  } else if (cell.elevation < 150) {
+    rgb = {
+      r: 250,
+      g: 250,
+      b: 250,
+    };
+  } else if (cell.elevation < 180) {
+    rgb = {
+      r: 255,
+      g: 255,
+      b: 255,
+    };
+  } else if (cell.elevation < 205) {
+    rgb = {
+      r: 230,
+      g: 230,
+      b: 230,
+    };
+  } else if (cell.elevation < 209) {
+    rgb = {
+      r: 220,
+      g: 220,
+      b: 220,
+    };
+  } else if (cell.elevation < 213) {
+    rgb = {
+      r: 210,
+      g: 210,
+      b: 210,
+    };
+  } else if (cell.elevation < 217) {
+    rgb = {
+      r: 200,
+      g: 200,
+      b: 200,
+    };
+  } else if (cell.elevation < 221) {
+    rgb = {
+      r: 190,
+      g: 190,
+      b: 190,
+    };
+  } else if (cell.elevation < 225) {
+    rgb = {
+      r: 180,
+      g: 180,
+      b: 180,
+    };
+  } else if (cell.elevation < 229) {
+    rgb = {
+      r: 170,
+      g: 170,
+      b: 170,
+    };
+  } else if (cell.elevation < 233) {
+    rgb = {
+      r: 160,
+      g: 160,
+      b: 160,
+    };
+  } else if (cell.elevation < 237) {
+    rgb = {
+      r: 150,
+      g: 150,
+      b: 150,
+    };
+  } else if (cell.elevation < 241) {
+    rgb = {
+      r: 140,
+      g: 140,
+      b: 140,
+    };
+  } else if (cell.elevation < 245) {
+    rgb = {
+      r: 130,
+      g: 130,
+      b: 130,
+    };
+  } else if (cell.elevation < 249) {
+    rgb = {
+      r: 120,
+      g: 120,
+      b: 120,
+    };
+  } else if (cell.elevation < 253) {
+    rgb = {
+      r: 110,
+      g: 110,
+      b: 110,
+    };
+  } else if (cell.elevation < 257) {
+    rgb = {
+      r: 100,
+      g: 100,
+      b: 100,
+    };
+  } else if (cell.elevation < 261) {
+    rgb = {
+      r: 90,
+      g: 90,
+      b: 90,
+    };
+  } else if (cell.elevation < 265) {
+    rgb = {
+      r: 80,
+      g: 80,
+      b: 80,
+    };
+  } else if (cell.elevation < 269) {
+    rgb = {
+      r: 70,
+      g: 70,
+      b: 70,
+    };
+  } else if (cell.elevation < 273) {
+    rgb = {
+      r: 60,
+      g: 60,
+      b: 60,
+    };
+  } else if (cell.elevation < 277) {
+    rgb = {
+      r: 50,
+      g: 50,
+      b: 50,
+    };
+  } else if (cell.elevation < 281) {
+    rgb = {
+      r: 40,
+      g: 40,
+      b: 40,
+    };
+  } else if (cell.elevation < 285) {
+    rgb = {
+      r: 30,
+      g: 30,
+      b: 30,
+    };
+  } else if (cell.elevation < 289) {
+    rgb = {
+      r: 20,
+      g: 20,
+      b: 20,
+    };
+  } else if (cell.elevation < 293) {
+    rgb = {
+      r: 10,
+      g: 10,
+      b: 10,
+    };
+  } else if (cell.elevation < 297) {
+    rgb = {
+      r: 5,
+      g: 5,
+      b: 5,
+    };
+  } else if (cell.elevation < 301) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 0,
+    };
+  } else if (cell.elevation < 305) {
+    rgb = {
+      r: 10,
+      g: 10,
+      b: 10,
+    };
+  } else if (cell.elevation < 309) {
+    rgb = {
+      r: 20,
+      g: 20,
+      b: 20,
+    };
+  } else if (cell.elevation < 313) {
+    rgb = {
+      r: 30,
+      g: 30,
+      b: 30,
+    };
+  } else if (cell.elevation < 317) {
+    rgb = {
+      r: 40,
+      g: 40,
+      b: 40,
+    };
+  } else if (cell.elevation < 321) {
+    rgb = {
+      r: 50,
+      g: 50,
+      b: 50,
+    };
+  } else if (cell.elevation < 325) {
+    rgb = {
+      r: 60,
+      g: 60,
+      b: 60,
+    };
+  } else if (cell.elevation < 329) {
+    rgb = {
+      r: 70,
+      g: 70,
+      b: 70,
+    };
+  } else if (cell.elevation < 333) {
+    rgb = {
+      r: 80,
+      g: 80,
+      b: 80,
+    };
+  } else if (cell.elevation < 337) {
+    rgb = {
+      r: 90,
+      g: 90,
+      b: 90,
+    };
+  } else if (cell.elevation < 341) {
+    rgb = {
+      r: 100,
+      g: 100,
+      b: 100,
+    };
+  } else if (cell.elevation < 345) {
+    rgb = {
+      r: 110,
+      g: 110,
+      b: 110,
+    };
+  } else if (cell.elevation < 349) {
+    rgb = {
+      r: 120,
+      g: 120,
+      b: 120,
+    };
+  } else if (cell.elevation < 353) {
+    rgb = {
+      r: 130,
+      g: 130,
+      b: 130,
+    };
+  } else if (cell.elevation < 357) {
+    rgb = {
+      r: 140,
+      g: 140,
+      b: 140,
+    };
+  } else if (cell.elevation < 361) {
+    rgb = {
+      r: 150,
+      g: 150,
+      b: 150,
+    };
+  } else if (cell.elevation < 365) {
+    rgb = {
+      r: 160,
+      g: 160,
+      b: 160,
+    };
+  } else if (cell.elevation < 369) {
+    rgb = {
+      r: 170,
+      g: 170,
+      b: 170,
+    };
+  } else if (cell.elevation < 373) {
+    rgb = {
+      r: 180,
+      g: 180,
+      b: 180,
+    };
+  } else if (cell.elevation < 377) {
+    rgb = {
+      r: 190,
+      g: 190,
+      b: 190,
+    };
+  } else if (cell.elevation < 381) {
+    rgb = {
+      r: 200,
+      g: 200,
+      b: 200,
+    };
+  } else if (cell.elevation < 385) {
+    rgb = {
+      r: 210,
+      g: 210,
+      b: 210,
+    };
+  } else if (cell.elevation < 389) {
+    rgb = {
+      r: 220,
+      g: 220,
+      b: 220,
+    };
+  } else if (cell.elevation < 393) {
+    rgb = {
+      r: 230,
+      g: 230,
+      b: 230,
+    };
+  } else if (cell.elevation < 397) {
+    rgb = {
+      r: 240,
+      g: 240,
+      b: 240,
+    };
+  } else if (cell.elevation < 401) {
+    rgb = {
+      r: 245,
+      g: 245,
+      b: 245,
+    };
+  } else if (cell.elevation < 405) {
+    rgb = {
+      r: 250,
+      g: 250,
+      b: 250,
+    };
+  } else if (cell.elevation < 409) {
+    rgb = {
+      r: 255,
+      g: 255,
+      b: 255,
+    };
+  } else if (cell.elevation < 413) {
+    rgb = {
+      r: 240,
+      g: 240,
+      b: 240,
+    };
+  } else if (cell.elevation < 417) {
+    rgb = {
+      r: 225,
+      g: 225,
+      b: 225,
+    };
+  } else if (cell.elevation < 421) {
+    rgb = {
+      r: 210,
+      g: 210,
+      b: 210,
+    };
+  } else if (cell.elevation < 425) {
+    rgb = {
+      r: 195,
+      g: 195,
+      b: 195,
+    };
+  } else if (cell.elevation < 429) {
+    rgb = {
+      r: 180,
+      g: 180,
+      b: 180,
+    };
+  } else if (cell.elevation < 433) {
+    rgb = {
+      r: 165,
+      g: 165,
+      b: 165,
+    };
+  } else if (cell.elevation < 437) {
+    rgb = {
+      r: 150,
+      g: 150,
+      b: 150,
+    };
+  } else if (cell.elevation < 441) {
+    rgb = {
+      r: 135,
+      g: 135,
+      b: 135,
+    };
+  } else if (cell.elevation < 445) {
+    rgb = {
+      r: 120,
+      g: 120,
+      b: 120,
+    };
+  } else if (cell.elevation < 449) {
+    rgb = {
+      r: 105,
+      g: 105,
+      b: 105,
+    };
+  } else if (cell.elevation < 453) {
+    rgb = {
+      r: 90,
+      g: 90,
+      b: 90,
+    };
+  } else if (cell.elevation < 457) {
+    rgb = {
+      r: 75,
+      g: 75,
+      b: 75,
+    };
+  } else if (cell.elevation < 461) {
+    rgb = {
+      r: 60,
+      g: 60,
+      b: 60,
+    };
+  } else if (cell.elevation < 465) {
+    rgb = {
+      r: 45,
+      g: 45,
+      b: 45,
+    };
+  } else if (cell.elevation < 469) {
+    rgb = {
+      r: 30,
+      g: 30,
+      b: 30,
+    };
+  } else if (cell.elevation < 473) {
+    rgb = {
+      r: 15,
+      g: 15,
+      b: 15,
+    };
+  } else if (cell.elevation < 477) {
+    rgb = {
+      r: 0,
+      g: 0,
+      b: 0,
+    };
+  } else if (cell.elevation < 481) {
+    rgb = {
+      r: 10,
+      g: 10,
+      b: 10,
+    };
+  } else {
+    rgb = {
+      r: 20,
+      g: 20,
+      b: 20,
+    };
+  }
+  return rgb
+}
+

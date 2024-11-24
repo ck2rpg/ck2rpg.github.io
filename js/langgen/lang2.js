@@ -2204,6 +2204,41 @@ function createLanguage() {
     return lang;
 }
 
+function createLanguage2() {
+  let lang = {};
+  lang.name = `language_${rando()}`
+  lang.consonantList = []
+  lang.vowelList = []
+  setLanguageFactors(lang)
+  lang.consonantList = subsetOf(ling.consonantList);
+  lang.vowelList = subsetOf(ling.vowelList);
+  setPlosives(lang)
+  setUvulars(lang)
+  setLateralConsonants(lang)
+  setVowels(lang)
+  consFrequencies(lang)
+  otherVowels(lang)
+  let flat = [...new Set(lang.vowelList)]
+  lang.vowelList = flat
+  let flat2 = [...new Set(lang.consonantList)];
+  lang.consonantList = flat2
+  lang.svo = pickFrom(ling.svo);
+  lang.adjectives = pickFrom(ling.adjectives);
+  lang.adposition = pickFrom(ling.adposition);
+  //let struct = pickFrom(ling.syllableStructures);
+  //lang.syllableStructures = struct.split(",")
+  lang.syllableStructures = subsetOf(ling.syllableStructures)
+  lang.syllableStructures.push("C,V")
+  lang.stress = pickFrom(ling.stress);
+  lang.nounGenders = subsetOf(ling.nounGenders);
+
+  lang.dictionary = {
+
+  }
+  lang.loc = translate(lang, "word")
+  return lang;
+}
+
 function createSyllable(lang) {
     let syll = ""
     for (let i = 0; i < lang.syllableStructures.length; i++) {
