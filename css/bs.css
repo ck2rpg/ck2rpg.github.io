@@ -1404,3 +1404,17 @@ button[type="submit"]:hover {
 .change-log-list {
   list-style: circle;
 }
+.change-log-list li {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#paintbrush-indicator {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  color: white;
+  pointer-events: none;
+  font-size: 2em;
+  background: rgba(0, 0, 0, 0.5)
+}

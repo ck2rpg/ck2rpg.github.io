@@ -843,7 +843,9 @@ function addFaithColorIfNotExists(faithColor, faith) {
     faithColor = getColorObjectFromString(faithColor)
   }
   const exists = faithOverrideKeys.some(color => areColorsEqual(color, faithColor));
-
+  faithColor.r = parseInt(faithColor.r);
+  faithColor.g = parseInt(faithColor.g);
+  faithColor.b = parseInt(faithColor.b)
   // If the faith does not exist, add it to the list
   if (!exists) {
     if (faith) {
@@ -851,12 +853,11 @@ function addFaithColorIfNotExists(faithColor, faith) {
     } else {
       let religion = createReligion()
       faithColor.faith = createFaith(religion)
+      faithColor.brushColor = `rgb(${faithColor.r}, ${faithColor.g}, ${faithColor.b})`;
     }
-    faithColor.r = parseInt(faithColor.r);
-    faithColor.g = parseInt(faithColor.g);
-    faithColor.b = parseInt(faithColor.b)
     faithOverrideKeys.push(faithColor);
   }
+
 }
 
 function updateFaithColorColumn() {
@@ -891,10 +892,23 @@ function updateFaithColorColumn() {
     faithDiv.appendChild(faithName)
     editorDiv.appendChild(faithDiv);
   });
+  updateOverrideIndicator()
 }
 
 function areColorsEqual(color1, color2) {
-  return color1.r === color2.r && color1.g === color2.g && color1.b === color2.b;
+  let c1;
+  let c2;
+  if (color1.r) {
+    c1 = `rgb(${color1.r}, ${color1.g}, ${color1.b})`
+  } else {
+    c1 = color1
+  }
+  if (color2.r) {
+    c2 = `rgb(${color2.r}, ${color2.g}, ${color2.b})`
+  } else {
+    c2 = color2
+  }
+  return c1 === c2
 }
 
 let cultureOverrideKeys = [];
@@ -1416,11 +1430,13 @@ function updateCultureColorColumn() {
     // Append the culture div to the main editor div
     editorDiv.appendChild(cultureDiv);
   });
+  updateOverrideIndicator()
 }
 
 function updatePaintbrushTitle(culture) {
   GID("title-color").value = rgbStringToHex(culture.brushColor)
   setTitleColor()
+  updateOverrideIndicator()
 }
 
 function redrawAffectedCells() {
@@ -1922,6 +1938,7 @@ function updateEmpireColorColumn() {
     editorDiv.appendChild(titleDiv);
   }
   editorDiv.appendChild(createFontSizeToggle())
+  updateOverrideIndicator()
 }
 
 function updateKingdomColorColumn() {
@@ -1939,6 +1956,7 @@ function updateKingdomColorColumn() {
   GID("back-arrow").onclick = function() {
     updateEmpireColorColumn()
   }
+  updateOverrideIndicator()
 }
 
 function updateDuchyColorColumn() {
@@ -1956,6 +1974,7 @@ function updateDuchyColorColumn() {
   GID("back-arrow").onclick = function() {
     updateKingdomColorColumn()
   }
+  updateOverrideIndicator()
 }
 
 function updateCountyColorColumn() {
@@ -1972,6 +1991,7 @@ function updateCountyColorColumn() {
   GID("back-arrow").onclick = function() {
     updateDuchyColorColumn()
   }
+  updateOverrideIndicator()
 }
 
 function updateProvinceColorColumn() {
@@ -1988,6 +2008,7 @@ function updateProvinceColorColumn() {
   GID("back-arrow").onclick = function() {
     updateCountyColorColumn()
   }
+  updateOverrideIndicator()
 }
 
 function getParentTitle(title) {
@@ -2076,6 +2097,7 @@ function createTitleEntry(title) {
   colorSwatch.onclick = function() {
     GID("title-color").value = rgbStringToHex(title.brushColor);
     setTitleColor()
+    updateOverrideIndicator()
   };
 
   const titleName = document.createElement('span');

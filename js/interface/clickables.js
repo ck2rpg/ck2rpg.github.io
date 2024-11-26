@@ -158,10 +158,12 @@ GID("canvas").onclick = function(e) {
 
 GID("paint-increase-elevation").onclick = function() {
   paintbrush = "raiseLand"
+  GID("paintbrush-indicator").innerHTML = "Raise Elevation Brush"
 }
 
 GID("paint-decrease-elevation").onclick = function() {
   paintbrush = "dropLand"
+  GID("paintbrush-indicator").innerHTML = "Lower Elevation Brush"
 }
 
 GID("download-all-checked-images").onclick = function() {
@@ -299,6 +301,7 @@ GID("spread-icon").onclick = function() {
 GID("colorswatch").onclick = function() {
   world.drawingType = "terrainMap"
   paintbrush = "terrain"
+  GID("paintbrush-indicator").innerHTML = "Terrain Brush"
   drawWorld()
 }
 
@@ -445,11 +448,13 @@ GID("province-edits-done-proceed").onclick = function() {
   GID("province-menu").style.display = "none"
   GID("province-drawn-proceed").style.display = "none"
   GID("main-generator-editor").style.display = "none"
+  GID("paintbrush-indicator").style.display = "none"
   GID("text-download-settings").style.display = "block"
 }
 
 GID("paint-erode").onclick = function() {
   paintbrush = "erosion"
+  GID("paintbrush-indicator").innerHTML = "Erosion Brush"
 }
 
 
@@ -473,6 +478,7 @@ colorOptions.forEach(option => {
     tooltip.textContent = selectedTooltip;
     paintbrush = "terrain"
     paintbrushTerrain = option.dataset.tooltip.toLowerCase()
+    GID("paintbrush-indicator").innerHTML = `Terrain Brush (${paintbrushTerrain})`
     colorPicker.style.display = 'none';
   });
 });
@@ -631,6 +637,7 @@ document.addEventListener('keydown', function(event) {
         event.preventDefault(); // Prevent default tab behavior (optional)
         setRandomPaintbrushColor(); // Run the function when Tab is pressed
         setTitleColor()
+        updateOverrideIndicator()
       }
   }
 });
@@ -640,7 +647,8 @@ GID("title-color").addEventListener('change', setTitleColor);
 GID("provmap-icon").onclick = function() {
   world.drawingType = "smallProv"
   paintbrush = "provinceOverride"
-  setTitleColor()
+  GID("paintbrush-indicator").innerHTML = "Province Brush"
+  updateOverrideIndicator()
   drawWorld()
 }
 
@@ -648,7 +656,7 @@ GID("culturemap-icon").onclick = function() {
   updateCultureColorColumn()
   world.drawingType = "smallCulture"
   paintbrush = "cultureOverride"
-  setTitleColor()
+  updateOverrideIndicator()
   drawWorld()
 }
 
@@ -656,22 +664,93 @@ GID("faithmap-icon").onclick = function() {
   updateFaithColorColumn()
   world.drawingType = "smallFaith"
   paintbrush = "faithOverride"
-  setTitleColor()
+  updateOverrideIndicator()
   drawWorld()
+}
+
+function updateOverrideIndicator() {
+  //need to do it differently depending on brush here
+  GID("paintbrush-indicator").innerHTML = `${paintbrush} Brush`
+  let selected;
+  setTitleColor()
+  let color = getColorObjectFromString(paintbrushTitle)
+
+  if (paintbrush === "empireOverride" || paintbrush === "kingdomOverride" || paintbrush === "duchyOverride" || paintbrush === "countyOverride" || paintbrush === "provinceOverride") {
+    let titles;
+    if (paintbrush === "empireOverride") {
+      titles = world.empires;
+    } else if (paintbrush === "kingdomOverride") {
+      titles = world.kingdoms;
+    } else if (paintbrush === "duchyOverride") {
+      titles = world.duchies
+    } else if (paintbrush === "countyOverride") {
+      titles = world.counties;
+    } else if (paintbrush === "provinceOverride") {
+      titles = world.provinces
+    }
+    for (let i = 0; i < titles.length; i++) {
+      let title = titles[i]
+      if (areColorsEqual(title.brushColor, color)) {
+        selected = title;
+      }
+    }
+
+    if (selected) {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="title-indicator">${selected.localizedTitle}</span>)`
+      GID("title-indicator").style.color = `rgb(${color.r}, ${color.g}, ${color.b})`
+    } else {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="title-indicator">UNASSIGNED</span>)`
+      GID("title-indicator").style.color = `rgb(${color.r}, ${color.g}, ${color.b})`
+    }
+  }
+
+  if (paintbrush === "faithOverride") {
+    
+    for (let i = 0; i < faithOverrideKeys.length; i++) {
+      let faith = faithOverrideKeys[i]
+      if (areColorsEqual(faith, color)) {
+        selected = faith
+      }
+    }
+    if (selected) {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="faith-indicator">${selected.faith.nameLoc}</span>)`
+      GID("faith-indicator").style.color = `rgb(${selected.r}, ${selected.g}, ${selected.b})`
+    } else {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="faith-indicator">UNASSIGNED</span>)`
+      GID("faith-indicator").style.color = `rgb(${color.r}, ${color.g}, ${color.b})`
+    }
+  }
+
+  if (paintbrush === "cultureOverride") {
+    for (let i = 0; i < cultureOverrideKeys.length; i++) {
+      let culture = cultureOverrideKeys[i]
+      if (areColorsEqual(culture, color)) {
+        selected = culture
+      }
+    }
+    if (selected) {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="culture-indicator">${selected.culture.name}</span>)`
+      GID("culture-indicator").style.color = `rgb(${selected.r}, ${selected.g}, ${selected.b})`
+    } else {
+      GID("paintbrush-indicator").innerHTML += ` (<span id="culture-indicator">UNASSIGNED</span>)`
+      GID("culture-indicator").style.color = `rgb(${color.r}, ${color.g}, ${color.b})`
+    }
+  }
+
 }
 
 GID("titlesmap-icon").onclick = function() {
   updateEmpireColorColumn();
   world.drawingType = "smallEmpire"
   paintbrush = "empireOverride"
-  setTitleColor();
+  updateOverrideIndicator()
   drawWorld()
 }
 
 GID("watermap-icon").onclick = function() {
   world.drawingType = "smallWater"
   paintbrush = "waterOverride"
-  setTitleColor()
+  updateOverrideIndicator()
   drawWorld()
 }
 
@@ -929,6 +1008,7 @@ function adjustLimitSlider() {
 
 GID("erase-province").onclick = function() {
   paintbrush = "province-eraser"
+  GID("paintbrush-indicator").innerHTML = "Province Eraser Brush"
 }
 
 const countyDistanceThresholdInput = GID("county-distance-threshold")

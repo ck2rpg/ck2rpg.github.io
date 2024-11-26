@@ -13,6 +13,10 @@ function colorToHex({ r, g, b }) {
 }
 
 function rgbStringToHex(rgbString) {
+    console.log(rgbString)
+    if (rgbString.r) {
+        rgbString = `rgb(${rgbString.r}, ${rgbString.g}, ${rgbString.b})`
+    }
     // Extract the numbers from the string using a regular expression
     const result = rgbString.match(/\d+/g).map(Number);
     

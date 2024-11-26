@@ -63,7 +63,6 @@ function erodeFrom(x, y) {
       }
       next = arr[0];
       if (next == undefined || next.elevation < 1 || count > 100000) {
-        console.log(count)
         running = false
       }
     } catch {

@@ -248,7 +248,7 @@
                 <option value="1024x512">1024x512</option>
                 <option value="2048x1024">2048x1024</option>
                 <option value="4096x2048">4096x2048</option>
-                <option value="8192x4096">8192x4096</option>
+                <!--<option value="8192x4096">8192x4096</option>-->
               </select>
               <span class="tool-tip">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span>
             </span>
@@ -692,7 +692,9 @@
 
 
 
+      <div id="paintbrush-indicator">
 
+      </div>
 
 
 
@@ -742,6 +744,17 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.25.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Feature: I added a brush indicator to top left of screen.</li>
+                <li>CRITICAL BUG FIX: I fixed the faith brush (it was generating massive amounts of faiths on a single click due to a faulty check on whether a faith color key existed).</li>
+                <li>Bug Fix: I removed the resolution size of 8,192x4,096 from the generator for the time being because no one has been able to generate a map of this resolution without a browser memory crash. You still can generate a 8,192x4,096 map through setting the map size and using upscaling of lower resolutions. While I understand that people may want to try it, may aim here is to prevent the frustration of people working on a map that has no chance of generating.</li>
+                <li>Fix: I removed some extraneous console logs that slipped through from earlier testing.</li>
+              </ul>
+
+            </p><br>  
             
             <p class="text-intro">Alpha 0.24.0 Release Change Log</p>
             <p class="main-landing-text">
