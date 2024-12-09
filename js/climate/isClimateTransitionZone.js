@@ -20,3 +20,19 @@ function assignClimateTransitionZones() {
     p.climateTransitionZone = isClimateTransitionZone(p)
   }
 }
+
+function getSmallCellLatitude(cell) {
+  let climateRow = (cell.y / world.height) * 100;
+  let equatorRow = (settings.equator / settings.height) * 100;
+  let furthestExtent = equatorRow > 50 ? equatorRow : 100 - equatorRow; 
+  let equatorDistance = Math.abs(climateRow - equatorRow);
+  let latitude = (equatorDistance / furthestExtent) * 90;
+  cell.latitude = latitude
+  cell.uncorrectedLatitude = (equatorDistance / furthestExtent) * 90
+  if (climateRow < equatorRow) {
+    cell.hemisphere = "N"
+  } else {
+    cell.hemisphere = "S"
+  }
+  return latitude
+}

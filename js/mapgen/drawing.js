@@ -357,6 +357,2260 @@ function drawCell(x, y) {
     return rgb;
   }
 
+  function getKoppenColor(cell) {
+    let rgb = { r: 255, g: 255, b: 255 }
+    if (cell.k === "Af") {
+      rgb.r = 0;
+      rgb.g = 0;
+      rgb.b = 100
+    } else if (cell.k === "Am") {
+      rgb.r = 0;
+      rgb.g = 120;
+      rgb.b = 255
+    } else if (cell.k === "Aw") {
+      rgb.r = 70;
+      rgb.g = 170;
+      rgb.b = 250
+    } else if (cell.k === "BWh") {
+      rgb.r = 255;
+      rgb.g = 0;
+      rgb.b = 0
+    } else if (cell.k === "BWk") {
+      rgb.r = 255;
+      rgb.g = 150;
+      rgb.b = 150
+    } else if (cell.k === "BSh") {
+      rgb.r = 245;
+      rgb.g = 165;
+      rgb.b = 0
+    } else if (cell.k === "BSk") {
+      rgb.r = 255;
+      rgb.g = 220;
+      rgb.b = 100
+    } else if (cell.k === "Csa") {
+      rgb.r = 255;
+      rgb.g = 255;
+      rgb.b = 0
+    } else if (cell.k === "Csb") {
+      rgb.r = 200;
+      rgb.g = 200;
+      rgb.b = 0
+    } else if (cell.k === "Csc") {
+      rgb.r = 150;
+      rgb.g = 150;
+      rgb.b = 0
+    } else if (cell.k === "Cwa") {
+      rgb.r = 150;
+      rgb.g = 255;
+      rgb.b = 150
+    } else if (cell.k === "Cwb") {
+      rgb.r = 100;
+      rgb.g = 200;
+      rgb.b = 100
+    } else if (cell.k === "Cwc") {
+      rgb.r = 50;
+      rgb.g = 150;
+      rgb.b = 50
+    } else if (cell.k === "Cfa") {
+      rgb.r = 200;
+      rgb.g = 255;
+      rgb.b = 80
+    } else if (cell.k === "Cfb") {
+      rgb.r = 100;
+      rgb.g = 255;
+      rgb.b = 80
+    } else if (cell.k === "Cfc") {
+      rgb.r = 50;
+      rgb.g = 200;
+      rgb.b = 0
+    } else if (cell.k === "Dsa") {
+      rgb.r = 255;
+      rgb.g = 0;
+      rgb.b = 255
+    } else if (cell.k === "Dsb") {
+      rgb.r = 200;
+      rgb.g = 0;
+      rgb.b = 200
+    } else if (cell.k === "Dsc") {
+      rgb.r = 150;
+      rgb.g = 50;
+      rgb.b = 150
+    } else if (cell.k === "Dsd") {
+      rgb.r = 150;
+      rgb.g = 100;
+      rgb.b = 150
+    } else if (cell.k === "Dwa") {
+      rgb.r = 170;
+      rgb.g = 175;
+      rgb.b = 255
+    } else if (cell.k === "Dwb") {
+      rgb.r = 90;
+      rgb.g = 120;
+      rgb.b = 220
+    } else if (cell.k === "Dwc") {
+      rgb.r = 76;
+      rgb.g = 79;
+      rgb.b = 179
+    } else if (cell.k === "Dwd") {
+      rgb.r = 50;
+      rgb.g = 0;
+      rgb.b = 135
+    } else if (cell.k === "Dfa") {
+      rgb.r = 0;
+      rgb.g = 255;
+      rgb.b = 255
+    } else if (cell.k === "Dfb") {
+      rgb.r = 55;
+      rgb.g = 200;
+      rgb.b = 255
+    } else if (cell.k === "Dfc") {
+      rgb.r = 0;
+      rgb.g = 125;
+      rgb.b = 125
+    } else if (cell.k === "Dfd") {
+      rgb.r = 0;
+      rgb.g = 70;
+      rgb.b = 95
+    } else if (cell.k === "ET") {
+      rgb.r = 178;
+      rgb.g = 178;
+      rgb.b = 178
+    } else if (cell.k === "EF") {
+      rgb.r = 102;
+      rgb.g = 102;
+      rgb.b = 102
+    } else if (cell.k === "H") {
+      rgb.r = 200
+      rgb.g = 200
+      rgb.b = 200
+    } else {
+      if (cell.hemisphere === "N") {
+        console.log(cell)
+      }
+    }
+    return rgb
+  }
+
+
+  const temperatureColors = [ //dark red to near white purple
+    [84, 0, 0],
+    [83, 1, 0],
+    [82, 1, 0],
+    [83, 0, 0],
+    [86, 0, 0],
+    [88, 0, 1],
+    [89, 1, 0],
+    [90, 0, 0],
+    [91, 0, 0],
+    [92, 0, 0],
+    [94, 0, 0],
+    [95, 0, 0],
+    [93, 1, 0],
+    [95, 1, 1],
+    [98, 0, 2],
+    [101, 0, 1],
+    [102, 0, 0],
+    [100, 0, 0],
+    [101, 0, 0],
+    [104, 0, 0],
+    [105, 1, 0],
+    [104, 0, 0],
+    [105, 0, 0],
+    [107, 1, 1],
+    [107, 1, 1],
+    [109, 1, 1],
+    [110, 0, 0],
+    [111, 0, 0],
+    [112, 0, 0],
+    [113, 1, 0],
+    [115, 1, 0],
+    [118, 1, 0],
+    [116, 0, 1],
+    [115, 0, 0],
+    [116, 0, 0],
+    [119, 0, 1],
+    [121, 0, 1],
+    [122, 0, 1],
+    [123, 1, 0],
+    [122, 0, 0],
+    [123, 0, 0],
+    [124, 0, 0],
+    [126, 0, 1],
+    [128, 0, 0],
+    [129, 0, 0],
+    [130, 0, 0],
+    [133, 0, 1],
+    [132, 0, 0],
+    [138, 0, 0],
+    [139, 0, 0],
+    [136, 1, 0],
+    [140, 0, 0],
+    [144, 0, 0],
+    [143, 1, 0],
+    [145, 0, 0],
+    [153, 1, 0],
+    [153, 0, 2],
+    [152, 0, 1],
+    [159, 1, 2],
+    [162, 0, 0],
+    [160, 0, 0],
+    [164, 0, 1],
+    [168, 0, 0],
+    [169, 0, 0],
+    [170, 0, 0],
+    [178, 0, 2],
+    [178, 0, 0],
+    [175, 1, 0],
+    [184, 0, 0],
+    [185, 0, 0],
+    [190, 0, 0],
+    [194, 0, 1],
+    [193, 1, 0],
+    [194, 0, 0],
+    [200, 0, 2],
+    [202, 0, 0],
+    [210, 0, 1],
+    [209, 1, 1],
+    [208, 0, 0],
+    [214, 0, 0],
+    [216, 0, 1],
+    [218, 0, 0],
+    [222, 0, 0],
+    [225, 0, 0],
+    [229, 1, 0],
+    [235, 0, 0],
+    [229, 1, 0],
+    [235, 0, 0],
+    [233, 1, 0],
+    [239, 0, 0],
+    [243, 0, 1],
+    [243, 1, 0],
+    [246, 1, 0],
+    [250, 0, 1],
+    [253, 4, 0],
+    [255, 2, 0],
+    [255, 3, 0],
+    [254, 12, 0],
+    [255, 12, 0],
+    [255, 16, 0],
+    [255, 20, 1],
+    [254, 22, 0],
+    [255, 28, 1],
+    [255, 27, 1],
+    [254, 34, 0],
+    [255, 36, 1],
+    [255, 40, 1],
+    [255, 44, 0],
+    [254, 48, 0],
+    [254, 53, 0],
+    [254, 62, 0],
+    [255, 60, 0],
+    [255, 67, 1],
+    [254, 70, 0],
+    [254, 72, 0],
+    [254, 77, 0],
+    [255, 78, 0],
+    [255, 87, 0],
+    [255, 86, 1],
+    [255, 94, 1],
+    [254, 103, 0],
+    [255, 110, 1],
+    [255, 111, 0],
+    [255, 119, 1],
+    [255, 128, 0],
+    [255, 127, 0],
+    [255, 134, 1],
+    [253, 136, 0],
+    [254, 143, 1],
+    [255, 144, 0],
+    [255, 151, 0],
+    [255, 159, 2],
+    [254, 160, 0],
+    [255, 166, 0],
+    [255, 168, 0],
+    [255, 174, 0],
+    [253, 176, 0],
+    [253, 185, 0],
+    [255, 183, 0],
+    [255, 192, 0],
+    [254, 196, 0],
+    [254, 201, 0],
+    [255, 208, 0],
+    [254, 210, 0],
+    [255, 216, 0],
+    [255, 221, 0],
+    [255, 226, 0],
+    [255, 233, 0],
+    [255, 241, 0],
+    [254, 246, 0],
+    [255, 250, 0],
+    [254, 255, 3],
+    [255, 255, 5],
+    [255, 255, 11],
+    [251, 255, 20],
+    [244, 255, 28],
+    [242, 254, 30],
+    [235, 255, 34],
+    [227, 255, 44],
+    [225, 255, 45],
+    [220, 255, 51],
+    [210, 255, 62],
+    [209, 255, 61],
+    [201, 255, 69],
+    [194, 255, 76],
+    [195, 255, 77],
+    [187, 255, 84],
+    [180, 255, 90],
+    [177, 255, 93],
+    [169, 255, 102],
+    [161, 254, 111],
+    [160, 255, 111],
+    [153, 255, 119],
+    [145, 255, 126],
+    [145, 254, 125],
+    [136, 255, 135],
+    [127, 255, 144],
+    [123, 254, 148],
+    [120, 255, 152],
+    [111, 255, 158],
+    [106, 254, 168],
+    [103, 255, 168],
+    [94, 255, 177],
+    [88, 255, 183],
+    [81, 255, 191],
+    [79, 255, 193],
+    [72, 255, 199],
+    [63, 255, 206],
+    [63, 255, 208],
+    [55, 255, 216],
+    [46, 255, 224],
+    [38, 254, 231],
+    [30, 255, 241],
+    [20, 254, 251],
+    [13, 255, 255],
+    [12, 255, 255],
+    [5, 255, 254],
+    [0, 252, 255],
+    [0, 244, 255],
+    [1, 243, 255],
+    [0, 235, 255],
+    [0, 227, 254],
+    [1, 219, 255],
+    [0, 211, 254],
+    [0, 212, 254],
+    [1, 202, 255],
+    [0, 194, 255],
+    [0, 186, 255],
+    [0, 180, 255],
+    [1, 178, 254],
+    [0, 170, 255],
+    [1, 161, 255],
+    [0, 155, 255],
+    [1, 149, 255],
+    [0, 145, 254],
+    [0, 139, 254],
+    [0, 128, 255],
+    [0, 121, 254],
+    [0, 118, 254],
+    [1, 112, 255],
+    [0, 104, 255],
+    [2, 96, 255],
+    [1, 86, 255],
+    [0, 79, 254],
+    [0, 74, 255],
+    [1, 71, 255],
+    [0, 63, 255],
+    [0, 50, 230],
+    [1, 30, 255],
+    [0, 23, 255],
+    [0, 22, 255],
+    [1, 13, 255],
+    [1, 4, 255],
+    [1, 0, 252],
+    [0, 0, 244],
+    [0, 0, 236],
+    [0, 0, 234],
+    [1, 0, 226],
+    [0, 0, 220],
+    [0, 0, 212],
+    [0, 0, 202],
+    [0, 0, 194],
+    [0, 0, 186],
+    [0, 0, 178],
+    [0, 0, 168],
+    [0, 0, 162],
+    [0, 0, 152],
+    [0, 0, 145],
+    [2, 0, 145],
+    [9, 0, 143],
+    [10, 0, 143],
+    [11, 0, 143],
+    [13, 0, 143],
+    [14, 0, 143],
+    [15, 0, 141],
+    [16, 0, 141],
+    [17, 0, 141],
+    [20, 0, 142],
+    [21, 0, 142],
+    [21, 0, 141],
+    [22, 0, 142],
+    [23, 0, 142],
+    [24, 0, 142],
+    [25, 0, 143],
+    [25, 1, 141],
+    [25, 1, 140],
+    [25, 0, 140],
+    [27, 0, 141],
+    [28, 1, 142],
+    [29, 0, 141],
+    [29, 0, 140],
+    [28, 0, 141],
+    [29, 0, 140],
+    [31, 0, 140],
+    [32, 0, 140],
+    [33, 0, 141],
+    [34, 0, 140],
+    [35, 1, 140],
+    [36, 0, 140],
+    [37, 0, 140],
+    [39, 0, 140],
+    [41, 0, 140],
+    [39, 1, 140],
+    [38, 0, 139],
+    [39, 1, 140],
+    [38, 0, 139],
+    [39, 1, 140],
+    [42, 0, 141],
+    [43, 0, 141],
+    [44, 0, 141],
+    [47, 0, 140],
+    [48, 0, 139],
+    [49, 0, 139],
+    [51, 0, 139],
+    [53, 0, 139],
+    [55, 0, 138],
+    [57, 0, 138],
+    [58, 0, 138],
+    [60, 0, 138],
+    [62, 0, 138],
+    [64, 0, 138],
+    [66, 0, 138],
+    [68, 0, 138],
+    [70, 0, 137],
+    [72, 0, 137],
+    [74, 0, 137],
+    [76, 0, 137],
+    [78, 0, 137],
+    [80, 0, 137],
+    [82, 0, 136],
+    [84, 0, 136],
+    [86, 0, 136],
+    [88, 0, 136],
+    [90, 0, 136],
+    [92, 0, 136],
+    [94, 0, 135],
+    [96, 0, 135],
+    [98, 0, 135],
+    [100, 0, 135],
+    [102, 0, 135],
+    [104, 0, 135],
+    [106, 0, 134],
+    [108, 0, 134],
+    [110, 0, 134],
+    [112, 0, 134],
+    [114, 0, 134],
+    [116, 0, 134],
+    [118, 0, 133],
+    [120, 0, 133],
+    [122, 0, 133],
+    [124, 0, 133],
+    [126, 0, 133],
+    [128, 0, 133],
+    [130, 0, 132],
+    [132, 0, 132],
+    [134, 0, 132],
+    [136, 0, 132],
+    [138, 0, 132],
+    [140, 0, 132],
+    [142, 0, 131],
+    [144, 0, 131],
+    [146, 0, 131],
+    [148, 0, 131],
+    [150, 0, 131],
+    [152, 0, 131],
+    [154, 0, 130],
+    [156, 0, 130],
+    [158, 0, 130],
+    [160, 0, 130],
+    [162, 0, 130],
+    [164, 0, 130],
+    [166, 0, 129],
+    [168, 0, 129],
+    [170, 0, 129],
+    [172, 0, 129],
+    [174, 0, 129],
+    [176, 0, 129],
+    [178, 0, 128],
+    [179, 0, 128],
+    [180, 2, 129],
+    [181, 4, 130],
+    [181, 6, 131],
+    [182, 8, 132],
+    [183, 10, 133],
+    [183, 12, 134],
+    [184, 14, 135],
+    [185, 16, 136],
+    [186, 18, 137],
+    [186, 20, 138],
+    [187, 22, 139],
+    [188, 24, 140],
+    [189, 26, 141],
+    [189, 28, 142],
+    [190, 30, 143],
+    [191, 32, 144],
+    [191, 34, 145],
+    [192, 36, 146],
+    [193, 38, 147],
+    [193, 40, 148],
+    [194, 42, 149],
+    [195, 44, 150],
+    [195, 46, 151],
+    [196, 48, 152],
+    [197, 50, 153],
+    [197, 52, 154],
+    [198, 54, 155],
+    [199, 56, 156],
+    [199, 58, 157],
+    [200, 60, 158],
+    [201, 62, 159],
+    [201, 64, 160],
+    [202, 66, 161],
+    [203, 68, 162],
+    [203, 70, 163],
+    [204, 72, 164],
+    [205, 74, 165],
+    [205, 76, 166],
+    [206, 78, 167],
+    [207, 80, 168],
+    [207, 82, 169],
+    [208, 84, 170],
+    [209, 86, 171],
+    [209, 88, 172],
+    [210, 90, 173],
+    [211, 92, 174],
+    [211, 94, 175],
+    [212, 96, 176],
+    [213, 98, 177],
+    [213, 100, 178],
+    [214, 102, 179],
+    [215, 104, 180],
+    [215, 106, 181],
+    [216, 108, 182],
+    [217, 110, 183],
+    [217, 112, 184],
+    [218, 114, 185],
+    [219, 116, 186],
+    [219, 118, 187],
+    [220, 120, 188],
+    [221, 122, 189],
+    [221, 124, 190],
+    [222, 126, 191],
+    [223, 128, 192],
+    [223, 130, 193],
+    [224, 132, 194],
+    [225, 134, 195],
+    [225, 136, 196],
+    [226, 138, 197],
+    [227, 140, 198],
+    [227, 142, 199],
+    [228, 144, 200],
+    [229, 146, 201],
+    [229, 148, 202],
+    [230, 150, 203],
+    [231, 152, 204],
+    [231, 154, 205],
+    [232, 156, 206],
+    [233, 158, 207],
+    [233, 160, 208],
+    [234, 162, 209],
+    [235, 164, 210],
+    [235, 166, 211],
+    [236, 168, 212],
+    [237, 170, 213],
+    [237, 172, 214],
+    [238, 174, 215],
+    [239, 176, 216],
+    [239, 178, 217],
+    [240, 180, 218],
+    [241, 182, 219],
+    [241, 184, 220],
+    [242, 186, 221],
+    [243, 188, 222],
+    [243, 190, 223],
+    [244, 192, 224],
+    [245, 194, 225],
+    [245, 196, 226],
+    [246, 198, 227],
+    [247, 200, 228],
+    [247, 202, 229],
+    [247, 204, 230],
+    [247, 206, 231],
+    [247, 208, 232],
+    [247, 210, 233],
+    [247, 212, 234],
+    [247, 214, 235],
+    [247, 216, 236],
+    [247, 218, 237],
+    [247, 220, 238],
+    [247, 222, 239],
+    [247, 224, 240],
+];
+
+function clearTemperatures() {
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      cell.temperature = 0;
+    }
+  }
+}
+
+
+function getLatitudeFactor(cell) {
+  let latitude = cell.latitude;
+  let hemisphere = cell.hemisphere;
+  if (hemisphere === "N") {
+    hemisphere = "north"
+  } else {
+    hemisphere = "south"
+  }
+  // Ensure latitude is between 1 and 90
+  if (latitude < 0 || latitude > 90) {
+      throw new Error("Latitude must be between 1 and 90 degrees.");
+  }
+
+  // Convert latitude to radians for trigonometric calculations
+  const latInRadians = (latitude * Math.PI) / 180;
+
+  // High precipitation near the equator (ITCZ)
+  const equatorialComponent = 1.2 * Math.exp(-Math.pow(latitude / 20, 2));
+
+  // Low precipitation in subtropical highs (~30 degrees)
+  const subtropicalComponent = -0.5 * Math.exp(-Math.pow((latitude - 20) / 5, 2));
+
+  // Moderate to high precipitation in mid-latitudes (~50 degrees)
+  const midLatitudeComponent = 0.7 * Math.exp(-Math.pow((latitude - 50) / 10, 2));
+
+  // Combine components to model precipitation factor
+  let factor = Math.sin(latInRadians) + equatorialComponent + subtropicalComponent + midLatitudeComponent;
+
+  // Normalize factor to be between 0 and 1
+  factor = Math.max(0, Math.min(factor, 1));
+  return factor
+}
+
+function clearOceanCurrents() {
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      if (cell.warmCurrent) {
+        cell.warmCurrent = false;
+      }
+      if (cell.coldCurrent) {
+        cell.coldCurrent = false;
+      }
+      if (cell.neutralCurrent) {
+        cell.neutralCurrent = false
+      }
+    }
+  }
+}
+
+function setOceanCurrents() {
+  //fix for islands
+  for (let i = 0; i < world.map.length; i++) {
+    let waterCount = 0;
+    let landCount = 0;
+    let lastOceanX = 0;
+    let lastElevation = 0
+    let oceanCount = 0;
+    let resetOcean = false;
+    //west to east
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      if (cell.elevation < 38) {
+        oceanCount += 1;
+      } else {
+        resetOcean = true;
+      }
+      if (cell.elevation > 37 && lastElevation < 38 && oceanCount > Math.floor(world.width / 20)) {
+        let currentCell = xy(j - 3, i)
+        if (currentCell.latitude < 10) {
+          currentCell.neutralCurrent = true
+        } else if (currentCell.latitude > 59 && cell.hemisphere === "N") {
+          currentCell.warmCurrent = true;
+        } else if (cell.latitude > 59 && cell.hemisphere === "S") {
+          currentCell.neutralCurrent = true
+        } else {
+          currentCell.coldCurrent = true
+        }
+
+      }
+      lastElevation = cell.elevation; 
+      if (resetOcean === true) {
+        oceanCount = 0;
+        resetOcean = false
+      }
+    }
+
+    //east to west
+    lastElevation = 0
+    oceanCount = 0
+    resetOcean = false;
+    for (let j = world.map[i].length - 1; j > 0; j--) {
+      let cell = xy(j, i);
+      if (cell.elevation < 38) {
+        oceanCount += 1;
+      } else {
+        resetOcean = true
+      }
+      if (cell.elevation > 37 && lastElevation < 38 && oceanCount > Math.floor(world.width / 20)) {
+        let currentCell = xy(j + 3, i)
+        if (currentCell.latitude < 10) {
+          currentCell.neutralCurrent = true
+        } else if (cell.latitude > 59 && cell.hemisphere === "N") {
+          currentCell.coldCurrent = true;
+        } else if (cell.latitude > 59 && cell.hemisphere === "S") {
+          currentCell.neutralCurrent = true
+        } else {
+          currentCell.warmCurrent = true;
+        }
+      }
+      lastElevation = cell.elevation; 
+      if (resetOcean === true) {
+        oceanCount = 0;
+        resetOcean = false
+      }
+    }
+  }
+}
+
+
+
+function changeWestCoast(cell, westCoast) {
+  let currentCreationDistance = 500//Math.floor(world.width / 30)
+  if (cell.elevation > 37) {
+    cell.westCoast = westCoast;
+    counters.landCount += 1;
+    if (counters.resettableWaterCount > currentCreationDistance) {
+      counters.waterCount = 0
+      counters.resettableWaterCount = 0;
+      cell.westCoast = cell.x - 1
+      westCoast = cell.x - 1
+    }
+  } else {
+    counters.waterCount += 1;
+    counters.resettableWaterCount += 1
+    let next = xy(cell.x + 1, cell.y)
+    if (counters.resettableWaterCount > currentCreationDistance) {
+      westCoast = cell.x
+    }
+    if (next && next.elevation > 37 && counters.resettableWaterCount > currentCreationDistance) {
+      let currentCell = xy(cell.x - 3, cell.y)
+      setSimpleCurrentsWestCoast(currentCell)
+    }
+  }
+  return westCoast
+}
+
+function changeEastCoast(cell, eastCoast) {
+  let currentCreationDistance = 50//Math.floor(world.width / 10)
+  if (cell.elevation > 37) {
+    cell.eastCoast = eastCoast;
+    counters.landCount += 1;
+    if (counters.resettableWaterCount > currentCreationDistance) {
+      counters.waterCount = 0
+      counters.resettableWaterCount = 0;
+      cell.eastCoast = cell.x + 1
+      eastCoast = cell.x + 1
+    }
+  } else {
+    counters.waterCount += 1;
+    counters.resettableWaterCount += 1
+    let next = xy(cell.x - 1, cell.y)
+    if (counters.resettableWaterCount > currentCreationDistance) {
+      eastCoast = cell.x
+    }
+    if (next && next.elevation > 37 && counters.resettableWaterCount > currentCreationDistance) {
+      let currentCell = xy(cell.x + 3, cell.y)
+      setSimpleCurrentsEastCoast(currentCell)
+    }
+  }
+  return eastCoast
+}
+
+function changeHighestMountain(cell, highestMountain, mountainRun) {
+  if (cell.elevation < 255 && mountainRun === 0) {
+    highestMountain = 0
+  }
+  if (cell.elevation > highestMountain) {
+    highestMountain = cell.elevation;
+  }
+  return highestMountain
+}
+
+let counters = {}
+
+function setGeo() {
+  let mountainRun = 0
+  let highestMountain = 0
+  let westCoast = 0;
+  let eastCoast = 0;
+
+  for (let i = 0; i < world.map.length; i++) {
+    //west to east
+    westCoast = 0
+    mountainRun = 0
+    highestMountain = 0
+    counters.waterCount = 500
+    counters.resettableWaterCount = 500;
+    counters.landCount = 0
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      getSmallCellLatitude(cell);
+      westCoast = changeWestCoast(cell, westCoast)
+      if ((cell.latitude > 29 && cell.latitude < 61)) {
+        mountainRun += incrementMountainRun(cell, mountainRun)
+        highestMountain = changeHighestMountain(cell, highestMountain, mountainRun)
+        cell.mountainRun = mountainRun;
+        cell.highestMountain = highestMountain
+      }
+      setWindReference(cell)
+      
+    }
+
+    mountainRun = 0
+    highestMountain = 0
+    eastCoast = world.width - 1
+    counters.waterCount = 500
+    counters.resettableWaterCount = 500
+    counters.landCount = 0
+
+    //east to west
+    for (let j = world.map[i].length - 1; j > 0; j--) {
+      let cell = xy(j, i);
+      if (cell.elevation < 38) {
+      getSmallCellLatitude(cell);
+      eastCoast = changeEastCoast(cell, eastCoast)
+      if (cell.latitude < 30 || cell.latitude > 60) {
+        mountainRun += incrementMountainRun(cell, mountainRun)
+        highestMountain = changeHighestMountain(cell, highestMountain, mountainRun)
+        cell.mountainRun = mountainRun;
+        cell.highestMountain = highestMountain
+      }
+      setWindReference(cell) 
+    }
+  }
+}
+}
+
+function setSimpleCurrentsWestCoast(cell) {
+  if (cell.latitude < 10) {
+    cell.neutralCurrent = true
+  } else if (cell.latitude > 59 && cell.hemisphere === "N") {
+    cell.warmCurrent = true;
+  } else if (cell.latitude > 59 && cell.hemisphere === "S") {
+    cell.neutralCurrent = true
+  } else {
+    cell.coldCurrent = true
+  }
+}
+
+function setSimpleCurrentsEastCoast(cell) {
+  if (cell.latitude < 10) {
+    cell.neutralCurrent = true
+  } else if (cell.latitude > 59 && cell.hemisphere === "N") {
+    cell.coldCurrent = true;
+  } else if (cell.latitude > 59 && cell.hemisphere === "S") {
+    cell.neutralCurrent = true
+  } else {
+    cell.warmCurrent = true;
+  }
+}
+
+function incrementMountainRun(cell, mountainRun) {
+  if (cell.elevation > 254) {
+    return 1
+  } else {
+    if (mountainRun > 0) {
+      return -1
+    } else {
+      return 0
+    }
+  }
+}
+
+/*
+function setWindReference(cell) {
+  let lat = cell.latitude;
+  let hem = cell.hemisphere
+  if (hem === "N") {
+    if (lat < 30) {
+      cell.windReference = 10
+    } else if (lat < 60) {
+      cell.windReference = -10
+    } else {
+      cell.windReference = 5
+    }
+  } else {
+    if (lat < 30) {
+      cell.windReference = -10
+    } else if (lat < 60) {
+      cell.windReference = 10
+    } else {
+      cell.windReference = 5
+    }
+  }
+  if (world.width === 1024) {
+    cell.windReference *= 2
+  } else if (world.width === 2048) {
+    cell.windReference *= 4
+  } else if (world.width === 4096) {
+    cell.windReference *= 8
+  } else if (world.width === 8192) {
+    cell.windReference *= 16
+  }
+  let refCell = xy(cell.x, cell.y + windReference);
+}
+  */
+
+function setWindReference(cell) {
+  let lat = cell.latitude;
+  let hem = cell.hemisphere;
+
+  // Determine the initial wind reference based on the latitude and hemisphere
+  if (hem === "N") {
+    if (lat < 30) {
+      cell.windReference = 10;
+    } else if (lat < 60) {
+      cell.windReference = -10;
+    } else {
+      cell.windReference = 5;
+    }
+  } else {
+    if (lat < 30) {
+      cell.windReference = -10;
+    } else if (lat < 60) {
+      cell.windReference = 10;
+    } else {
+      cell.windReference = 5;
+    }
+  }
+
+  // Scale the wind reference based on the world width
+  if (world.width === 1024) {
+    cell.windReference *= 2;
+  } else if (world.width === 2048) {
+    cell.windReference *= 2;
+  } else if (world.width === 4096) {
+    cell.windReference *= 2;
+  } else if (world.width === 8192) {
+    cell.windReference *= 5;
+  }
+
+  // Calculate the reference cell coordinates
+  let refCell = xy(cell.x, cell.y + cell.windReference);
+
+  // Adjust the windReference to ensure refCell is in the same latitudinal band
+  if (refCell) {
+    let sameBand
+    let refLat = refCell.latitude;
+    if (hem === "N") {
+      if (lat < 30 && refLat < 30) {
+        sameBand = true;
+      } else if (lat >= 30 && lat < 60 && refLat >= 30 && refLat < 60) {
+        sameBand = true;
+      } else if (lat >= 60 && refLat >= 60) {
+        sameBand = true;
+      }
+    } else {
+      if (lat < 30 && refLat < 30) {
+        sameBand = true;
+      } else if (lat >= 30 && lat < 60 && refLat >= 30 && refLat < 60) {
+        sameBand = true;
+      } else if (lat >= 60 && refLat >= 60) {
+        sameBand = true;
+      }
+    }
+    if (!sameBand) {
+      cell.windReference = Math.floor(cell.windReference / 2)
+    } 
+  }
+}
+
+
+
+
+//let windMap = createWindMap(24, 18)
+
+
+function setTemperatures() {
+  
+  for (let i = 0; i < world.map.length; i++) {
+    let moisture = 500
+    let lastOceanX = 0
+    let waterCount = 0; //something is wrong with approach to watercount
+    let lastElevation = 38;
+    let runArid = false;
+    let totalSlope = 1
+    let totalDescent = 1
+    let mountainRun = 0
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i)
+      let below = xy(j, i + cell.windReference)
+      if (cell.elevation > 254) {
+        mountainRun += 1;
+      } else {
+        mountainRun -= 1
+        if (mountainRun < 0) {
+          mountainRun = 0;
+        }
+      }
+      if (cell.elevation < 38) {
+        moisture += 1;
+      } else {
+        moisture -= 1 / world.width;
+      }
+      if (moisture > 500) {
+        moisture = 500
+      }
+      if (moisture < 1) {
+        moisture = 1
+      }
+      getTemperature(cell)
+      if (cell.elevation < 38 && waterCount > world.width / 10) {
+        runArid = false;
+        totalSlope = 1
+        totalDescent = 1
+      }
+      if (cell.elevation < 38 && waterCount > world.width / 10) {
+        lastOceanX = j
+      } else {
+        if (cell.elevation > 37) {
+          cell.distanceFromWestCoast = j - lastOceanX
+        }
+      }
+      if (cell.latitude > 29 && cell.latitude < 60) {
+        if (cell.elevation < 38 && waterCount > (world.width / 10)) {
+          lastOceanX = j
+          waterCount += 1;
+        } else if (cell.elevation < 38) {
+          waterCount += 1
+        } else if (cell.elevation > 37) {
+          if (cell.elevation > lastElevation) {
+            totalSlope += cell.elevation - lastElevation
+          } else if (runArid) {
+            totalDescent += lastElevation - cell.elevation
+          }
+          lastElevation = cell.elevation
+          waterCount = 0
+          cell.distanceFromWestCoast = j - lastOceanX
+          let modifier = Math.floor(cell.distanceFromWestCoast / 100)
+          cell.temperature += modifier;
+          //delete
+          if (cell.elevation > 255) {
+            runArid = true;
+          }
+          if (totalSlope > 1000) {
+            totalSlope = 1000
+          }
+          if (totalDescent > 1000) {
+            totalDescent = 1000
+          }
+          //cell.precipitation = 400
+          cell.precipitation = Math.floor((1 - cell.distanceFromWestCoast / (world.width * 2)) * (300 + waterCount) * (getLatitudeFactor(cell)) * (1 - totalDescent / 2001)) // * randFactor
+
+          if (cell.elevation < 255 && below) {
+            if (below.mountainRun && below.mountainRun > 0) { //hamhanded attempt to deal with ocean or off screen grabs
+              cell.precipitation -= below.mountainRun
+            } else {
+              //do nothing
+            }
+          }
+          cell.precipitation = Math.floor(cell.precipitation * 1)
+          cell.summerPrecipitation = cell.precipitation;
+          cell.winterPrecipitation = cell.precipitation;
+        } else {
+          cell.distanceFromWestCoast = j - lastOceanX
+          let modifier = Math.floor(cell.distanceFromWestCoast / 100)
+          cell.temperature += modifier;
+        }
+      }
+
+      if (cell.latitude > 59) {
+        if (cell.elevation < 38 && waterCount > 50) {
+          lastOceanX = j
+          waterCount += 1;
+        } else if (cell.elevation < 38) {
+          waterCount += 1
+        } else if (cell.elevation > 37) {
+          waterCount = 0
+          cell.distanceFromWestCoast = j - lastOceanX
+        }
+      }
+
+
+    }
+    lastOceanX = world.map[i].length - 1;
+    waterCount = 0
+    slope = 0
+    runArid = false;
+    totalDescent = 1
+    moisture = 400
+    mountainRun = 0
+    for (let j = world.map[i].length - 1; j >= 0; j--) {
+      let cell = xy(j, i)
+      let below = xy(j, i + cell.windReference)
+      if (cell.elevation > 254) {
+        mountainRun += 1;
+      } else {
+        mountainRun -= 1
+        if (mountainRun < 0) {
+          mountainRun = 0;
+        }
+      }
+      if (cell.elevation < 38 && waterCount > 50) {
+        lastOceanX = j
+      } else if (cell.elevation > 37) {
+        cell.distanceFromEastCoast = lastOceanX - j
+      }
+      if (cell.latitude < 30) {
+        if (waterCount > 50) {
+          runArid = false;
+          totalSlope = 1
+          totalDescent = 1 
+        }
+        if (cell.elevation < 38 && waterCount > 50) {
+
+          lastOceanX = j
+          waterCount += 1;
+        } else if (cell.elevation < 38) {
+          waterCount += 1
+        } else if (cell.elevation > 37) {
+          if (cell.elevation > lastElevation) {
+            totalSlope += cell.elevation - lastElevation
+          } else if (runArid) {
+            totalDescent += lastElevation - cell.elevation
+          }
+          lastElevation = cell.elevation
+          waterCount = 0
+          cell.distanceFromEastCoast = lastOceanX - j
+          let modifier = Math.floor(cell.distanceFromEastCoast / 100)
+          cell.temperature -= modifier;
+          //delete
+          if (cell.elevation > 255) {
+            runArid = true;
+          }
+          if (totalSlope > 1000) {
+            totalSlope = 1000
+          }
+          if (totalDescent > 1000) {
+            totalDescent = 1000
+          }
+          cell.totalDescent = totalDescent;
+          //cell.precipitation = 400
+          cell.precipitation = Math.floor((1 - cell.distanceFromEastCoast / world.width) * (300 + waterCount) * getLatitudeFactor(cell) * (1 - totalDescent / 2001)) // * randFactor
+          if (cell.elevation < 255 && below) {
+            if (below.mountainRun && below.mountainRun > 0) { //hamhanded attempt to deal with ocean or off screen grabs
+              cell.precipitation -= below.mountainRun
+            } else {
+              //do nothing
+            }
+          }
+          cell.precipitation = Math.floor(cell.precipitation * 1)
+          cell.summerPrecipitation = cell.precipitation;
+          cell.winterPrecipitation = cell.precipitation;
+        } else {
+          cell.distanceFromEastCoast = lastOceanX - j
+          let modifier = Math.floor(cell.distanceFromEastCoast / 100)
+          cell.temperature -= modifier;
+        }
+      } else if (cell.latitude > 59) {
+        if (waterCount > 50) {
+          runArid = false;
+          totalSlope = 1
+          totalDescent = 1 
+        }
+        if (cell.elevation < 38 && waterCount > 50) {
+          lastOceanX = j
+          waterCount += 1;
+        } else if (cell.elevation < 38) {
+          waterCount += 1;
+        } else if (cell.elevation > 37) {
+          if (cell.elevation > lastElevation) {
+            totalSlope += cell.elevation - lastElevation
+          } else if (runArid) {
+            totalDescent += lastElevation - cell.elevation
+          }
+          lastElevation = cell.elevation
+          waterCount = 0
+          cell.distanceFromEastCoast = lastOceanX - j
+          let modifier = Math.floor(cell.distanceFromEastCoast / 100)
+          cell.temperature -= modifier;
+          //delete
+          if (cell.elevation > 255) {
+            runArid = true;
+          }
+          if (totalSlope > 1000) {
+            totalSlope = 1000
+          }
+          if (totalDescent > 1000) {
+            totalDescent = 1000
+          }
+          cell.totalDescent = totalDescent;
+          //cell.precipitation = 400
+          cell.precipitation = Math.floor((1 - cell.distanceFromEastCoast / world.width) * (300 + waterCount) * getLatitudeFactor(cell) * (1 - totalDescent / 2001))
+          if (cell.elevation < 255 && below.mountainRun && below.mountainRun > 0) { //hamhanded attempt to deal with ocean or off screen grabs
+            cell.precipitation -= below.mountainRun
+          } else {
+            //do nothing
+          }
+          cell.precipitation = Math.floor(cell.precipitation * 1)
+          cell.summerPrecipitation = cell.precipitation;
+          cell.winterPrecipitation = cell.precipitation;
+        } else {
+          cell.distanceFromEastCoast = lastOceanX - j
+          let modifier = Math.floor(cell.distanceFromEastCoast / 100)
+          cell.temperature += modifier;
+        }
+      }
+    }
+  }
+}
+
+settings.month = "December"
+
+function getWindCellFromMap(mapX, mapY) {
+  //returns a wind map cell based on regular map coordinates
+  let windX = Math.floor(mapX / world.width * world.windMap.width)
+  let windY = Math.floor(mapY / world.height * world.windMap.height)
+  let windCell = world.windMap[windY][windX]
+  return windCell
+}
+
+function getWindCell(x, y) {
+  return world.windMap[y][x]
+}
+
+let highPressureSystems = []
+
+
+//drawWindArrows(canvas, ctx, windMap, "icons/northArrow.jpg")
+
+function drawWindArrows(canvas, ctx, windMap, imagePath) {
+  // Load the directional arrow image
+  const img = new Image();
+  img.src = imagePath;
+
+  img.onload = () => {
+      const cellWidth = canvas.width / windMap[0].length;
+      const cellHeight = canvas.height / windMap.length;
+
+      // Iterate over the windMap cells
+      for (let i = 0; i < windMap.length; i++) {
+          for (let j = 0; j < windMap[i].length; j++) {
+              const windCell = windMap[i][j];
+              if (windCell.windDirection !== "unknown") {
+                  const x = j * cellWidth;
+                  const y = i * cellHeight;
+
+                  // Save context state
+                  ctx.save();
+
+                  // Move context to the center of the cell
+                  ctx.translate(x + cellWidth / 2, y + cellHeight / 2);
+
+                  // Rotate based on wind direction
+                  switch (windCell.windDirection) {
+                      case "north":
+                          ctx.rotate(0);
+                          break;
+                      case "northeast":
+                          ctx.rotate(Math.PI / 4);
+                          break;
+                      case "east":
+                          ctx.rotate(Math.PI / 2);
+                          break;
+                      case "southeast":
+                          ctx.rotate((3 * Math.PI) / 4);
+                          break;
+                      case "south":
+                          ctx.rotate(Math.PI);
+                          break;
+                      case "southwest":
+                          ctx.rotate((-3 * Math.PI) / 4);
+                          break;
+                      case "west":
+                          ctx.rotate(-Math.PI / 2);
+                          break;
+                      case "northwest":
+                          ctx.rotate(-Math.PI / 4);
+                          break;
+                  }
+
+                  // Draw the arrow image
+                  ctx.drawImage(img, -cellWidth / 4, -cellHeight / 4, cellWidth / 2, cellHeight / 2);
+
+                  // Restore context state
+                  ctx.restore();
+              }
+          }
+      }
+  };
+
+  img.onerror = () => {
+      console.error("Failed to load the image:", imagePath);
+  };
+}
+
+function createWindMap(width, height) {
+  world.windMap = []
+  world.windMap.width = width;
+  world.windMap.height = height
+  let wSize = Math.floor(world.width / width);
+  let hSize = Math.floor(world.height / height)
+  world.windMap.cellArea = wSize * hSize
+  let equatorMod = (settings.equator / settings.height)
+  let equator = Math.floor(equatorMod * height);
+  world.windMap.equator = equator
+  let northernSubTropicHigh = Math.floor(world.windMap.equator - height / 6)
+  let southernSubTropicHigh = Math.floor(world.windMap.equator + height / 6)
+  for (let i = 0; i < height; i++) {
+    let arr = []
+    for (let j = 0; j < width; j++) {
+      let windCell = {}
+      windCell.land = 0
+      windCell.water = 0
+      windCell.itcz = 0
+      windCell.x = j;
+      windCell.y = i;
+      windCell.windDirection = "unknown"
+      if (i === northernSubTropicHigh) {
+        windCell.northernSubTropicHigh = true
+      } else if (i === southernSubTropicHigh) {
+        windCell.southernSubTropicHigh = true
+      }
+      arr.push(windCell)
+    }
+    world.windMap.push(arr);
+  }
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      let windX = Math.floor(j / world.width * width)
+      let windY = Math.floor(i / world.height * height)
+      let windCell = world.windMap[windY][windX]
+      if (cell.elevation > 37) {
+        windCell.land += 1
+      } else {
+        windCell.water += 1
+      }
+    }
+  }
+  for (let i = 0; i < world.windMap.length; i++) {
+    for (let j = 0; j < world.windMap[i].length; j++) {
+      let windCell = world.windMap[i][j]
+      if (windCell.land > windCell.water) {
+        windCell.isLand = true;
+      } else {
+        windCell.isWater = true
+      }
+    }
+  }
+
+  return world.windMap
+}
+
+function interpolateArrayWrap(arr) {
+  const n = arr.length;
+  const result = [...arr];
+
+  // Find indices of defined values
+  const definedIndices = [];
+  arr.forEach((val, i) => {
+    if (val !== undefined) definedIndices.push(i);
+  });
+
+  // If no defined values, return as-is
+  if (definedIndices.length === 0) return result;
+
+  // If only one defined value, fill the entire array with it
+  if (definedIndices.length === 1) {
+    result.fill(arr[definedIndices[0]]);
+    return result;
+  }
+
+  // Add the first index + n to handle circular wrapping
+  definedIndices.push(definedIndices[0] + n);
+
+  // Interpolate undefined values
+  for (let i = 0; i < definedIndices.length - 1; i++) {
+    const start = definedIndices[i];
+    const end = definedIndices[i + 1];
+    const startValue = arr[start % n];
+    const endValue = arr[end % n];
+    const steps = end - start;
+
+    for (let j = 1; j < steps; j++) {
+      const currentIndex = (start + j) % n;
+      result[currentIndex] = Math.floor(startValue + ((endValue - startValue) * j) / steps);
+    }
+  }
+
+  return result;
+}
+
+let oldWindITCZ = []
+
+function runWindModel() {
+  let height = world.windMap.height;
+  let width = world.windMap.width;
+  let equator = Math.floor(height / 2);
+  let northernSubTropicHigh = Math.floor(world.windMap.equator - height / 6)
+  console.log(northernSubTropicHigh)
+  let southernSubTropicHigh = Math.floor(world.windMap.equator + height / 6)
+  windITCZ = []
+
+  for (let i = 0; i < world.windMap.height; i++) {
+    for (let j = 0; j < world.windMap.width; j++) {
+      let cell = getWindCell(j, i);
+      if (cell.itcz > Math.floor(world.windMap.cellArea / 2)) {
+        cell.isITCZ = true;
+        windITCZ[cell.x] = i
+      }
+    }
+  }
+  for (let i = 0; i < world.windMap.height; i++) {
+    for (let j = 0; j < world.windMap.width; j++) {
+      let cell = getWindCell(j, i);
+      if (cell.isITCZ) {
+        cell.windDirection = "west"
+      }
+    }
+  }
+
+  console.log(windITCZ)
+  oldWindITCZ = []
+  for (let i = 0; i < windITCZ.length; i++) {
+    oldWindITCZ.push(windITCZ[i])
+  }
+  oldWindITCZ = windITCZ
+  windITCZ = interpolateArrayWrap(windITCZ);
+  let last = windITCZ[windITCZ.length - 1]
+  while (windITCZ.length < world.windMap.width) {
+    windITCZ.push(last)
+  }
+  for (let j = 0; j < windITCZ.length; j++) {
+    let cell = getWindCell(j, windITCZ[j])
+    if (cell) {
+      cell.windDirection = "west"
+    }
+
+  }
+    
+
+  //northern hemisphere
+  let waterCount = 0;
+  let lastCurrent;
+  let landCount = 0;
+  let passedLand = true;
+  let lastCell = 10
+  let first = true
+  //scale the multipliers
+  let one = Math.floor(world.windMap.height / 18)
+  let two = Math.floor(world.windMap.height / 18 * 2)
+  let three = Math.floor(world.windMap.height / 18 * 3)
+  let four = Math.floor(world.windMap.height / 18 * 4)
+  let five = Math.floor(world.windMap.height / 18 * 5)
+  let six = Math.floor(world.windMap.height / 18 * 6)
+  let seven = Math.floor(world.windMap.height / 18 * 7)
+  let eight = Math.floor(world.windMap.height / 18 * 8)
+
+  for (let j = 0; j < world.windMap.width; j++) {
+    let itczAdjustment = Math.floor(windITCZ[j] - (height / 6))
+    let circCellX = j;
+    let circCellY = itczAdjustment
+    let windCell;
+    if (world.windMap[itczAdjustment]) {
+      windCell = world.windMap[itczAdjustment][j]
+    }
+ 
+
+    if (windCell) {
+      if (windCell.isWater) {
+        waterCount += 1;
+        lastCell += 1
+        landCount = 0
+      } else {
+        passedLand = true
+        waterCount = 0;
+        landCount += 1
+      }
+    } else {
+      passedLand = true
+      waterCount += 1;
+      lastCell += 1;
+      landCount = 0
+    }
+
+    if ((waterCount === two && first === true) || (waterCount === four || landCount === three) && passedLand && lastCell > seven) {
+      first = false
+      lastCell = 0
+      if (windCell) {
+        highPressureSystems.push(windCell)
+        windCell.isHighPressure = true;
+        windCell.westwardReach = 3
+      }
+      //windCell.windDirection = "east"
+
+      let equator = world.windMap.equator 
+      for (let n = 0; n < world.windMap.height; n++) {
+        for (let z = 0; z < world.windMap.width; z++) {
+          let limit;
+          if (windITCZ[z]) {
+            limit = windITCZ[z]
+          } else {
+            limit = world.windMap.equator;
+          }
+          let c = world.windMap[n][z]
+          if (n === limit) { // ITCZ
+            c.oceanCurrent = "neutral"
+          } else if (n < limit) {
+            if (c.y < limit) {
+              if (c === windCell) {
+                //do nothing
+              } else if (c.windDirection === "unknown") {
+                let d = getDistance(c.x, c.y, circCellX, circCellY)
+
+                if (d > two && c.x < circCellX && d < five && c.y > circCellY) {
+                  c.windDirection = "northwest"
+                  c.oceanCurrent = "warm"
+                } else if (d < five && c.x < circCellX && c.y === circCellY) {
+                  c.windDirection = "northwest"
+                  c.oceanCurrent = "warm"
+                } else if (c.x > circCellX && d < five && c.y < circCellY) {
+                  c.windDirection = "southeast"
+                  c.oceanCurrent = "cold"
+                } else if (d > three && d < five && c.y === circCellY && c.x > circCellX) {
+                  c.windDirection = "south"       
+                  c.oceanCurrent = "cold"
+                } else if (d > three && d < five && c.y > circCellY && c.x > circCellX) {
+                  c.windDirection = "southwest"
+                  c.oceanCurrent = "cold"       
+                } else if (d < five) {
+                  if (d > two && c.y < circCellY) {
+                    if (c.x <= circCellX + 1) {
+                      c.windDirection = "northeast"
+                      c.oceanCurrent = "warm"
+                    } else {
+                      c.windDirection = "east"
+                      c.oceanCurrent = "warm"
+                    }
+  
+                  } else if (c.y < circCellY) {
+                    if (c.x > circCellX) {
+                      c.windDirection = "southeast"
+                      c.oceanCurrent = "cold"
+                    } else {
+                      c.windDirection = "northeast"
+                      c.oceanCurrent = "warm"
+                    }
+                    
+                  } else if (c.x < circCellX && c.y < circCellY) {
+                    c.windDirection = "northeast"
+                    c.oceanCurrent = "warm"
+                  } else {
+                    c.windDirection = "southwest"
+                    c.oceanCurrent = "cold"
+                  }
+                } 
+              }
+            }
+          }   
+        }
+      }
+      waterCount = 0
+      passedLand = false;
+    }
+  }
+
+
+  //EVERYTHING SOUTHwest IN NORTHERN HEMISPHERE IF NOT ASSIGNED
+  
+  for (let n = 0; n < world.windMap.height; n++) {
+    for (let z = 0; z < world.windMap.width; z++) { 
+      let limit;
+      if (windITCZ[z]) {
+        limit = windITCZ[z]
+      } else {
+        limit = world.windMap.equator;
+      }
+      if (n < limit) {
+        let c = world.windMap[n][z]
+        if (c.windDirection === "unknown" && !c.isHighPressure) {
+          c.windDirection = "southwest"
+          c.oceanCurrent = "cold"
+        }
+      }
+    }
+  }
+  
+    
+  
+
+    //southern hemisphere
+
+  waterCount = 0;
+  passedLand = true;
+  lastCell = 10
+  landCount = 0
+  first = true;
+  for (let j = 0; j < world.windMap.width; j++) {
+    let itczAdjustment = Math.floor(windITCZ[j] + height / 6)
+    let circCellX = j;
+    let circCellY = itczAdjustment
+    let windCell;
+    let next;
+    let last;
+    if (world.windMap[itczAdjustment]) {
+      windCell = world.windMap[itczAdjustment][j]
+      next = windCell = world.windMap[itczAdjustment][j + 1]
+      last = windCell = world.windMap[itczAdjustment][j - 1]
+    }
+
+    let neighborsLand = false
+    if (windCell && windCell.isWater) {
+      for (let i = 0; i < 5; i++) { // need to scale this for wind map size
+        let c = world.windMap[itczAdjustment][j + i]
+        let cw = world.windMap[itczAdjustment][j - i]
+        if (c && c.isWater === false) {
+          neighborsLand = true;
+        }
+        if (cw && cw.isWater === false) {
+          neighborsLand = true;
+        }
+      }
+    }
+ 
+
+    if (windCell) {
+      if (windCell.isWater) {
+        waterCount += 1;
+        lastCell += 1
+        landCount = 0
+      } else {
+        passedLand = true
+        waterCount = 0;
+        landCount += 1
+      }
+    } else {
+      passedLand = true
+      waterCount += 1;
+      lastCell += 1;
+      landCount = 0
+    }
+
+    if (!neighborsLand && (waterCount === two && first === true) || (waterCount === four) && passedLand && lastCell > seven && first === false || lastCell > eight) { // || landCount === three
+      if (first) {
+        first = false
+      }
+      lastCell = 0
+      
+      if (windCell) {
+        highPressureSystems.push(windCell)
+        windCell.isHighPressure = true;
+        windCell.westwardReach = 3
+      }
+
+      //windCell.windDirection = "west"
+      waterCount = 0
+      passedLand = false;
+
+      for (let n = 0; n < world.windMap.height; n++) {
+        for (let z = 0; z < world.windMap.width; z++) {
+          let limit;
+          if (windITCZ[z]) {
+            limit = windITCZ[z]
+          } else {
+            limit = world.windMap.equator;
+          }
+          let c = world.windMap[n][z]
+          if (n === limit) {
+            c.oceanCurrent = "neutral"
+          } else if (n > limit) { // should be the ITCZ
+            
+            if (c.y > limit) {
+              //need to add a check for how far north
+              if (c === windCell) {
+                //do nothing
+              } else if (c.windDirection === "unknown") {
+                let d = getDistance(c.x, c.y, circCellX, circCellY)
+                if (d > four && d < five && c.y === circCellY && c.x < circCellX) {
+                  c.windDirection = "south"
+                  c.oceanCurrent = "warm"       
+                } else if (d < five) {
+                  if (d > 2 && c.y > circCellY) {
+                    if (c.x > circCellX) {
+                      c.windDirection = "northeast"
+                      c.oceanCurrent = "cold"
+                    } else {
+                      c.windDirection = "southeast"
+                      c.oceanCurrent = "warm"
+                    }
+                    
+                  } else if (c.y > circCellY && c.x < circCellX) {
+                    c.windDirection = "southeast"
+                    c.oceanCurrent = "warm"
+                  } else if (c.x > circCellX && c.y > circCellY) {
+                    c.windDirection = "northeast"
+                    c.oceanCurrent = "cold"
+                  } else if (c.x < circCellX) {
+                    c.windDirection = "southwest"
+                    c.oceanCurrent = "warm"
+                  } else if (c.x > circCellX) {
+                    c.windDirection = "northwest"
+                    c.oceanCurrent = "cold"
+                  } else if (c.x === circCellX && circCellY > c.y) {
+                    c.windDirection = "west"
+                  } else if (c.x === circCellX && circCellY < c.y) {
+                    c.windDirection = "east"
+                    c.oceanCurrent = "cold"
+                  } else {
+                    //c.windDirection = "northeast"
+                  }
+                } else if (c.y < circCellY && d < five) {
+                  if (c.x > circCellX) {
+                    c.windDirection = "northwest"
+                  } else if (c.x === circCellX) {
+                    c.windDirection = "west"
+                    c.oceanCurrent = "warm"
+                  } else if (c.x < circCellX) {
+                    c.windDirection = "southwest"
+                    c.oceanCurrent = "warm"
+                  }
+                } else if (c.y === circCellY && c.x < circCellX && d < five) {
+                  c.windDirection = "southwest"
+                  c.oceanCurrent = "warm"
+                } else if (c.y === circCellY && c.x > circCellX && d < five) {
+                  c.windDirection = "northwest"
+                  c.oceanCurrent = "cold"
+                }
+              } 
+            }   
+          }
+        }
+      }
+    } 
+  }
+
+  
+    //EVERYTHING northwest IN southern HEMISPHERE IF NOT ASSIGNED
+    for (let n = 0; n < world.windMap.height; n++) {
+      for (let z = 0; z < world.windMap.width; z++) { 
+        let limit;
+        if (windITCZ[z]) {
+          limit = windITCZ[z]
+        } else {
+          limit = world.windMap.equator;
+        }
+        if (n > limit) {
+          let c = world.windMap[n][z]
+
+          if (c.windDirection === "unknown" && !c.isHighPressure) {
+            c.windDirection = "northwest"
+            c.oceanCurrent = "cold"
+          }
+        }
+      }
+    }
+      
+}
+
+
+function seedWind(x, y, rotation, initialDirection, hemisphere) {
+  let windCell = world.windMap[y][x]
+  windCell.highPressureSeed = true;
+  windCell.spin = rotation
+  windCell.initialDirection = initialDirection
+  windCell.hemisphere = "northern"
+}
+
+let clockwiseDirections = [
+  "east",
+  "southeast",
+  "south",
+  "southwest",
+  "west",
+  "northwest",
+  "north",
+  "northeast"
+]
+
+function trackIncomingWind(world) {
+  const rows = world.windMap.length;
+  const cols = world.windMap[0].length;
+
+  // Mapping directions to their coordinate changes
+  const directions = {
+      "northeast": [1, -1],
+      "east": [1, 0],
+      "southeast": [1, 1],
+      "southwest": [-1, 1],
+      "west": [-1, 0],
+      "northwest": [-1, -1]
+  };
+
+  // Reverse mapping to check incoming wind
+  const reverseDirections = {
+      "northeast": [-1, 1],
+      "east": [-1, 0],
+      "southeast": [-1, -1],
+      "southwest": [1, -1],
+      "west": [1, 0],
+      "northwest": [1, 1]
+  };
+
+  // Function to find neighbors sending wind toward the target cell
+  function findIncomingNeighbors(x, y) {
+      const incomingNeighbors = [];
+      for (const [dir, [dx, dy]] of Object.entries(reverseDirections)) {
+          const neighborX = x + dx;
+          const neighborY = y + dy;
+
+          // Check if neighbor is within bounds
+          if (
+              neighborX >= 0 &&
+              neighborX < cols &&
+              neighborY >= 0 &&
+              neighborY < rows
+          ) {
+              const neighbor = world.windMap[neighborY][neighborX];
+              if (neighbor && neighbor.windDirection === dir) {
+                  incomingNeighbors.push(neighbor);
+              }
+          }
+      }
+      return incomingNeighbors;
+  }
+
+
+
+  // Function to calculate incoming wind path for a single cell
+  function calculateIncomingWind(x, y) {
+      let windXMult = Math.floor(world.windMap.width / world.width);
+      let windYMult = Math.floor(world.windMap.height / world.height);
+      let lastCurrent;
+      let lastCurrentLocation;
+      let landCount = 0;
+      let waterCount = 0;
+
+      // Find all neighbors sending wind to this cell
+      let incomingCells = findIncomingNeighbors(x, y);
+
+      // Track back up to 6 layers
+      for (let steps = 0; steps < 20 && incomingCells.length > 0; steps++) {
+          const nextIncoming = [];
+
+          for (const cell of incomingCells) {
+              if (cell.isWater) {
+                  lastCurrent = cell.oceanCurrent
+                  let lastX = cell.x * windXMult
+                  let lastY = cell.y * windYMult
+                  lastCurrentLocation = [lastX, lastY]
+                  waterCount++;
+              } else {
+                  landCount++;
+              }
+
+              // Check the neighbors of the current incoming cell for the next step
+              const neighbors = findIncomingNeighbors(cell.x, cell.y);
+              nextIncoming.push(...neighbors);
+          }
+
+          incomingCells = nextIncoming; // Prepare for the next layer
+      }
+
+      return { landCount, waterCount, lastCurrent, lastCurrentLocation};
+  }
+
+  // Iterate over each cell and calculate incoming wind
+  const windTracking = [];
+  for (let y = 0; y < rows; y++) {
+      windTracking[y] = [];
+      for (let x = 0; x < cols; x++) {
+          windTracking[y][x] = calculateIncomingWind(x, y);
+          world.windMap[y][x].waterCount = windTracking[y][x].waterCount;
+          world.windMap[y][x].landCount = windTracking[y][x].landCount;
+          world.windMap[y][x].lastCurrent = windTracking[y][x].lastCurrent;
+          world.windMap[y][x].lastCurrentLocation = windTracking[y][x].lastCurrentLocation
+      }
+  }
+
+  return windTracking; // Return a map of incoming land and water counts for each cell
+}
+
+function advanceWind(seed) {
+  seed.windDirection = seed.iniitalDirection;
+  let blocked = false;
+  let next = seed
+  let lastDirection = seed.windDirection;
+  while (blocked === false) {
+    next = getWindCellByDirection(next, lastDirection)
+    if (lastDirection === "N") {
+      lastDirection = "E"
+    } else if (lastDirection === "E") {
+      lastDirection = "SW"
+    } else if (lastDirection === "W") {
+      lastDirection = "N"
+    }
+  }
+}
+
+function getWindCellByDirection(from, direction) {
+  let next;
+  if (direction === "east") {
+    next = getWindCell(from.x + 1, from.y)
+  } else if (direction === "southeast") {
+    next = getWindCell(from.x + 1, from.y + 1)
+  } else if (direction === "south") {
+    next = getWindCell(from.x, from.y + 1)
+  } else if (direction === "southwest") {
+    next = getWindCell(from.x - 1, from.y + 1) 
+  } else if (direction === "west") {
+    next = getWindCell(from.x - 1, from.y);
+  } else if (direction === "northwest") {
+    next = getWindCell(from.x - 1, from.y - 1);
+  } else if (direction === "north") {
+    next = getWindCell(from.x, from.y - 1);
+  } else if (direction === "northeast") {
+    next = getWindCell(from.x + 1, from.y - 1)
+  }
+  return next;
+}
+ 
+
+let windITCZ = []
+
+function getTemperature(cell) {
+  let latitude = getSmallCellLatitude(cell);
+  cell.latitude = latitude
+  let windCell = getWindCellFromMap(cell.x, cell.y)
+
+  let adjustedColor = Math.floor(cell.uncorrectedLatitude * 2.5) //Math.floor(latitude * 2.5) // we're just trying for sea here, which goes to this at the lowest at equator
+  
+  if (cell.elevation > 37) {
+    //adjust for elevation
+    let num = Math.floor((cell.elevation - 37) / 10); //7
+    adjustedColor += num
+  }
+
+  //seasonal adjustments
+  let adjustedWinterColor = adjustedColor;
+  if (cell.hemisphere === "N") { //WINTER IN NORTHERN HEMI
+    adjustedWinterColor += Math.floor((90 - cell.latitude) / 4);
+    //adjustedWinterColor += Math.floor(3 * windCell.waterCount / windCell.landCount); // continentality?
+  } else if (cell.hemisphere === "S") { //If it is winter in northern hemi, then it is summer in southern so ITCZ
+    
+    
+    //ITCZ
+    let mod = (cell.x - cell.westCoast) / (world.width);
+    let num = mod * 30;
+    if (cell.latitude > num && cell.latitude < num + 3) {
+      adjustedWinterColor -= 15
+      if (settings.month === "December") {
+        windCell.itcz += 1
+      }
+    }
+    //adjustedWinterColor += Math.floor(3 * windCell.waterCount / windCell.landCount); // continentality?
+    adjustedWinterColor -= Math.floor((90 - cell.latitude) / 4);
+  }
+  cell.winterTemp = adjustedWinterColor
+
+
+  if (cell.hemisphere === "N") { //SUMMER IN NORTHERN HEMI
+    let mod = (cell.x - cell.westCoast) / (world.width);
+    let num = mod * 30;
+    if (cell.latitude > num && cell.latitude < num + 3) {
+      adjustedColor -= 15
+      if (settings.month === "June") {
+        windCell.itcz += 1     
+      }
+    }
+    //adjustedColor += Math.floor(3 * windCell.waterCount / windCell.landCount); //continentality?
+    adjustedColor -= Math.floor((90 - cell.latitude) / 4);
+  } else if (cell.hemisphere === "S") { //if summer in northern hemi, then winter in southern
+    adjustedColor += Math.floor((90 - cell.latitude) / 4);
+    //adjustedColor += Math.floor(3 * windCell.waterCount / windCell.landCount); //continentality?
+  }
+  cell.summerTemp = adjustedColor;
+
+  /*
+  if (settings.month === "December") { //WINTER
+
+    cell.winterTemp = adjustedWinterColor
+  } else if (settings.month === "June") { //SUMMER 
+
+  }
+  */
+
+  if (cell.temperature) {
+    //cell.temperature = adjustedColor; //WHY DID I HAVE THIS AS ADD AND NOT EQUALS ORIGINALLY?
+    cell.temperature = adjustedColor;
+  } else {
+    cell.temperature = adjustedColor;
+  }
+}
+
+function convertToGradient(input) {
+  const inputMin = 0;
+  const inputMax = 2;
+  const outputMin = 0;
+  const outputMax = 400;
+
+  if (input < inputMin || input > inputMax) {
+      throw new Error("Input must be between 0 and 2.");
+  }
+
+  // Linear mapping formula
+  const output = ((input - inputMin) * (outputMax - outputMin)) / (inputMax - inputMin) + outputMin;
+
+  return Math.floor(output);
+}
+
+function koppenColor(cell) {
+
+}
+
+function setNumerics() {
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i)
+      setNumericsCell(cell)
+    }
+  }
+}
+
+function setNumericsCell(cell) {
+
+  let temp = cell.temperature;
+  temp = (400 - temp) / 2.7 - 89 //convert to celsius (400 - temp) / 2.7 - 129
+  let winterTemp = cell.winterTemp;
+  winterTemp = (400 - winterTemp) / 2.7 - 109
+  cell.numericSummerTemp = temp //celsius
+  cell.numericWinterTemp = winterTemp
+  cell.numericSummerPrecipitation = cell.summerPrecipitation * 25.4;
+  cell.numericWinterPrecipitation = cell.winterPrecipitation * 25.4
+
+  cell.numericPrecipitation = cell.precipitation * 25.4
+  //https://www.eldoradoweather.com/climate/world-maps/world-annual-precip-map.html shows precip map in inches up to 400 - just convert to mM
+}
+
+function isCoastalWindCell(windCell) {
+  // Define the directions for adjacent cells (including diagonals)
+  const directions = [
+    { dx: -1, dy: -1 }, // NW
+    { dx: 0, dy: -1 },  // N
+    { dx: 1, dy: -1 },  // NE
+    { dx: -1, dy: 0 },  // W
+    { dx: 1, dy: 0 },   // E
+    { dx: -1, dy: 1 },  // SW
+    { dx: 0, dy: 1 },   // S
+    { dx: 1, dy: 1 }    // SE
+  ];
+
+  // Loop through all adjacent cells
+  for (let dir of directions) {
+    let adjacentCellY = world.windMap[windCell.y + dir.dy]
+    if (adjacentCellY) {
+      let adjacentCell = adjacentCellY[windCell.x + dir.dx]
+      if (adjacentCell && adjacentCell.isLand) {
+        return true; 
+      }
+    }
+  }
+  return false;
+}
+
+function newGetOceanCurrentColor(cell) {
+  let windCell = getWindCellFromMap(cell.x, cell.y)
+  let colors = []
+  let rgb
+  if (windCell.isWater && isCoastalWindCell(windCell)) {
+    if (windCell.oceanCurrent === "cold") {
+      colors = [0, 0, 255]
+    } else if (windCell.oceanCurrent === "warm") {
+      colors = [255, 0, 0 ]
+    } else if (windCell.oceanCurrent === "neutral") {
+      colors = [255, 255, 255]
+    }
+    rgb = { r: colors[0], g: colors[1], b: colors[2]}
+    cell.rgb = rgb
+  } else {
+    rgb = getReliefColor(cell)
+  }
+  
+  return rgb
+}
+
+function newGetContinentalityColor(cell) {
+  let windCell = getWindCellFromMap(cell.x, cell.y)
+  cell.precipitation = Math.floor(200 * windCell.waterCount / windCell.landCount);
+  let adjustedColor = cell.precipitation;
+  let colors;
+  if (adjustedColor) {
+
+  } else {
+    adjustedColor = 0
+  }
+  if (adjustedColor < 0) {
+    adjustedColor = 0;
+  }
+  if (adjustedColor > temperatureColors.length - 1) {
+    adjustedColor = temperatureColors.length - 1
+  }
+  colors = temperatureColors[adjustedColor]
+  if (cell.elevation < 38) {
+   colors = [0, 0, 0] 
+  }
+  if (cell.coldCurrent) {
+    colors = [0, 0, 255]
+  }
+  if (cell.warmCurrent) {
+    colors = [255, 0, 0]
+  }
+  if (cell.neutralCurrent) {
+    colors = [255, 255, 255]
+  }
+  let rgb = { r: colors[0], g: colors[1], b: colors[2]}
+  cell.rgb = rgb
+  return rgb
+}
+
+function newGetPrecipitationColor(cell) {
+
+  //calculateMonthlyPrecipitation(world, cell.x, cell.y, world.windMap)
+  /*
+  let windCell = getWindCellFromMap(cell.x, cell.y)
+  let p = cell.precipitation;
+  let continentalEffect = Math.floor(5 * windCell.waterCount / windCell.landCount)
+  p -= continentalEffect;
+
+  if (settings.month === "June") {
+    cell.summerPrecipitation = p
+    cell.precipitation = p
+  } else if (settings.month === "December") {
+    cell.winterPrecipitation = p 
+    cell.precipitation = p
+  }
+  cell.precipitation = p
+  */
+  let adjustedColor = Math.floor(1 * cell.precipitation);
+  let colors;
+  if (adjustedColor) {
+
+  } else {
+    adjustedColor = 0
+  }
+  if (adjustedColor < 0) {
+    adjustedColor = 0;
+  }
+  if (adjustedColor > temperatureColors.length - 1) {
+    adjustedColor = temperatureColors.length - 1
+  }
+  colors = temperatureColors[adjustedColor]
+  if (cell.elevation < 38) {
+   colors = [0, 0, 0] 
+  }
+  if (cell.coldCurrent) {
+    colors = [0, 0, 255]
+  }
+  if (cell.warmCurrent) {
+    colors = [255, 0, 0]
+  }
+  if (cell.neutralCurrent) {
+    colors = [255, 255, 255]
+  }
+  let rgb = { r: colors[0], g: colors[1], b: colors[2]}
+  cell.rgb = rgb
+  return rgb
+}
+
+function newGetTemperatureColor(cell) {
+  let adjustedColor = cell.temperature;
+  if (settings.month === "June") {
+    adjustedColor = cell.summerTemp;
+  } else if (settings.month === "December") {
+    adjustedColor = cell.winterTemp
+  }
+  adjustedColor += 38 // fix for starting at equator do we need to change for ITCZ
+  if (adjustedColor) {
+
+  } else {
+    adjustedColor = 0
+  }
+  if (adjustedColor < 0) {
+    adjustedColor = 0;
+  }
+  if (adjustedColor > temperatureColors.length - 1) {
+    adjustedColor = temperatureColors.length - 1
+  }
+    
+
+  let colors = temperatureColors[adjustedColor]
+  if (cell.elevation < 38) {
+   colors = [0, 0, 0] 
+  }
+  /*
+  if (cell.coldCurrent) {
+    colors = [0, 0, 255]
+  }
+  if (cell.warmCurrent) {
+    colors = [255, 0, 0]
+  }
+  if (cell.neutralCurrent) {
+    colors = [255, 255, 255]
+  }
+    */
+
+  let rgb = { r: colors[0], g: colors[1], b: colors[2]}
+  cell.rgb = rgb
+  return rgb
+}
+
+
+
+/**
+ * Maps a temperature to the corresponding color in the temperatureColors array.
+ * @param {number} t - The temperature in Celsius.
+ * @returns {Array} - The RGB color array.
+ */
+function getColorForTemperature(t) {
+    // Clamp the temperature within the defined range
+    if (t > maxTemp) t = maxTemp;
+    if (t < minTemp) t = minTemp;
+    
+    // Normalize the temperature to a 0-1 scale
+    const normalized = (t - minTemp) / tempRange;
+    
+    // Calculate the corresponding index in the color array
+    const index = Math.round(normalized * (numTempColors - 1));
+    
+    return temperatureColors[index];
+}
+
+
+
+
 
   function getReliefColor(cell) {
     let rgb = { r: 255, g: 255, b: 255 }; // Default white
@@ -1678,11 +3932,341 @@ function redoLetterMap() {
 
 }
 
+function setPrecipitationCell(cell) {
+  let windCell = getWindCellFromMap(cell.x, cell.y)
+  let p;
+  if (windCell.lastCurrent === "cold") {
+    p = 0
+  }  else {
+    p = 400
+    if (windCell.landCount > 4) {
+      p -= 100
+    }
+  }
+  /*
+  let p = 0;
+  if (windCell.waterCount === 0 && windCell.landCount === 0) {
+    p += 20
+  } else {
+    let continentalEffect = 20 * windCell.waterCount / windCell.landCount
+    p += continentalEffect
+  }
+  */
+
+  p *= getLatitudeFactor(cell)
+
+  if (settings.month === "June") {
+    cell.summerPrecipitation = p
+  } else if (settings.month === "December") {
+    cell.winterPrecipitation = p 
+    cell.precipitation = p
+  }
+}
+
+function classifyAClimate(summerPrecip, winterPrecip, summer, winter) {
+  // Step 1: Calculate r (annual precipitation)
+  const r = summerPrecip + winterPrecip;
+
+  // Step 2: Interpolate coolest month temperature and driest month precipitation
+  const coolestTemp = Math.min(summer, winter);
+  const driestPrecip = Math.min(summerPrecip, winterPrecip);
+
+  // Step 3: Check if it's an A climate
+  if (coolestTemp < 18) {
+      return "NOT A";
+  }
+
+  // Step 4: Classify f, m, or w
+  if (driestPrecip >= 60) {
+      return "Af";
+  }
+
+  const mThreshold = 100 - (r / 25);
+  if (driestPrecip >= mThreshold) {
+      return "Am";
+  }
+
+  return "Aw";
+}
+
+function classifyBClimate(summerPrecip, winterPrecip, summer, winter) {
+  // Step 1: Calculate r and t
+  const r = summerPrecip + winterPrecip;
+  const t = (summer + winter) / 2;
+
+  // Step 2: Determine precipitation dominance
+  const summerPercent = summerPrecip / r;
+  const winterPercent = winterPrecip / r;
+  
+  let bTypeUpperLimit = null;
+
+  if (summerPercent >= 0.7 && r < 20 * t + 280) {
+      bTypeUpperLimit = 20 * t + 280;
+  } else if (winterPercent >= 0.7 && r < 20 * t) {
+      bTypeUpperLimit = 20 * t;
+  } else if (summerPercent < 0.7 && winterPercent < 0.7 && r < 20 * t + 140) {
+      bTypeUpperLimit = 20 * t + 140;
+  }
+
+  if (bTypeUpperLimit === null) {
+      return "NOT B";
+  }
+
+  // Step 3: Determine W or S
+  const halfUpperLimit = bTypeUpperLimit / 2;
+  const typeWorS = r < halfUpperLimit ? "W" : "S";
+
+  // Step 4: Determine h or k
+  const typeHorK = t >= 18 ? "h" : "k";
+
+  // Combine and return the classification
+  return `B${typeWorS}${typeHorK}`;
+}
+
+function classifyCClimate(summerPrecip, winterPrecip, summer, winter) {
+  // Step 1: Determine warmest and coldest month temperatures
+  const warmestTemp = Math.max(summer, winter);
+  const coldestTemp = Math.min(summer, winter);
+
+  // Step 2: Check if it's a C climate
+  if (warmestTemp < 10 || coldestTemp >= 18 || coldestTemp <= -3) {
+      return "NOT C";
+  }
+
+  // Step 3: Determine driest and wettest months
+  const driestPrecip = Math.min(summerPrecip, winterPrecip);
+  const wettestPrecip = Math.max(summerPrecip, winterPrecip);
+
+  const summerDriest = summerPrecip < winterPrecip;
+  const winterDriest = !summerDriest;
+
+  // Step 4: Classify s, w, or f
+  let precipitationType = "f"; // Default
+  if (summerDriest && driestPrecip < 30 && driestPrecip < wettestPrecip / 3) {
+      precipitationType = "s";
+  } else if (winterDriest && driestPrecip < wettestPrecip / 10) {
+      precipitationType = "w";
+  }
+
+  // Step 5: Classify a, b, or c
+  let temperatureType = "";
+  if (warmestTemp >= 22) {
+      temperatureType = "a";
+  } else if (warmestTemp < 22 && summer >= 10 && winter >= 10) {
+      temperatureType = "b";
+  } else if (warmestTemp < 22) {
+      const monthsAbove10 = (summer >= 10 ? 1 : 0) + (winter >= 10 ? 1 : 0);
+      if (monthsAbove10 >= 1 && monthsAbove10 <= 3) {
+          temperatureType = "c";
+      }
+  }
+
+  // Combine and return the classification
+  return `C${precipitationType}${temperatureType}`;
+}
+
+function classifyDClimate(summerPrecip, winterPrecip, summer, winter) {
+  // Step 1: Determine warmest and coldest month temperatures
+  const warmestTemp = Math.max(summer, winter);
+  const coldestTemp = Math.min(summer, winter);
+
+  // Step 2: Check if it's a D climate
+  if (warmestTemp < 10 || coldestTemp > -3) {
+      return "NOT D";
+  }
+
+  // Step 3: Determine driest and wettest months
+  const driestPrecip = Math.min(summerPrecip, winterPrecip);
+  const wettestPrecip = Math.max(summerPrecip, winterPrecip);
+
+  const summerDriest = summerPrecip < winterPrecip;
+  const winterDriest = !summerDriest;
+
+  // Step 4: Classify s, w, or f
+  let precipitationType = "f"; // Default
+  if (summerDriest && driestPrecip < 30 && driestPrecip < wettestPrecip / 3) {
+      precipitationType = "s";
+  } else if (winterDriest && driestPrecip < wettestPrecip / 10) {
+      precipitationType = "w";
+  }
+
+  // Step 5: Classify a, b, or c
+  let temperatureType = "";
+  if (warmestTemp >= 22) {
+      temperatureType = "a";
+  } else if (warmestTemp < 22 && summer >= 10 && winter >= 10) {
+      temperatureType = "b";
+  } else if (warmestTemp < 22) {
+      const monthsAbove10 = (summer >= 10 ? 1 : 0) + (winter >= 10 ? 1 : 0);
+      if (monthsAbove10 >= 1 && monthsAbove10 <= 3) {
+          temperatureType = "c";
+      }
+  }
+
+  // Combine and return the classification
+  return `D${precipitationType}${temperatureType}`;
+}
+
+
+function setKoppenMap() {
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let first = ""
+      let second = ""
+      let third = ""
+      let cell = xy(j, i);
+
+      if (cell.elevation > 37) {
+        let summer = cell.numericSummerTemp;
+        let winter = cell.numericWinterTemp;
+        let summerPrecip = cell.summerPrecipitation;
+        let winterPrecip = cell.winterPrecipitation
+        /*
+        precipitation mapping so far:
+        370 = 60mm
+        185 = 30mm
+        */
+        let aType;
+        let bTYpe;
+        let cType;
+        let dType
+
+        if (cell.hemisphere === "N") {
+          aType = classifyAClimate(summerPrecip, winterPrecip, summer, winter)
+          bType = classifyBClimate(summerPrecip, winterPrecip, summer, winter)
+          cType = classifyCClimate(summerPrecip, winterPrecip, summer, winter)
+          dType = classifyDClimate(summerPrecip, winterPrecip, summer, winter)
+        } else {
+          aType = classifyAClimate(winterPrecip, summerPrecip, winter, summer)
+          bType = classifyBClimate(winterPrecip, summerPrecip, winter, summer)
+          cType = classifyCClimate(winterPrecip, summerPrecip, winter, summer)
+          dType = classifyDClimate(winterPrecip, summerPrecip, winter, summer)
+        }
+        if (cell.elevation > 255) {
+          first = "H"
+        } else if (bType !== "NOT B") {
+          let t = bType.split("")
+          first = "B"
+          second = t[1]
+          third = t[2]
+        } else if (aType !== "NOT A") {
+          let t = aType.split("")
+          first = "A"
+          second = t[1]
+        } else if (cType !== "NOT C") {
+          let t = cType.split("")
+          first = t[0]
+          second = t[1]
+          third = t[2]
+        } else if (dType !== "NOT D") {
+          let t = dType.split("")
+          first = t[0]
+          second = t[1]
+          third = t[2]
+        } else if (summer < 10) {
+          first = "E"
+          if (summer > 0 && summer < 10) {
+            second = "T"
+          }
+          if (summer <= 0) {
+            second = "F"
+          }
+        } 
+        cell.k = `${first}`
+        if (second) {
+          cell.k += `${second}`
+        }
+        if (third) {
+          cell.k += `${third}`
+        }
+      }
+    }
+  }
+}
+
+function setPrecipitationAndTemperatures() {
+  for (let i = 0; i < world.map.length; i++) {
+    for (let j = 0; j < world.map[i].length; j++) {
+      let cell = xy(j, i);
+      getTemperature(cell)
+      //setPrecipitationCell(cell)
+    }
+  }
+}
+
 /**
  * Draws the entire world map by clearing the canvas, setting its dimensions,
  * and iterating over each cell to draw it.
  */
 function drawWorld() {
+  if (world.drawingType === "precipitation" || world.drawingType === "currents") {
+    clearOceanCurrents()
+    clearTemperatures()
+    createWindMap(96, 48)
+    //createWindMap(512, 256)
+    setGeo()
+    setTemperatures();
+    setPrecipitationAndTemperatures()
+    runWindModel()
+    trackIncomingWind(world)
+    setPrecipitationAndTemperatures()
+    setNumerics()
+    setKoppenMap() 
+    drawWindArrows(canvas, ctx, world.windMap, "icons/northArrow.png")
+    //setOceanCurrents()
+  }
+
+  if (world.drawingType === "temperature") {
+    clearOceanCurrents()
+    clearTemperatures()
+    createWindMap(96, 48)
+    setGeo()
+    setTemperatures();
+    //setPrecipitationAndTemperatures()
+    //runWindModel()
+    //trackIncomingWind(world)
+    //setPrecipitationAndTemperatures()
+    //setNumerics()
+    //setKoppenMap() 
+    //drawWindArrows(canvas, ctx, world.windMap, "icons/northArrow.png")
+  }
+
+  if (world.drawingType === "wind") {
+    clearOceanCurrents()
+    clearTemperatures()
+    createWindMap(96, 48)
+    setGeo()
+    runWindModel()
+    trackIncomingWind(world)
+    drawWindArrows(canvas, ctx, world.windMap, "icons/northArrow.png")
+
+  }
+
+  if (world.drawingType === "koppen") {
+    settings.month = "June"
+    clearOceanCurrents()
+    clearTemperatures()
+    createWindMap(96, 48)
+    //createWindMap(512, 256)
+    setGeo()
+    setTemperatures()
+    runWindModel()
+    trackIncomingWind(world)
+    setPrecipitationAndTemperatures()
+    settings.month = "December"
+    clearOceanCurrents()
+    clearTemperatures()
+    createWindMap(96, 48)
+    setGeo()
+    setTemperatures()
+    runWindModel()
+    trackIncomingWind(world)
+    setPrecipitationAndTemperatures()
+    setNumerics()
+    setKoppenMap() 
+    //drawWindArrows(canvas, ctx, world.windMap, "icons/northArrow.png")
+  }
+
   // Clear the entire canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Set the canvas dimensions based on the world's size and pixel size
@@ -1782,6 +4366,29 @@ function drawCellToImageData(imageData, x, y) {
       break;
     case "relief":
       color = getReliefColor(cell);
+      break;
+    case "temperature":
+      color = newGetTemperatureColor(cell);
+      break;
+    case "koppen":
+      if (cell.elevation < 38) {
+        color = { r: 0, g: 0, b: 0 }
+      } else {
+        color = getKoppenColor(cell);
+      }
+      break;
+    case "precipitation":
+      if (cell.elevation < 38) {
+        color = { r: 0, g: 0, b: 0 }
+      } else {
+        color = newGetPrecipitationColor(cell);
+      }
+      break;
+    case "continentality":
+      color = newGetContinentalityColor(cell);
+      break;
+    case "currents":
+      color = newGetOceanCurrentColor(cell);
       break;
     case "colorful":
       color = getColorfulColor(cell);
@@ -2853,3 +5460,86 @@ function getIcePlanetColor(cell) {
   return rgb
 }
 
+function calculateMonthlyPrecipitation(world, x, y, windMap) {
+  const cell = world.map[y][x];
+  const {
+      distanceFromEastCoast,
+      distanceFromWestCoast,
+      hemisphere,
+      latitude,
+      temperature
+  } = cell;
+  
+  const worldWidth = world.map[0].length;
+  const worldHeight = world.map.length;
+
+  // Scale coordinates to 96x48 for windMap
+  const scaledX = Math.floor((x / worldWidth) * 96);
+  const scaledY = Math.floor((y / worldHeight) * 48);
+  
+  // Retrieve wind data and high pressure info
+  const windCell = windMap[scaledY][scaledX];
+  const { lastCurrent, waterCount, landCount, isHighPressure } = windCell;
+
+  // Baseline precipitation by latitude (approximate linear scale):
+  // Equator: ~200 mm; Poles: ~10 mm
+  let baseline = 300 - (latitude * (300 / 90));
+
+  if (cell.coldCurrent) {
+    baseline -= 200; 
+  } else if (cell.warmCurrent) {
+    baseline += 100
+  }
+
+  // Seasonal factor by hemisphere
+  let juneSeasonFactor, decSeasonFactor;
+  if (hemisphere === "N") {
+      // Northern Hemisphere: June ~ summer, December ~ winter
+      juneSeasonFactor = 1.1;
+      decSeasonFactor = 0.9;
+  } else {
+      // Southern Hemisphere: June ~ winter, December ~ summer
+      juneSeasonFactor = 0.9;
+      decSeasonFactor = 1.1;
+  }
+
+  // Distance from coast factor:
+  // More inland => less precipitation.  
+  // Example: at 0 distance (coastline), factor = 1  
+  // at 500 cells inland, factor might drop to ~0.5, etc.
+  const avgDistance = (distanceFromEastCoast + distanceFromWestCoast) / 2;
+  const inlandFactor = Math.max(0.5, 1 - (avgDistance / 1000));
+
+  // Current type factor:
+  // warm = +20%, cold = -20%, neutral = no change
+  let currentFactor = 1;
+  if (lastCurrent === "warm") currentFactor = 1.2;
+  else if (lastCurrent === "cold") currentFactor = 0.8;
+
+
+
+  // High pressure factor:
+  // If isHighPressure = true, reduce precipitation (e.g., by 30%)
+  const hpsFactor = isHighPressure ? 0.7 : 1.0;
+
+  // Moisture availability from wind path:
+  // Each water cell crossed before reaching this point: +1% per cell
+  // Each land cell crossed: -0.5% per cell
+  const moistureFactor = Math.max(0.5, Math.min(2, 1 + (waterCount * 0.01) - (landCount * 0.005)));
+
+  // Temperature factor:
+  // For every 1°C above 0, add 1%. For negative temps, reduce similarly.
+  // Example: temp = 20°C => factor = 1.20; temp = -10°C => factor = 0.90
+  const tempFactor = 1 + (temperature / 100);
+
+  // Calculate final precipitation for June and December
+  const junePrecip = baseline * juneSeasonFactor * inlandFactor * currentFactor * hpsFactor * moistureFactor * tempFactor;
+  const decPrecip = baseline * decSeasonFactor * inlandFactor * currentFactor * hpsFactor * moistureFactor * tempFactor;
+  cell.summerPrecipitation = junePrecip;
+  cell.winterPrecipitation = decPrecip
+  if (settings.month === "June") {
+    cell.precipitation = junePrecip;
+  } else {
+    cell.precipitation = decPrecip
+  }
+}

@@ -609,7 +609,13 @@
         <div class="menu-cat flex-spread-evenly">
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="colorswatch" src="icons/terrainmap.png"><span class="tool-tip">Terrain Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="color-map-icon" src="icons/colormapicon.png"><span class="tool-tip">Pixel Map</span></div>
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="3d-map-icon" src="icons/globe-icon.png"><span class="tool-tip">Globe</span></div>
+          <!--<div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="walkable-map-icon" src="icons/table-icon.png"><span class="tool-tip">Map Table</span></div>-->
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="relief-map-icon" src="icons/relief-icon.png"><span class="tool-tip">Relief Map</span></div>
+          <!--<div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="koppen-map-icon" src="icons/relief-icon.png"><span class="tool-tip">Koppen Map</span></div>-->
+          <!--<div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="precipitation-map-icon" src="icons/relief-icon.png"><span class="tool-tip">Precipitation Map</span></div>-->
+          <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="temperature-map-icon" src="icons/temperature-icon.png"><span class="tool-tip">Temperature Map</span></div>
+          <!--<div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="currents-map-icon" src="icons/relief-icon.png"><span class="tool-tip">Currents Map</span></div>-->
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="river-map-icon" src="icons/river-icon.png"><span class="tool-tip">River Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="papyrus-map-icon" src="icons/papyrus-icon.png"><span class="tool-tip">Flat Map</span></div>
           <div class="icon-clickable icon-small-round display-horizontal has-tool-tip"><img id="heightmap-icon" src="icons/heightmap-icon.png"><span class="tool-tip">Heightmap</span></div>
@@ -744,6 +750,16 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.26.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Feature: New Map Mode: Globe. Spinning and spinnable globe of your map (press ESC to exit).</li>
+                <li>Feature: New Map Mode: Temperature map.</li>
+                <li>Development Update: I have completed wind mapping and the Koppen formulas, but I am still working on precipitation. Both the code and functionality on that front reman a mess and don't produce great results. I'll hold off on opening up those other options until precipitation is complete. After that, I'll move on to remapping terrain.</li>
+              </ul>
+
+            </p><br>  
 
             <p class="text-intro">Alpha 0.25.0 Release Change Log</p>
             <p class="main-landing-text">
@@ -1218,7 +1234,9 @@
       <div class="loadingSpin"></div> 
     </div>
 
-
+    <canvas id="glCanvas"></canvas>
+    <script src="js/mapgen/threeMap.js"></script>
+    <script src="js/mapgen/walkableMap.js"></script>
 
     <!--<img id="heightmapImg" src="heightmap.png" style="display: none"/>-->
     <script src="js/langgen/alice.js"></script>
@@ -1250,6 +1268,7 @@
     <script src="js/mapgen/brushEditor.js"></script>
 
     <script src="js/gameConcepts/gameConcepts.js"></script>
+    
     <script src="js/mapgen/biome.js"></script>
     <script src="js/mapgen/masking.js"></script>
     <script src="js/mapgen/transparentTest.js"></script>
@@ -1323,6 +1342,7 @@
     <script src="js/external_libraries/voronoi.js"></script>
     <script src="js/interface/voronoiProvinces.js"></script>
     <script src="js/external_libraries/quadtree.js"></script>
+    <script src="js/textFileWriters/writeTerrainShader.js"></script>
 
     <!--
     <script src="js/testing/createDummyProvinces.js"></script>

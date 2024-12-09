@@ -229,6 +229,14 @@ function moveToImageDownloads() {
   GID("image-download-settings").style.display = "block"
 }
 
+GID("3d-map-icon").onclick = function() {
+  GID("glCanvas").style.display = "block"
+  GID("main-generator-div").style.display = "none";
+  run3dMap()
+}
+
+
+
 GID("color-map-icon").onclick = function() {
   world.drawingType = "colorful"
   drawWorld()
@@ -236,6 +244,39 @@ GID("color-map-icon").onclick = function() {
 
 GID("relief-map-icon").onclick = function() {
   world.drawingType = "relief"
+  drawWorld()
+}
+
+/*
+GID("walkable-map-icon").onclick = function() {
+  GID("glCanvas").style.display = "block"
+  GID("main-generator-div").style.display = "none";
+  runWalkableMap()
+}
+*/
+
+/*
+GID("koppen-map-icon").onclick = function() {
+  world.drawingType = "koppen"
+  drawWorld()
+}
+
+
+GID("precipitation-map-icon").onclick = function() {
+  world.drawingType = "precipitation"
+  drawWorld()
+}
+ 
+
+GID("currents-map-icon").onclick = function() {
+  world.drawingType = "currents"
+  drawWorld()
+}
+
+ */
+
+GID("temperature-map-icon").onclick = function() {
+  world.drawingType = "temperature"
   drawWorld()
 }
 

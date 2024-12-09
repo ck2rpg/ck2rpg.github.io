@@ -127,6 +127,7 @@ function createWorld(w, h) {
       lake: false,
       beach: false,
       floodFilled: false,
+      temperature: 0,
     };
   }
   

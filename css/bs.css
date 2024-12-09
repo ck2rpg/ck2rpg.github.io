@@ -1418,3 +1418,9 @@ button[type="submit"]:hover {
   font-size: 2em;
   background: rgba(0, 0, 0, 0.5)
 }
+
+#glCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
