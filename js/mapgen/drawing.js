@@ -4283,7 +4283,7 @@ function drawWorld() {
         drawCell(j, i)
       }
     }
-  } else if (world.drawingType === "parchment") {
+  } else if (world.drawingType === "parchment" && world.width === 512) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let i = 0; i < world.height; i++) {
