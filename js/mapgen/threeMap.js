@@ -70,7 +70,7 @@ function run3dMap() {
   // WebGL Setup
   // -----------------------------------------------------------
   const glcanvas = document.getElementById('glCanvas');
-  const gl = glcanvas.getContext('webgl');
+  const gl = glcanvas.getContext('webgl2');
   if (!gl) {
     alert("WebGL not supported!");
   }
