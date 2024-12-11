@@ -1,6 +1,6 @@
 function runWalkableMap() {
     const canvas = document.getElementById('glCanvas');
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext('webgl2');
     if (!gl) {
       alert("WebGL not supported!");
       return;
@@ -91,8 +91,8 @@ function runWalkableMap() {
         const cell = world.map[y][x];
         const c = get3dColor(cell)
         let worldY = cell.elevation - 38; 
-        worldY = Math.floor(worldY / 200)
-        worldY = Math.max(-50, Math.min(50, worldY));
+        worldY = Math.floor(worldY / 100)
+        //worldY = Math.max(-50, Math.min(50, worldY));
   
         // Each cell corner position:
         // Top-left corner of cell (x,y) at (x, worldY, y)
@@ -130,7 +130,8 @@ function runWalkableMap() {
   
     const positionBuffer = createBuffer(gl, new Float32Array(positions), gl.ARRAY_BUFFER, gl.STATIC_DRAW);
     const colorBuffer = createBuffer(gl, new Float32Array(colorsArray), gl.ARRAY_BUFFER, gl.STATIC_DRAW);
-    const indexBuffer = createBuffer(gl, new Uint16Array(indices), gl.ELEMENT_ARRAY_BUFFER, gl.STATIC_DRAW);
+    const indexBuffer = createBuffer(gl, new Uint32Array(indices), gl.ELEMENT_ARRAY_BUFFER, gl.STATIC_DRAW);
+
   
     const aPosition = gl.getAttribLocation(program, 'aPosition');
     const aColor = gl.getAttribLocation(program, 'aColor');
@@ -327,7 +328,7 @@ gl.cullFace(gl.BACK);
       gl.uniformMatrix4fv(uPMatrix,false,pMatrix);
       gl.uniformMatrix4fv(uMVMatrix,false,mvMatrix);
   
-      gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+      gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
   
       animationFrameId = requestAnimationFrame(drawScene);
     }

@@ -247,13 +247,13 @@ GID("relief-map-icon").onclick = function() {
   drawWorld()
 }
 
-/*
+
 GID("walkable-map-icon").onclick = function() {
   GID("glCanvas").style.display = "block"
   GID("main-generator-div").style.display = "none";
   runWalkableMap()
 }
-*/
+
 
 /*
 GID("koppen-map-icon").onclick = function() {
