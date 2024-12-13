@@ -4405,6 +4405,9 @@ function drawCellToImageData(imageData, x, y) {
     case "fantasy":
       color = getFantasyColor(cell)
       break;
+    case "overmap":
+      color = cell.overmap
+      break
     default:
       color = getSpecialColor(cell, world.drawingType);
       break;

@@ -235,6 +235,14 @@ GID("3d-map-icon").onclick = function() {
   run3dMap()
 }
 
+GID("overmap-icon").onclick = function() {
+  if (world.map[0][0].overmap) {
+    world.drawingStyle = "overmap"
+    drawWorld()
+  } else {
+    alert("You first must import an overmap.")
+  }
+}
 
 
 GID("color-map-icon").onclick = function() {

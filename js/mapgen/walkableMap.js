@@ -92,6 +92,10 @@ function runWalkableMap() {
         const c = get3dColor(cell)
         let worldY = cell.elevation - 38; 
         worldY = Math.floor(worldY / 100)
+        //worldY = 100
+        if (world.drawingType === "overmap") {
+          worldY = 1
+        }
         //worldY = Math.max(-50, Math.min(50, worldY));
   
         // Each cell corner position:

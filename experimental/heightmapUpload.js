@@ -337,3 +337,77 @@ document.getElementById('provinceUpload').addEventListener('change', function(ev
     settings.titleUploadType = "province"
     uploadTitle(event)
 });
+
+GID("overmapUpload").addEventListener('change', function(event) {
+    uploadOvermap(event)
+});
+
+function uploadOvermap(event) {
+    let colorKeys = {}
+    //const canvas = document.getElementById('heightmap-upload-canvas');
+    const canvas = document.getElementById('overlay-canvas');
+    const ctx = canvas.getContext('2d');
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+
+    function getColorPixelAt(pixels, x, y, imgWidth) {
+        let yMult = y * world.width * 4; // could change this to allow more
+        let xMult = x * 4
+        let total =  yMult + xMult
+        let c = {
+            r: pixels.data[total],
+            g: pixels.data[total + 1],
+            b: pixels.data[total + 2]
+        }
+        return c
+    }
+    cleanupAll()
+    
+
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            // Calculate the dimensions to fit the image within 512x512
+            let width = img.width;
+            let height = img.height;
+            const maxWidth = world.width;
+            const maxHeight = world.height;
+
+            if (width > maxWidth || height > maxHeight) {
+                if (width > height) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                } else {
+                    width *= maxHeight / height;
+                    height = maxHeight;
+                }
+            }
+            // Clear the canvas and draw the image
+            ctx.clearRect(0, 0, world.width, world.height);
+            ctx.drawImage(img, 0, 0, world.width, world.height);
+
+            // Get the image data
+            const imageData = ctx.getImageData(0, 0, world.width, world.height);
+
+            for (let i = 0; i < world.height; i++) {
+                for (let j = 0; j < world.width; j++) {
+                    let cell = world.map[i][j]
+                    let color = getColorPixelAt(imageData, j, i)
+                    cell.overmap = color
+                }
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+        img.src = event.target.result;
+
+    };
+
+    
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+    world.drawingType = "overmap"
+    drawWorld()
+}
