@@ -889,7 +889,8 @@ let drawingTypes = [
   "parchment",
   "colorful",
   "papyrus",
-  "terrainMap",
+  "relief",
+  "heightmap"
 ]
 
 GID("roller").onclick = function() {
@@ -935,6 +936,10 @@ document.getElementById('generator-resolution').addEventListener('change', funct
 let heightmapAdjuster = 0
 function updateHeightmapAdjuster(num) {
   heightmapAdjuster = num;
+}
+
+function updateOverlayAdjuster(adjustment) {
+  GID("overlay-canvas").style.opacity = adjustment
 }
 
 let limitAdjuster = debounce(() => adjustLimits());
@@ -1205,6 +1210,17 @@ paletteSelect.addEventListener('change', () => {
   settings.palettes = paletteSelect.value
 })
 
+/*
+let daynightSetting = GID("daynight-adjuster")
+
+daynightSetting.addEventListener('change', () => {
+  if (daynightSetting.value === "yes") {
+    dayNightEnabled = true;
+  } else {
+    dayNightEnabled = false;
+  }
+})
+*/
 
 
 
@@ -1250,6 +1266,10 @@ function updateFaithDivergenceOptions() {
   // Update settings based on new values
   settings.religionFamilyLevel = religionFamilyLevelSelect.value;
   settings.divergeFaithLevel = divergeFaithLevelSelect.value;
+}
+
+GID("save-map").onclick = function() {
+  downloadImage(canvas, `${world.drawingType}`);
 }
 
 // Initialize settings

@@ -93,7 +93,7 @@ function run3dMap() {
   // -----------------------------------------------------------
 
   // Vertex shader:
-  // Just transform the vertex position. No displacement now.
+  // Transform the vertex position and pass the normal to the fragment shader.
   const vertexShaderSource = `
   attribute vec3 aPosition;
   attribute vec3 aNormal;
@@ -102,28 +102,53 @@ function run3dMap() {
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
 
+  varying vec3 vNormal;
+  varying vec3 vPosition;
   varying vec2 vTexCoord;
 
   void main(void) {
       vTexCoord = aTexCoord;
+      vNormal = mat3(uMVMatrix) * aNormal; // Transform normal to world space
+      vPosition = vec3(uMVMatrix * vec4(aPosition, 1.0));
       gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
   }
   `;
 
   // Fragment shader:
-  // Use the color texture to color each fragment.
+  // Implement directional lighting to simulate day/night cycle.
   const fragmentShaderSource = `
   precision mediump float;
 
+  varying vec3 vNormal;
+  varying vec3 vPosition;
   varying vec2 vTexCoord;
+
   uniform sampler2D uColorMap;
+  uniform vec3 uLightDirection; // Directional light (sun)
 
   void main(void) {
-      vec4 color = texture2D(uColorMap, vTexCoord);
-      gl_FragColor = color; // directly use the sampled color
+      // Normalize the normal vector
+      vec3 normal = normalize(vNormal);
+      
+      // Normalize the light direction
+      vec3 lightDir = normalize(uLightDirection);
+      
+      // Calculate the diffuse intensity using Lambertian reflection
+      float diff = max(dot(normal, lightDir), 0.0);
+      
+      // Sample the base color from the texture
+      vec4 baseColor = texture2D(uColorMap, vTexCoord);
+      
+      // Calculate ambient and diffuse lighting
+      vec3 ambient = 0.2 * baseColor.rgb; // Ambient light
+      vec3 diffuse = diff * baseColor.rgb; // Diffuse light
+      
+      // Final color
+      vec3 finalColor = ambient + diffuse;
+      
+      gl_FragColor = vec4(finalColor, baseColor.a);
   }
   `;
-
 
 
 
@@ -157,7 +182,7 @@ function run3dMap() {
   }
   gl.useProgram(program);
 
-  
+
   // -----------------------------------------------------------
   // Create Sphere Geometry
   // -----------------------------------------------------------
@@ -203,7 +228,7 @@ function run3dMap() {
 
   const sphereData = createSphere(1.0, 64, 64);
 
-  
+
 
   // -----------------------------------------------------------
   // Create Buffers
@@ -255,6 +280,7 @@ function run3dMap() {
   const uPMatrix = gl.getUniformLocation(program, 'uPMatrix');
   const uMVMatrix = gl.getUniformLocation(program, 'uMVMatrix');
   const uColorMap = gl.getUniformLocation(program, 'uColorMap');
+  const uLightDirection = gl.getUniformLocation(program, 'uLightDirection'); // New uniform for light direction
 
   // -----------------------------------------------------------
   // Enable Vertex Attributes
@@ -275,6 +301,19 @@ function run3dMap() {
   // -----------------------------------------------------------
   // We use the color map as the main texture
   gl.uniform1i(uColorMap, 0); // texture unit 0
+
+  // Initialize Day/Night Cycle Variables
+  let dayNightEnabled = true; // Toggle for day/night cycle (default to enabled)
+  let lightAngle = 0; // Tracks the current angle of the light source
+  const rotationSpeed = 0.003; // Speed at which the light moves (radians per frame)
+
+  // Function to toggle day/night cycle
+  function toggleDayNightCycle() {
+    dayNightEnabled = !dayNightEnabled;
+  }
+
+  // Expose the toggle function globally (optional)
+  window.toggleDayNightCycle = toggleDayNightCycle;
 
   // -----------------------------------------------------------
   // Matrix Setup (Model-View & Projection)
@@ -355,30 +394,30 @@ function run3dMap() {
 
   // Mouse events for rotation
   glcanvas.addEventListener('mousedown', e => {
-  dragging = true;
-  lastX = e.clientX;
-  lastY = e.clientY;
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
   });
   glcanvas.addEventListener('mouseup', () => {
-  dragging = false;
+    dragging = false;
   });
   glcanvas.addEventListener('mousemove', e => {
-  if (dragging) {
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      // Adjust these factors for desired sensitivity
-      rotationY += dx * 0.01; 
-      rotationX += dy * 0.01;
-      lastX = e.clientX;
-      lastY = e.clientY;
-  }
+    if (dragging) {
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        // Adjust these factors for desired sensitivity
+        rotationY += dx * 0.01; 
+        rotationX += dy * 0.01;
+        lastX = e.clientX;
+        lastY = e.clientY;
+    }
   });
 
   // Mouse wheel for zoom
   glcanvas.addEventListener('wheel', e => {
-  distance += e.deltaY * 0.01;
-  if (distance < 1) distance = 1;
-  if (distance > 100) distance = 100;
+    distance += e.deltaY * 0.01;
+    if (distance < 1) distance = 1;
+    if (distance > 100) distance = 100;
   });
   let animationFrameId;
   let running = true;
@@ -433,7 +472,33 @@ function run3dMap() {
     
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-    
+
+      // -----------------------------------------------------------
+      // Update Light Direction for Day/Night Cycle
+      // -----------------------------------------------------------
+      let lightDir = [0, 0, 1]; // Initial light direction (pointing towards positive Z)
+      if (dayNightEnabled) {
+          // Rotate the light direction around the Y-axis to simulate Earth's rotation
+          lightAngle += rotationSpeed;
+          const cosAngle = Math.cos(lightAngle);
+          const sinAngle = Math.sin(lightAngle);
+          lightDir = [
+              sinAngle, // X component
+              0,        // Y component remains 0 for simplicity
+              cosAngle  // Z component
+          ];
+      }
+
+      // Normalize the light direction
+      const length = Math.sqrt(lightDir[0]**2 + lightDir[1]**2 + lightDir[2]**2);
+      lightDir = lightDir.map(component => component / length);
+
+      // Pass the light direction to the shader
+      gl.uniform3fv(uLightDirection, lightDir);
+
+      // -----------------------------------------------------------
+      // Draw the Sphere
+      // -----------------------------------------------------------
       gl.drawElements(gl.TRIANGLES, sphereData.indices.length, gl.UNSIGNED_SHORT, 0);
         // Request next frame only if still running
       if (running) {

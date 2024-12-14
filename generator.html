@@ -76,6 +76,7 @@
       -->
 
       <div id="zoom-container" class="zoom-container">
+        <div id="save-map" class="fullscreen-button has-tool-tip"><img class="sidebar-icon" src="icons/activemap.png"/><span class="tool-tip">Save Current Active Map</span></div>
         <div id="save-settings" class="fullscreen-button has-tool-tip"><img class="sidebar-icon" src="icons/download.png"/><span class="tool-tip">Save Settings</span></div>
         <div class="file-upload-wrapper has-tool-tip">
           <button class="fullscreen-button has-tool-tip"><img class="sidebar-icon" src="icons/upload.png" style="width: 70%; height: 60%"/><span class="tool-tip">Load Settings</span></button>
@@ -248,7 +249,7 @@
                 <option value="1024x512">1024x512</option>
                 <option value="2048x1024">2048x1024</option>
                 <option value="4096x2048">4096x2048</option>
-                <!--<option value="8192x4096">8192x4096</option>-->
+                <option value="8192x4096">8192x4096</option>
               </select>
               <span class="tool-tip">Generator resolution is the underlying size of your generated map data. If resolution is less than map size, a single cell corresponds to multiple pixels on the ultimate map. For example, a 512x256 resolution with a 8192x4096 map size means that each cell in the generator corresponds to a 16x16 square of the generated map. The lower the resolution, the blockier your results. The higher the resolution, the lower the generator's performance.</span>
             </span>
@@ -383,6 +384,19 @@
               <input type="number" id="heightmap-adjuster" min="-100" max="100" value="0" step="1" oninput="updateHeightmapAdjuster(this.value)">
               <span class="tool-tip">When you import a heightmap, the adjuster (positive or negative) will be added to each cell.</span>
             </span>
+            <span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="overlay-adjuster">Overlay Opacity</label>
+              <input type="number" id="overlay-adjuster" min="0.0" max="1.0" value="0.5" step=".1" oninput="updateOverlayAdjuster(this.value)">
+              <span class="tool-tip">Adjust the opacity of an imported overlay.</span>
+            </span>
+            <!--<span class="flex-spread-evenly flex-align-vertically has-tool-tip">
+              <label for="daynight-adjuster">Day/Night Cycle on Globe</label>
+              <select name="daynight-adjuster" id="daynight-adjuster">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+              <span class="tool-tip">Toggle whether the globe map mode shows a day/night cycle.</span>
+            </span>-->
             <div class="file-upload-wrapper">
               <button class="ck-button">Import Heightmap</button>
               <input type="file" class="ck-button" id="imageUpload" accept="image/*" />
@@ -390,6 +404,11 @@
             <div class="file-upload-wrapper">
               <button class="ck-button">Import Overlay</button>
               <input type="file" class="ck-button" id="overlayUpload" accept="image/*" />
+            </div>
+
+            <div class="file-upload-wrapper">
+              <button class="ck-button">Import Terrain Map</button>
+              <input type="file" class="ck-button" id="terrainUpload" accept="image/*" />
             </div>
 
             <div class="file-upload-wrapper">
@@ -756,6 +775,18 @@
         </div>
         <div id="landing-release-notes">
           <div id="landing-release-notes-details">
+
+            <p class="text-intro">Alpha 0.29.0 Release Change Log</p>
+            <p class="main-landing-text">
+              <ul class="change-log-list">
+                <li>Feature: Save your current actively displayed map mode as an image file by clicking the green button in the top left corner (placeholder icon - I'll find something better).</li>
+                <li>Feature: Added ability to import terrain map. Importable terrain colors are those that match the CK3 terrain map. You can see them in this reddit post from a few years back: https://www.reddit.com/r/CrusaderKings/comments/ium003/crusader_kings_3_terrain_map/</li>
+                <li>Feature: You now can change the opacity of an imported overlay under the import tab.</li>
+                <li>Feature: Added a rudimentary day/night cycle to globe map. I will make this toggleable soon but am releasing to test the feature.</li>
+                <li>Goback: I added back in the 8092x4096 resolution. BIG FLASHING WARNING SIGN THAT THIS WILL CAUSE OUT OF MEMORY CRASH if you try to generate the CK3 maps, but some people wanted it anyways for other purposes.</li>
+              </ul>
+
+            </p><br> 
 
             <p class="text-intro">Alpha 0.28.0 Release Change Log</p>
             <p class="main-landing-text">

@@ -342,6 +342,10 @@ GID("overmapUpload").addEventListener('change', function(event) {
     uploadOvermap(event)
 });
 
+GID("terrainUpload").addEventListener('change', function(event) {
+    uploadTerrain(event)
+})
+
 function uploadOvermap(event) {
     let colorKeys = {}
     //const canvas = document.getElementById('heightmap-upload-canvas');
@@ -409,5 +413,113 @@ function uploadOvermap(event) {
         reader.readAsDataURL(file);
     }
     world.drawingType = "overmap"
+    drawWorld()
+}
+
+function uploadTerrain(event) {
+    let colorKeys = {}
+    const canvas = document.getElementById('overlay-canvas');
+    const ctx = canvas.getContext('2d');
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+
+    function getColorPixelAt(pixels, x, y, imgWidth) {
+        let yMult = y * world.width * 4; // could change this to allow more
+        let xMult = x * 4
+        let total =  yMult + xMult
+        let c = {
+            r: pixels.data[total],
+            g: pixels.data[total + 1],
+            b: pixels.data[total + 2]
+        }
+        return c
+    }
+    
+
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            // Calculate the dimensions to fit the image within 512x512
+            let width = img.width;
+            let height = img.height;
+            const maxWidth = world.width;
+            const maxHeight = world.height;
+
+            if (width > maxWidth || height > maxHeight) {
+                if (width > height) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                } else {
+                    width *= maxHeight / height;
+                    height = maxHeight;
+                }
+            }
+            // Clear the canvas and draw the image
+            ctx.clearRect(0, 0, world.width, world.height);
+            ctx.drawImage(img, 0, 0, world.width, world.height);
+
+            // Get the image data
+            const imageData = ctx.getImageData(0, 0, world.width, world.height);
+            console.log(imageData)
+
+            settings.overrideElevation = true;
+            for (let i = 0; i < world.height; i++) {
+                for (let j = 0; j < world.width; j++) {
+                    let cell = world.map[i][j]
+                    let color = getColorPixelAt(imageData, j, i)
+                    let rgb = `${color.r}, ${color.g}, ${color.b}`
+                    if (settings.overrideElevation) {
+                        console.log(rgb)
+                        if (rgb === "255, 230, 0") {
+                            cell.terrain = "desert"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "220, 45, 120") {
+                            cell.terrain = "drylands"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "55, 31, 153") {
+                            cell.terrain = "floodplains"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "90, 50, 12") {
+                            cell.terrain = "hills"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "100, 100, 100") {
+                            cell.terrain = "mountains"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "46, 153, 89") {
+                            cell.terrain = "taiga"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "23, 19, 38") {
+                            cell.terrain = "desert mountains"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "255, 0, 0") {
+                            cell.terrain = "farmlands"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "71, 179, 45") {
+                            cell.terrain = "forest"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "10, 60, 35") {
+                            cell.terrain = "jungle"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "155, 143, 204") {
+                            cell.terrain = "oasis"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "200, 100, 25") {
+                            cell.terrain = "steppe"
+                            cell.terrainMarked = true;
+                        } else if (rgb === "77, 153, 153") {
+                            cell.terrain = "wetlands"
+                            cell.terrainMarked = true;
+                        }
+                    } 
+                }
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+        img.src = event.target.result;
+    };
+    if (file) {
+        reader.readAsDataURL(file);
+    }
     drawWorld()
 }
