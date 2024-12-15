@@ -467,7 +467,6 @@ function uploadTerrain(event) {
                     let cell = world.map[i][j]
                     let color = getColorPixelAt(imageData, j, i)
                     let rgb = `${color.r}, ${color.g}, ${color.b}`
-                    console.log(rgb)
                     if (rgb === "255, 230, 0") {
                         cell.terrain = "desert"
                         cell.terrainMarked = true;
