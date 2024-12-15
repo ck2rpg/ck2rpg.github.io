@@ -440,7 +440,6 @@ function uploadTerrain(event) {
     reader.onload = function(event) {
         const img = new Image();
         img.onload = function() {
-            // Calculate the dimensions to fit the image within 512x512
             let width = img.width;
             let height = img.height;
             const maxWidth = world.width;
@@ -463,55 +462,55 @@ function uploadTerrain(event) {
             const imageData = ctx.getImageData(0, 0, world.width, world.height);
             console.log(imageData)
 
-            settings.overrideElevation = true;
             for (let i = 0; i < world.height; i++) {
                 for (let j = 0; j < world.width; j++) {
                     let cell = world.map[i][j]
                     let color = getColorPixelAt(imageData, j, i)
                     let rgb = `${color.r}, ${color.g}, ${color.b}`
-                    if (settings.overrideElevation) {
-                        console.log(rgb)
-                        if (rgb === "255, 230, 0") {
-                            cell.terrain = "desert"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "220, 45, 120") {
-                            cell.terrain = "drylands"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "55, 31, 153") {
-                            cell.terrain = "floodplains"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "90, 50, 12") {
-                            cell.terrain = "hills"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "100, 100, 100") {
-                            cell.terrain = "mountains"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "46, 153, 89") {
-                            cell.terrain = "taiga"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "23, 19, 38") {
-                            cell.terrain = "desert mountains"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "255, 0, 0") {
-                            cell.terrain = "farmlands"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "71, 179, 45") {
-                            cell.terrain = "forest"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "10, 60, 35") {
-                            cell.terrain = "jungle"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "155, 143, 204") {
-                            cell.terrain = "oasis"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "200, 100, 25") {
-                            cell.terrain = "steppe"
-                            cell.terrainMarked = true;
-                        } else if (rgb === "77, 153, 153") {
-                            cell.terrain = "wetlands"
-                            cell.terrainMarked = true;
-                        }
-                    } 
+                    console.log(rgb)
+                    if (rgb === "255, 230, 0") {
+                        cell.terrain = "desert"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "220, 45, 120") {
+                        cell.terrain = "drylands"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "55, 31, 153") {
+                        cell.terrain = "floodplains"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "90, 50, 12") {
+                        cell.terrain = "hills"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "100, 100, 100") {
+                        cell.terrain = "mountains"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "46, 153, 89") {
+                        cell.terrain = "taiga"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "23, 19, 38") {
+                        cell.terrain = "desert_mountains"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "255, 0, 0") {
+                        cell.terrain = "farmlands"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "71, 179, 45") {
+                        cell.terrain = "forest"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "10, 60, 35") {
+                        cell.terrain = "jungle"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "155, 143, 204") {
+                        cell.terrain = "oasis"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "200, 100, 25") {
+                        cell.terrain = "steppe"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "77, 153, 153") {
+                        cell.terrain = "wetlands"
+                        cell.terrainMarked = true;
+                    } else if (rgb === "204, 163, 102") {
+                        cell.terrain = "plains"
+                        cell.terrainMarked = true;
+                    }
                 }
             }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
