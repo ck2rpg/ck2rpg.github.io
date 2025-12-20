@@ -1,0 +1,4509 @@
+<!doctype html><html><head><meta charset="utf-8"/><title>Map Generator Detailer</title><style>
+:root{
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --border:#c4b496;
+  --shadow:0 4px 20px rgba(0,0,0,.15);
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-mono:"Courier New",Courier,monospace;
+
+  /* optional “ok” color used by .btn.ok */
+  --ok:#2f8f4e;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#2a241e; /* dark wood around parchment */
+  color:var(--ink);
+  font:13px var(--font-serif);
+  height:100vh;
+  width:100vw;
+  overflow:hidden;
+}
+
+/* Match continent maker layout vibe:
+   left parchment panel, right dark stage */
+#wrap{
+  height:100vh;
+  width:100vw;
+  padding:0;
+  display:flex;
+  gap:0;
+}
+
+/* Panel becomes the parchment sidebar */
+#panel{
+  width:340px;
+  background:var(--parchment-bg);
+  border-right:2px solid var(--ink);
+  border-radius:0;
+  padding:16px 14px;
+  position:relative; /* not “sticky” in this layout */
+  top:auto;
+  z-index:100;
+  box-shadow:5px 0 15px rgba(0,0,0,.30);
+  background-image:radial-gradient(circle at 50% 50%, rgba(255,255,255,.20) 0%, transparent 100%);
+  overflow:auto;
+}
+
+/* Right side should feel like the stage */
+#wrap > :not(#panel){
+  flex:1;
+  min-width:0;
+  background:#1a1612;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:0;
+}
+
+/* Headings */
+.h{
+  font-weight:700;
+  font-size:.85rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+  margin:10px 0 8px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin:8px 0;
+}
+
+small{
+  opacity:1;
+  color:var(--ink-muted);
+  font-style:italic;
+}
+
+hr{
+  border:0;
+  border-top:1px double var(--ink);
+  margin:12px 0;
+}
+
+/* Inputs (continent maker style) */
+input[type=number],
+select,
+input[type=text]{
+  width:auto;
+  background:rgba(255,255,255,.40);
+  border:1px solid var(--ink-muted);
+  border-radius:2px;
+  color:var(--ink);
+  padding:8px;
+  font-family:var(--font-mono);
+  font-size:13px;
+}
+
+input[type=number]{ width:84px; }
+input:focus, select:focus{
+  outline:2px solid var(--accent);
+  background:#fff;
+}
+
+input[type=range]{
+  width:100%;
+  accent-color:var(--accent);
+}
+
+/* Buttons (continent maker style) */
+.btn{
+  background:var(--parchment-dark);
+  color:var(--ink);
+  border:1px solid var(--ink);
+  border-radius:2px;
+  padding:10px 12px;
+  font:700 12px var(--font-serif);
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:2px 2px 0 var(--ink);
+  transition:background .1s, transform .1s, box-shadow .1s;
+}
+.btn:hover{ background:#dfcfaf; }
+.btn:active{
+  transform:translate(1px,1px);
+  box-shadow:1px 1px 0 var(--ink);
+}
+
+/* Primary/OK variants (map to your previous classes) */
+.btn.primary{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--ink);
+}
+.btn.ok{
+  background:var(--ok);
+  color:#fff;
+  border-color:var(--ink);
+}
+
+/* Plugin list / draggable list styled like plugin cards */
+#list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+
+.item{
+  display:grid;
+  grid-template-columns:18px 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:10px 10px;
+  background:var(--parchment-dark);
+  border:1px solid var(--ink-muted);
+  border-radius:2px;
+  box-shadow:2px 2px 5px rgba(0,0,0,.06);
+}
+
+.item.drag{
+  outline:2px dashed var(--accent);
+  outline-offset:2px;
+}
+
+/* Progress bar (parchment-friendly) */
+#bar{
+  height:10px;
+  background:rgba(255,255,255,.35);
+  border:1px solid var(--border);
+  border-radius:999px;
+  overflow:hidden;
+}
+#fill{
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg, #a65d37, #d6a05a 60%, #2f8f4e);
+  transition:width .2s;
+}
+
+/* Canvas should behave like your continent maker canvas */
+canvas{
+  image-rendering:pixelated;
+  height:100vh;
+  width:auto;
+  max-width:100%;
+  border:0;
+  border-radius:0;
+  box-shadow:0 0 50px rgba(0,0,0,.5);
+  background:#fff;
+}
+
+/* Optional “key” styling, parchment-ish */
+kbd{
+  background:rgba(255,255,255,.35);
+  border:1px solid var(--border);
+  padding:2px 6px;
+  border-radius:6px;
+  font-family:var(--font-mono);
+  color:var(--ink);
+}
+
+</style></head><body>
+<div id="wrap">
+  <div id="panel">
+    <div class="h">Heightmap & Controls</div>
+    <div class="row"><input id="file" type="file" accept="image/*"><button id="fit" class="btn">Fit to canvas</button></div>
+    <div class="row"><label>Seeds <input id="seeds" type="number" min="1" max="100" step="1" value="12"></label>
+      <label>Warp(px) <input id="amp" type="number" min="0" max="60" step="1" value="75"></label>
+      <label>Freq <input id="freq" type="number" min=".001" max=".03" step=".001" value=".005"></label>
+    </div>
+    <div class="row"><label>Oct <input id="oct" type="number" min="1" max="6" step="1" value="3"></label>
+      <label>SeedWarp <input id="swarp" type="number" min="0" max="60" step="1" value="6"></label>
+    </div>
+    <div class="row">
+      <button id="run" class="btn ok">Run Pipeline</button>
+      <button id="reroll" class="btn">Reroll</button>
+      <button id="snap" class="btn">Capture Edges</button>
+      <button id="save" class="btn">Export PNG</button>
+    </div>
+    <div class="row"><div id="bar" style="flex:1"><div id="fill"></div></div><small id="status">idle</small></div>
+    <hr>
+    <div class="h">Pipeline (drag to reorder)</div>
+    <div id="list"></div>
+    <div class="row"><small>Tip: drag items; <kbd>Space</kbd>=run, <kbd>R</kbd>=reroll</small></div>
+  </div>
+  <div><canvas id="cv"></canvas></div>
+</div>
+
+<script>
+
+    
+(()=>{"use strict";
+const $=s=>document.querySelector(s),E=(t,a)=>Object.assign(document.createElement(t),a||{}),clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const UI={file:$("#file"),fit:$("#fit"),cv:$("#cv"),run:$("#run"),reroll:$("#reroll"),save:$("#save"),snap:$("#snap"),
+seeds:$("#seeds"),amp:$("#amp"),freq:$("#freq"),oct:$("#oct"),swarp:$("#swarp"),list:$("#list"),status:$("#status"),fill:$("#fill")};
+const cx=UI.cv.getContext("2d",{willReadFrequently:true});
+
+function PRNG(seed=1337){let s=seed|0;const x=()=>{s|=0;s=(s^=s>>>15)>>>0;s=Math.imul(s|1,s^(s+0x6d2b79f5|0))>>>0;return((s^s>>>7)>>>0)/4294967296};return{next:x,range:(a,b)=>a+(b-a)*x(),int:(a,b)=>Math.floor(a+((b-a+1)*x()))}}
+const Noise=(()=>{const mix=(a,b,t)=>a+(b-a)*t,fh=(x,y)=>{let n=Math.sin((x*127.1+y*311.7))*43758.5453;return n-Math.floor(n)};
+const v2=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,a=fh(ix,iy),b=fh(ix+1,iy),c=fh(ix,iy+1),d=fh(ix+1,iy+1),sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);return mix(mix(a,b,sx),mix(c,d,sx),sy)*2-1};
+const f2=(x,y,f,a,o)=>{let nx=0,ny=0,am=1,fr=f;for(let i=0;i<o;i++){nx+=v2(x*fr,y*fr)*a*am;ny+=v2((x+1000)*fr,(y+1000)*fr)*a*am;am*=.5;fr*=2}return[nx,ny]};
+const fbm=(x,y,f,o)=>{let s=0,am=1,fr=f;for(let i=0;i<o;i++){s+=v2(x*fr,y*fr)*am;am*=.5;fr*=2}return s};
+const ridged=(x,y,f,o)=>{let s=0,am=1,fr=f;for(let i=0;i<o;i++){let n=1-Math.abs(v2(x*fr,y*fr));n*=n;s+=n*am;am*=.5;fr*=2}return s};
+return{v2,f2,fbm,ridged}})();
+
+function boxBlur(F,W,H,r,it){if(r<=0||it<=0)return;const A=new Float32Array(F),B=new Float32Array(F.length),k=2*r+1,inv=1/k;
+for(let t=0;t<it;t++){for(let y=0;y<H;y++){let s=0,i=y*W;for(let x=-r;x<=r;x++)s+=A[i+clamp(x,0,W-1)];B[i]=s*inv;for(let x=1;x<W;x++){s+=A[i+clamp(x+r,0,W-1)]-A[i+clamp(x-r-1,0,W-1)];B[i+x]=s*inv}}
+for(let x=0;x<W;x++){let s=0,i=x;for(let y=-r;y<=r;y++)s+=B[clamp(y,0,H-1)*W+i];A[i]=s*inv;for(let y=1;y<H;y++){s+=B[clamp(y+r,0,H-1)*W+i]-B[clamp(y-r-1,0,H-1)*W+i];A[y*W+i]=s*inv}}F.set(A)}}
+
+const Program=(()=>{
+  const state={W:0,H:0,seed:12345,rand:PRNG(12345),sea:19,src:null,work:null,edges:null,labels:null,volSeeds:null,edgeMask:null,meta:{}};
+  const plugins=[]; const byId=new Map();
+  async function run(selectedIds){if(!state.W||!state.H||!state.src){toast("Load a heightmap first");return}
+    const steps=(selectedIds&&selectedIds.length?plugins.filter(p=>selectedIds.includes(p.id)&&p.enabled):plugins.filter(p=>p.enabled));
+    let k=0; for(const p of steps){k++; setProgress((k-1)/steps.length,`Running: ${p.name}`); await tick(); await p.run(state); await tick()}
+    setProgress(1,"done")}
+  function register(p){plugins.push(p);byId.set(p.id,p);refreshList()}
+  function enable(id,flag){const p=byId.get(id);if(p){p.enabled=!!flag;refreshList()}}
+  function reorder(srcIdx,dstIdx){const a=plugins.splice(srcIdx,1)[0];plugins.splice(dstIdx,0,a);refreshList()}
+  function setCanvasSize(w,h){UI.cv.width=w;UI.cv.height=h;state.W=w;state.H=h;state.work=cx.createImageData(w,h);drawImageData(state.src||state.work)}
+  function drawImageData(imgd){if(!imgd)return;cx.putImageData(imgd,0,0)}
+  function setSrcFromCanvas(){state.src=cx.getImageData(0,0,state.W,state.H);state.work=cx.getImageData(0,0,state.W,state.H)}
+  function setProgress(t,msg){UI.fill.style.width=((t*100)|0)+"%";UI.status.textContent=msg||""}
+  function toast(s){UI.status.textContent=s; console.log(s)}
+  async function tick(){return new Promise(r=>setTimeout(r))}
+  function refreshList(){
+  UI.list.innerHTML="";
+
+  function ensureCcBands(){
+    if(!state.ccBands){
+      state.ccBands = {
+        morePeaks:false,
+        moreRidges:false,
+        widerBelts:false,
+        moreChaos:false
+      };
+    }
+    return state.ccBands;
+  }
+
+  function makeBandsToggle(key,label,tip){
+    const presets = ensureCcBands();
+    const wrap = E("label",{
+      style:"display:block;cursor:pointer;font-size:11px;opacity:.9;margin-top:2px;"
+    });
+    const cb = E("input",{
+      type:"checkbox",
+      style:"margin-right:4px;vertical-align:middle;"
+    });
+    cb.checked = !!presets[key];
+    cb.onchange = ()=>{
+      const p = ensureCcBands();
+      p[key] = cb.checked;
+    };
+    wrap.title = tip;
+    wrap.append(cb,document.createTextNode(label));
+    return wrap;
+  }
+
+  plugins.forEach((p,i)=>{
+    const row = E("div",{className:"item",draggable:true});
+    const cb  = E("input",{type:"checkbox",checked:p.enabled});
+    const nm  = E("div",{textContent:p.name});
+    const lab = E("small",{textContent:p.desc||""});
+    const box = E("div");
+    box.append(nm,document.createElement("br"),lab);
+
+    // High-level presets just for cc-orogen-bands
+    if(p.id === "cc-orogen-bands"){
+      const presetsBox = E("div",{
+        style:"margin-top:4px;padding-top:4px;border-top:1px solid #1f2937;"
+      });
+      const title = E("div",{
+        textContent:"Orogen band presets",
+        style:"font-size:11px;opacity:.75;margin-bottom:2px;"
+      });
+      presetsBox.append(title);
+      presetsBox.append(
+        makeBandsToggle(
+          "morePeaks",
+          "Taller, sharper ranges",
+          "Greatly boosts relief before erosion, pushing peaks higher and tightening caps so ridges feel more dramatic."
+        )
+      );
+      presetsBox.append(
+        makeBandsToggle(
+          "moreRidges",
+          "More parallel ridges",
+          "Adds extra bands on both sides of the belt and squeezes their spacing so you get multiple closely packed ranges instead of one dominant ridge."
+        )
+      );
+      presetsBox.append(
+        makeBandsToggle(
+          "widerBelts",
+          "Broader mountain belt + foothills",
+          "Widens the deformation zone and band widths so ranges and foothills spill farther into the continents on both sides of the suture."
+        )
+      );
+      presetsBox.append(
+        makeBandsToggle(
+          "moreChaos",
+          "Messier, broken ranges",
+          "Cranks up warping, segmentation, and noisy components so belts look more fractured, offset, and irregular along their length."
+        )
+      );
+      box.append(presetsBox);
+    }
+
+    const right = E("div");
+    const up = E("button",{className:"btn",textContent:"↑"});
+    const dn = E("button",{className:"btn",textContent:"↓"});
+    right.append(up,dn);
+
+    row.append(cb,box,right);
+
+    cb.onchange = ()=>{ p.enabled = cb.checked; };
+
+    up.onclick = ()=>{ if(i>0)reorder(i,i-1); };
+    dn.onclick = ()=>{ if(i<plugins.length-1)reorder(i,i+1); };
+
+    row.addEventListener("dragstart",e=>{
+      row.classList.add("drag");
+      e.dataTransfer.setData("text/plain",i);
+    });
+    row.addEventListener("dragend",()=>row.classList.remove("drag"));
+    row.addEventListener("dragover",e=>e.preventDefault());
+    row.addEventListener("drop",e=>{
+      e.preventDefault();
+      const from = +e.dataTransfer.getData("text/plain");
+      reorder(from,i);
+    });
+
+    UI.list.append(row);
+  });
+}
+
+  return{state,register,run,enable,reorder,setCanvasSize,drawImageData,setSrcFromCanvas,setProgress,toast,refreshList}
+})();
+
+function sampleGray(data,W,H,x,y){x=clamp(x|0,0,W-1);y=clamp(y|0,0,H-1);return data[(y*W+x)*4]}
+function putGray(data,W,H,x,y,v){const i=(y*W+x)*4;data[i]=data[i+1]=data[i+2]=v;data[i+3]=255}
+function p2(n){let p=1;while(p<n)p<<=1;return p}
+function jfa(W,H,ax,ay,wx,wy,wsx,wsy){const n=W*H,lab=new Int32Array(n).fill(-1),dx=new Float32Array(n),dy=new Float32Array(n),INF=1e20;dx.fill(INF);dy.fill(INF);
+for(let i=0;i<ax.length;i++){const x=ax[i]|0,y=ay[i]|0,idx=y*W+x;lab[idx]=i;dx[idx]=0;dy[idx]=0}
+let s=p2(Math.max(W,H));const off=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
+while(s>=1){for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;let bl=lab[i],bx=dx[i],by=dy[i],best=bx*bx+by*by,px=wx[i],py=wy[i];
+for(let k=0;k<8;k++){const nx=x+off[k][0]*s,ny=y+off[k][1]*s;if(nx<0||ny<0||nx>=W||ny>=H)continue;const j=ny*W+nx,lj=lab[j];if(lj<0)continue;
+const sx=wsx[lj]-px,sy=wsy[lj]-py,dd=sx*sx+sy*sy;if(dd<best){best=dd;bx=sx;by=sy;bl=lj}}dx[i]=bx;dy[i]=by;lab[i]=bl}s>>=1}
+return lab}
+
+function plateVec(dir,spd){const ang=[315,0,45,90,135,180,225,270][dir]*Math.PI/180,sp=[0.3,0.7,1.2][spd];return[Math.cos(ang)*sp,Math.sin(ang)*sp]}
+function interact(a,b,dir,spd,mR){const[ax,ay]=plateVec(dir[a],spd[a]),[bx,by]=plateVec(dir[b],spd[b]);const dot=ax*bx+ay*by,cross=ax*by-ay*bx,dx=bx-ax,dy=by-ay;let rel=Math.hypot(dx,dy);let B=Math.min(255,Math.round(rel/mR*255));
+if(dot<-0.2)return[255,0,B,"convergent"];if(dot>0.2)return[0,255,B,"divergent"];if(Math.abs(cross)>0.2)return[255,255,B,"transform"];return[130,130,B,"passive"]}
+
+function nearRGB(r,g,b,R,G,B,t){return Math.abs(r-R)<=t&&Math.abs(g-G)<=t&&Math.abs(b-B)<=t}
+function sobelDir(mask,W,H,x,y){let gx=0,gy=0;for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){const w=[[1,2,1],[0,0,0],[-1,-2,-1]][oy+1][ox+1],h=[[1,0,-1],[2,0,-2],[1,0,-1]][oy+1][ox+1],xx=clamp(x+ox,0,W-1),yy=clamp(y+oy,0,H-1),m=mask[yy*W+xx];gx+=h*m;gy+=w*m}
+const a=Math.atan2(gy,gx);return isFinite(a)?a:0}
+function floodCentroids(mask,W,H,isSeed){const N=W*H,vis=new Uint8Array(N),groups=[];for(let i=0;i<N;i++){if(vis[i]||!isSeed(i))continue;const q=[i];vis[i]=1;let sx=0,sy=0,c=0;while(q.length){const n=q.pop();const y=(n/W)|0,x=n-y*W;sx+=x;sy+=y;c++;for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){if(!ox&&!oy)continue;const xx=x+ox,yy=y+oy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx;if(!vis[j]&&isSeed(j)){vis[j]=1;q.push(j)}}}groups.push({x:sx/c,y:sy/c})}return groups}
+
+//
+// PLUGINS
+//
+Program.register({
+  id:"load-from-canvas",
+  name:"Load Source From Canvas",
+  enabled:false, // don't run unless you explicitly want to refresh src
+  desc:"Cache src/work from current canvas",
+  async run(st){
+    const im=cx.getImageData(0,0,st.W,st.H);
+    st.src=im;                      // source (original heightmap)
+    st.work=cx.getImageData(0,0,st.W,st.H); // working buffer
+  }
+});
+
+Program.register({
+  id: "warp-edges-volcanoseeds",
+  name: "Warp Edges + Volcano Seeds",
+  enabled: true,
+  desc: "Voronoi labels + boundary colors + seed markers",
+  async run(st){
+    const W = st.W, H = st.H;
+    const im = st.src || cx.getImageData(0,0,W,H);
+    const S  = im.data;
+
+    const N   = (+UI.seeds.value)|0;
+    const A   = +UI.amp.value;
+    const F   = +UI.freq.value;
+    const O   = +UI.oct.value;
+    const SW  = +UI.swarp.value;
+    const land = st.sea;
+
+    const sx  = new Float32Array(N);
+    const sy  = new Float32Array(N);
+    const ox  = new Float32Array(N);
+    const oy  = new Float32Array(N);
+    const dir = new Uint8Array(N);
+    const spd = new Uint8Array(N);
+
+    const rc = new Uint8Array(N);
+    const gc = new Uint8Array(N);
+    const bc = new Uint8Array(N);
+
+    const r = (m)=>Math.floor(st.rand.next()*m);
+
+    for(let i=0;i<N;i++){
+      sx[i]=r(W); sy[i]=r(H);
+      ox[i]=Noise.v2(i*17.3,42.7)*999; oy[i]=Noise.v2(99.1,i*29.4)*999;
+      dir[i]=r(8); spd[i]=r(3);
+      rc[i]=Math.round((i+1)/N*255);
+      gc[i]=Math.round((dir[i]/8)*255);
+      bc[i]=Math.round(((spd[i]+1)/3)*255);
+    }
+
+    const wx  = new Float32Array(W*H);
+    const wy  = new Float32Array(W*H);
+    for(let y=0,i=0;y<H;y++){
+      for(let x=0;x<W;x++,i++){
+        const n = Noise.f2(x,y,F,A,O);
+        wx[i] = x + n[0];
+        wy[i] = y + n[1];
+      }
+    }
+
+    const wsx = new Float32Array(N);
+    const wsy = new Float32Array(N);
+    for(let i=0;i<N;i++){
+      const n = Noise.f2(sx[i]+ox[i], sy[i]+oy[i], F*1.6, SW, Math.max(1,O-1));
+      wsx[i] = sx[i] + n[0];
+      wsy[i] = sy[i] + n[1];
+    }
+
+    const lab = jfa(W,H,sx,sy,wx,wy,wsx,wsy);
+    st.labels = lab;
+
+    const out = cx.createImageData(W,H);
+    const Oa  = out.data;
+
+    // Compute max relative plate speed (for boundary intensity)
+    let maxRel = 1;
+    for(let i=0;i<N;i++){
+      for(let j=i+1;j<N;j++){
+        const [ax,ay] = plateVec(dir[i],spd[i]);
+        const [bx,by] = plateVec(dir[j],spd[j]);
+        const rS = Math.hypot(bx-ax,by-ay);
+        if(rS>maxRel) maxRel=rS;
+      }
+    }
+
+    // Persistent masks + seed list for downstream plugins
+    const edgeMask = new Uint8Array(W*H);  // all boundaries
+    const convMask = new Uint8Array(W*H);  // convergent only
+    const seedMask = new Uint8Array(W*H);  // seed pixels persisted
+    const seedPoints = [];                 // [{x,y,type:"arc"|"hotspot"}]
+
+    const sampleH = (x,y)=>sampleGray(S,W,H,x,y);
+    let stride = 0;
+
+    for(let y=0,i=0;y<H;y++){
+      for(let x=0;x<W;x++,i++){
+        const L = S[i*4];
+        const isLand = L >= land;
+        const id = lab[i];
+
+        let edge = null;
+        const j  = i+1;
+        const j2 = i+W;
+        if(x+1<W && lab[i]!==lab[j]) edge = [id, lab[j]];
+        else if(y+1<H && lab[i]!==lab[j2]) edge = [id, lab[j2]];
+
+        if(edge){
+          const c = interact(edge[0],edge[1],dir,spd,maxRel);
+          Oa[i*4]=c[0]; Oa[i*4+1]=c[1]; Oa[i*4+2]=c[2]; Oa[i*4+3]=255;
+
+          // mark boundary
+          edgeMask[i] = 255;
+          if(c[3]==="convergent") convMask[i] = 255;
+
+          // place volcanic seed marks *and* persist them
+          if(c[3]==="convergent"){
+            stride++;
+            if(stride%120===0){
+              const a=edge[0], b=edge[1];
+              const ax=wsx[a], ay=wsy[a], bx=wsx[b], by=wsy[b];
+
+              const vx=ax-x, vy=ay-y;
+              const wxv=bx-x, wyv=by-y;
+
+              const nax=x+vx*0.04, nay=y+vy*0.04;
+              const nbx=x+wxv*0.04, nby=y+wyv*0.04;
+
+              const aLand = sampleH(nax,nay) >= land;
+              const bLand = sampleH(nbx,nby) >= land;
+
+              let ovPlate=-1, seedColor=null, seedType=null;
+
+              if(aLand && !bLand){ ovPlate=a; seedColor=[255,128,0]; seedType="arc"; }
+              else if(!aLand && bLand){ ovPlate=b; seedColor=[255,128,0]; seedType="arc"; }
+              else if(!aLand && !bLand){ ovPlate=(spd[a]>=spd[b]?a:b); seedColor=[200,0,255]; seedType="hotspot"; }
+
+              if(ovPlate>=0){
+                const oxp=wsx[ovPlate], oyp=wsy[ovPlate];
+                const dx=oxp-x, dy=oyp-y, mag=Math.hypot(dx,dy)||1;
+                const nx = clamp((x + dx/mag*6)|0, 0, W-1);
+                const ny = clamp((y + dy/mag*6)|0, 0, H-1);
+
+                // visualize the seed
+                const ii = (ny*W + nx) * 4;
+                Oa[ii]=seedColor[0]; Oa[ii+1]=seedColor[1]; Oa[ii+2]=seedColor[2]; Oa[ii+3]=255;
+
+                // persist the seed
+                seedMask[ny*W + nx] = 1;
+                seedPoints.push({x:nx,y:ny,type:seedType});
+              }
+            }
+          }
+        }else{
+          if(isLand){
+            Oa[i*4]=rc[id]; Oa[i*4+1]=gc[id]; Oa[i*4+2]=bc[id]; Oa[i*4+3]=255;
+          }else{
+            Oa[i*4]=Oa[i*4+1]=Oa[i*4+2]=0; Oa[i*4+3]=255;
+          }
+        }
+      }
+    }
+
+    // expose masks/seeds for later plugins
+    st.edgeMask  = edgeMask;
+    st.convMask  = convMask;
+    st.seedMask  = seedMask;
+    st.seedPoints = seedPoints;
+    st.dir = dir;
+    st.spd = spd;
+    st.wsx = wsx;
+    st.wsy = wsy;
+
+    st.work = out;
+    cx.putImageData(out,0,0);
+  }
+});
+
+
+Program.register({
+ id:"tectonics-sim",
+ name:"Tectonics Simulation — Fast, Plains+Craton, Mid-Scale, 19/0-safe",
+ enabled:true,
+ desc:"Reads colored plate edges over a 19/0 base. Ridges, trenches, shelves, soft ocean transforms, hotspots. Continents use coastal plains + craton swells + mid-scale structure (band-pass + blue-noise). Low-res noise upsample; one gentle smoothing. No orogen/erosion.",
+ async run(st){
+  const W=st.W,H=st.H,N=W*H,SEA=st.sea??19;
+  if(!W||!H){ Program.toast("tectonics-sim: canvas not initialized"); return; }
+  const im=st.work||cx.getImageData(0,0,W,H), S=im.data;
+
+  // ---------- utils ----------
+  const IDX=(x,y)=>y*W+x, inb=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
+  const sat=(x,a,b)=>x<a?a:(x>b?b:x);
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const gexp=(t)=>Math.exp(-t);
+  const hash01=(x,y)=>(((x*73856093)^(y*19349663))>>>0)&255;
+
+  function addBump(field,x0,y0,r,amp){
+    const r2=r*r,xMin=sat((x0-r)|0,0,W-1),xMax=sat((x0+r)|0,0,W-1),
+          yMin=sat((y0-r)|0,0,H-1),yMax=sat((y0+r)|0,0,H-1);
+    for(let y=yMin;y<=yMax;y++)for(let x=xMin;x<=xMax;x++){
+      const dx=x-x0,dy=y-y0,ds=dx*dx+dy*dy;if(ds>r2)continue;
+      field[IDX(x,y)]+=amp*gexp(ds/(r2*0.6));
+    }
+  }
+  function distanceTransform(mask){ // chamfer 3×3 (forward/back once)
+    const INF=1e9,d=new Float32Array(N),w1=1,w2=Math.SQRT2;
+    for(let i=0;i<N;i++) d[i]=mask[i]?0:INF;
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=IDX(x,y); let v=d[i];
+      if(inb(x-1,y))   v=Math.min(v,d[IDX(x-1,y)]+w1);
+      if(inb(x,y-1))   v=Math.min(v,d[IDX(x,y-1)]+w1);
+      if(inb(x-1,y-1)) v=Math.min(v,d[IDX(x-1,y-1)]+w2);
+      if(inb(x+1,y-1)) v=Math.min(v,d[IDX(x+1,y-1)]+w2);
+      d[i]=v;
+    }
+    for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){
+      const i=IDX(x,y); let v=d[i];
+      if(inb(x+1,y))   v=Math.min(v,d[IDX(x+1,y)]+w1);
+      if(inb(x,y+1))   v=Math.min(v,d[IDX(x,y+1)]+w1);
+      if(inb(x+1,y+1)) v=Math.min(v,d[IDX(x+1,y+1)]+w2);
+      if(inb(x-1,y+1)) v=Math.min(v,d[IDX(x-1,y+1)]+w2);
+      d[i]=v;
+    }
+    return d;
+  }
+
+  // ---------- decode 19/0 + colored edges ----------
+  const land=new Uint8Array(N), ocean=new Uint8Array(N);
+  const ridge=new Uint8Array(N), trench=new Uint8Array(N), shear=new Uint8Array(N), volcSeed=new Uint8Array(N);
+  const isEdge=(r,g)=>r===255&&g===0||r===0&&g===255||r===255&&g===255||r===130&&g===130;
+
+  for(let i=0;i<N;i++){
+    const r=S[i*4],g=S[i*4+1],b=S[i*4+2],v=r;         // grayscale lives in R
+    const L=v>=SEA; land[i]=L?1:0; ocean[i]=L?0:1;
+    if(isEdge(r,g)){
+      if(r===255&&g===0) trench[i]=1;
+      else if(r===0&&g===255) ridge[i]=1;
+      else if(r===255&&g===255) shear[i]=1;
+      else { ridge[i]=1; trench[i]=1; }
+    }
+    if((r===255&&g===128&&b===0)||(r===200&&g===0&&b===255)||(r===0&&g===200&&b===120)) volcSeed[i]=1;
+  }
+  const some=a=>a.reduce((m,v)=>m||!!v,0);
+  if(!some(ridge)&&!some(trench)){ // coast fallback once
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=IDX(x,y),L=land[i]===1;
+      for(let oy=-2;oy<=2;oy++)for(let ox=-2;ox<=2;ox++){
+        const xx=x+ox,yy=y+oy;if(!inb(xx,yy))continue;
+        const j=IDX(xx,yy);
+        if(L && ocean[j]) trench[i]=1;
+        if(!L && land[j]) ridge[i]=1;
+      }
+    }
+  }
+
+  // ---------- distances ----------
+  const dRidge=distanceTransform(ridge);
+  const dTrench=distanceTransform(trench);
+  const dShear =distanceTransform(shear);
+  const dLand  =distanceTransform(land);
+  const dOcean =distanceTransform(ocean);
+
+  // tight inland gate for trench side-effects
+  const invLand=new Float32Array(N);
+  for(let i=0;i<N;i++) invLand[i]=Math.max(0,1 - dOcean[i]/16); // shorter reach
+
+  // ---------- low-res noise tiles ----------
+  const DS=3, NW=Math.max(2,(W/DS)|0), NH=Math.max(2,(H/DS)|0);
+  const tileA=new Float32Array(NW*NH), tileB=new Float32Array(NW*NH), tileO=new Float32Array(NW*NH);
+  const n2=(x,y,seed)=>Noise.v2(x+seed*13.37,y-seed*7.11);
+
+  for(let y=0;y<NH;y++){
+    for(let x=0;x<NW;x++){
+      const u=x/NW, v=y/NH;
+      const r0=Math.abs(n2(u*2.0,v*2.0,701));
+      const r1=Math.abs(n2(u*4.0,v*4.0,733))*0.5;
+      tileA[y*NW+x]=1.0-(r0*0.7+r1*0.3);                        // ridged-ish 0..1
+      const f0=n2(u*1.5,v*1.5,227), f1=n2(u*3.0,v*3.0,259)*0.5, f2=n2(u*6.0,v*6.0,281)*0.25;
+      tileB[y*NW+x]=(f0+f1+f2)*0.5+0.5;                         // fbm-ish 0..1
+      const o0=n2(u*2.0,v*2.0,23), o1=n2(u*4.0,v*4.0,47)*0.5;   // finer orientation
+      tileO[y*NW+x]=(o0+o1)*0.75;                               // ~[-1,1]
+    }
+  }
+  function sampleBilinear(tex,w,h,x,y){
+    const fx=x*(w-1)/W, fy=y*(h-1)/H;
+    const x0=Math.floor(fx), y0=Math.floor(fy);
+    const x1=Math.min(w-1,x0+1), y1=Math.min(h-1,y0+1);
+    const tx=fx-x0, ty=fy-y0;
+    const i00=y0*w+x0, i10=y0*w+x1, i01=y1*w+x0, i11=y1*w+x1;
+    const a=tex[i00]*(1-tx)+tex[i10]*tx, b=tex[i01]*(1-tx)+tex[i11]*tx;
+    return a*(1-ty)+b*ty;
+  }
+
+  // ---------- tiny blue-noise tile (replaces stipple hash) ----------
+  const BNW=64, BNH=64, bluet=new Float32Array(BNW*BNH);
+  for(let j=0;j<BNW*BNH;j++){ bluet[j]=((j*2654435761>>>0)&1023)/1023; }
+  function blurTile(tex,w,h){ const out=new Float32Array(w*h);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      let s=0,c=0; for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+        const xx=(x+ox+w)%w, yy=(y+oy+h)%h; s+=tex[yy*w+xx]; c++;
+      } out[y*w+x]=s/c;
+    } return out;
+  }
+  bluet.set(blurTile(blurTile(bluet,BNW,BNH),BNW,BNH)); // two passes → blue-ish
+  const blue=(x,y)=>{ const xi=((x%BNW)+BNW)%BNW, yi=((y%BNH)+BNH)%BNH; return bluet[yi*BNW+xi]; };
+
+  // ---------- fields ----------
+  const elev=new Float32Array(N), stiff=new Float32Array(N), shelfBias=new Float32Array(N);
+
+  // ---------- tunables ----------
+  const OCN_DEEP=-245, RIDGE_SHALLOW=-40, SUBS_K=13.5, AGE_PER_PX=1.0;
+  const TRENCH_AMP=-130, OUTER_RISE=+16, FOREARC_LOW=-22, BACKARC_BUMP=+12;
+  const SHELF_WIDTH=40, SHELF_DROP=-34, SHEAR_LINE=9;
+  const CONT_BASE=SEA+12;
+
+  // continental shape (no global coast→interior ramp)
+  const PLAIN_DROP=14, PLAIN_WIDTH=26;
+  const CRATON_RISE=22, BASIN_RING=-8;
+  const R1_MIN=80, R1_MAX=150, R2_MIN=160, R2_MAX=260;
+
+  // land texture
+  const NOISE_GAIN=50, MID_GAIN=14, MID_RIDGE=0.55;
+
+  const CRATON_STIFF=0.85, MOBILE_STIFF=0.45;
+
+  // 1) Oceanic bathymetry (clear ridge → abyss)
+  for(let i=0;i<N;i++){
+    if(!ocean[i]){ elev[i]=CONT_BASE; stiff[i]=CRATON_STIFF; continue; }
+    const age=Math.sqrt(dRidge[i])*AGE_PER_PX;
+    const subs=SUBS_K*Math.sqrt(age);
+    const crest=Math.exp(-dRidge[i]/(SHELF_WIDTH*1.15));
+    elev[i]=lerp(OCN_DEEP,RIDGE_SHALLOW,crest)-subs;
+    stiff[i]=Math.max(0.25, Math.min(0.95, 0.25+0.6*Math.tanh(age*0.04)));
+  }
+
+  // 2) Trenches + outer rise + gated fore/backarc (cubic inland fade)
+  for(let i=0;i<N;i++){
+    const dt=dTrench[i]; if(dt>96) continue;
+    const x=i%W,y=(i/W)|0;
+    const side = sampleBilinear(tileO,NW,NH,x,y)>0?1:-1;
+    const trench = TRENCH_AMP * gexp((dt*dt)/(2*10*10));
+    const outer  = OUTER_RISE * gexp((dt*dt)/(2*22*22));
+    const gate = ocean[i] ? 1.0 : invLand[i]*invLand[i]*invLand[i];
+    const fore   = FOREARC_LOW  * gexp((dt*dt)/(2*32*32))*(side>0?1:0.5)*gate;
+    const back   = BACKARC_BUMP * gexp((dt*dt)/(2*48*48))*(side<0?1:0.5)*gate;
+    elev[i]+= trench+outer+fore+back;
+    stiff[i]=Math.max(0.35, stiff[i]-0.18*gexp((dt*dt)/(2*40*40)));
+  }
+
+  // 3) Passive margins (ocean side)
+  for(let i=0;i<N;i++){
+    if(!ocean[i]) continue;
+    const t=Math.max(0,1 - dLand[i]/SHELF_WIDTH);
+    if(t>0){ shelfBias[i]+=SHELF_DROP*(t*t); stiff[i]=lerp(stiff[i],0.5,t*0.6); }
+  }
+
+  // 4) Ocean transforms — soft, oceans only
+  for(let i=0;i<N;i++){
+    const ds=dShear[i]; if(ds>=56 || land[i]) continue;
+    const x=i%W,y=(i/W)|0;
+    const base = sampleBilinear(tileO,NW,NH,x,y);
+    const jitter=((hash01(x,y))/255 - 0.5)*0.06;
+    const ang = (base + jitter)*Math.PI;
+    const amp = (SHEAR_LINE*0.6) * gexp((ds*ds)/(2*22*22));
+    elev[i]+= amp*Math.cos(ang);
+    stiff[i]=Math.max(0.4, stiff[i]-0.1*gexp((ds*ds)/(2*26*26)));
+  }
+
+  // 5) Continents — coastal plains + craton swell + basin ring + band-pass + mid-band
+  // 5a) craton seeds from inland distance maxima (subsampled)
+  const seeds=[]; const MAX_SEEDS=64;
+  const STRIDE=96, RAD=32;
+  for(let y=RAD; y<H-RAD; y+=STRIDE){
+    for(let x=RAD; x<W-RAD; x+=STRIDE){
+      const i=IDX(x,y); if(!land[i]) continue;
+      let isMax=true, di=dOcean[i]; if(di<40) continue;
+      for(let oy=-8;oy<=8 && isMax;oy+=4)for(let ox=-8;ox<=8;ox+=4){
+        const j=IDX(sat(x+ox,0,W-1),sat(y+oy,0,H-1));
+        if(land[j] && dOcean[j]>di){ isMax=false; break; }
+      }
+      if(isMax){
+        const r1=R1_MIN + (hash01(x,y)% (R1_MAX-R1_MIN+1));
+        const r2=R2_MIN + (hash01(x+13,y+7)% (R2_MAX-R2_MIN+1));
+        const amp=CRATON_RISE * (0.85 + (hash01(x+5,y+11)/255)*0.3);
+        seeds.push({x,y,r1,r2,amp});
+        if(seeds.length>=MAX_SEEDS) break;
+      }
+    }
+    if(seeds.length>=MAX_SEEDS) break;
+  }
+
+  // 5b) apply shaping + textures
+  for(let i=0;i<N;i++){
+    if(!land[i]) continue;
+    const x=i%W,y=(i/W)|0;
+
+    // coastal plain: short negative ramp near shore
+    const plainT = Math.max(0, 1 - dOcean[i]/PLAIN_WIDTH);
+    const coastalPlain = -PLAIN_DROP * (plainT*plainT);
+
+    // nearest craton seed swell + basin ring
+    let best=1e12, s=seeds[0]||{x:x,y:y,r1:120,r2:220,amp:CRATON_RISE};
+    for(let k=0;k<seeds.length;k++){
+      const dx=x-seeds[k].x, dy=y-seeds[k].y, d2=dx*dx+dy*dy;
+      if(d2<best){ best=d2; s=seeds[k]; }
+    }
+    const d = Math.sqrt(best);
+    const swell = s.amp * Math.exp(-((d-s.r1)*(d-s.r1))/(2*(s.r1*0.9)*(s.r1*0.9)));
+    const basin = BASIN_RING * Math.exp(-((Math.max(0,d-s.r1))**2)/(2*(s.r2*0.8)*(s.r2*0.8)));
+
+    // land textures: band-pass + mid-band bump (decorrelated)
+    const rid = sampleBilinear(tileA,NW,NH,x,y);
+    const fb  = sampleBilinear(tileB,NW,NH,x,y);
+    const band = (rid*0.65 + fb*0.35) - 0.5;
+    const ridMid = sampleBilinear(tileA,NW,NH,x+13,y-7);
+    const fbMid  = sampleBilinear(tileB,NW,NH,x-11,y+9);
+    const mid    = (ridMid*MID_RIDGE + fbMid*(1-MID_RIDGE)) - 0.5;
+
+    // blue-noise micro-relief (fine, non-stippled)
+    const micro = (blue(x*3,y*3)-0.5)*8.0; // ±4 gray
+
+    elev[i] = CONT_BASE + coastalPlain + swell + basin + band*NOISE_GAIN + mid*MID_GAIN + micro + elev[i]*0.08;
+
+    // stiffness: interiors harder; margins more mobile
+    const mobile = Math.max(0, 1 - dOcean[i]/150);
+    stiff[i] = lerp(CRATON_STIFF, MOBILE_STIFF, 0.25 + 0.55*mobile);
+  }
+
+  // 6) Apply shelves
+  for(let i=0;i<N;i++) elev[i]+=shelfBias[i];
+
+  // 7) Hotspots — capped for speed (optional)
+  const hotspot=new Float32Array(N), MAX_VSEEDS=180, vseeds=[];
+  for(let i=0;i<N&&vseeds.length<MAX_VSEEDS;i++) if(volcSeed[i]) vseeds.push(i);
+  const STEPS=16, STEP_LEN=5;
+  for(const i of vseeds){
+    const y=(i/W)|0,x=i-y*W; const amp=land[i]?20:28, r=land[i]?6:8;
+    let px=x,py=y,a=amp;
+    for(let k=0;k<STEPS;k++){
+      addBump(hotspot,px|0,py|0,r,a);
+      const ang = sampleBilinear(tileO,NW,NH,px,py)*Math.PI;
+      px+=Math.cos(ang)*STEP_LEN; py+=Math.sin(ang)*STEP_LEN;
+      if(px<2||py<2||px>W-3||py>H-3) break;
+      a*=0.92;
+    }
+  }
+  // tiny 3×3 blur for hotspots
+  const hs=new Float32Array(N);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    let acc=0,cnt=0; for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+      const xx=sat(x+ox,0,W-1),yy=sat(y+oy,0,H-1); acc+=hotspot[IDX(xx,yy)]; cnt++;
+    } hs[IDX(x,y)]=acc/cnt;
+  }
+  for(let i=0;i<N;i++) elev[i]+=hs[i];
+
+  // 8) Abyssal texture only far from shelves & ridges
+  for(let i=0;i<N;i++){
+    if(!ocean[i]) continue;
+    const x=i%W,y=(i/W)|0;
+    const far = (Math.min(dLand[i], dRidge[i]) > 28) ? 1 : 0;
+    if(far){
+      const otex = (sampleBilinear(tileA,NW,NH,x,y)*0.6 + sampleBilinear(tileB,NW,NH,x+5,y-3)*0.4) - 0.5;
+      elev[i] += otex * 10; // gentle abyssal hills
+    }
+  }
+
+  // 9) Light structure-preserving smoothing (one pass; weaker on land)
+  const out=new Float32Array(N);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=IDX(x,y); let acc=0,cnt=0;
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+      if(!ox&&!oy) continue;
+      const xx=sat(x+ox,0,W-1),yy=sat(y+oy,0,H-1); acc+=elev[IDX(xx,yy)]; cnt++;
+    }
+    const avg=acc/cnt, w=(ocean[i] ? (1-stiff[i])*0.20 : (1-stiff[i])*0.10);
+    out[i]=elev[i]*(1-w)+avg*w;
+  }
+  elev.set(out);
+
+  // 10) Output (visibility lift; 19/0 honored)
+  for(let i=0;i<N;i++){
+    let v=elev[i];
+    v=(v-SEA)*1.50 + SEA; // slight contrast
+    if(land[i]) v=Math.max(v,SEA); else v=Math.min(v,SEA-0.05);
+    v=sat(v,0,255);
+    S[i*4]=S[i*4+1]=S[i*4+2]=v; S[i*4+3]=255;
+  }
+
+  st.work=im; cx.putImageData(im,0,0);
+ }
+});
+
+
+
+Program.register({
+  id: "normalize-land",
+  name: "Normalize Land (min=19, preserve coastlines)",
+  enabled: true,
+  desc: "Shift land so the lowest imported-land pixel is exactly 19; seas unchanged",
+  async run(st){
+    const W = st.W, H = st.H;
+    if (!W || !H) return;
+
+    // Work buffer to adjust
+    const im = st.work || cx.getImageData(0,0,W,H);
+    const S  = im.data;
+
+    // Use the *imported* source to decide what is land to preserve coastlines
+    // Fallback: if st.src missing, use current work image as the mask
+    const src = (st.src && st.src.width===W && st.src.height===H) ? st.src.data : S;
+
+    const N = W * H;
+    const SEA_LEVEL = 19;
+
+    // Build a land mask from the imported image (coastlines preserved)
+    const landMask = new Uint8Array(N);
+    for (let i=0;i<N;i++){
+      const v = src[i*4];         // grayscale
+      landMask[i] = (v >= SEA_LEVEL) ? 1 : 0;
+    }
+
+    // Find the minimum current value among land pixels
+    let minLand = Infinity;
+    for (let i=0;i<N;i++){
+      if (!landMask[i]) continue;
+      const v = S[i*4];
+      if (v < minLand) minLand = v;
+    }
+    if (!isFinite(minLand)) {
+      Program.toast("Normalize: no land found in imported mask.");
+      return;
+    }
+
+    // Compute offset to make the minimum land value exactly 19
+    const offset = SEA_LEVEL - minLand;
+    if (offset === 0){
+      Program.toast("Normalize: land already at min=19.");
+      return;
+    }
+
+    // Apply offset to land only; clamp to [19,255]; leave sea unchanged
+    for (let i=0;i<N;i++){
+      if (!landMask[i]) continue; // preserve seas (and coastlines)
+      let v = S[i*4] + offset;
+      if (v < SEA_LEVEL) v = SEA_LEVEL;   // ensure min=19
+      if (v > 255) v = 255;
+      S[i*4] = S[i*4+1] = S[i*4+2] = v;
+      S[i*4+3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im,0,0);
+    Program.toast("Normalize: land shifted so min=19 (coastlines preserved).");
+  }
+});
+
+
+
+Program.register({id:"capture-edges",name:"Capture Edges Snapshot",enabled:false,desc:"Save current RGBA as edge snapshot",
+async run(st){const W=st.W,H=st.H,im=cx.getImageData(0,0,W,H);st.edges=im;Program.toast("Edges snapshot captured")}});
+
+Program.register({
+  id: "smooth-boundaries",
+  name: "Feather Plate Boundaries",
+  enabled: true,
+  desc: "Softens unrealistic sharp cutoffs along plate contacts, preserving imported coastlines",
+  async run(st){
+    const W = st.W, H = st.H;
+    if(!W || !H){ Program.toast("Smooth: canvas not initialized"); return; }
+
+    // Working image (grayscale height in S)
+    const im = st.work || cx.getImageData(0,0,W,H);
+    const S  = im.data;
+    const N  = W*H;
+
+    // Sea level & "imported" land mask to preserve coastline
+    const SEA = st.sea ?? 19;
+    const srcData = (st.src && st.src.width===W && st.src.height===H) ? st.src.data : S;
+    const landMask = new Uint8Array(N);
+    for(let i=0;i<N;i++) landMask[i] = (srcData[i*4] >= SEA) ? 1 : 0;
+
+    // --- Build a boundary mask (prefer persistent, else derive from labels) ---
+    let boundaryMaskU8 = st.edgeMask && st.edgeMask.length===N ? st.edgeMask : null;
+
+    if(!boundaryMaskU8 && st.labels){
+      // Derive boundaries where Voronoi labels differ
+      const lab = st.labels;
+      const m = new Uint8Array(N);
+      for(let y=0;y<H;y++){
+        for(let x=0;x<W;x++){
+          const i=y*W+x;
+          const a=lab[i];
+          const r = x+1<W ? lab[i+1]   : a;
+          const d = y+1<H ? lab[i+W]   : a;
+          if(a!==r || a!==d) m[i]=255;
+        }
+      }
+      boundaryMaskU8 = m;
+    }
+
+    if(!boundaryMaskU8){
+      Program.toast("Smooth: no boundary mask found (edgeMask/labels missing).");
+      return;
+    }
+
+    // --- Build a soft belt from the boundary mask (two blurs, normalize) ---
+    const belt = new Float32Array(N);
+    for(let i=0;i<N;i++) belt[i] = boundaryMaskU8[i] ? 1 : 0;
+
+    // Tunables (pixels)
+    const INNER_RADIUS  = 5;   // small blur for inner core
+    const OUTER_RADIUS  = 14;  // wider blur to get a feathered belt
+    const POWER         = 1.25;// belt exponent -> sharper near core
+    const PASSES        = 2;   // smoothing iterations
+    const LAMBDA        = 0.6; // smoothing strength (0..1) inside belt
+
+    // Use your existing boxBlur(F,W,H,r,it) helper
+    boxBlur(belt, W, H, INNER_RADIUS, 1);
+    const falloff = new Float32Array(belt);
+    boxBlur(falloff, W, H, OUTER_RADIUS, 1);
+
+    // Normalize falloff to [0..1]
+    let maxF = 0; for(let i=0;i<N;i++) if(falloff[i]>maxF) maxF=falloff[i];
+    const invMax = maxF>0 ? 1/maxF : 1;
+    for(let i=0;i<N;i++) falloff[i] = Math.pow(falloff[i]*invMax, POWER);
+
+    // --- Guided smoothing only inside the belt and only on imported land ---
+    // We'll average 8-neighborhood; neighbors must be land to avoid bleeding seas inland.
+    const cur = new Float32Array(N);
+    const nxt = new Float32Array(N);
+    for(let i=0;i<N;i++) cur[i] = S[i*4]; // grayscale source
+
+    const clamp01 = v => v<0?0 : v>1?1 : v;
+
+    for(let pass=0; pass<PASSES; pass++){
+      for(let y=0;y<H;y++){
+        for(let x=0;x<W;x++){
+          const i = y*W + x;
+
+          // Skip if out of belt or not land (preserve coastline & interior away from boundaries)
+          const w = falloff[i];
+          if(w <= 1e-4 || !landMask[i]){ nxt[i] = cur[i]; continue; }
+
+          // Compute local average of land neighbors
+          let acc = 0, cnt = 0;
+          for(let oy=-1; oy<=1; oy++){
+            for(let ox=-1; ox<=1; ox++){
+              if(!ox && !oy) continue;
+              const xx = x+ox, yy = y+oy;
+              if(xx<0||yy<0||xx>=W||yy>=H) continue;
+              const j = yy*W + xx;
+              if(!landMask[j]) continue; // don't mix ocean
+              acc += cur[j];
+              cnt++;
+            }
+          }
+          const avg = cnt ? (acc/cnt) : cur[i];
+
+          // Blend toward local avg with strength scaled by belt weight
+          const alpha = clamp01(LAMBDA * w); // stronger near core, lighter outward
+          nxt[i] = cur[i] * (1 - alpha) + avg * alpha;
+        }
+      }
+      // swap
+      const tmp = cur; cur.set(nxt); nxt.set(tmp);
+    }
+
+    // --- Write back, keep seas untouched and clamp land >= SEA ---
+    for(let i=0;i<N;i++){
+      let v = landMask[i] ? cur[i] : S[i*4];   // land from smoothed, sea unchanged
+      if(landMask[i] && v < SEA) v = SEA;      // never undercut land below 19
+      if(v > 255) v = 255;
+      S[i*4]=S[i*4+1]=S[i*4+2]=v; S[i*4+3]=255;
+    }
+
+    st.work = im;
+    cx.putImageData(im,0,0);
+    Program.toast("Smooth: feathered plate boundaries.");
+  }
+});
+
+Program.register({
+ id:"cc-orogen",
+ name:"Continental–Continental Orogen (Himalaya Plateau, Soft-Gated, Map-Scaled)",
+ enabled:true,
+ desc:"Broad asymmetric uplift with soft gating; map-scaled widths. Crest-focused uplift + domain-warped multi-azimuth interior ridges with soft caps.",
+ async run(st){
+  const W=st.W,H=st.H,N=W*H,SEA=st.sea??19;
+  if(!W||!H){ Program.toast("cc-orogen: canvas not initialized"); return; }
+
+  // ---- user-adjustable multipliers ----
+const P = Object.assign({
+  // --- Primary amplitude and scaling controls ---
+  heightGain: 3.0,        // Global amplitude multiplier for all uplift — raises or lowers entire orogen height field.
+  coreGain: 1.0,          // Controls relative uplift at the collision suture (deep core zone).
+  plateauGain: 1.0,       // Controls uplift of the broader, high-elevation plateau behind the core.
+  basinGain: 1.0,         // Controls down-flexure amplitude in foreland basins adjacent to the range.
+
+  widthGain: 1.0,         // Horizontal scaling of the entire orogenic belt — affects how broad each range appears.
+  beltWidthGain: 5.0,     // Controls how wide the diffuse deformation zone (the “belt”) is around convergent margins.
+  gateSharpness: 1.0,     // Governs how sharply the uplift fades at boundaries — higher = more abrupt falloff.
+
+  // --- Crest capping and soft limits ---
+  capAbsMul: 1.25,        // Absolute maximum uplift per pixel (scaled by map size) — limits unrealistic peaks.
+  capUpFrac: 0.75,        // Fraction of available headroom allowed for upward uplift before clamping.
+  capDnFrac: 0.22,        // Fraction for downward flexure or subsidence (how deep basins can go).
+
+  // --- Plateau interior roughness / variation ---
+  plateauNoiseGain: 1.50,     // Overall amplitude of interior noise (total roughness inside uplifted area).
+  plateauNoiseRidged: 1.10,   // Weight of ridged (sharp-crested) noise contribution to interior structure.
+  plateauNoiseBlock: 0.55,    // Weight of blocky low-frequency noise — creates blocky mesas and segmentation.
+  plateauNoiseFine: 0.35,     // Weight of fine high-frequency noise — adds micro-relief and minor ridges.
+  plateauKeepLowSlope: 0.65,  // Bias to preserve flat areas — higher values preserve plateau flats more.
+  plateauBandLo: 0.34,        // Lower normalized distance from suture defining start of plateau interior zone.
+  plateauBandHi: 0.84,        // Upper distance defining end of plateau zone — controls where roughening is applied.
+  plateauPostBlur: 1,         // Amount of blur on plateau mask after generation — smooths rough mask edges.
+
+  // --- Rim suppression (to avoid artifacts along steep scarps) ---
+  rimSuppressLo: 0.06,        // Gradient magnitude below which rim suppression begins (near steep edges).
+  rimSuppressHi: 0.18,        // Gradient magnitude at which suppression is fully applied — flattens rims.
+
+  // --- Domain warp & azimuth jitter (breaks linearity for realism) ---
+  warpAmpU: 18,               // Warp amplitude (pixels) along strike direction — makes ridges curve along length.
+  warpAmpV: 28,               // Warp amplitude across strike — makes belts bulge or sag laterally.
+  warpFreq: 0.035,            // Base frequency of warp field — controls warp scale relative to map size.
+  jitterDeg: 20,              // Random azimuth rotation (± degrees) applied locally to vary ridge direction.
+  dualAzimuthBlend: 0.65      // Blending ratio between the two azimuth samples (sum vs. max): 
+                              // higher = smoother blended relief; lower = stronger directional ridging.
+}, st.ccOrogen || {});
+
+  // -------- noise fallbacks --------
+  function _createPerlinNoise(){
+    let m_w=123456789,m_z=987654321;const MASK=0xffffffff;
+    const seed=i=>{m_w=(123456789+i)&MASK;m_z=(987654321-i)&MASK;};
+    const rnd=()=>{m_z=(36969*(m_z&65535)+(m_z>>16))&MASK;m_w=(18000*(m_w&65535)+(m_w>>16))&MASK;let r=((m_z<<16)+(m_w&65535))&MASK;return r/4294967296+0.5;};
+    seed(0);
+    let p=new Uint8Array(512),g2=[];
+    const grad=(i,x,y)=>{const v=g2[i&255];return v[0]*x+v[1]*y;};
+    const base=(x,y)=>{
+      let X=Math.floor(x)&255,Y=Math.floor(y)&255;
+      x-=Math.floor(x);y-=Math.floor(y);
+      let u=x*x*x*(x*(x*6-15)+10),v=y*y*y*(y*(y*6-15)+10);
+      let i=p[X]+Y,j=p[X+1]+Y;
+      let n00=grad(p[i],x,y), n10=grad(p[j],x-1,y), n01=grad(p[i+1],x,y-1), n11=grad(p[j+1],x-1,y-1);
+      let n0=n00*(1-u)+n10*u, n1=n01*(1-u)+n11*u;
+      return n0*(1-v)+n1*v;
+    };
+    for(let i=0;i<256;i++){p[i]=i;const a=rnd()*2*Math.PI;g2[i]=[Math.cos(a),Math.sin(a)];}
+    for(let i=255;i>0;i--){const j=Math.floor(rnd()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
+    for(let i=0;i<256;i++) p[i+256]=p[i];
+    return (x,y,pers=0.5,oct=4)=>{
+      let total=0,f=1,a=1,max=0;
+      for(let k=0;k<oct;k++){total+=base(x*f,y*f)*a;max+=a;a*=pers;f*=2;}
+      const norm=(max*0.7071)||1;return (total/norm+1)/2;
+    };
+  }
+  function _createFallbackRidged(perlin){
+    return (x,y,pers=1.0,oct=4)=>{
+      let total=0,f=1,a=1,max=0;
+      for(let i=0;i<oct;i++){
+        let n=(perlin(x*f,y*f,0.5,1)*2)-1;
+        n=1-Math.abs(n); n=n*n;
+        total+=n*a; max+=a; a*=pers; f*=2;
+      }
+      return max?total/max:0;
+    };
+  }
+  const _fallbackPerlin=_createPerlinNoise();
+  const _fallbackRidged=_createFallbackRidged(_fallbackPerlin);
+
+  const _boxBlur=(typeof boxBlur!=='undefined')?boxBlur:(st.boxBlur||((d,w,h,r)=>{}));
+  const _Noise={ridged:_fallbackRidged, perlin:_fallbackPerlin};
+  const hostNoise=(typeof Noise!=='undefined')?Noise:(st.Noise||null);
+  if(hostNoise){
+    if(typeof hostNoise.ridged==='function') _Noise.ridged=hostNoise.ridged;
+    if(typeof hostNoise.perlin==='function') _Noise.perlin=hostNoise.perlin;
+  }
+
+  const im=st.work||cx.getImageData(0,0,W,H);
+  const S=im.data;
+  const src=(st.src&&st.src.width===W&&st.src.height===H)?st.src.data:S;
+  const land=new Uint8Array(N); for(let i=0;i<N;i++) land[i]=(src[i*4]>=SEA)?1:0;
+
+  // conv mask
+  let convMask=(st.convMask&&st.convMask.length===N)?st.convMask:null;
+  if(!convMask){
+    if(!(st.labels instanceof Int32Array)){ Program.toast("cc-orogen: no convMask/labels"); return; }
+    const lab=st.labels,m=new Uint8Array(N);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+      const i=y*W+x,a=lab[i],r=(x+1<W)?lab[i+1]:a,d=(y+1<H)?lab[i+W]:a;
+      if(a!==r||a!==d) m[i]=255;
+    }
+    convMask=m;
+  }
+
+  // belts + falloff
+  const belt0=new Float32Array(N); for(let i=0;i<N;i++) belt0[i]=convMask[i]?1:0;
+  _boxBlur(belt0,W,H,Math.max(1,Math.round(5*P.beltWidthGain)),1);
+  const ccFalloff=new Float32Array(belt0);
+  _boxBlur(ccFalloff,W,H,Math.max(2,Math.round(18*P.beltWidthGain)),1);
+  let mx=0; for(let i=0;i<N;i++) if(ccFalloff[i]>mx) mx=ccFalloff[i];
+  const inv=mx>0?1/mx:1; for(let i=0;i<N;i++) ccFalloff[i]*=inv;
+
+  // landF, distance to sea
+  const landF=new Float32Array(N); for(let i=0;i<N;i++) landF[i]=land[i]; _boxBlur(landF,W,H,6,1);
+  let lmx=0; for(let i=0;i<N;i++) if(landF[i]>lmx) lmx=landF[i]; const linv=lmx?1/lmx:1; for(let i=0;i<N;i++) landF[i]*=linv;
+
+  const INF=1e9, dt=new Float32Array(N);
+  for(let i=0;i<N;i++) dt[i]=land[i]?INF:0;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=y*W+x; if(dt[i]===0) continue;
+    let v=dt[i];
+    if(x>0) v=Math.min(v,dt[i-1]+1);
+    if(y>0) v=Math.min(v,dt[i-W]+1);
+    if(x>0&&y>0) v=Math.min(v,dt[i-W-1]+1.4142);
+    if(x+1<W&&y>0) v=Math.min(v,dt[i-W+1]+1.4142);
+    dt[i]=v;
+  }
+  for(let y=H-1;y>=0;y--) for(let x=W-1;x>=0;x--){
+    const i=y*W+x; if(dt[i]===0) continue;
+    let v=dt[i];
+    if(x+1<W) v=Math.min(v,dt[i+1]+1);
+    if(y+1<H) v=Math.min(v,dt[i+W]+1);
+    if(x+1<W&&y+1<H) v=Math.min(v,dt[i+W+1]+1.4142);
+    if(x>0&&y+1<H) v=Math.min(v,dt[i+W-1]+1.4142);
+    dt[i]=v;
+  }
+  const cap=Math.max(32,Math.min(128,(W|0)/48));
+  const invCap=1/cap; for(let i=0;i<N;i++) dt[i]=Math.min(1,dt[i]*invCap);
+
+  const hasVectors=Array.isArray(st.dir)&&Array.isArray(st.spd);
+  const labels=(st.labels instanceof Int32Array)?st.labels:null;
+  const plateV=(pid)=>{ if(!hasVectors||pid==null||pid<0) return [0,0]; return plateVec(st.dir[pid]|0, st.spd[pid]|0); };
+  const clamp01=v=>v<0?0:v>1?1:v;
+
+  function sobelUnit(mask,x,y){
+    let gx=0,gy=0;
+    const xm=x>0?x-1:0, xp=x<W-1?x+1:W-1, ym=y>0?y-1:0, yp=y<H-1?y+1:H-1;
+    const idx=(yy,xx)=>mask[yy*W+xx]||0;
+    gx=(idx(ym,xp)+2*idx(y,xp)+idx(yp,xp))-(idx(ym,xm)+2*idx(y,xm)+idx(yp,xm));
+    gy=(idx(yp,xm)+2*idx(yp,x)+idx(yp,xp))-(idx(ym,xm)+2*idx(ym,x)+idx(ym,xp));
+    const mag=Math.hypot(gx,gy)||1e-6; return {nx:gx/mag, ny:gy/mag, mag};
+  }
+  function continentalScore(x,y,dx,dy,len){
+    const step=2,nStep=Math.max(1,Math.floor(len/step));
+    let accL=0,accD=0,cnt=0;
+    for(let k=1;k<=nStep;k++){
+      const xx=Math.max(0,Math.min(W-1,Math.round(x+dx*k*step)));
+      const yy=Math.max(0,Math.min(H-1,Math.round(y+dy*k*step)));
+      const j=yy*W+xx; accL+=landF[j]; accD+=dt[j]; cnt++;
+    }
+    if(!cnt) return 0;
+    const mL=accL/cnt,mD=accD/cnt;
+    return 0.5*mL+0.5*mD;
+  }
+  function relConvergence(pidA,pidB){
+    if(!hasVectors) return 0.5;
+    const [ax,ay]=plateV(pidA),[bx,by]=plateV(pidB);
+    return Math.min(1,Math.hypot(bx-ax,by-ay)/2);
+  }
+  function softCap(delta, up, dn){
+    return delta>=0 ? up*Math.tanh(delta/(up||1e-6))
+                    : -dn*Math.tanh((-delta)/(dn||1e-6));
+  }
+  // tiny hash for blue-noise-ish jitter (0..1)
+  const h2=(x,y)=>{let n=(x*374761393+y*668265263)|0;n=(n^(n>>>13))*1274126177|0;return ((n^(n>>>16))>>>0)/4294967295;};
+
+  // -------- MAP-SCALED CONSTANTS --------
+  const L0=4096,H0=2048,kL=Math.sqrt(W*H)/Math.sqrt(L0*H0);
+
+  const gateMap=new Float32Array(N);
+  const L_CONT=Math.max(36,Math.min(144,(W|0)/32))*kL*P.widthGain;
+  const T_CONT_SOFT=0.05, T_REL_SOFT=0.05;
+  const WIDTH_BIAS=Math.max(4,Math.round(6*kL*P.beltWidthGain));
+  const smooth01=(x,lo,hi)=>{const t=clamp01((x-lo)/(hi-lo));return t*t*(3-2*t);};
+
+  for(let y=1;y<H-1;y++){
+    for(let x=1;x<W-1;x++){
+      const i=y*W+x; if(ccFalloff[i]<=1e-3) continue;
+      const gN=sobelUnit(ccFalloff,x,y);
+      const nx=gN.nx, ny=gN.ny;
+      const xL=Math.max(0,Math.min(W-1,x+Math.round(nx*WIDTH_BIAS)));
+      const yL=Math.max(0,Math.min(H-1,y+Math.round(ny*WIDTH_BIAS)));
+      const sPos=continentalScore(xL,yL,nx,ny,L_CONT);
+      const sNeg=continentalScore(xL,yL,-nx,-ny,L_CONT);
+      const sMin=Math.min(sPos,sNeg);
+      let rConv=0.5;
+      if(labels){
+        const a=labels[i];
+        const j=(x+1<W&&labels[i]!==labels[i+1])?i+1:(y+1<H&&labels[i]!==labels[i+W])?i+W:i;
+        const b=labels[j];
+        rConv=relConvergence(a,b);
+      }
+      const softSpan=Math.min(0.85,T_CONT_SOFT+0.35);
+      const wCont=Math.pow(smooth01(sMin,T_CONT_SOFT,softSpan),P.gateSharpness);
+      const wRel=Math.pow(smooth01(rConv,T_REL_SOFT,Math.min(0.85,T_REL_SOFT+0.35)),P.gateSharpness);
+      gateMap[i]=ccFalloff[i]*Math.sqrt(wCont*wRel);
+    }
+  }
+  const gateBlurR=Math.max(1,Math.round(4*P.beltWidthGain)); _boxBlur(gateMap,W,H,gateBlurR,1);
+
+  // simple high-pass of gate for interior envelope (variation, not DC)
+  const gateLow=new Float32Array(gateMap); _boxBlur(gateLow,W,H,8,1);
+  const gateHP=new Float32Array(N); for(let i=0;i<N;i++){ let v=gateMap[i]-0.85*gateLow[i]; gateHP[i]=v<0?0:v; }
+
+  // -------- uplift constants --------
+  const DELTA_CAP_ABS=Math.min(96,Math.round(48*kL))*P.capAbsMul;
+  const CAP_FRAC_UP=P.capUpFrac, CAP_FRAC_DN=P.capDnFrac;
+  const WCONT_BASE=Math.max(64,Math.min(220,(W|0)/40))*kL*P.widthGain;
+  const WTREN_BASE=Math.max(12,Math.min(40,(W|0)/200))*kL*P.widthGain;
+
+  // ====== uplift + mask ======
+  const plateauMask=new Float32Array(N);
+  let affected=0, capUpHits=0, capDnHits=0;
+
+  for(let y=1;y<H-1;y++){
+    for(let x=1;x<W-1;x++){
+      const i=y*W+x, g=gateMap[i];
+      if(g<=1e-4||!land[i]) continue;
+      const base=S[i*4]; if(base<SEA) continue;
+
+      const f00=ccFalloff[(y-1)*W+(x-1)], f01=ccFalloff[(y-1)*W+x], f02=ccFalloff[(y-1)*W+(x+1)];
+      const f10=ccFalloff[y*W+(x-1)],     f11=ccFalloff[i],         f12=ccFalloff[y*W+(x+1)];
+      const f20=ccFalloff[(y+1)*W+(x-1)], f21=ccFalloff[(y+1)*W+x], f22=ccFalloff[(y+1)*W+(x+1)];
+      let gx=(f02+2*f12+f22)-(f00+2*f10+f20);
+      let gy=(f20+2*f21+f22)-(f00+2*f01+f02);
+      const gm=Math.hypot(gx,gy)||1e-6; gx/=gm; gy/=gm;
+      const nx=gx, ny=gy, tx=-ny, ty=nx;
+
+      const lookLen=Math.max(28,W/128)*P.widthGain;
+      const sPos=continentalScore(x,y,nx,ny,lookLen);
+      const sNeg=continentalScore(x,y,-nx,-ny,lookLen);
+      const sgn=(sPos>=sNeg)?+1:-1;
+
+      const wC=WCONT_BASE*(0.65+0.55*g);
+      const wT=WTREN_BASE*(0.65+0.55*g);
+
+      function edgeDist(sign){
+        const step=2, lim=Math.round((sign>0?wC:wT)/step), th=0.05;
+        let kmax=0;
+        for(let k=1;k<=lim;k++){
+          const xx=Math.max(0,Math.min(W-1,Math.round(x+nx*sign*k*step)));
+          const yy=Math.max(0,Math.min(H-1,Math.round(y+ny*sign*k*step)));
+          if(ccFalloff[yy*W+xx]<th){kmax=k;break;}
+        }
+        return kmax*step;
+      }
+      const dPos=edgeDist(+1), dNeg=edgeDist(-1);
+      const dSigned=sgn>0?dPos:-dNeg;
+
+      const t = Math.max(0, dSigned)/Math.max(1,wC);
+      const m_core  = Math.exp(- (t/0.20)*(t/0.20));
+      const q1=(t-0.35)/0.18, m_crest = Math.exp(-(q1*q1));
+      const q2=(t-0.70)/0.35, m_shldr = Math.exp(-(q2*q2));
+
+      const Acore  = g*(160*kL)*P.heightGain*P.coreGain;
+      const Acrest = g*(240*kL)*P.heightGain*P.coreGain;
+      const Ashould= g*( 90*kL)*P.heightGain*P.plateauGain;
+      const Abasin = g*( 16*kL)*P.heightGain*P.basinGain;
+
+      let uplift=0;
+      if(dSigned<0){
+        const tb=Math.min(1,Math.abs(dSigned)/Math.max(1,wT));
+        uplift -= Abasin * Math.exp(-(tb*tb));
+      }else{
+        uplift += Acore*m_core + Acrest*m_crest + Ashould*m_shldr;
+      }
+
+      // anisotropic modulation + small additive texture
+      const shift=0.30*Math.max(1,wC);
+      const xs=x+nx*shift, ys=y+ny*shift;
+      const u=xs*tx + ys*ty, v=xs*nx + ys*ny;
+      const F0=Math.max(0.01,60/W);
+      const n_ridge=_Noise.ridged(u*(F0*0.20), v*(F0*1.00), 1.0, 4);
+      const n_block=_Noise.perlin(u*(F0*0.12), v*(F0*0.10), 0.5, 3);
+      const n_fine =_Noise.perlin(x*(F0*8.0),  y*(F0*8.0),  0.4, 2);
+      const r_amp=0.60*n_ridge+0.25*n_block+0.15*n_fine;
+      const und=(_Noise.perlin(u*(F0*0.05),0,0.5,2)-0.5);
+      const crestMask=Math.max(0,m_crest-0.15);
+      const addCrest=crestMask*(r_amp-0.5)*(22*kL);
+      const mult = (0.65 + 0.70*r_amp);
+      uplift *= mult * (1.0 + 0.45*und);
+      uplift += addCrest + (r_amp-0.5)*(10*kL);
+
+      const inland=0.6*landF[i]+0.4*dt[i];
+      uplift *= (0.65+0.35*inland);
+
+      const hyps=0.85 + 0.15*(1 - base/255);
+      const headUp=255-base, headDown=base-SEA;
+      const capUp=Math.min(DELTA_CAP_ABS*1.10, headUp*Math.min(1.0,CAP_FRAC_UP*1.05));
+      const capDown=Math.min(DELTA_CAP_ABS, headDown*CAP_FRAC_DN);
+
+      let dH=uplift*hyps;
+      const reserve = Math.max(0, 6 - headUp);
+      const reserveK = reserve>0 ? 1/(1+0.15*reserve) : 1;
+      dH *= reserveK;
+      dH = softCap(dH, capUp, capDown);
+      if(dH>=0 && Math.abs(dH)>=0.98*capUp) capUpHits++;
+      if(dH<0  && Math.abs(dH)>=0.98*capDown) capDnHits++;
+
+      let nv=base+dH;
+      if(nv<SEA) nv=SEA; if(nv>255) nv=255;
+      S[i*4]=S[i*4+1]=S[i*4+2]=nv; S[i*4+3]=255; affected++;
+
+      // plateau band mask
+      if(dSigned>0){
+        const tBand=clamp01((t-P.plateauBandLo)/(P.plateauBandHi-P.plateauBandLo));
+        const bandWeight=tBand*(1-(Math.abs(t-0.68)/0.68)); // crest-focused
+        const slopeHint=sobelUnit(ccFalloff,x,y).mag;
+        const lowSlope=clamp01(1 - P.plateauKeepLowSlope*slopeHint);
+        // enhance by gate high-pass so interior variations survive
+        const hp=clamp01(gateHP[i]*2.0);
+        plateauMask[i]=clamp01(bandWeight*lowSlope*g* (0.6+0.4*hp));
+      }
+    }
+  }
+  if(P.plateauPostBlur>0) _boxBlur(plateauMask,W,H,(P.plateauPostBlur|0),1);
+
+  // ====== interior roughening with domain warp + azimuth jitter ======
+  let roughened=0, capUp2=0, capDn2=0;
+  const F1=Math.max(0.01,60/W);
+  const ampBase=(44*kL)*P.plateauNoiseGain;
+  const warpBase = P.warpFreq * (W/4096); // scale with map size
+
+  for(let y=1;y<H-1;y++){
+    for(let x=1;x<W-1;x++){
+      const i=y*W+x, m=plateauMask[i];
+      if(m<=0.06 || !land[i]) continue;
+      const base=S[i*4]; if(base<SEA) continue;
+
+      const gN=sobelUnit(ccFalloff,x,y);
+      const nx=gN.nx, ny=gN.ny, tx=-ny, ty=nx;
+
+      // local azimuth jitter (± jitterDeg) from low-freq phase
+      const phi = (_Noise.perlin(x*F1*0.15,y*F1*0.15,0.55,2)-0.5)* (P.jitterDeg*Math.PI/180);
+      const c=Math.cos(phi), s=Math.sin(phi);
+      const txx= tx*c - nx*s,  txy= ty*c - ny*s;  // rotated along-strike
+      const nxx= tx*s + nx*c,  nxy= ty*s + ny*c;  // rotated across-strike
+
+      // plate-pair phase offset helps prevent seams across boundaries
+      let phaseOff=0;
+      if(labels){
+        const a=labels[i];
+        const j=(x+1<W)?i+1:i; const b=labels[j];
+        const pidA=a>>>0, pidB=b>>>0;
+        phaseOff = ( ( (pidA*73856093) ^ (pidB*19349663) ) >>> 0 ) * 1.0e-9; // ~0..1
+      }
+
+      // domain warp (kills straight bands): warp along both axes
+      const wU = (_Noise.perlin((x+1234)*warpBase,(y-5678)*warpBase,0.5,3)-0.5)*(P.warpAmpU);
+      const wV = (_Noise.perlin((x-2468)*warpBase,(y+1357)*warpBase,0.5,3)-0.5)*(P.warpAmpV);
+
+      // blue-noise jitter in sample pos to avoid grid echo
+      const jx = (h2(x,y)-0.5)*0.75, jy=(h2(x+17,y+31)-0.5)*0.75;
+
+      // warped local coords
+      const xu = (x+jx + txx*wU + nxx*wV),  yu = (y+jy + txy*wU + nxy*wV);
+
+      // two azimuths: ± further small jitter
+      const phi2 = (_Noise.perlin(x*F1*0.21+phaseOff,y*F1*0.21,0.55,2)-0.5)*(P.jitterDeg*0.6*Math.PI/180);
+      const c2=Math.cos(phi2), s2=Math.sin(phi2);
+      const t2x= tx*c2 - nx*s2, t2y= ty*c2 - ny*s2;
+      const n2x= tx*s2 + nx*c2, n2y= ty*s2 + ny*c2;
+
+      const u1 = xu*t2x + yu*t2y, v1 = xu*n2x + yu*n2y;
+      const u2 = xu*tx  + yu*ty,  v2 = xu*nx  + yu*ny;
+
+      const r1=_Noise.ridged(u1*(F1*0.26+phaseOff), v1*(F1*1.12+phaseOff), 1.0, 5);
+      const r2=_Noise.ridged(u2*(F1*0.22+phaseOff*1.3), v2*(F1*0.96+phaseOff*0.7), 1.0, 5);
+      const b1=_Noise.perlin(u1*(F1*0.14), v1*(F1*0.12), 0.5, 3);
+      const f1=_Noise.perlin(x*(F1*9.5),  y*(F1*9.5),  0.45,2);
+
+      const rid = Math.max(r1,r2)*P.plateauNoiseRidged;
+      const sum = (r1+r2)*0.5*P.plateauNoiseRidged;
+      const combR = P.dualAzimuthBlend*sum + (1-P.dualAzimuthBlend)*rid;
+
+      let combo = (combR-0.5) + P.plateauNoiseBlock*(b1-0.5) + P.plateauNoiseFine*(f1-0.5);
+
+      // rim suppression so ridges don't cling to scarp
+      const gmag=gN.mag;
+      const rimK = clamp01((gmag-P.rimSuppressLo)/(P.rimSuppressHi-P.rimSuppressLo)); // 0 near rim -> 1 away
+      // interior crest bell to emphasize middle of plateau
+      const tv = clamp01((plateauMask[i]-0.25)/0.75); // rough proxy of interior depth
+      const crestBell = Math.exp(-((tv-0.7)*(tv-0.7))/(0.22*0.22));
+
+      const amp = ampBase * m * (0.35 + 0.65*rimK) * (0.4 + 0.6*crestBell);
+
+      let dN = combo * amp;
+
+      // caps with soft cap + headroom reserve
+      const headUp=255-base, headDown=base-SEA;
+      const capUp=Math.min(DELTA_CAP_ABS, headUp*Math.min(1.0,CAP_FRAC_UP));
+      const capDown=Math.min(DELTA_CAP_ABS*0.8, headDown*CAP_FRAC_DN*0.8);
+      const reserve = Math.max(0, 6 - headUp);
+      const reserveK = reserve>0 ? 1/(1+0.15*reserve) : 1;
+      dN *= reserveK;
+
+      dN = softCap(dN, capUp, capDown);
+      if(dN>=0 && Math.abs(dN)>=0.98*capUp) capUp2++;
+      if(dN<0  && Math.abs(dN)>=0.98*capDown) capDn2++;
+
+      let nv=base+dN; if(nv<SEA) nv=SEA; if(nv>255) nv=255;
+      if(nv!==base){ S[i*4]=S[i*4+1]=S[i*4+2]=nv; roughened++; }
+    }
+  }
+
+  // debug exports
+  st.ccFalloff=ccFalloff;
+  st.ccMask=(function(){const u8=new Uint8Array(N);for(let i=0;i<N;i++) u8[i]=ccFalloff[i]>0.05?255:0;return u8;})();
+  st.ccPlateauMask=plateauMask;
+  st.gateHP=gateHP;
+
+  st.work=im; cx.putImageData(im,0,0);
+  Program.toast(`cc-orogen: uplift ≈${affected.toLocaleString()}px (cap up:${capUpHits.toLocaleString()} dn:${capDnHits.toLocaleString()}) · interior ≈${roughened.toLocaleString()}px (cap up:${capUp2.toLocaleString()} dn:${capDn2.toLocaleString()})`);
+ }
+});
+
+
+Program.register({
+ id:"cc-orogen-bands",
+ name:"C–C Orogen — Multi-Band Ranges (Zero-Plateau, Anti-Artifacts)",
+ enabled:true,
+ desc:"Multi-band mountain belts for C–C convergence with high-pass envelope (no plateau), kinematics-coupled spacing, en-échelon steps, long-wave along-strike modulation, and domain-warp. Uses continuous noise and bilinear sampling to avoid blockiness.",
+ async run(st){
+  const W=st.W,H=st.H,N=W*H,SEA=st.sea??19;
+  if(!W||!H){ Program.toast("cc-orogen-bands: canvas not initialized"); return; }
+
+  // ===================== USER CONTROLS =====================
+  const P=Object.assign({
+    // belt gating / global scaling
+    widthGain:1.0,      // overall belt breadth
+    beltWidthGain:5.0,  // how wide the blurred cc belt is
+    gateSharpness:1.0,  // how abruptly uplift turns off at belt edge
+    heightGain:3.5,     // base amplitude before erosion
+
+    // band layout (across strike)
+    bands:4,            // # bands on hinterland side
+    bandsOpp:2,         // # bands on foreland side
+    spacingGain:1.0,    // spacing between bands
+    bandWidthGain:1.0,  // intrinsic width of each band
+    asym:0.80,          // weight of upper-plate vs foreland side
+
+    // segmentation & warping (along strike)
+    segFreq:0.022,
+    segDepth:0.60,
+    segJitter:0.40,
+    warpAmpU:24, warpAmpV:18, warpFreq:0.035,
+
+    // ridge texture inside bands
+    ridgeRidged:1.00,
+    ridgePerlin:0.35,
+    ridgeFine:0.25,
+    ridgeGain:30,
+
+    // long-wave organization (salients/recesses, taper)
+    alongFreq:0.004,
+    alongAmp:0.55,
+    alongTaper:0.35,
+
+    // en-échelon stepping + band variance
+    echelonSlope:0.18,
+    widthJitter:0.35,
+    heightJitter:0.35,
+
+    // inter-band flexure (soft valleys between ranges)
+    valleyFlex:-0.35,
+    valleySharp:0.90,
+
+    // high-pass on envelope (kills plateau/DC)
+    hpBlurMul:2.2,
+    hpKeep:0.92,
+
+    // caps (hypsometry-aware soft limits)
+    capAbsMul:3.2,
+    capUpFrac:0.95,
+    capDnFrac:0.20
+  }, st.ccBands || {});
+
+  // === High-level presets from UI (very wide range knobs) ===
+  const presets = st.ccBands || {};
+
+  // Taller, sharper ranges → big amplitude + stronger ridge texture + looser caps
+  if(presets.morePeaks){
+    P.heightGain *= 2.2;
+    P.ridgeGain  *= 1.8;
+    P.capAbsMul  *= 2.0;
+    P.capUpFrac   = Math.min(1.0, P.capUpFrac*1.1);
+  }
+
+  // More parallel ridges → more bands, closer spacing, slightly narrower bands
+  if(presets.moreRidges){
+    P.bands    = Math.max(3, Math.round(P.bands*1.6+1));
+    P.bandsOpp = Math.max(2, Math.round(P.bandsOpp*1.6+1));
+    P.spacingGain *= 0.7;   // squeeze bands together
+    P.bandWidthGain *= 0.9; // keep individual ranges from merging completely
+  }
+
+  // Broader mountain belt + foothills → wider belt + gentler flexure
+  if(presets.widerBelts){
+    P.widthGain     *= 1.8;
+    P.beltWidthGain *= 1.6;
+    P.valleyFlex    *= 0.8;  // soften inter-band valleys so it feels like one broad system
+  }
+
+  // Messier, broken ranges → more warp, segmentation, and noisy components
+  if(presets.moreChaos){
+    P.segFreq   *= 1.7;
+    P.segDepth   = Math.min(0.95, P.segDepth*1.3);
+    P.segJitter *= 1.6;
+    P.warpAmpU  *= 1.8;
+    P.warpAmpV  *= 1.8;
+    P.ridgePerlin *= 1.4;
+    P.ridgeFine   *= 1.4;
+  }
+
+  // ===================== UTILS / NOISE =====================
+  function _createPerlinNoise(){
+    let m_w=123456789,m_z=987654321;const MASK=0xffffffff;
+    const seed=i=>{m_w=(123456789+i)&MASK;m_z=(987654321-i)&MASK;};
+    const rnd=()=>{m_z=(36969*(m_z&65535)+(m_z>>16))&MASK;m_w=(18000*(m_w&65535)+(m_w>>16))&MASK;let r=((m_z<<16)+(m_w&65535))&MASK;return r/4294967296+0.5;};
+    seed(0);
+    let p=new Uint8Array(512),g2=[];
+    const grad=(i,x,y)=>{const v=g2[i&255];return v[0]*x+v[1]*y;};
+    const base=(x,y)=>{
+      let X=Math.floor(x)&255,Y=Math.floor(y)&255;
+      x-=Math.floor(x);y-=Math.floor(y);
+      let u=x*x*x*(x*(x*6-15)+10),v=y*y*y*(y*(y*6-15)+10);
+      let i=p[X]+Y,j=p[X+1]+Y;
+      let n00=grad(p[i],x,y), n10=grad(p[j],x-1,y), n01=grad(p[i+1],x,y-1), n11=grad(p[j+1],x-1,y-1);
+      let n0=n00*(1-u)+n10*u, n1=n01*(1-u)+n11*u;
+      return n0*(1-v)+n1*v;
+    };
+    for(let i=0;i<256;i++){p[i]=i;const a=rnd()*2*Math.PI;g2[i]=[Math.cos(a),Math.sin(a)];}
+    for(let i=255;i>0;i--){const j=Math.floor(rnd()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
+    for(let i=0;i<256;i++) p[i+256]=p[i];
+    return (x,y,pers=0.5,oct=4)=>{let t=0,f=1,a=1,m=0;for(let k=0;k<oct;k++){t+=base(x*f,y*f)*a;m+=a;a*=pers;f*=2;}const n=(m*0.7071)||1;return (t/n+1)/2;};
+  }
+  function _createFallbackRidged(perlin){
+    return (x,y,pers=1.0,oct=4)=>{
+      let t=0,f=1,a=1,m=0;
+      for(let i=0;i<oct;i++){let n=(perlin(x*f,y*f,0.5,1)*2)-1; n=1-Math.abs(n); n=n*n; t+=n*a; m+=a; a*=pers; f*=2;}
+      return m?t/m:0;
+    };
+  }
+  const _fallbackPerlin=_createPerlinNoise();
+  const _fallbackRidged=_createFallbackRidged(_fallbackPerlin);
+  const hostNoise=(typeof Noise!=='undefined')?Noise:(st.Noise||null);
+  const NOISE={ perlin:hostNoise?.perlin||_fallbackPerlin, ridged:hostNoise?.ridged||_fallbackRidged };
+  const _boxBlur=(typeof boxBlur!=='undefined')?boxBlur:(st.boxBlur||((d,w,h,r)=>{}));
+  const clamp01=v=>v<0?0:v>1?1:v;
+  const h2=(x,y)=>{let n=(x*374761393+y*668265263)|0;n=(n^(n>>>13))*1274126177|0;return ((n^(n>>>16))>>>0)/4294967295;};
+  function softCap(delta,up,dn){return delta>=0 ? up*Math.tanh(delta/(up||1e-6)) : -dn*Math.tanh((-delta)/(dn||1e-6));}
+  const plateVec=(typeof window!=="undefined" && typeof window.plateVec==="function")?window.plateVec:(st.plateVec||((dir,spd)=>[0,0]));
+
+
+  // ===================== SOURCES =====================
+  const im=st.work||cx.getImageData(0,0,W,H);
+  const S=im.data;
+  const src=(st.src&&st.src.width===W&&st.src.height===H)?st.src.data:S;
+  const land=new Uint8Array(N); for(let i=0;i<N;i++) land[i]=(src[i*4]>=SEA)?1:0;
+
+  // Convergent belt mask
+  let convMask=(st.convMask&&st.convMask.length===N)?st.convMask:null;
+  if(!convMask){
+    if(!(st.labels instanceof Int32Array)){ Program.toast("cc-orogen-bands: no convMask/labels"); return; }
+    const lab=st.labels,m=new Uint8Array(N);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+      const i=y*W+x,a=lab[i],r=(x+1<W)?lab[i+1]:a,d=(y+1<H)?lab[i+W]:a;
+      if(a!==r||a!==d) m[i]=255;
+    }
+    convMask=m;
+  }
+  const belt0=new Float32Array(N); for(let i=0;i<N;i++) belt0[i]=convMask[i]?1:0;
+  _boxBlur(belt0,W,H,Math.max(1,Math.round(5*P.beltWidthGain)),1);
+  const ccFalloff=new Float32Array(belt0); _boxBlur(ccFalloff,W,H,Math.max(2,Math.round(18*P.beltWidthGain)),1);
+  let mx=0; for(let i=0;i<N;i++) if(ccFalloff[i]>mx) mx=ccFalloff[i];
+  const inv=mx?1/mx:1; for(let i=0;i<N;i++) ccFalloff[i]*=inv;
+
+  // Inlandness + dist to coast
+  const landF=new Float32Array(N); for(let i=0;i<N;i++) landF[i]=land[i]; _boxBlur(landF,W,H,6,1);
+  let lmx=0; for(let i=0;i<N;i++) if(landF[i]>lmx) lmx=landF[i]; const linv=lmx?1/lmx:1; for(let i=0;i<N;i++) landF[i]*=linv;
+
+  const INF=1e9, dt=new Float32Array(N);
+  for(let i=0;i<N;i++) dt[i]=land[i]?INF:0;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=y*W+x; if(dt[i]===0) continue; let v=dt[i];
+    if(x>0)v=Math.min(v,dt[i-1]+1); if(y>0)v=Math.min(v,dt[i-W]+1);
+    if(x>0&&y>0)v=Math.min(v,dt[i-W-1]+1.4142); if(x+1<W&&y>0)v=Math.min(v,dt[i-W+1]+1.4142);
+    dt[i]=v;
+  }
+  for(let y=H-1;y>=0;y--) for(let x=W-1;x>=0;x--){
+    const i=y*W+x; if(dt[i]===0) continue; let v=dt[i];
+    if(x+1<W)v=Math.min(v,dt[i+1]+1); if(y+1<H)v=Math.min(v,dt[i+W]+1);
+    if(x+1<W&&y+1<H)v=Math.min(v,dt[i+W+1]+1.4142); if(x>0&&y+1<H)v=Math.min(v,dt[i+W-1]+1.4142);
+    dt[i]=v;
+  }
+  const capD=Math.max(32,Math.min(128,(W|0)/48)); for(let i=0;i<N;i++) dt[i]=Math.min(1,dt[i]/capD);
+
+  // ===================== HELPERS / CONSTANTS =====================
+  function sobelUnit(mask,x,y){
+    let gx=0,gy=0;
+    const xm=x>0?x-1:0, xp=x<W-1?x+1:W-1, ym=y>0?y-1:0, yp=y<H-1?y+1:H-1;
+    const idx=(yy,xx)=>mask[yy*W+xx]||0;
+    gx=(idx(ym,xp)+2*idx(y,xp)+idx(yp,xp))-(idx(ym,xm)+2*idx(y,xm)+idx(yp,xm));
+    gy=(idx(yp,xm)+2*idx(yp,x)+idx(yp,xp))-(idx(ym,xm)+2*idx(ym,x)+idx(ym,xp));
+    const mag=Math.hypot(gx,gy)||1e-6; return {nx:gx/mag, ny:gy/mag, mag};
+  }
+  function relConvAt(x,y){
+    if(!(st.labels instanceof Int32Array) || !Array.isArray(st.dir) || !Array.isArray(st.spd)) return 0.6;
+    const i=y*W+x, a=st.labels[i]; let b=a;
+    if(x+1<W && st.labels[i]!=st.labels[i+1]) b=st.labels[i+1];
+    else if(y+1<H && st.labels[i]!=st.labels[i+W]) b=st.labels[i+W];
+    const plateV=(pid)=>{ if(pid==null||pid<0) return [0,0]; return plateVec(st.dir[pid]|0, st.spd[pid]|0); };
+    const [ax,ay]=plateV(a), [bx,by]=plateV(b);
+    return Math.min(1, Math.hypot(bx-ax,by-ay)/2);
+  }
+
+  const L0=4096,H0=2048,kL=Math.sqrt(W*H)/Math.sqrt(L0*H0);
+  const DELTA_ABS=Math.min(96,Math.round(48*kL))*P.capAbsMul;
+  const UPF=P.capUpFrac, DNF=P.capDnFrac;
+
+  const BASE_SP=Math.max(26,Math.round((W|0)/220))*kL*P.spacingGain*P.widthGain;
+  const BASE_WD=Math.max(12,Math.round((W|0)/420))*kL*P.bandWidthGain;
+  const WARP_U=P.warpAmpU*kL, WARP_V=P.warpAmpV*kL, WARP_F=P.warpFreq*(W/4096);
+  const F0=Math.max(0.01,60/W);
+  const JF = 0.003 * (W/4096); // low-freq continuous jitter scale
+
+  // ===================== PASS 1: RAW BAND ENVELOPE (CONTINUOUS, NO GRIDS) =====================
+  const envRaw=new Float32Array(N);
+
+  function bilinear(mask, sx, sy){
+    sx=Math.max(0,Math.min(W-1,sx)); sy=Math.max(0,Math.min(H-1,sy));
+    const xi=sx|0, yi=sy|0, tx=sx-xi, ty=sy-yi;
+    const i00=yi*W+xi, i10=yi*W+Math.min(W-1,xi+1);
+    const i01=Math.min(H-1,yi+1)*W+xi, i11=Math.min(H-1,yi+1)*W+Math.min(W-1,xi+1);
+    return (mask[i00]*(1-tx)+mask[i10]*tx)*(1-ty) + (mask[i01]*(1-tx)+mask[i11]*tx)*ty;
+  }
+  function edgeDist(x,y,nx,ny,sign,limitPx){
+    const step=2, lim=Math.max(1,(limitPx/step)|0), th=0.05;
+    for(let k=1;k<=lim;k++){
+      const sx=x+nx*sign*k*step, sy=y+ny*sign*k*step;
+      const v=bilinear(ccFalloff,sx,sy);
+      if(v<th) return k*step;
+    }
+    return lim*step;
+  }
+
+  for(let y=1;y<H-1;y++){
+    for(let x=1;x<W-1;x++){
+      const i=y*W+x; if(!land[i]) continue; const g=ccFalloff[i]; if(g<=1e-3) continue;
+
+      const sN=sobelUnit(ccFalloff,x,y); const nx=sN.nx, ny=sN.ny, tx=-ny, ty=nx;
+
+      const wU=(NOISE.perlin((x+1234)*WARP_F,(y-5678)*WARP_F,0.5,3)-0.5)*WARP_U;
+      const wV=(NOISE.perlin((x-2468)*WARP_F,(y+1357)*WARP_F,0.5,3)-0.5)*WARP_V;
+      const jx=(h2(x,y)-0.5)*0.75, jy=(h2(x+11,y+29)-0.5)*0.75;
+      const xs=x+jx+tx*wU+nx*wV, ys=y+jy+ty*wU+ny*wV;
+
+      const u_strike = xs*tx + ys*ty;
+      const v_norm   = xs*nx + ys*ny;
+
+      const wC=Math.max(64,Math.min(220,(W|0)/40))*kL*P.widthGain;
+      const wT=Math.max(16,Math.min(52,(W|0)/180))*kL*P.widthGain;
+      const dPos=edgeDist(x,y,nx,ny,+1,wC), dNeg=edgeDist(x,y,nx,ny,-1,wT);
+      const sgn=(dPos>=dNeg)?+1:-1;
+      const dSigned=sgn>0?dPos:-dNeg;
+
+      const AL=(NOISE.perlin(u_strike*(P.alongFreq*W/4096),0,0.6,2)-0.5);
+      const alongMod = Math.max(0, 1 + P.alongAmp*AL);
+      const taper    = 1 - P.alongTaper*clamp01(Math.abs(AL));
+
+      const rc = relConvAt(x,y);
+      const spacing = BASE_SP*(0.9+0.5*g) * (1.15 - 0.35*rc) * alongMod;
+      const width   = BASE_WD*(0.8+0.6*g) * (0.90 + 0.30*rc);
+      const A_local = (1.0 + 0.45*rc) * taper;
+
+      const echelonK = (P.echelonSlope * (u_strike/1000));
+
+      const nb=P.bands|0, nbOpp=P.bandsOpp|0;
+
+      const JF_loc = JF;
+      const neighJ = (NOISE.perlin(x*JF_loc, y*JF_loc, 0.6, 2) - 0.5) * P.segJitter;
+
+      function bandsSum(count,side){
+        let acc=0, weight=side>0?P.asym:(1-P.asym); if(weight<=0||count<=0) return 0;
+        for(let b=0;b<count;b++){
+          const jb = (NOISE.perlin((x+b*113)*JF_loc,(y-b*73)*JF_loc,0.55,2)-0.5);
+          const wb = width * Math.exp(P.widthJitter*jb*0.8);
+          const hb = (1 + P.heightJitter*jb*0.6);
+
+          const center=(b+1)*spacing;
+          const centerOff = side*center + ((b&1)? +echelonK : -echelonK);
+          const t=(dSigned - centerOff)/wb;
+          const g1=Math.exp(-(t*t))*hb;
+
+          const segF=P.segFreq*(W/4096);
+          const segPhase=NOISE.perlin(u_strike*segF, v_norm*segF*0.3, 0.6, 2);
+          const gapNoise =
+            0.55*NOISE.perlin((u_strike+center*0.37)*segF,(v_norm+side*19.7)*segF,0.55,2) +
+            0.30*NOISE.perlin((u_strike*0.53+b*7.1)*segF*0.7,(v_norm*0.41-side*11.3)*segF*0.7,0.55,2) +
+            0.15*NOISE.perlin((u_strike*1.7-b*3.3)*segF*1.6,(v_norm*1.2+side*5.9)*segF*1.6,0.55,2);
+          const gap=clamp01((gapNoise + segPhase + neighJ)*0.5);
+          const keep=1 - P.segDepth*clamp01((0.65-gap)*1.7);
+
+          acc += g1*keep;
+        }
+        return acc*weight*A_local;
+      }
+
+      envRaw[i]=(bandsSum(nb,+1)+bandsSum(nbOpp,-1))*g;
+    }
+  }
+
+  // ===================== PASS 1b: INTER-BAND FLEXURE (CONTINUOUS) =====================
+  if(P.valleyFlex!==0){
+    const smallR=Math.max(1,Math.round(0.6*BASE_WD));
+    const envSmall=new Float32Array(envRaw);
+    _boxBlur(envSmall,W,H,smallR,1);
+    for(let i=0;i<N;i++){
+      const trough=Math.max(0, envSmall[i]-envRaw[i]);
+      envRaw[i] += P.valleyFlex * Math.pow(trough, P.valleySharp);
+    }
+  }
+
+  // ===================== PASS 2: HIGH-PASS ENVELOPE =====================
+  const envBlur=new Float32Array(envRaw);
+  const blurR=Math.max(1,Math.round(P.hpBlurMul*BASE_WD));
+  _boxBlur(envBlur,W,H,blurR,1);
+  const envHP=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const v=envRaw[i]-P.hpKeep*envBlur[i];
+    envHP[i]=v>0?v:0;
+  }
+  _boxBlur(envHP, W, H, 1, 1);
+
+  // ===================== PASS 3: APPLY TEXTURED UPLIFT (NO DC) =====================
+  let affected=0, capUpHits=0, capDnHits=0;
+  const textureAmp=(P.ridgeGain*kL);
+  for(let y=1;y<H-1;y++){
+    for(let x=1;x<W-1;x++){
+      const i=y*W+x; if(!land[i]) continue;
+      const m=envHP[i]; if(m<=1e-5) continue;
+      const base=S[i*4]; if(base<SEA) continue;
+
+      const sN=sobelUnit(ccFalloff,x,y); const nx=sN.nx, ny=sN.ny, tx=-ny, ty=nx;
+      const wU=(NOISE.perlin((x+1234)*WARP_F,(y-5678)*WARP_F,0.5,3)-0.5)*WARP_U;
+      const wV=(NOISE.perlin((x-2468)*WARP_F,(y+1357)*WARP_F,0.5,3)-0.5)*WARP_V;
+      const jx=(h2(x,y)-0.5)*0.75, jy=(h2(x+11,y+29)-0.5)*0.75;
+      const xs=x+jx+tx*wU+nx*wV, ys=y+jy+ty*wU+ny*wV;
+      const u=xs*tx+ys*ty, v=xs*nx+ys*ny;
+
+      const r1=NOISE.ridged(u*(F0*0.26), v*(F0*1.10),1.0,5);
+      const r2=NOISE.ridged(u*(F0*0.20), v*(F0*0.90),1.0,4);
+      const pr=NOISE.perlin(u*(F0*0.14), v*(F0*0.12),0.5,3);
+      const fn=NOISE.perlin(x*(F0*9.0),  y*(F0*9.0), 0.45,2);
+      const tex=(Math.max(r1,r2)*P.ridgeRidged + (pr-0.5)*P.ridgePerlin + (fn-0.5)*P.ridgeFine);
+
+      const rc = relConvAt(x,y);
+      const inland=0.6*landF[i]+0.4*dt[i];
+      const A=(165*kL)*P.heightGain*(0.65+0.35*inland)*(0.85+0.30*rc);
+
+      let dH = (m*A) + (tex-0.25)*textureAmp*m*0.9;
+
+      const headUp=255-base, headDown=base-SEA;
+      const capUp=Math.min(DELTA_ABS, headUp*Math.min(1.0,UPF));
+      const capDown=Math.min(DELTA_ABS, headDown*DNF);
+      const reserve=Math.max(0,6-headUp); const reserveK=reserve?1/(1+0.15*reserve):1;
+      dH*=reserveK; dH=softCap(dH,capUp,capDown);
+      if(dH>=0 && Math.abs(dH)>=0.98*capUp) capUpHits++;
+      if(dH<0  && Math.abs(dH)>=0.98*capDown) capDnHits++;
+
+      let nv=base+dH; if(nv<SEA) nv=SEA; if(nv>255) nv=255;
+      if(nv!==base){ S[i*4]=S[i*4+1]=S[i*4+2]=nv; S[i*4+3]=255; affected++; }
+    }
+  }
+
+  // ===================== DEBUG EXPORTS =====================
+  st.ccFalloff=ccFalloff;
+  st.ccBandsEnvRaw=envRaw;
+  st.ccBandsEnvHP=envHP;
+
+  st.work=im; cx.putImageData(im,0,0);
+  Program.toast(`cc-orogen-bands: affected ≈${affected.toLocaleString()}px · caps up:${capUpHits.toLocaleString()} dn:${capDnHits.toLocaleString()}`);
+ }
+});
+
+
+
+Program.register({
+ id:"continental-macrorelief",
+ name:"Continental Macro-Relief (Plate-Scale Domes & Troughs, Land≥SEA)",
+ enabled:true,
+ desc:"Adds broad plate-scale domes and troughs using plate labels + very-low-frequency noise. Weakly suppresses extreme highs right on the coast, but does NOT ramp on distance-to-coast. Land-only, 19/0-safe.",
+ async run(st){
+  const W=st.W,H=st.H;
+  if(!W||!H){ Program.toast("continental-macrorelief: canvas not initialized"); return; }
+  const SEA=st.sea??19;
+
+  const P=Object.assign({
+    plateAmp:30,          // per-plate offset amplitude (±)
+    plateSlopeAmp:18,     // per-plate gentle slope amplitude
+    noiseAmp:20,          // low-frequency global noise amplitude
+    noiseFreq:1/768,      // base frequency for global noise
+    noiseOct:2,
+    convBoost:16,         // extra uplift near convergent belts
+    ridgeDepress:10,      // slight lowering near ridges/divergent zones
+    coastHighKill:0.35,   // how much to soften extremes right at coast (0..1)
+    coastWidthPx:W*0.02,  // how far inland coast suppression acts
+    seed:(st.seed??12345)+4243
+  }, st.macrorelief||{});
+
+  const im=st.work||cx.getImageData(0,0,W,H);
+  const S=im.data;
+  const src=(st.src && st.src.width===W && st.src.height===H)?st.src.data:S;
+  const N=W*H;
+
+  // ---- land mask from src ----
+  const land=new Uint8Array(N);
+  for(let i=0;i<N;i++) land[i]=(src[i*4]>=SEA)?1:0;
+
+  // ---- optional plate labels ----
+  const labels = st.labels || null;
+  const maxLabel = labels ? (labels.reduce?labels.reduce((a,b)=>Math.max(a,b),0):null) : null;
+
+  // ---- optional convergent / ridge masks ----
+  const convMask = st.convMask || null;
+  const edgeMask = st.edgeMask || null; // might contain all plate boundaries
+  // crude ridge mask from edge colors if we don't have one explicitly
+  let ridgeMask = st.ridgeMask;
+  if(!ridgeMask && edgeMask && !st.ridgeMask){
+    ridgeMask = new Uint8Array(N);
+    // interpret current image: bright boundaries are probably ridges
+    for(let i=0;i<N;i++){
+      if(!edgeMask[i]) continue;
+      const r=S[i*4], g=S[i*4+1], b=S[i*4+2];
+      if(g>r && g>b) ridgeMask[i]=1; // green-ish → divergent
+    }
+    st.ridgeMask = ridgeMask;
+  }
+
+  // ---- distance-to-coast (weakly used just for coast suppression) ----
+  const INF=1e9;
+  const dCoast=new Float32Array(N);
+  for(let i=0;i<N;i++) dCoast[i]=land[i]?INF:0;
+  // forward
+  for(let y=0,i=0;y<H;y++){
+    for(let x=0;x<W;x++,i++){
+      if(dCoast[i]===0) continue;
+      if(y>0){
+        const j=i-W, v=dCoast[j]+1;
+        if(v<dCoast[i]) dCoast[i]=v;
+      }
+      {
+        const j=(x>0)?(i-1):(i-1+W), v=dCoast[j]+1;
+        if(v<dCoast[i]) dCoast[i]=v;
+      }
+    }
+  }
+  // backward
+  for(let y=H-1,i=N-1;y>=0;y--){
+    for(let x=0;x<W;x++,i--){
+      if(dCoast[i]===0) continue;
+      if(y<H-1){
+        const j=i+W, v=dCoast[j]+1;
+        if(v<dCoast[i]) dCoast[i]=v;
+      }
+      {
+        const j=(x<W-1)?(i+1):(i+1-W), v=dCoast[j]+1;
+        if(v<dCoast[i]) dCoast[i]=v;
+      }
+    }
+  }
+
+  // ---- noise helpers ----
+  function rnd(s){ s^=s<<13; s^=s>>>17; s^=s<<5; return (s>>>0)/4294967296; }
+  const baseSeed=P.seed|0;
+  function hash2(ix,iy){
+    let s=baseSeed ^ (ix*374761393) ^ (iy*668265263);
+    s=(s^(s>>>13))|0;
+    return (s*1274126177)|0;
+  }
+  function v2(x,y){
+    const xi=Math.floor(x), yi=Math.floor(y);
+    const tx=x-xi, ty=y-yi;
+    function g(ix,iy){ return rnd(hash2(ix,iy)); }
+    const a=g(xi,yi), b=g(xi+1,yi), c=g(xi,yi+1), d=g(xi+1,yi+1);
+    const u=tx*tx*(3-2*tx), v=ty*ty*(3-2*ty);
+    return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;
+  }
+  function fbm(x,y,f,oct){
+    let s=0,a=1,norm=0;
+    for(let o=0;o<oct;o++){
+      s+=v2(x*f,y*f)*a;
+      norm+=a;
+      f*=2; a*=0.5;
+    }
+    return s/(norm||1);
+  }
+
+  // ---- per-plate parameters (offset + slope) if labels exist ----
+  let plateOffset=null, plateSlopeX=null, plateSlopeY=null;
+  if(labels && maxLabel!=null){
+    const Lmax=maxLabel|0;
+    plateOffset=new Float32Array(Lmax+1);
+    plateSlopeX=new Float32Array(Lmax+1);
+    plateSlopeY=new Float32Array(Lmax+1);
+    for(let p=0;p<=Lmax;p++){
+      const s=hash2(p,0);
+      const r0=rnd(s);
+      plateOffset[p]=(r0*2-1)*P.plateAmp; // [-plateAmp, +plateAmp]
+      const ang=rnd(s^0x9e3779b9)*Math.PI*2;
+      const mag=(0.3+0.7*rnd(s^0x12345678))*P.plateSlopeAmp;
+      plateSlopeX[p]=Math.cos(ang)*mag;
+      plateSlopeY[p]=Math.sin(ang)*mag;
+    }
+  }
+
+  // ---- apply macro-relief ----
+  const coastWidth=P.coastWidthPx, coastKill=P.coastHighKill;
+  for(let y=0,i=0;y<H;y++){
+    for(let x=0;x<W;x++,i++){
+      if(!land[i]) continue;
+
+      let h=S[i*4];
+
+      let dh=0;
+
+      // per-plate offset and gentle slope
+      if(labels && plateOffset){
+        const p=labels[i];
+        if(p>=0 && p<plateOffset.length){
+          dh += plateOffset[p];
+          dh += (plateSlopeX[p]* (x/W - 0.5)) + (plateSlopeY[p]* (y/H - 0.5));
+        }
+      }
+
+      // global low-frequency noise (domes/troughs not tied to coasts)
+      const nx=x*P.noiseFreq, ny=y*P.noiseFreq;
+      let gn=fbm(nx,ny,1,P.noiseOct);
+      gn=(gn-0.5)*2; // [-1,1]
+      dh += gn*P.noiseAmp;
+
+      // tectonic bias: boost near convergent, depress near ridges
+      if(convMask && convMask[i]) dh += P.convBoost;
+      if(ridgeMask && ridgeMask[i]) dh -= P.ridgeDepress;
+
+      // mild coast suppression: if very close to coast, reduce |dh|
+      const dc=dCoast[i];
+      if(dc<coastWidth){
+        const t=1 - dc/coastWidth; // 1 at shoreline -> 0 inland
+        const k=1 - coastKill*t;   // multiplicative attenuator
+        dh *= k;
+      }
+
+      let hNew=h+dh;
+      if(hNew<SEA) hNew=SEA;
+      if(hNew>255) hNew=255;
+
+      S[i*4]=S[i*4+1]=S[i*4+2]=hNew|0;
+      S[i*4+3]=255;
+    }
+  }
+
+  st.work=im;
+  cx.putImageData(im,0,0);
+  Program.toast("continental-macrorelief: applied plate-scale longwave relief (non coast-ramped).");
+ }
+});
+
+
+Program.register({
+  id: "continental-rebalancer",
+  name: "Continental Rebalancer (Land Range Stretch, 19/0-safe)",
+  enabled: true,
+  desc: "Expands continental land heights from a compressed 19–X band into a wider range (e.g. 40–200), boosting midlands while preserving peaks. Land-only, seas untouched, uses imported src as coastline mask.",
+  async run(st){
+    const W = st.W, H = st.H;
+    if (!W || !H){ Program.toast("continental-rebalancer: canvas not initialized"); return; }
+
+    const SEA = st.sea ?? 19;
+
+    // User parameters (override via st.rebalance = {...})
+    const P = Object.assign({
+      targetMin: 40,       // new minimum land height (>= SEA+1 strongly recommended)
+      targetMax: 200,      // new typical max for non-orogen land
+      midBoost: 0.35,      // 0..1, how much to lift mid-elevations vs ends
+      peakFrac: 0.90,      // fraction of top of the range treated as "peaks"
+      peakCompress: 0.2    // 0 = leave peaks as-is, 1 = compress them strongly
+    }, st.rebalance || {});
+
+    // Work buffer
+    const im  = st.work || cx.getImageData(0,0,W,H);
+    const S   = im.data;
+
+    // Use imported src to define what is land so we don't move coastlines
+    const src = (st.src && st.src.width === W && st.src.height === H) ? st.src.data : S;
+    const N   = W * H;
+
+    const landMask = new Uint8Array(N);
+    for (let i=0;i<N;i++){
+      const v = src[i*4];     // grayscale
+      landMask[i] = (v >= SEA) ? 1 : 0;
+    }
+
+    // Find current land range in the *working* image
+    let minLand = Infinity, maxLand = -Infinity;
+    for (let i=0;i<N;i++){
+      if (!landMask[i]) continue;
+      const v = S[i*4];
+      if (v < minLand) minLand = v;
+      if (v > maxLand) maxLand = v;
+    }
+
+    if (!isFinite(minLand) || !isFinite(maxLand) || maxLand <= minLand+0.5){
+      Program.toast("continental-rebalancer: insufficient land range to stretch.");
+      return;
+    }
+
+    const oldSpan = maxLand - minLand;
+    const newSpan = Math.max(1, P.targetMax - P.targetMin);
+    const peakFrac = Math.min(0.99, Math.max(0.0, P.peakFrac));
+    const midBoost = Math.max(0.0, P.midBoost);
+    const peakCompress = Math.min(1.0, Math.max(0.0, P.peakCompress));
+
+    // Stretch land heights
+    for (let i=0;i<N;i++){
+      if (!landMask[i]) continue; // seas untouched
+
+      let v = S[i*4];
+
+      // Normalize to [0,1] within current land range
+      let t = (v - minLand) / oldSpan;
+      if (t < 0) t = 0;
+      if (t > 1) t = 1;
+
+      // Boost mid elevations (S-shaped curve) without moving endpoints
+      // t' = t + midBoost * t*(1-t)
+      const mid = t * (1 - t);      // 0 at endpoints, 0.25 at t=0.5
+      t = t + midBoost * mid;
+
+      // Treat top of the range as "peaks" and gently compress if desired
+      if (t > peakFrac && peakCompress > 0){
+        const base = peakFrac;
+        const span = 1 - base;
+        let u = (t - base) / span;       // u in (0,1]
+        // Compress u towards 0 using a simple power curve:
+        // u' = u^(1+peakCompress) (more compress at higher peakCompress)
+        u = Math.pow(u, 1 + peakCompress);
+        t = base + u * span;
+      }
+
+      // Map back to target range
+      let vNew = P.targetMin + t * newSpan;
+
+      // Guardrails: never dip below SEA for land, never exceed 255
+      if (vNew < SEA) vNew = SEA;
+      if (vNew > 255) vNew = 255;
+
+      S[i*4] = S[i*4+1] = S[i*4+2] = vNew|0;
+      S[i*4+3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im,0,0);
+    Program.toast("continental-rebalancer: land range stretched (coastlines preserved, 19/0-safe).");
+  }
+});
+
+Program.register({
+ id:"pre-noise-microrelief",
+ name:"Pre-Noise Micro-Relief (Seamless Band-Limited Absolute)",
+ enabled:true,
+ desc:"Wilbur-like fine absolute noise using integer lattice plane-waves. Seamless tiling, land-only (≥SEA), never dips below SEA.",
+ async run(st){
+  const W=st.W,H=st.H,N=W*H,SEA=st.sea??19;
+  if(!W||!H){ Program.toast("pre-noise: canvas not initialized"); return; }
+  const im=st.work||cx.getImageData(0,0,W,H), S=im.data;
+  const src=(st.src&&st.src.width===W&&st.src.height===H)?st.src.data:S;
+
+  // Tunables (or pass via st.preNoise)
+  const P=Object.assign({
+    amp:3.5,                // grayscale delta cap (keep tiny)
+    waves:36,               // number of plane-waves to sum (12–36 is good)
+    // Band-limit by choosing integer cycles across width/height (fine detail)
+    cyclesMinX:1400, cyclesMaxX:1600,   // higher = finer
+    cyclesMinY:1300,  cyclesMaxY:1500,
+    coastFalloffPx:10,      // taper near shores
+    highlandBoostStart:120, highlandBoostGain:0.25,
+    seed:1337,              // deterministic unless you change it
+    ridged:true             // true = |noise| (absolute); false = zero-mean
+  }, st.preNoise||{});
+
+  // --- Deterministic RNG
+  function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
+  const rnd=mulberry32(P.seed|0);
+
+  // --- Build wave set: integer lattice vectors (kx,ky) + phase
+  const waves=[];
+  for(let i=0;i<P.waves;i++){
+    const kx = (P.cyclesMinX + Math.floor(rnd()*(P.cyclesMaxX-P.cyclesMinX+1))) * (rnd()<0.5?-1:1);
+    const ky = (P.cyclesMinY + Math.floor(rnd()*(P.cyclesMaxY-P.cyclesMinY+1))) * (rnd()<0.5?-1:1);
+    const phi = rnd()*Math.PI*2; // random phase
+    waves.push({kx,ky,phi});
+  }
+
+  // --- Precompute sin/cos tables for each wave along X and Y
+  const cosX=[], sinX=[], cosY=[], sinY=[], cphi=[], sphi=[];
+  for(let w=0; w<waves.length; w++){
+    const {kx,ky,phi}=waves[w];
+    cphi[w]=Math.cos(phi); sphi[w]=Math.sin(phi);
+    const cx=new Float32Array(W), sx=new Float32Array(W);
+    const cy=new Float32Array(H), sy=new Float32Array(H);
+    // angles: 2π * kx * x / W  and  2π * ky * y / H
+    const ax=2*Math.PI*kx/W, ay=2*Math.PI*ky/H;
+    for(let x=0;x<W;x++){ const a=ax*x; cx[x]=Math.cos(a); sx[x]=Math.sin(a); }
+    for(let y=0;y<H;y++){ const b=ay*y; cy[y]=Math.cos(b); sy[y]=Math.sin(b); }
+    cosX[w]=cx; sinX[w]=sx; cosY[w]=cy; sinY[w]=sy;
+  }
+
+  // --- Coast distance for taper
+  const land = new Uint8Array(N); for(let i=0;i<N;i++) land[i]=(src[i*4]>=SEA)?1:0;
+  const INF=1e9, dt=new Float32Array(N);
+  for(let i=0;i<N;i++) dt[i]=land[i]?INF:0;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=y*W+x; let v=dt[i]; if(v===0) continue;
+    if(x>0) v=Math.min(v,dt[i-1]+1);
+    if(y>0) v=Math.min(v,dt[i-W]+1);
+    if(x>0&&y>0) v=Math.min(v,dt[i-W-1]+1.4142);
+    if(x+1<W&&y>0) v=Math.min(v,dt[i-W+1]+1.4142);
+    dt[i]=v;
+  }
+  for(let y=H-1;y>=0;y--) for(let x=W-1;x>=0;x--){
+    const i=y*W+x; let v=dt[i]; if(v===0) continue;
+    if(x+1<W) v=Math.min(v,dt[i+1]+1);
+    if(y+1<H) v=Math.min(v,dt[i+W]+1);
+    if(x+1<W&&y+1<H) v=Math.min(v,dt[i+W+1]+1.4142);
+    if(x>0&&y+1<H) v=Math.min(v,dt[i+W-1]+1.4142);
+    dt[i]=v;
+  }
+
+  // --- Synthesize noise & apply to land-only pixels
+  const invWaves = 1/Math.max(1,waves.length);
+  let touched=0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i=y*W+x, base=S[i*4];
+      if(base<SEA) continue;
+
+      // sum of plane-waves using precomputed tables (no Perlin lattice)
+      let v=0;
+      for(let w=0; w<waves.length; w++){
+        const cx=cosX[w][x], sx=sinX[w][x], cy=cosY[w][y], sy=sinY[w][y];
+        // cos(α+β+φ) expansion using tables:
+        // α=ax*x, β=ay*y
+        // cos(α+β+φ)= (cx*cy - sx*sy)*cφ - (sx*cy + cx*sy)*sφ
+        const cAB = cx*cy - sx*sy;
+        const sAB = sx*cy + cx*sy;
+        v += cAB*cphi[w] - sAB*sphi[w];
+      }
+      v *= invWaves;                    // average → [-1,1]ish
+      if(P.ridged) v = Math.abs(v) - 0.5; // absolute then center ~[-0.5,0.5]
+      // else v is already zero-mean-ish; small dynamic range
+
+      // amplitude shaping
+      const coastK=Math.max(0,Math.min(1, dt[i]/Math.max(1,P.coastFalloffPx)));
+      const highK = base>P.highlandBoostStart ? (1 + P.highlandBoostGain*((base-P.highlandBoostStart)/Math.max(1,(255-P.highlandBoostStart)))) : 1;
+
+      let d = v * P.amp * coastK * highK;
+
+      if(d<0 && base+d<SEA) d=SEA-base; // never below SEA
+      const nv=base+d;
+      if(nv!==base){
+        S[i*4]=S[i*4+1]=S[i*4+2]=nv; S[i*4+3]=255; touched++;
+      }
+    }
+  }
+
+  st.work=im; cx.putImageData(im,0,0);
+  Program.toast(`pre-noise: fine band-limited absolute noise on ${touched.toLocaleString()} px (amp≈${P.amp}, waves=${P.waves})`);
+ }
+});
+
+
+Program.register({
+  id: "director-noise-final",
+  name: "Director Pass — Layered Land Noise Polish",
+  enabled: true,
+  desc: "Final land-only polish: multi-band, slope/curvature-aware noise with coast + belt-aware amplitude. 19/0-safe, coasts preserved.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    if (!W || !H) {
+      Program.toast("director-noise-final: canvas not initialized");
+      return;
+    }
+    const SEA = st.sea ?? 19;
+
+    const im  = st.work || cx.getImageData(0, 0, W, H);
+    const S   = im.data;
+    const src = (st.src && st.src.width === W && st.src.height === H) ? st.src.data : S;
+    const N   = W * H;
+
+    // ---- user params (override via st.director = {...}) ----
+    const P = Object.assign({
+      amp: 5.0,             // overall grayscale amplitude (typical 3–7)
+      coarseFreqPx: 260,    // coarse wavelength in px (~220–350)
+      midFreqPx: 120,       // mid wavelength (~90–150)
+      fineFreqPx: 32,       // fine wavelength (~16–48)
+
+      coarseOct: 3,
+      midOct: 3,
+      fineOct: 2,
+
+      coarseShare: 0.55,    // relative weight of bands
+      midShare:    0.30,
+      fineShare:   0.15,
+
+      slopeSoft: 0.06,      // more => stronger damping on steep slopes
+      coastWidthPx: W * 0.018,
+      coastFadePow: 1.4,
+
+      ridgeScale:  9,       // how many grayscale units define “sharp ridge”
+      valleyScale: 5,       // how many units define “valley floor”
+      ridgeSquash: 0.8,     // how strongly to suppress noise on ridges
+      valleyBoost: 0.8,     // extra amplitude in concave basins
+
+      midElevBias: 0.65,    // 0..1: how strongly to favor mid / upper elevations
+
+      beltBoost: 0.35,      // extra amplitude near convergent belts
+      beltFalloffPx: 32,    // reach of belt influence (in pixels)
+
+      seed: (st.seed ?? 12345) + 424242
+    }, st.director || {});
+
+    // ---- land mask + base heights + land min/max ----
+    const land = new Uint8Array(N);
+    const h    = new Float32Array(N);
+    let minLand = Infinity, maxLand = -Infinity;
+
+    for (let i = 0; i < N; i++) {
+      const v      = S[i * 4];        // current finished height
+      const isLand = src[i * 4] >= SEA;
+      land[i] = isLand ? 1 : 0;
+      h[i]    = v;
+      if (!isLand) continue;
+      if (v < minLand) minLand = v;
+      if (v > maxLand) maxLand = v;
+    }
+
+    if (!isFinite(minLand) || !isFinite(maxLand) || maxLand <= minLand + 0.5) {
+      Program.toast("director-noise-final: insufficient land range, skipping.");
+      return;
+    }
+    const spanLand = maxLand - minLand;
+
+    // ---- distance-to-coast (for coast fade; land-only chamfer) ----
+    const INF    = 1e9;
+    const dCoast = new Float32Array(N);
+    for (let i = 0; i < N; i++) dCoast[i] = land[i] ? INF : 0;
+
+    // forward
+    for (let y = 0, i = 0; y < H; y++) {
+      for (let x = 0; x < W; x++, i++) {
+        if (dCoast[i] === 0) continue;
+        if (y > 0) {
+          const j = i - W, v = dCoast[j] + 1;
+          if (v < dCoast[i]) dCoast[i] = v;
+        }
+        {
+          const j = (x > 0) ? (i - 1) : (i - 1 + W);
+          const v = dCoast[j] + 1;
+          if (v < dCoast[i]) dCoast[i] = v;
+        }
+      }
+    }
+    // backward
+    for (let y = H - 1, i = N - 1; y >= 0; y--) {
+      for (let x = W - 1; x >= 0; x--, i--) {
+        if (dCoast[i] === 0) continue;
+        if (y < H - 1) {
+          const j = i + W, v = dCoast[j] + 1;
+          if (v < dCoast[i]) dCoast[i] = v;
+        }
+        {
+          const j = (x < W - 1) ? (i + 1) : (i + 1 - W);
+          const v = dCoast[j] + 1;
+          if (v < dCoast[i]) dCoast[i] = v;
+        }
+      }
+    }
+
+    // ---- optional distance-to-belt (convergent mask from tectonics) ----
+    let dBelt = null;
+    const convMask = st.convMask;
+    if (convMask && convMask.length === N && P.beltBoost > 0) {
+      dBelt = new Float32Array(N);
+      for (let i = 0; i < N; i++) dBelt[i] = convMask[i] ? 0 : INF;
+
+      // forward
+      for (let y = 0, i = 0; y < H; y++) {
+        for (let x = 0; x < W; x++, i++) {
+          if (dBelt[i] === 0) continue;
+          if (y > 0) {
+            const j = i - W, v = dBelt[j] + 1;
+            if (v < dBelt[i]) dBelt[i] = v;
+          }
+          {
+            const j = (x > 0) ? (i - 1) : (i - 1 + W);
+            const v = dBelt[j] + 1;
+            if (v < dBelt[i]) dBelt[i] = v;
+          }
+        }
+      }
+      // backward
+      for (let y = H - 1, i = N - 1; y >= 0; y--) {
+        for (let x = W - 1; x >= 0; x--, i--) {
+          if (dBelt[i] === 0) continue;
+          if (y < H - 1) {
+            const j = i + W, v = dBelt[j] + 1;
+            if (v < dBelt[i]) dBelt[i] = v;
+          }
+          {
+            const j = (x < W - 1) ? (i + 1) : (i + 1 - W);
+            const v = dBelt[j] + 1;
+            if (v < dBelt[i]) dBelt[i] = v;
+          }
+        }
+      }
+    }
+
+    // ---- slope from current heights (for slope-dependent amplitude) ----
+    const sx = new Float32Array(N);
+    const sy = new Float32Array(N);
+    for (let y = 0, i = 0; y < H; y++) {
+      for (let x = 0; x < W; x++, i++) {
+        const xm = (x > 0) ? (i - 1) : (i - 1 + W);
+        const xp = (x < W - 1) ? (i + 1) : (i + 1 - W);
+        const ym = (y > 0) ? (i - W) : -1;
+        const yp = (y < H - 1) ? (i + W) : -1;
+        sx[i] = (h[xp] - h[xm]) * 0.5;
+        sy[i] = ((yp >= 0 ? h[yp] : h[i]) - (ym >= 0 ? h[ym] : h[i])) * 0.5;
+      }
+    }
+
+    // ---- smooth fBM noise helpers (seeded, band-reusable) ----
+    function rnd(s) {
+      s ^= s << 13;
+      s ^= s >>> 17;
+      s ^= s << 5;
+      return (s >>> 0) / 4294967296;
+    }
+    const baseSeed = P.seed | 0;
+    function hash2(ix, iy) {
+      let s = baseSeed ^ (ix * 374761393) ^ (iy * 668265263);
+      s = (s ^ (s >>> 13)) | 0;
+      return (s * 1274126177) | 0;
+    }
+    function grad2(x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const tx = x - xi, ty = y - yi;
+      function g(ix, iy) { return rnd(hash2(ix, iy)); }
+      const a = g(xi, yi), b = g(xi + 1, yi),
+            c = g(xi, yi + 1), d = g(xi + 1, yi + 1);
+      const u = tx * tx * (3 - 2 * tx);
+      const v = ty * ty * (3 - 2 * ty);
+      return a * (1 - u) * (1 - v) +
+             b * u       * (1 - v) +
+             c * (1 - u) * v       +
+             d * u       * v;
+    }
+    function fbmBand(x, y, baseFreq, oct, ox, oy) {
+      let s = 0, a = 1, norm = 0, f = baseFreq;
+      for (let o = 0; o < oct; o++) {
+        s    += grad2(x * f + ox, y * f + oy) * a;
+        norm += a;
+        f    *= 2;
+        a    *= 0.5;
+      }
+      const v = (norm > 0 ? s / norm : 0) - 0.5; // center around ~[-0.5,0.5]
+      return v;
+    }
+
+    const coarseF = 1 / Math.max(8, P.coarseFreqPx);
+    const midF    = 1 / Math.max(4, P.midFreqPx);
+    const fineF   = 1 / Math.max(2, P.fineFreqPx);
+
+    const shareSum = (P.coarseShare + P.midShare + P.fineShare) || 1;
+    const wC = P.coarseShare / shareSum;
+    const wM = P.midShare    / shareSum;
+    const wF = P.fineShare   / shareSum;
+
+    // band-specific offsets so layers decorrelate
+    const oxC = 17.123 + baseSeed * 0.001, oyC = -41.77  - baseSeed * 0.002;
+    const oxM = 93.91  + baseSeed * 0.004, oyM =  12.42  - baseSeed * 0.003;
+    const oxF = -7.33  + baseSeed * 0.005, oyF =  55.19  - baseSeed * 0.006;
+
+    let touched = 0;
+
+    for (let y = 0, i = 0; y < H; y++) {
+      for (let x = 0; x < W; x++, i++) {
+        if (!land[i]) continue;
+
+        const h0 = h[i];
+
+        // normalized elevation [0,1] over land range
+        let e = (h0 - minLand) / spanLand;
+        if (e < 0) e = 0;
+        if (e > 1) e = 1;
+
+        // mid-elevation emphasis: bell around ~0.5, biased slightly upward
+        let mid = 1 - 4 * (e - 0.5) * (e - 0.5); // 0 at ends, 1 at 0.5
+        if (mid < 0) mid = 0;
+        mid = mid * (0.5 + P.midElevBias * 0.5); // tilt toward mid/upper lands
+        const elevFactor = 0.35 + 0.65 * mid;    // never completely off
+
+        // slope damping: more relief on flats, less on steep slopes
+        const g = Math.hypot(sx[i], sy[i]);
+        const flatFactor = 1 / (1 + g * g * P.slopeSoft);
+
+        // simple curvature (Laplacian-like) for ridge/valley awareness
+        const xm = (x > 0) ? (i - 1) : (i - 1 + W);
+        const xp = (x < W - 1) ? (i + 1) : (i + 1 - W);
+        const ym = (y > 0) ? (i - W) : -1;
+        const yp = (y < H - 1) ? (i + W) : -1;
+        const hL = h[xm];
+        const hR = h[xp];
+        const hU = (ym >= 0 ? h[ym] : h[i]);
+        const hD = (yp >= 0 ? h[yp] : h[i]);
+        const lap = ((hL + hR + hU + hD) * 0.25) - h0;
+
+        let ridgeK = 0, valleyK = 0;
+        if (lap < 0) {
+          ridgeK = Math.min(1, -lap / Math.max(1, P.ridgeScale));
+        } else if (lap > 0) {
+          valleyK = Math.min(1, lap / Math.max(1, P.valleyScale));
+        }
+
+        const ridgeFactor  = 1 / (1 + ridgeK * P.ridgeSquash);    // suppress on sharp crests
+        const valleyFactor = 1 + valleyK * P.valleyBoost;         // boost in basins/valleys
+
+        // coast fade: avoid noisy razor coastlines
+        const dc = dCoast[i];
+        let coastFactor = 1;
+        if (dc < P.coastWidthPx) {
+          let t = dc / Math.max(1, P.coastWidthPx); // 0 at coast, 1 inland
+          t = Math.pow(t, P.coastFadePow);
+          coastFactor = t;
+        }
+
+        // convergent belt boost (if dBelt present)
+        let beltFactor = 1;
+        if (dBelt) {
+          const db = dBelt[i];
+          if (db < P.beltFalloffPx) {
+            let t = 1 - db / Math.max(1, P.beltFalloffPx);
+            beltFactor += P.beltBoost * t * t; // quadratic falloff
+          }
+        }
+
+        // local amplitude
+        let localAmp = P.amp * elevFactor * flatFactor *
+                       ridgeFactor * valleyFactor *
+                       coastFactor * beltFactor;
+
+        if (localAmp <= 0.01) continue;
+
+        // multi-band noise
+        const nc = fbmBand(x, y, coarseF, P.coarseOct, oxC, oyC);
+        const nm = fbmBand(x, y, midF,    P.midOct,    oxM, oyM);
+        const nf = fbmBand(x, y, fineF,   P.fineOct,   oxF, oyF);
+
+        let n = nc * wC + nm * wM + nf * wF;
+
+        // soft contrast so values cluster nicely and avoid extreme spikes
+        n = Math.tanh(n * 1.8);
+
+        const dh = n * localAmp;
+        let hNew = h0 + dh;
+        if (hNew < SEA)  hNew = SEA;    // 19/0 safety
+        if (hNew > 255)  hNew = 255;
+
+        const v = hNew | 0;
+        if (v !== S[i * 4]) {
+          S[i * 4] = S[i * 4 + 1] = S[i * 4 + 2] = v;
+          S[i * 4 + 3] = 255;
+          touched++;
+        }
+      }
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast(`director-noise-final: polished ${touched.toLocaleString()} land px (amp≈${P.amp})`);
+  }
+});
+
+
+Program.register({
+  id: "normalize-land-range-19-180",
+  name: "Normalize Land 19–180",
+  enabled: true,
+  desc: "Rescales all imported land pixels so min=19 and max=180; seas (<19) unchanged.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    if (!W || !H) {
+      Program.toast("Normalize 19–180: canvas not initialized.");
+      return;
+    }
+
+    const SEA = st.sea ?? 19;
+    const im  = st.work || cx.getImageData(0, 0, W, H);
+    const S   = im.data;
+    const N   = W * H;
+
+    // Use imported source (if present) to define what counts as "land"
+    const srcData =
+      (st.src && st.src.width === W && st.src.height === H)
+        ? st.src.data
+        : S;
+
+    const landMask = new Uint8Array(N);
+    for (let i = 0; i < N; i++) {
+      const v = srcData[i * 4]; // grayscale
+      landMask[i] = (v >= SEA) ? 1 : 0;
+    }
+
+    // Find current min and max *land* value in the working image
+    let minLand = Infinity;
+    let maxLand = -Infinity;
+
+    for (let i = 0; i < N; i++) {
+      if (!landMask[i]) continue;
+      const v = S[i * 4];
+      if (v < minLand) minLand = v;
+      if (v > maxLand) maxLand = v;
+    }
+
+    if (!isFinite(minLand) || !isFinite(maxLand)) {
+      Program.toast("Normalize 19–180: no land found.");
+      return;
+    }
+
+    if (maxLand <= minLand) {
+      // Degenerate case: all land at one value. Just pin everything to 180.
+      for (let i = 0; i < N; i++) {
+        if (!landMask[i]) continue;
+        const v = 180;
+        S[i * 4] = S[i * 4 + 1] = S[i * 4 + 2] = v;
+        S[i * 4 + 3] = 255;
+      }
+      st.work = im;
+      cx.putImageData(im, 0, 0);
+      Program.toast("Normalize 19–180: land was flat; set all land to 180.");
+      return;
+    }
+
+    const TARGET_MIN = SEA;
+    const TARGET_MAX = 255;
+    const scale      = (TARGET_MAX - TARGET_MIN) / (maxLand - minLand);
+
+    // Apply linear rescale only to land pixels
+    for (let i = 0; i < N; i++) {
+      if (!landMask[i]) continue; // keep sea exactly as-is
+      const idx = i * 4;
+      let v = S[idx];
+
+      // Map [minLand, maxLand] -> [TARGET_MIN, TARGET_MAX]
+      v = (v - minLand) * scale + TARGET_MIN;
+
+      if (v < TARGET_MIN) v = TARGET_MIN;
+      if (v > TARGET_MAX) v = TARGET_MAX;
+
+      S[idx] = S[idx + 1] = S[idx + 2] = v;
+      S[idx + 3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast("Normalize 19–180: rescaled land so min=19, max=180.");
+  }
+});
+
+
+/*
+  EROSION PARAMETER CHEAT SHEET
+  ------------------------------
+  These parameters control how the hybrid erosion behaves. They interact,
+  but each one has a main conceptual job. Think of them as "world knobs"
+  more than raw shader constants.
+
+  --- MASKING / WHERE EROSION IS ALLOWED ---
+
+  onlyPlateau : boolean
+    - If false:
+        • Erosion runs on ALL land pixels where height >= SEA.
+    - If true:
+        • Erosion ONLY runs where the corresponding st.ccPlateauMask[i]
+          value is >= plateauThresh.
+        • Everywhere else (including ocean and non-selected plateaus)
+          is left unchanged.
+    - Usage:
+        • Use false for "global erosion over all land".
+        • Use true when you have a tectonic / plateau mask and you want to
+          erode only specific regions (e.g., convergent belts) without
+          touching the rest.
+
+  plateauThresh : number (0..1-ish)
+    - Threshold applied to st.ccPlateauMask when onlyPlateau is true.
+    - A pixel i is eligible for erosion if:
+        ccPlateauMask[i] >= plateauThresh
+      AND its height is >= SEA.
+    - Higher values shrink the eroded area to the strongest plateau bands;
+      lower values expand it to weaker / fuzzier belts.
+
+  --- TEMPORAL STRENGTH / RUNTIME – HOW HARD EROSION HITS ---
+
+  iters : integer (number of erosion iterations)
+    - Each iteration is a full cycle:
+        rain → flow direction → flow accumulation →
+        erosion/deposition → (optional) thermal creep → (optional) blur.
+    - More iterations:
+        • Deeper channels, more smoothing, more land lowered overall.
+        • Longer runtime (cost scales linearly with iters).
+    - Fewer iterations:
+        • Shallower incision and more “fresh” noise preserved.
+
+  --- WATER BUDGET – HOW MUCH WATER IS IN THE SYSTEM ---
+
+  rain : number
+    - Amount of water added PER ITERATION to every active (masked) pixel.
+    - Higher rain:
+        • Larger discharge Q.
+        • Stronger river incision (because capacity grows with Q^mExp).
+        • More tendency for rivers to dominate landscape shape.
+    - Lower rain:
+        • Erosion dominated more by slope pattern and local detail.
+
+  evap : number (0..1)
+    - Fraction of water removed per iteration at every pixel:
+        water = (water + rain) * (1 - evap)
+    - Higher evaporation:
+        • Keeps Q smaller, so erosion is more local and subdued.
+    - Lower evaporation:
+        • Allows water to accumulate over many iterations, amplifying
+          differences between trunk rivers and minor tributaries.
+
+  --- STREAM-POWER LAW PARAMETERS – HOW RIVERS CARVE ---
+
+  mExp : number (> 0)
+    - Exponent controlling how capacity depends on discharge Q:
+        capacity ∝ Q^mExp
+    - Larger mExp:
+        • Big rivers (with large Q) become much more effective at carving.
+        • Small gullies/tributaries do proportionally less work.
+    - Smaller mExp:
+        • Capacity is more evenly distributed between big and small flows.
+
+  nExp : number (> 0)
+    - Exponent controlling how capacity depends on local slope S:
+        capacity ∝ S^nExp
+    - Larger nExp:
+        • Very steep slopes erode *much* more than gentle ones.
+        • Encourages sharp canyons and steep-walled valleys, especially
+          where slope spikes.
+    - Smaller nExp:
+        • Erosion is more uniform across slopes; valleys tend to be softer
+          and broader.
+
+  kStream : number (> 0)
+    - Global strength multiplier on the erosion/deposition signal:
+        dE = kStream * (capacity - carriedSediment)
+    - Think of this as the main “erosion intensity” knob.
+    - Larger kStream:
+        • Erosion responds aggressively to any surplus capacity.
+        • Channels incise faster, terrain lowers more each iteration.
+    - Smaller kStream:
+        • Erosion progresses more slowly; good for subtle polishing.
+
+  kCap : number (> 0)
+    - Global scale factor for the capacity itself:
+        capacity = kCap * Q^mExp * slope^nExp
+    - Raising kCap:
+        • Increases how much sediment a given flow *wants* to carry.
+        • Produces more positive dE (erosion) in general.
+    - Lowering kCap:
+        • Reduces target capacity; you get more deposition and less incision.
+
+  depFrac : number (0..1-ish)
+    - When the system wants to deposit (capacity < carriedSediment), we
+      don't necessarily dump all the extra sediment at once. depFrac says
+      “what fraction of that surplus to actually deposit now”:
+        deposit = min( ( -dE ) * depFrac, carry )
+    - Larger depFrac (e.g., 0.75–0.9):
+        • Sediment is dropped more eagerly.
+        • Leads to thicker valley fills, wider river plains, and more
+          pronounced deltas/coastal plains.
+    - Smaller depFrac (e.g., 0.3–0.5):
+        • Sediment is hauled farther downstream before being dropped.
+        • Channels are sharper; fans and plains are less blobbed.
+
+  maxErodeStep : number (> 0)
+    - Safety clamp on how much height can change in a single iteration:
+        dE is clamped to [-maxErodeStep, +maxErodeStep]
+    - Larger maxErodeStep:
+        • Allows rapid, potentially brutal changes where flow + slope
+          are large (e.g., near outlets or steep cliffs).
+    - Smaller maxErodeStep:
+        • Forces erosion to happen gradually; improves stability and can
+          help avoid over-deepening or “plateaus punched down” artifacts.
+
+  --- HILLSLOPE / THERMAL CREEP – HOW CLIFFS RELAX ---
+
+  thermalPasses : integer
+    - Number of thermal creep passes after water erosion.
+    - Each pass looks at local height differences and moves material from
+      overly steep faces to neighbors, smoothing high local slopes.
+    - More passes:
+        • Softer cliffs, more rounded ridgelines.
+        • Fills in some sharp breaks that stream erosion alone would leave.
+    - 0:
+        • No extra thermal smoothing; raw fluvial carving only.
+
+  talus : number
+    - Local slope threshold for thermal creep.
+    - For each neighbor, if height difference dh > talus, the extra
+      (dh - talus) is considered unstable and some fraction is moved.
+    - Lower talus:
+        • Even gentle slopes are considered unstable → very rounded terrain.
+    - Higher talus:
+        • Only very steep walls get mass wasting; ridges remain sharper.
+
+  creep : number (0..1-ish)
+    - Fraction of that “excess” above talus that actually moves per pass.
+    - Larger creep:
+        • Thermal smoothing acts strongly; big chunks of height move each
+          thermalPass.
+    - Smaller creep:
+        • More subtle, slow hillslope diffusion.
+
+  --- POST BLUR – FINAL MICRO-SMOOTHING ---
+
+  postBlur : integer
+    - Number of tiny blur passes applied after erosion (and thermal).
+    - The blur:
+        • Only averages land pixels (mask-respecting).
+        • Respects the SEA clamp so it doesn’t smear sea into land.
+    - Acts like a very small Gaussian/box blur on the final heightfield.
+    - 0:
+        • Crisp stream-etched terrain (more visible quantization or
+          small artifacts).
+    - 1 or 2:
+        • Softens pixel-level noise and minor numerical artifacts without
+          destroying the main structure of valleys and ridges.
+
+  --- NOTE ON COASTLINES (IN YOUR CURRENT SETUP) ---
+
+  With the extra logic you added in kErodeDeposit, positive dE (erosion)
+  is scaled down near SEA and ramps to full strength inland. That means:
+    • Interior pixels (far above SEA) see the “full” effect of iters,
+      rain, kStream, etc.
+    • Near-coast pixels are partially shielded from being hammered down
+      to an artificial ring at exactly SEA, while still allowing deposition
+      to build coastal plains and deltas.
+*/
+
+Program.register({
+  id: "depression-fill-breach",
+  name: "Depression Fill / Breach Prepass",
+  enabled: true,
+  desc: "Priority-flood style basin fill on land ≥ SEA (optional plateau mask). Leaves sea unchanged so rivers always have an outlet before erosion.",
+  async run(st){
+    const W = st.W, H = st.H, N = W*H, SEA = st.sea ?? 19;
+    if (!W || !H) { Program.toast("depression-fill-breach: canvas not initialized"); return; }
+
+    const im = st.work || cx.getImageData(0, 0, W, H);
+    const S  = im.data;
+
+    // Tunables
+    const P = Object.assign({
+      onlyPlateau: false,   // match erosion's onlyPlateau if you want
+      plateauThresh: 0.08,  // same threshold as erosion
+      maxRaise: 64,         // max height a pixel may be raised (0 = unlimited)
+      treatBorderAsSea: true // treat map edges as outlets
+    }, st.depressionFill || {});
+
+    const plateau = (P.onlyPlateau &&
+                     st.ccPlateauMask instanceof Float32Array &&
+                     st.ccPlateauMask.length === N)
+                     ? st.ccPlateauMask
+                     : null;
+
+    // Land mask: where we are allowed to modify heights
+    const landMask = new Uint8Array(N);
+    const baseHeight = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const h = S[i*4];
+      baseHeight[i] = h;
+      let isLand = (h >= SEA);
+      if (isLand && plateau) {
+        isLand = plateau[i] >= P.plateauThresh;
+      }
+      landMask[i] = isLand ? 1 : 0;
+    }
+
+    // Nothing to do if no land
+    let anyLand = false;
+    for (let i = 0; i < N; i++) { if (landMask[i]) { anyLand = true; break; } }
+    if (!anyLand) {
+      Program.toast("depression-fill-breach: no land to process");
+      return;
+    }
+
+    const inBounds = (x,y)=> (x>=0 && x<W && y>=0 && y<H);
+    const idx = (x,y)=> y*W + x;
+
+    // Priority queue (binary heap) keyed on height
+    const heapIdx = new Uint32Array(N);
+    const heapH   = new Float32Array(N);
+    let heapSize  = 0;
+
+    const heapPush = (i,h)=>{
+      let k = heapSize++;
+      heapIdx[k] = i;
+      heapH[k] = h;
+      while (k > 0) {
+        const p = (k - 1) >> 1;
+        if (heapH[p] <= heapH[k]) break;
+        const ti = heapIdx[p], th = heapH[p];
+        heapIdx[p] = heapIdx[k]; heapH[p] = heapH[k];
+        heapIdx[k] = ti;         heapH[k] = th;
+        k = p;
+      }
+    };
+
+    const heapPop = ()=>{
+      if (heapSize === 0) return -1;
+      const i = heapIdx[0];
+      const h = heapH[0];
+      heapSize--;
+      if (heapSize > 0) {
+        heapIdx[0] = heapIdx[heapSize];
+        heapH[0]   = heapH[heapSize];
+        let k = 0;
+        while (true) {
+          const l = k*2+1, r = l+1;
+          if (l >= heapSize) break;
+          let s = l;
+          if (r < heapSize && heapH[r] < heapH[l]) s = r;
+          if (heapH[k] <= heapH[s]) break;
+          const ti = heapIdx[s], th = heapH[s];
+          heapIdx[s] = heapIdx[k]; heapH[s] = heapH[k];
+          heapIdx[k] = ti;         heapH[k] = th;
+          k = s;
+        }
+      }
+      return i;
+    };
+
+    const visited = new Uint8Array(N);
+    const outHeight = new Float32Array(baseHeight); // mutable heights for fill
+
+    // Initialize: add all "boundary" land cells to the heap.
+    // Boundary = land adjacent to sea or (optionally) map edge.
+    const DX = [-1, 1, 0, 0];
+    const DY = [ 0, 0,-1, 1];
+
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = idx(x,y);
+        if (!landMask[i]) continue;
+
+        let isBoundary = false;
+
+        if (P.treatBorderAsSea && (x === 0 || x === W-1 || y === 0 || y === H-1)) {
+          isBoundary = true;
+        } else {
+          // Adjacent to non-land (sea or masked-out plateau) → outlet
+          for (let k = 0; k < 4 && !isBoundary; k++) {
+            const nx = x + DX[k], ny = y + DY[k];
+            if (!inBounds(nx,ny)) {
+              if (P.treatBorderAsSea) isBoundary = true;
+            } else {
+              const j = idx(nx,ny);
+              if (!landMask[j]) isBoundary = true;
+            }
+          }
+        }
+
+        if (isBoundary) {
+          visited[i] = 1;
+          heapPush(i, outHeight[i]);
+        }
+      }
+    }
+
+    // Priority-flood: raise interior cells up to spill height.
+    while (heapSize > 0) {
+      const i = heapPop();
+      if (i < 0) break;
+      const hCur = outHeight[i];
+      const x = i % W;
+      const y = (i / W) | 0;
+
+      for (let k = 0; k < 4; k++) {
+        const nx = x + DX[k], ny = y + DY[k];
+        if (!inBounds(nx,ny)) continue;
+        const j = idx(nx,ny);
+        if (!landMask[j] || visited[j]) continue;
+
+        visited[j] = 1;
+        let hN = outHeight[j];
+        let newH = hN;
+
+        if (hN < hCur) {
+          // This is a depression; fill it up to the spill height hCur.
+          newH = hCur;
+          if (P.maxRaise > 0) {
+            const orig = baseHeight[j];
+            const maxAllowed = orig + P.maxRaise;
+            if (newH > maxAllowed) newH = maxAllowed;
+          }
+        }
+
+        outHeight[j] = newH;
+        heapPush(j, newH);
+      }
+    }
+
+    // Write back: only modify land pixels in the mask.
+    let raisedCount = 0;
+    for (let i = 0; i < N; i++) {
+      if (!landMask[i]) continue;
+      let v = outHeight[i];
+      if (v < SEA) v = SEA;
+      if (v > 255) v = 255;
+      if (v !== S[i*4]) {
+        S[i*4] = S[i*4+1] = S[i*4+2] = v;
+        S[i*4+3] = 255;
+        raisedCount++;
+      }
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast(`depression-fill-breach: filled ${raisedCount.toLocaleString()} land pixels`);
+  }
+});
+
+Program.register({
+  id: "impact-crater",
+  name: "Impact Crater — Hyperreal",
+  enabled: false,
+  desc: "Carves a large, realistic complex impact crater with rim, central peak, and noisy ejecta on land ≥ SEA.",
+  async run(st){
+    const W = st.W, H = st.H, SEA = st.sea ?? 19;
+    if (!W || !H) { Program.toast("impact-crater: canvas not initialized"); return; }
+
+    const im = st.work || cx.getImageData(0,0,W,H);
+    const S  = im.data;
+    const N  = W * H;
+
+    // --- Parameters (tweak/override via st.meta.impactCrater) ---
+    const P = Object.assign({
+      // crater size as fraction of min(W,H)
+      radiusFracMin: 0.05,   // ~5% of min dim
+      radiusFracMax: 0.12,   // ~12% of min dim
+      // depth & heights in normalized 0..1 terrain units (relative to 255)
+      bowlDepth:     0.35,   // max depression relative to local land level
+      peakHeight:    0.18,   // central peak uplift above bowl bottom
+      rimHeight:     0.16,   // rim uplift above surrounding terrain
+      ejectaHeight:  0.10,   // max ejecta thickness at rim
+      ejectaFalloff: 3.0,    // how fast ejecta decays with distance
+      roughness:     0.04,   // noise amplitude on rim/ejecta
+      anisotropy:    0.35,   // downrange ejecta bias (0 = symmetric)
+      tryCount:      150     // how many random centers to try on land
+    }, (st.meta && st.meta.impactCrater) || {});
+    if (!st.meta) st.meta = {};
+    st.meta.impactCrater = P;
+
+    const minDim = Math.min(W, H);
+    const seaNorm = SEA / 255;
+
+    // --- Build normalized height + land mask ---
+    const Hf   = new Float32Array(N);
+    const land = new Uint8Array(N);
+    let maxLand = seaNorm;
+
+    for (let i = 0; i < N; i++) {
+      const g = S[i*4]; // assume grayscale R=G=B
+      if (g < SEA) {
+        Hf[i]   = g / 255;
+        land[i] = 0;
+      } else {
+        const h = g / 255;
+        Hf[i]   = h;
+        land[i] = 1;
+        if (h > maxLand) maxLand = h;
+      }
+    }
+    if (maxLand <= seaNorm) {
+      Program.toast("impact-crater: no land found ≥ SEA");
+      return;
+    }
+
+    // --- Small deterministic-ish hash-based noise for rim/ejecta ---
+    function hash2(x, y){
+      // keep coords in int range
+      let n = (x | 0) * 374761393 + (y | 0) * 668265263;
+      n = (n ^ (n >>> 13)) * 1274126177;
+      n = n ^ (n >>> 16);
+      return (n >>> 0) / 4294967295;  // 0..1
+    }
+
+    // --- Pick crater size (core radius) ---
+    const frac = P.radiusFracMin + (P.radiusFracMax - P.radiusFracMin) * Math.random();
+    const rCore = Math.max(16, minDim * frac); // ensure not tiny
+    const rRim  = rCore * 1.2;
+    const rEject = rCore * 2.7; // outer ejecta radius
+
+    // --- Find a land center far from coasts and edges ---
+    let cx0 = -1, cy0 = -1;
+    const margin = Math.ceil(rEject + 3);
+
+    attemptCenter: for (let t = 0; t < P.tryCount; t++) {
+      const cx = margin + ((Math.random() * (W - 2*margin)) | 0);
+      const cy = margin + ((Math.random() * (H - 2*margin)) | 0);
+      const idx = cy * W + cx;
+      if (!land[idx]) continue; // not land at center
+
+      // Check that a ring at rCore is mostly land (avoid coast)
+      let landCount = 0, sampleCount = 48;
+      for (let k = 0; k < sampleCount; k++) {
+        const ang = (k / sampleCount) * Math.PI * 2;
+        const x = Math.round(cx + Math.cos(ang) * rCore);
+        const y = Math.round(cy + Math.sin(ang) * rCore);
+        if (x < 0 || x >= W || y < 0 || y >= H) continue;
+        const i2 = y * W + x;
+        if (land[i2]) landCount++;
+      }
+      if (landCount / sampleCount < 0.7) continue; // too coastal
+
+      cx0 = cx; cy0 = cy;
+      break attemptCenter;
+    }
+
+    if (cx0 < 0) {
+      Program.toast("impact-crater: could not find suitable land region for crater");
+      return;
+    }
+
+    // --- Optional downrange vector (anisotropic ejecta, random direction) ---
+    const theta = Math.random() * Math.PI * 2;
+    const dxA = Math.cos(theta);
+    const dyA = Math.sin(theta);
+    const anisotropy = P.anisotropy;
+
+    // --- Apply crater deformation ---
+    const bowlDepth   = P.bowlDepth;
+    const peakHeight  = P.peakHeight;
+    const rimHeight   = P.rimHeight;
+    const ejectaH     = P.ejectaHeight;
+    const ejectFall   = P.ejectaFalloff;
+    const rough       = P.roughness;
+
+    const rCore2  = rCore * rCore;
+    const rRim2   = rRim * rRim;
+    const rEject2 = rEject * rEject;
+
+    for (let y = 0; y < H; y++) {
+      const dy = y - cy0;
+      for (let x = 0; x < W; x++) {
+        const idx = y * W + x;
+        if (!land[idx]) continue; // ocean untouched
+
+        const dx = x - cx0;
+        const r2 = dx*dx + dy*dy;
+        if (r2 > rEject2) continue; // outside crater system
+
+        const r = Math.sqrt(r2);
+        const h0 = Hf[idx];
+        let delta = 0;
+
+        if (r <= rCore) {
+          // --- BOWL + CENTRAL PEAK ---
+          const t = r / rCore;   // 0..1
+          // deep parabolic bowl
+          const bowl = -bowlDepth * (1 - t*t);
+          delta += bowl;
+
+          // central peak core (inner ~0.3 rCore)
+          const tPeak = t / 0.35;
+          if (tPeak <= 1.0) {
+            const peakProfile = (1 - tPeak*tPeak); // 1 at center -> 0 at rim of peak
+            delta += peakHeight * peakProfile;
+          }
+        } else if (r <= rRim) {
+          // --- RIM UPLIFT: ring-shaped bump around rCore..rRim ---
+          const t = (r - rCore) / (rRim - rCore); // 0 at inner rim, 1 at outer
+          const ring = Math.sin(t * Math.PI);     // smooth bell, highest at mid
+          delta += rimHeight * ring;
+        } else {
+          // --- EJECTA BLANKET ---
+          const t = (r - rRim) / (rEject - rRim); // 0 at rim, 1 at eject outer edge
+
+          // basic radial decay
+          let ex = Math.max(0, 1 - t);
+          // steeper falloff
+          ex = Math.pow(ex, ejectFall);
+
+          if (ex > 0) {
+            // downrange bias: more ejecta in one direction
+            const dot = (dx*dxA + dy*dyA) / (r + 1e-6); // -1..1
+            const bias = 1 + anisotropy * Math.max(0, dot); // more downrange
+            delta += ejectaH * ex * bias;
+          }
+        }
+
+        // --- Add hyperrealistic roughness on rim/ejecta ---
+        if (r2 >= rCore2 && r2 <= rEject2 && rough > 0) {
+          const n = hash2(x, y) * 2 - 1; // -1..1
+          // stronger noise near rim, fading outward
+          const tR = Math.min(1, Math.max(0, (r - rCore) / (rEject - rCore)));
+          const rimWeight = 1 - Math.abs((r - rRim) / (rEject - rCore)); // ~1 near rRim
+          const weight = Math.max(0, 0.3 + 0.7 * rimWeight * (1 - tR*tR));
+          delta += n * rough * weight;
+        }
+
+        if (delta !== 0) {
+          let hNew = h0 + delta;
+          // Never go below sea level for land pixels
+          if (hNew < seaNorm) hNew = seaNorm;
+          if (hNew > 1) hNew = 1;
+          Hf[idx] = hNew;
+        }
+      }
+    }
+
+    // --- Write back to canvas (grayscale, preserve alpha) ---
+    for (let i = 0; i < N; i++) {
+      let g = Hf[i] * 255;
+      if (!land[i]) {
+        // ocean: keep exactly original grayscale (so existing coastlines stay precise)
+        g = S[i*4];
+      }
+      if (g < 0) g = 0;
+      if (g > 255) g = 255;
+      const gi = g | 0;
+      const p = i * 4;
+      S[p]     = gi;
+      S[p + 1] = gi;
+      S[p + 2] = gi;
+      S[p + 3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast(`impact-crater: inserted radius≈${rCore|0}px at (${cx0},${cy0})`);
+  }
+});
+
+
+Program.register({
+ id:"erosion-hybrid-gpu",
+ name:"Hybrid Erosion (GPU) — Stream Power + Thermal; Land ≥ SEA only",
+ enabled:true,
+ desc:"WebGPU compute erosion (stream power + thermal creep). Land-only, never erodes below SEA. X-wrap aware. Packed buffers to meet device limits.",
+ async run(st){
+  const W=st.W,H=st.H,N=W*H,SEA=st.sea??19;
+  if(!W||!H){ Program.toast("erosion-hybrid-gpu: canvas not initialized"); return; }
+  const im=st.work||cx.getImageData(0,0,W,H), S=im.data;
+
+const P = Object.assign({
+  onlyPlateau:    false,
+  plateauThresh:  0.08,
+
+  // erosion strength / water budget
+  iters:          50,
+  rain:           5.0,
+  evap:           0.02,
+
+  // stream-power law
+  mExp:           1.0,
+  nExp:           15.0,
+  kStream:        100.0,
+  kCap:           0.8,
+  depFrac:        0.75,
+  maxErodeStep:   1.2,
+
+  // hillslope / smoothing
+  thermalPasses:  1.0,
+  talus:          0.2,
+  creep:          0.25,
+  postBlur:       1
+}, st.erosionGPU || {});
+
+  const heightHost=new Float32Array(N); for(let i=0;i<N;i++) heightHost[i]=S[i*4];
+  const plateauHost=(P.onlyPlateau && st.ccPlateauMask instanceof Float32Array && st.ccPlateauMask.length===N)?st.ccPlateauMask:null;
+
+  if(!("gpu" in navigator)){ Program.toast("erosion-hybrid-gpu: WebGPU not available — using CPU fallback"); await cpuFallback(); return; }
+  if(!st._gpu) st._gpu={};
+  const adapter=st._gpu.adapter||await navigator.gpu.requestAdapter();
+  if(!adapter){ Program.toast("erosion-hybrid-gpu: no adapter — CPU fallback"); await cpuFallback(); return; }
+
+  // Request default device (no custom limits) to stay portable
+  const device=st._gpu.device||await adapter.requestDevice();
+  st._gpu.adapter=adapter; st._gpu.device=device;
+
+  // ---- buffers (packed to stay within storage limits) ----
+  const BYTES={f32:N*4,u32:N*4,vec4:N*16};
+  const createBuf=(usage,size,data)=>{
+    const b=device.createBuffer({size,usage,mappedAtCreation:!!data});
+    if(data){
+      const m=b.getMappedRange();
+      if(data instanceof Float32Array) new Float32Array(m).set(data);
+      else if(data instanceof Uint32Array) new Uint32Array(m).set(data);
+      b.unmap();
+    }
+    return b;
+  };
+
+  const bufHeight = device.createBuffer({size:BYTES.f32,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST|GPUBufferUsage.COPY_SRC});
+  device.queue.writeBuffer(bufHeight,0,heightHost);
+  const bufHeightB= device.createBuffer({size:BYTES.f32,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC|GPUBufferUsage.COPY_DST});
+
+  // hydro: vec4<f32> per px => (water, sediment, flowAcc, spare)
+  const hydroInit=new Float32Array(N*4); // zeroed
+  const bufHydro  = createBuf(GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST|GPUBufferUsage.COPY_SRC,BYTES.vec4,hydroInit);
+  const bufHydroB = createBuf(
+        GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC|GPUBufferUsage.COPY_DST,
+        BYTES.vec4,                            // ← correct size (N * 16 bytes)
+        new Float32Array(N * 4)                // ← actual data
+    );
+
+  // flags: u32 per px => bits: 0..3 dir (0..8), bit 8 mask (1=active)
+  const bufFlags  = createBuf(GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC|GPUBufferUsage.COPY_DST,BYTES.u32,new Uint32Array(N));
+
+  // plateau (read-only storage)
+  const bufPlateau= createBuf(GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST,BYTES.f32, plateauHost?new Float32Array(plateauHost):new Float32Array(N));
+
+  // uniforms
+  const u0 = new Uint32Array([W,H,SEA|0,(P.onlyPlateau?1:0)]);
+  const u0Buf = device.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  device.queue.writeBuffer(u0Buf,0,u0);
+  const u1 = new Float32Array([P.rain,P.evap,P.kStream,P.kCap,P.mExp,P.nExp,P.depFrac,P.maxErodeStep,P.talus,P.creep,P.plateauThresh,0]);
+  const u1Buf = device.createBuffer({size:48,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  device.queue.writeBuffer(u1Buf,0,u1);
+
+  // ---- WGSL (uses packed buffers) ----
+  const wgsl=/*wgsl*/`
+struct Uniform0 { W:u32, H:u32, SEA:u32, ONLY_PLATEAU:u32, };
+struct Uniform1 {
+  rain:f32, evap:f32, kStream:f32, kCap:f32,
+  mExp:f32, nExp:f32, depFrac:f32, maxErodeStep:f32,
+  talus:f32, creep:f32, plateauThresh:f32, pad:f32,
+};
+
+@group(0) @binding(0) var<uniform> U0:Uniform0;
+@group(0) @binding(1) var<uniform> U1:Uniform1;
+
+// Storage (packed):
+@group(0) @binding(2) var<storage,read_write> height: array<f32>;
+@group(0) @binding(3) var<storage,read_write> heightB: array<f32>;
+@group(0) @binding(4) var<storage,read_write> hydro: array<vec4<f32>>;   // x=water, y=sed, z=flowAcc
+@group(0) @binding(5) var<storage,read_write> hydroB: array<vec4<f32>>;  // next-step water/sed
+@group(0) @binding(6) var<storage,read_write> flags: array<u32>;         // bits: 0..3=dir (0..8), bit8=mask
+@group(0) @binding(7) var<storage,read> plateau: array<f32>;             // read-only
+
+fn wrapX(x:i32,w:i32)->i32{ var xx=x; if(xx<0){xx+=w;} if(xx>=w){xx-=w;} return xx; }
+fn idx(x:i32,y:i32,w:i32)->u32{ return u32(y*w + wrapX(x,w)); }
+
+const DX: array<i32,8> = array<i32,8>(-1,0,1,-1,1,-1,0,1);
+const DY: array<i32,8> = array<i32,8>(-1,-1,-1,0,0,1,1,1);
+const COST: array<f32,8> = array<f32,8>(1.41421356,1.0,1.41421356,1.0,1.0,1.41421356,1.0,1.41421356);
+
+fn setMask(i:u32, on:bool){
+  let dirBits = flags[i] & 0xFu;
+  let m:u32 = select(0u,1u,on);
+  flags[i] = (dirBits) | (m << 8u);
+}
+fn getMask(i:u32)->bool{
+  return ((flags[i] >> 8u) & 1u) == 1u;
+}
+fn setDir(i:u32, d:u32){
+  let mBit = (flags[i] >> 8u) & 1u;
+  flags[i] = (d & 0xFu) | (mBit << 8u);
+}
+fn getDir(i:u32)->u32{
+  return flags[i] & 0xFu;
+}
+
+fn clamp01(v:f32)->f32{
+  return max(0.0, min(1.0, v));
+}
+
+@compute @workgroup_size(16,16,1)
+fn kBuildMask(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x = i32(gid.x);
+  let y = i32(gid.y);
+  if (x >= i32(U0.W) || y >= i32(U0.H)) { return; }
+  let i = u32(y*i32(U0.W) + x);
+
+  let isOn =
+    (height[i] >= f32(U0.SEA)) &&
+    (U0.ONLY_PLATEAU == 0u || plateau[i] >= U1.plateauThresh);
+
+  setMask(i, isOn);
+  hydro[i]  = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+  hydroB[i] = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+  setDir(i, 8u);
+}
+
+
+@compute @workgroup_size(16,16,1)
+fn kRainEvap(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){
+    hydro[i]=vec4<f32>(0.0,0.0,0.0,0.0);
+    return;
+  }
+  var h = hydro[i];
+  h.x = (h.x + U1.rain) * (1.0 - U1.evap); // water
+  h.z = 0.0;                               // reset flowAcc
+  hydro[i]=h;
+}
+
+@compute @workgroup_size(16,16,1)
+fn kFlowDir(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){ setDir(i,8u); return; }
+
+  let hi = height[i];
+  var best:i32=-1; var bestDrop:f32=0.0;
+
+  // MOD: allow flow toward sea (height < SEA) as valid downhill neighbors,
+  // so coastal cells drain into the ocean instead of becoming sinks.
+  for(var k:i32=0;k<8;k++){
+    let nx=wrapX(x+DX[k],i32(U0.W)); let ny=y+DY[k];
+    if(ny<0||ny>=i32(U0.H)) { continue; }
+    let j=idx(nx,ny,i32(U0.W));
+    let hj = height[j];
+    let neighIsSea  = hj < f32(U0.SEA);
+    let neighIsLand = getMask(j);
+    if(!(neighIsSea || neighIsLand)){ continue; }
+
+    let dh=hi - hj; if(dh<=0.0){ continue; }
+    let drop = dh / COST[k];
+    if(drop>bestDrop){ bestDrop=drop; best=k; }
+  }
+  setDir(i, select(8u, u32(best), best>=0));
+}
+
+@compute @workgroup_size(16,16,1)
+fn kAccumulate(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){ hydroB[i]=vec4<f32>(0.0,0.0,0.0,0.0); return; }
+
+  var wSum:f32=0.0; var sSum:f32=0.0;
+  for(var k:i32=0;k<8;k++){
+    let nx=wrapX(x+DX[k],i32(U0.W)); let ny=y+DY[k];
+    if(ny<0||ny>=i32(U0.H)) { continue; }
+    let j=idx(nx,ny,i32(U0.W));
+    if(!getMask(j)){ continue; } // only land contributes as upstream
+    let dk = i32(getDir(j)); if(dk<0||dk>7){ continue; }
+    let tx=wrapX(i32(nx)+DX[dk],i32(U0.W)); let ty=i32(ny)+DY[dk];
+    if(tx==x && ty==y){
+      let hj = hydro[j];
+      wSum += hj.x; sSum += hj.y;
+    }
+  }
+  // sinks keep own water/sed
+  if(getDir(i)==8u){
+    let hi=hydro[i]; wSum += hi.x; sSum += hi.y;
+  }
+  // write next-step water/sed to hydroB, accumulate flowAcc in hydro.z
+  hydroB[i] = vec4<f32>(wSum,sSum,0.0,0.0);
+  var h = hydro[i]; h.z += wSum; hydro[i]=h;
+}
+
+@compute @workgroup_size(16,16,1)
+fn kErodeDeposit(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){ return; }
+
+  // slope to out neighbor
+  let d=i32(getDir(i)); var slope:f32=0.0;
+  if(d>=0 && d<=7){
+    let nx=wrapX(x+DX[d],i32(U0.W)); let ny=y+DY[d];
+    if(ny>=0 && ny<i32(U0.H)){
+      let j=idx(nx,ny,i32(U0.W));
+      let dh = height[i] - height[j];
+      if(dh>0.0){ slope = dh / COST[d]; }
+    }
+  }
+
+  let hB = hydroB[i];      // next-step water/sed from accumulate
+  let h  = hydro[i];       // current hydro with flowAcc
+  let Q  = h.z;
+  let cap = U1.kCap * pow(Q+1e-6, U1.mExp) * pow(slope+1e-6, U1.nExp);
+  var carry = hB.y;
+  if(carry > cap*2.0){ carry = cap*2.0; }
+
+  var dE = U1.kStream * (cap - carry);
+  if(dE >  U1.maxErodeStep){ dE =  U1.maxErodeStep; }
+  if(dE < -U1.maxErodeStep){ dE = -U1.maxErodeStep; }
+    // --- NEW: suppress *erosion* near sea level to avoid coastal ring ---
+  let hHere   = height[i];
+  let above   = max(0.0, hHere - f32(U0.SEA));
+  let coastalBand : f32 = 12.0;              // pixels worth of elevation band to protect
+  let coastFactor = clamp01(above / coastalBand);
+  // Only scale positive dE (erosion); deposition still happens normally
+  if (dE > 0.0) {
+    dE = dE * coastFactor;
+  }
+
+  var h0 = height[i];
+  if(dE>0.0){
+    let maxCut = max(0.0, h0 - f32(U0.SEA));
+    let cut = min(dE, maxCut);
+    h0 = h0 - cut; carry = carry + cut;
+  }else{
+    let dep = min(-dE * U1.depFrac, carry);
+    h0 = h0 + dep; carry = carry - dep;
+  }
+  if(h0 < f32(U0.SEA)){ h0 = f32(U0.SEA); }
+  height[i] = h0;
+
+  // advance water/sed to next iter
+  hydro[i] = vec4<f32>(hB.x, carry, h.z, 0.0);
+}
+
+@compute @workgroup_size(16,16,1)
+fn kThermal(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){ heightB[i]=height[i]; return; }
+
+  let h0 = height[i];
+  var delta:f32=0.0; var back:f32=0.0;
+  for(var k:i32=0;k<8;k++){
+    let nx=wrapX(x+DX[k],i32(U0.W)); let ny=y+DY[k];
+    if(ny<0||ny>=i32(U0.H)) { continue; }
+    let j=idx(nx,ny,i32(U0.W));
+    if(!getMask(j)){ continue; }
+    let dh = h0 - height[j];
+    if(dh > U1.talus){
+      let ex = dh - U1.talus; let share = U1.creep * ex;
+      delta -= share; back += share;
+    }
+  }
+  var hN = h0 + delta + back*0.125;
+  if(hN < f32(U0.SEA)){ hN = f32(U0.SEA); }
+  heightB[i]=hN;
+}
+
+@compute @workgroup_size(16,16,1)
+fn kCopyAtoB(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=gid.x; let y=gid.y;
+  if(x>=U0.W || y>=U0.H){ return; }
+  let i=y*U0.W + x;
+  height[i]=heightB[i];
+}
+
+@compute @workgroup_size(16,16,1)
+fn kTinyBlur(@builtin(global_invocation_id) gid: vec3<u32>){
+  let x=i32(gid.x); let y=i32(gid.y);
+  if(x>=i32(U0.W) || y>=i32(U0.H)) { return; }
+  let i=u32(y*i32(U0.W)+x);
+  if(!getMask(i)){ heightB[i]=height[i]; return; }
+  var acc:f32=0.0; var cnt:f32=0.0;
+  for(var dy:i32=-1; dy<=1; dy++){
+    let yy=y+dy; if(yy<0||yy>=i32(U0.H)) { continue; }
+    for(var dx:i32=-1; dx<=1; dx++){
+      let xx=wrapX(x+dx,i32(U0.W)); let j=idx(xx,yy,i32(U0.W));
+      if(!getMask(j)){ continue; }
+      acc += height[j]; cnt += 1.0;
+    }
+  }
+  var v=height[i]; if(cnt>0.0){ v=acc/cnt; } if(v<f32(U0.SEA)){ v=f32(U0.SEA); }
+  heightB[i]=v;
+}
+`;
+
+  // ---- explicit shared layouts (single BGL, under limits) ----
+  const bgl = device.createBindGroupLayout({
+    entries:[
+      {binding:0, visibility:GPUShaderStage.COMPUTE, buffer:{type:"uniform"}},
+      {binding:1, visibility:GPUShaderStage.COMPUTE, buffer:{type:"uniform"}},
+      {binding:2, visibility:GPUShaderStage.COMPUTE, buffer:{type:"storage"}},            // height
+      {binding:3, visibility:GPUShaderStage.COMPUTE, buffer:{type:"storage"}},            // heightB
+      {binding:4, visibility:GPUShaderStage.COMPUTE, buffer:{type:"storage"}},            // hydro
+      {binding:5, visibility:GPUShaderStage.COMPUTE, buffer:{type:"storage"}},            // hydroB
+      {binding:6, visibility:GPUShaderStage.COMPUTE, buffer:{type:"storage"}},            // flags
+      {binding:7, visibility:GPUShaderStage.COMPUTE, buffer:{type:"read-only-storage"}},  // plateau
+    ]
+  });
+  const pl = device.createPipelineLayout({bindGroupLayouts:[bgl]});
+  const mkPipe = (entry)=>device.createComputePipeline({
+    layout:pl, compute:{module:device.createShaderModule({code:wgsl}), entryPoint:entry}
+  });
+  const pBuildMask = mkPipe("kBuildMask");
+  const pRainEvap  = mkPipe("kRainEvap");
+  const pFlowDir   = mkPipe("kFlowDir");
+  const pAccumulate= mkPipe("kAccumulate");
+  const pErodeDep  = mkPipe("kErodeDeposit");
+  const pThermal   = mkPipe("kThermal");
+  const pCopyAtoB  = mkPipe("kCopyAtoB");
+  const pTinyBlur  = mkPipe("kTinyBlur");
+
+  const bind = device.createBindGroup({
+    layout:bgl, entries:[
+      {binding:0, resource:{buffer:u0Buf}},
+      {binding:1, resource:{buffer:u1Buf}},
+      {binding:2, resource:{buffer:bufHeight}},
+      {binding:3, resource:{buffer:bufHeightB}},
+      {binding:4, resource:{buffer:bufHydro}},
+      {binding:5, resource:{buffer:bufHydroB}},
+      {binding:6, resource:{buffer:bufFlags}},
+      {binding:7, resource:{buffer:bufPlateau}},
+    ]
+  });
+
+  const gx=Math.ceil(W/16), gy=Math.ceil(H/16);
+  const dispatch=(enc,pln)=>{ enc.setPipeline(pln); enc.setBindGroup(0,bind); enc.dispatchWorkgroups(gx,gy); };
+
+  // ---- record
+  const cmd=device.createCommandEncoder();
+  {
+    const enc=cmd.beginComputePass();
+    dispatch(enc,pBuildMask);
+    for(let it=0; it<P.iters; it++){
+      dispatch(enc,pRainEvap);
+      dispatch(enc,pFlowDir);
+      dispatch(enc,pAccumulate);
+      dispatch(enc,pErodeDep);
+    }
+    for(let t=0;t<P.thermalPasses;t++){ dispatch(enc,pThermal); dispatch(enc,pCopyAtoB); }
+    if(P.postBlur>0){ dispatch(enc,pTinyBlur); dispatch(enc,pCopyAtoB); }
+    enc.end();
+  }
+  device.queue.submit([cmd.finish()]);
+
+  // ---- readback
+  const readBuf=device.createBuffer({size:BYTES.f32,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});
+  const cmd2=device.createCommandEncoder(); cmd2.copyBufferToBuffer(bufHeight,0,readBuf,0,BYTES.f32);
+  device.queue.submit([cmd2.finish()]);
+  await readBuf.mapAsync(GPUMapMode.READ);
+  const out=new Float32Array(readBuf.getMappedRange()).slice(); readBuf.unmap();
+
+  let touched=0;
+  const plateauArr = (P.onlyPlateau && st.ccPlateauMask instanceof Float32Array && st.ccPlateauMask.length===N) ? st.ccPlateauMask : null;
+
+  for(let i=0;i<N;i++){
+    const wasLand = (S[i*4] >= SEA) && (!plateauArr || plateauArr[i] >= P.plateauThresh);
+    if(!wasLand){
+      // keep ocean (and non-selected plateau) exactly as-is
+      continue;
+    }
+    let v = out[i];
+    if(v < SEA) v = SEA;         // never erode land below SEA
+    if(v > 255) v = 255;
+    if(v !== S[i*4]){
+      S[i*4]=S[i*4+1]=S[i*4+2]=v; S[i*4+3]=255; touched++;
+    }
+  }
+  st.work=im; cx.putImageData(im,0,0);
+  Program.toast(`erosion-hybrid-gpu: iters ${P.iters} · thermal ${P.thermalPasses} · touched ${touched.toLocaleString()}`);
+
+  // ------------- CPU fallback -------------
+  async function cpuFallback(){
+    const plateauArr=(P.onlyPlateau && st.ccPlateauMask instanceof Float32Array)?st.ccPlateauMask:null;
+    const mask=new Uint8Array(N); 
+    for(let i=0;i<N;i++){
+      const on=(S[i*4]>=SEA)&&(!plateauArr||plateauArr[i]>P.plateauThresh); 
+      mask[i]=on?1:0; 
+    }
+    const water=new Float32Array(N), sed=new Float32Array(N), flow=new Float32Array(N);
+    const DX=[-1,0,1,-1,1,-1,0,1], DY=[-1,-1,-1,0,0,1,1,1], COST=[Math.SQRT2,1,Math.SQRT2,1,1,Math.SQRT2,1,Math.SQRT2];
+    const wrapX=x=>(x<0?x+W:(x>=W?x-W:x)), idx=(x,y)=>y*W+wrapX(x), dArr=new Uint8Array(N);
+
+    for(let it=0;it<P.iters;it++){
+      // rain & reset
+      for(let i=0;i<N;i++){
+        if(!mask[i]){ water[i]=0; sed[i]=0; flow[i]=0; }
+        else { water[i]=(water[i]+P.rain)*(1-P.evap); flow[i]=0; }
+      }
+
+      // flow direction (CPU version with sea allowed as downhill target)
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const i=y*W+x; 
+        if(!mask[i]){ dArr[i]=8; continue; }
+        const hi=S[i*4]; 
+        let best=-1,drop=0;
+        for(let k=0;k<8;k++){
+          const nx=wrapX(x+DX[k]), ny=y+DY[k]; 
+          if(ny<0||ny>=H) continue;
+          const j=idx(nx,ny);
+          const hj=S[j*4];
+          const neighIsSea = hj < SEA;
+          const neighIsLand = !!mask[j];
+          if(!neighIsSea && !neighIsLand) continue;
+          const dh=hi-hj; if(dh<=0) continue;
+          const dd=dh/COST[k]; if(dd>drop){ drop=dd; best=k; }
+        }
+        dArr[i]=best<0?8:best;
+      }
+
+      // accumulation
+      const wNext=new Float32Array(N), sNext=new Float32Array(N);
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const i=y*W+x; if(!mask[i]) continue;
+        let w=0,s=0;
+        for(let k=0;k<8;k++){
+          const nx=wrapX(x+DX[k]), ny=y+DY[k]; if(ny<0||ny>=H) continue;
+          const j=idx(nx,ny); if(!mask[j]) continue;
+          if(dArr[j]===k){ w+=water[j]; s+=sed[j]; }
+        }
+        if(dArr[i]===8){ w+=water[i]; s+=sed[i]; } // true sinks
+        wNext[i]=w; sNext[i]=s; flow[i]+=w;
+      }
+      water.set(wNext); sed.set(sNext);
+
+      // erode / deposit
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const i=y*W+x; if(!mask[i]) continue;
+        const d=dArr[i]; let slope=0;
+        if(d!==8){
+          const nx=wrapX(x+DX[d]), ny=y+DY[d]; 
+          if(ny>=0&&ny<H){
+            const j=idx(nx,ny); const dh=S[i*4]-S[j*4]; if(dh>0) slope=dh/COST[d];
+          }
+        }
+        const Q=flow[i];
+        const cap=P.kCap*Math.pow(Q+1e-6,P.mExp)*Math.pow(slope+1e-6,P.nExp);
+        let carry=sed[i]; if(carry>cap*2) carry=cap*2;
+        let dE = P.kStream*(cap-carry);
+        if (dE > P.maxErodeStep)  dE = P.maxErodeStep;
+        if (dE < -P.maxErodeStep) dE = -P.maxErodeStep;
+
+        // NEW: suppress erosion very close to sea level, but keep deposition
+        const hHere = S[i*4];
+        const above = Math.max(0, hHere - SEA);
+        const coastalBand = 12; // same as WGSL
+        let coastFactor = above / coastalBand;
+        if (coastFactor < 0) coastFactor = 0;
+        if (coastFactor > 1) coastFactor = 1;
+        if (dE > 0) {
+        dE *= coastFactor;
+        }
+
+        if(dE>0){
+          const maxCut=Math.max(0,S[i*4]-SEA); 
+          const cut=Math.min(dE,maxCut);
+          S[i*4]-=cut; S[i*4+1]=S[i*4+2]=S[i*4]; sed[i]+=cut;
+        }else if(dE<0){
+          const dep=Math.min(-dE*P.depFrac, sed[i]);
+          S[i*4]+=dep; S[i*4+1]=S[i*4+2]=S[i*4]; sed[i]-=dep;
+        }
+        if(S[i*4]<SEA) S[i*4]=S[i*4+1]=S[i*4+2]=SEA;
+      }
+    }
+
+    // thermal creep
+    const copy=new Float32Array(N);
+    for(let p=0;p<P.thermalPasses;p++){
+      for(let i=0;i<N;i++) copy[i]=S[i*4];
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const i=y*W+x; if(!mask[i]) continue;
+        let h0=copy[i], delta=0, back=0;
+        for(let k=0;k<8;k++){
+          const nx=wrapX(x+DX[k]), ny=y+DY[k]; if(ny<0||ny>=H) continue;
+          const j=idx(nx,ny); if(!mask[j]) continue;
+          const dh=h0-copy[j]; 
+          if(dh>P.talus){ const ex=dh-P.talus; const share=P.creep*ex; delta-=share; back+=share; }
+        }
+        let v=h0+delta+back*0.125; if(v<SEA) v=SEA;
+        S[i*4]=S[i*4+1]=S[i*4+2]=v;
+      }
+    }
+
+    // tiny blur
+    if(P.postBlur>0){
+      for(let i=0;i<N;i++) copy[i]=S[i*4];
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const i=y*W+x; if(!mask[i]) continue;
+        let acc=0,cnt=0;
+        for(let dy=-1;dy<=1;dy++){
+          const yy=y+dy; if(yy<0||yy>=H) continue;
+          for(let dx=-1;dx<=1;dx++){
+            const xx=wrapX(x+dx); const j=yy*W+xx; if(!mask[j]) continue;
+            acc+=copy[j]; cnt++;
+          }
+        }
+        let v=cnt?acc/cnt:copy[i]; if(v<SEA)v=SEA;
+        S[i*4]=S[i*4+1]=S[i*4+2]=v;
+      }
+    }
+
+    st.work=im; cx.putImageData(im,0,0);
+  }
+ }
+});
+
+
+Program.register({
+  id: "spherize",
+  name: "Spherize (Gimp-like)",
+  enabled: false,
+  desc: "Radial bulge/pinch warp around canvas center, similar to Gimp's Spherize filter",
+  async run(st){
+    const W = st.W, H = st.H;
+    if (!W || !H) { Program.toast("Spherize: canvas not initialized"); return; }
+
+    const im  = st.work || cx.getImageData(0,0,W,H);
+    const src = im.data;
+
+    const out = cx.createImageData(W,H);
+    const dst = out.data;
+
+    const cx0 = (W - 1) * 0.5;
+    const cy0 = (H - 1) * 0.5;
+
+    // Elliptical radius so the effect fills the whole rectangle
+    const rx = cx0;
+    const ry = cy0;
+
+    const P = Object.assign({
+      // -1..1  (positive = bulge outward, negative = pinch inward)
+      amount: 1.0
+    }, (st.meta && st.meta.spherize) || {});
+    if (!st.meta) st.meta = {};
+    st.meta.spherize = P;
+
+    const amt = Math.max(-1, Math.min(1, P.amount));
+
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+
+        // Normalized coords around center, in [-1,1] after dividing by rx/ry
+        const nx = (x - cx0) / rx;
+        const ny = (y - cy0) / ry;
+        const r  = Math.hypot(nx, ny); // 0..∞
+
+        let sx = x;
+        let sy = y;
+
+        if (r < 1.0 && r > 1e-6) {
+          let r2;
+
+          if (amt >= 0) {
+            // BULGE:
+            // sphere curve: 0 at center, 1 at rim, but < r for 0<r<1
+            // so src radius < dest radius => center looks magnified.
+            const sphere = 1 - Math.cos(r * Math.PI * 0.5); // 0..1, concave
+            r2 = r * (1 - amt) + sphere * amt;
+          } else {
+            // PINCH:
+            // pull samples from further out: sqrt(r) > r for 0<r<1.
+            const k = -amt;
+            const pinch = Math.sqrt(r);
+            r2 = r * (1 - k) + pinch * k;
+          }
+
+          const s = r2 / r;
+          const nnx = nx * s;
+          const nny = ny * s;
+
+          sx = cx0 + nnx * rx;
+          sy = cy0 + nny * ry;
+
+          if (sx < 0) sx = 0;
+          if (sy < 0) sy = 0;
+          if (sx > W - 1) sx = W - 1;
+          if (sy > H - 1) sy = H - 1;
+        }
+
+        const ix = sx | 0;
+        const iy = sy | 0;
+        const si = (iy * W + ix) * 4;
+        const di = (y * W + x) * 4;
+
+        dst[di]     = src[si];
+        dst[di + 1] = src[si + 1];
+        dst[di + 2] = src[si + 2];
+        dst[di + 3] = src[si + 3];
+      }
+    }
+
+    st.work = out;
+    cx.putImageData(out, 0, 0);
+    Program.toast(`Spherize: amount=${amt.toFixed(2)}`);
+  }
+});
+
+Program.register({
+  id: "graph-erosion",
+  name: "Graph Erosion (Range & Texture)",
+  enabled: false,
+  desc: "CPU graph-based fluvial erosion with active height range, land-only (≥ SEA), and gentle thermal smoothing.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    const N = W * H;
+    const SEA = st.sea ?? 19;
+    if (!W || !H) {
+      Program.toast("graph-erosion: canvas not initialized");
+      return;
+    }
+
+    // Source image
+    const im = st.work || cx.getImageData(0, 0, W, H);
+    const S = im.data;
+
+    // Parameters (you can later wire these into your UI)
+    const P = Object.assign({
+      iters:   80,     // number of erosion iterations
+      ke:      1.0,    // Erosion power slider (Ke in original, scaled down internally)
+      rain:    1.0,    // Rainfall / flux
+      uplift:  0.05,   // Constraint (uplift) strength
+      noise:   0.005,  // Initial surface noise (0..~0.05)
+      hmin:    SEA,    // Active erosion min (0–255)
+      hmax:    255     // Active erosion max (0–255)
+    }, (st.meta && st.meta.graphErosion) || {});
+    st.meta = st.meta || {};
+    st.meta.graphErosion = P;
+
+    const size = N;
+
+    // --- Buffers (Float32 for precision) ---
+    const heightMap     = new Float32Array(size);
+    const constraintMap = new Float32Array(size);
+    const fluxMap       = new Float32Array(size);
+    const maskMap       = new Uint8Array(size);   // 1 = land, 0 = ocean
+
+    const slopes    = new Float32Array(size);
+    const downstream = new Int32Array(size);
+    const inDegree   = new Int32Array(size);
+    const tempH      = new Float32Array(size);    // for smoothing
+
+    // --- Initialize maps from grayscale image ---
+    for (let i = 0; i < size; i++) {
+      const g = S[i * 4];  // assuming grayscale already (R=G=B)
+      if (g < SEA) {
+        // Ocean
+        maskMap[i] = 0;
+        heightMap[i] = 0;
+        constraintMap[i] = 0;
+      } else {
+        maskMap[i] = 1;
+        const h = g / 255;
+        heightMap[i] = h;
+        constraintMap[i] = h;
+      }
+    }
+
+    // --- Apply initial noise (like applyNoise in your tool) ---
+    if (P.noise > 0) {
+      const strength = P.noise;
+      for (let i = 0; i < size; i++) {
+        if (!maskMap[i]) continue;
+        const n = (Math.random() * 2 - 1) * strength;
+        heightMap[i] += n;
+        constraintMap[i] += n;
+      }
+    }
+
+    // --- Precompute constants ---
+    const Ke       = P.ke * 0.05; // scaled like original
+    const rain     = P.rain;
+    const K_uplift = P.uplift;
+    const minH     = (P.hmin / 255);  // 0..1
+    const maxH     = (P.hmax / 255);  // 0..1
+    const SQRT2    = Math.SQRT2;
+    const blend    = 0.05;           // thermal smoothing factor
+
+    // Offsets for 8-neighbor graph
+    const offsets = [-W, W, -1, 1, -W - 1, -W + 1, W - 1, W + 1];
+    const dists   = [1, 1, 1, 1, SQRT2, SQRT2, SQRT2, SQRT2];
+
+    function step() {
+      // 1) Build graph & slopes
+      inDegree.fill(0);
+
+      for (let i = 0; i < size; i++) {
+        if (!maskMap[i]) {
+          downstream[i] = -1;
+          slopes[i] = 0;
+          continue;
+        }
+
+        let maxSlope = 0;
+        let bestN = -1;
+        const h = heightMap[i];
+        const r = (i / W) | 0;
+        const c = i % W;
+
+        for (let k = 0; k < 8; k++) {
+          const nIdx = i + offsets[k];
+          if (nIdx < 0 || nIdx >= size) continue;
+
+          const nc = nIdx % W;
+          // Prevent wrap across left/right edges
+          if (Math.abs(c - nc) > 1) continue;
+
+          const diff = h - heightMap[nIdx];
+          if (diff > 0) {
+            const slope = diff / dists[k];
+            if (slope > maxSlope) {
+              maxSlope = slope;
+              bestN = nIdx;
+            }
+          }
+        }
+
+        downstream[i] = bestN;
+        slopes[i] = maxSlope;
+        if (bestN !== -1) inDegree[bestN]++;
+      }
+
+      // 2) Accumulate flux via topological order
+      const stack = [];
+      for (let i = 0; i < size; i++) {
+        fluxMap[i] = rain;
+        if (inDegree[i] === 0 && maskMap[i]) {
+          stack.push(i);
+        }
+      }
+
+      let ptr = 0;
+      while (ptr < stack.length) {
+        const u = stack[ptr++];
+        const v = downstream[u];
+        if (v !== -1 && maskMap[v]) {
+          fluxMap[v] += fluxMap[u];
+          inDegree[v]--;
+          if (inDegree[v] === 0) {
+            stack.push(v);
+          }
+        }
+      }
+
+      // 3) Stream-power erosion + uplift
+      for (let i = 0; i < size; i++) {
+        if (!maskMap[i]) continue;
+
+        const hCur = heightMap[i];
+
+        // Only erode in active range
+        if (hCur >= minH && hCur <= maxH) {
+          const v = downstream[i];
+          if (v !== -1) {
+            let erosion = Ke * fluxMap[i] * slopes[i];
+
+            const diff = hCur - heightMap[v];
+            if (diff > 0) {
+              const maxErode = diff * 0.5; // cap like original
+              if (erosion > maxErode) erosion = maxErode;
+              heightMap[i] -= erosion;
+            }
+          }
+        }
+
+        // Uplift / constraint (restorative pull toward original)
+        if (K_uplift > 0) {
+          heightMap[i] += (constraintMap[i] - heightMap[i]) * K_uplift;
+        }
+      }
+
+      // 4) Simple thermal smoothing
+      tempH.set(heightMap);
+      for (let i = 0; i < size; i++) {
+        if (!maskMap[i]) continue;
+        const row = (i / W) | 0;
+        const col = i % W;
+        if (row <= 0 || row >= H - 1 || col <= 0 || col >= W - 1) continue;
+
+        const avg = (
+          tempH[i - 1] +
+          tempH[i + 1] +
+          tempH[i - W] +
+          tempH[i + W]
+        ) * 0.25;
+
+        heightMap[i] = heightMap[i] * (1 - blend) + avg * blend;
+      }
+    }
+
+    // --- Run iterations ---
+    const iters = Math.max(1, P.iters | 0);
+    for (let t = 0; t < iters; t++) {
+      step();
+    }
+
+    // --- Write back to image (grayscale, land-only) ---
+    for (let i = 0; i < size; i++) {
+      let r, g, b;
+      if (!maskMap[i]) {
+        r = g = b = 0; // ocean stays black / 0
+      } else {
+        let h = heightMap[i];
+        if (h < 0) h = 0;
+        if (h > 1) h = 1;
+        const v = (h * 255) | 0;
+        r = g = b = v;
+      }
+      const p = i * 4;
+      S[p] = r;
+      S[p + 1] = g;
+      S[p + 2] = b;
+      S[p + 3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast(`graph-erosion: iters=${iters}, ke=${P.ke.toFixed(2)}, rain=${P.rain.toFixed(2)}, uplift=${P.uplift.toFixed(3)}`);
+  }
+});
+
+Program.register({
+  id: "coastal-wave-noise",
+  name: "Coastal Wave Noise (19–40)",
+  enabled: true,
+  desc: "Applies continuous wave-like noise to the 19–40 elevation band to break banding near shorelines and lowlands.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    if (!W || !H) {
+      Program.toast("coastal-wave-noise: canvas not initialized");
+      return;
+    }
+
+    const SEA = st.sea ?? 19;
+    const im  = st.work || cx.getImageData(0, 0, W, H);
+    const S   = im.data;
+
+    // Tunables (you can tweak or even expose via st.* later)
+    const AMP_BASE   = 1.8;    // Base amplitude of the waves in gray levels
+    const FREQ_WORLD = 0.045;  // Angular frequency in "world space" (controls wavelength)
+    const Y_STRETCH  = 1.27;   // Slight anisotropy so waves aren't perfectly symmetric
+    const EDGE_FADE  = 0.4;    // Extra fade near band edges so transition is smooth
+
+    // Band limits
+    const BAND_MIN = 19;
+    const BAND_MAX = 40;
+    const BAND_SPAN = BAND_MAX - BAND_MIN; // 21
+
+    // Random-ish orientation / phase, but deterministic if you use st.rand
+    const rand01 = st.rand ? st.rand.next : Math.random;
+    const phaseX = (st.rand ? st.rand.range(0, Math.PI * 2) : rand01() * Math.PI * 2);
+    const phaseY = (st.rand ? st.rand.range(0, Math.PI * 2) : rand01() * Math.PI * 2);
+
+    // Precompute overall scaling with map size so waves look similar at 4k/8k/etc.
+    const scale = Math.sqrt((W * H) / (2048 * 1024));  // mild size scaling
+    const amp   = AMP_BASE * scale;
+    const freq  = FREQ_WORLD / scale;
+
+    for (let y = 0, i = 0; y < H; y++) {
+      const yf = y * freq * Y_STRETCH;
+      for (let x = 0; x < W; x++, i++) {
+        const idx = i * 4;
+        const v   = S[idx]; // grayscale in R (G/B same)
+
+        // Only operate on the 19–40 band
+        if (v < BAND_MIN || v > BAND_MAX) continue;
+
+        const isLand = v >= SEA;
+
+        // Smooth fade toward center of the band so edges don't get harsh
+        // v in [19,40] -> t in [0,1], bell-shaped weight
+        let t = (v - BAND_MIN) / BAND_SPAN;   // normalize 19–40 -> 0–1
+        if (t < 0) t = 0;
+        if (t > 1) t = 1;
+
+        const edgeFade   = Math.min(t, 1 - t);      // higher in middle, lower at edges
+        const bandWeight = (edgeFade / 0.5) ** 1.25; // sharpen bell; 0 at edges, ~1 mid
+
+        // Continuous 2D "wave" pattern (sum of two sinusoids)
+        const xf = x * freq;
+        const wave =
+          Math.sin(xf + phaseX) * 0.55 +
+          Math.sin(yf + phaseY) * 0.45;
+
+        // Final perturbation
+        let dv = wave * amp * bandWeight * (1 - EDGE_FADE * (1 - bandWeight));
+
+        // Apply and clamp, but keep land/sea classification stable at 19
+        let nv = v + dv;
+
+        if (isLand && nv < SEA) {
+          nv = SEA;          // never push land back below sea level
+        } else if (!isLand && nv >= SEA) {
+          nv = SEA - 0.01;   // keep sea just under the land threshold
+        }
+
+        if (nv < 0)   nv = 0;
+        if (nv > 255) nv = 255;
+
+        const g = nv;
+        S[idx] = S[idx + 1] = S[idx + 2] = g;
+        S[idx + 3] = 255;
+      }
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast("Coastal wave noise applied to 19–40 band.");
+  }
+});
+
+Program.register({
+  id: "coastal-shelf-ramp",
+  name: "Continental Shelf Ramp",
+  enabled: true,
+  desc: "Re-shapes sea floor near coasts into a shallow continental shelf instead of a vertical dropoff.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    if (!W || !H) {
+      Program.toast("coastal-shelf-ramp: canvas not initialized");
+      return;
+    }
+
+    const SEA = st.sea ?? 19;
+    const im  = st.work || cx.getImageData(0, 0, W, H);
+    const S   = im.data;
+    const N   = W * H;
+
+    // -------- Tunables (safe defaults) ----------
+    // How far (in pixels) into the ocean we build the shelf
+    const MAX_DIST   = st.shelfRadius      ?? 48;  // try 32–64
+    // At the coastline: sea is at most SEA - MIN_DROP (shallow water)
+    const MIN_DROP   = st.shelfMinDrop     ?? 3;   // 2–5 works nicely
+    // At the outer edge of shelf: allow up to SEA - MAX_DROP
+    const MAX_DROP   = st.shelfMaxDrop     ?? 40;  // controls how deep shelf can get
+    // How quickly the allowed drop increases with distance
+    const EXP        = st.shelfFalloffExp  ?? 1.25;
+
+    // Masks / working arrays
+    const isLand = new Uint8Array(N);
+    const dist   = new Int16Array(N);
+    dist.fill(-1);
+
+    // Build land mask from current heightmap
+    for (let i = 0; i < N; i++) {
+      const v = S[i * 4]; // grayscale
+      if (v >= SEA) isLand[i] = 1;
+    }
+
+    // BFS queue for distance-from-coast in sea cells
+    const queue = new Int32Array(N);
+    let qh = 0, qt = 0;
+
+    // Seed the queue with sea cells that touch land (4-connected).
+    for (let y = 0, i = 0; y < H; y++) {
+      for (let x = 0; x < W; x++, i++) {
+        if (isLand[i]) continue;
+
+        let coast = false;
+        if (x > 0     && isLand[i - 1])   coast = true;
+        else if (x < W - 1 && isLand[i + 1])   coast = true;
+        else if (y > 0     && isLand[i - W])   coast = true;
+        else if (y < H - 1 && isLand[i + W])   coast = true;
+
+        if (!coast) continue;
+
+        dist[i] = 0;
+        queue[qt++] = i;
+      }
+    }
+
+    // Flood into the ocean up to MAX_DIST, recording distance from coast
+    const dirs = [-1, 1, -W, W]; // 4-connected
+    while (qh < qt) {
+      const i = queue[qh++];
+      const d = dist[i];
+      if (d >= MAX_DIST) continue;
+
+      const x = i % W;
+
+      // left
+      let ni = i - 1;
+      if (x > 0 && ni >= 0 && !isLand[ni] && dist[ni] === -1) {
+        dist[ni] = d + 1;
+        queue[qt++] = ni;
+      }
+      // right
+      ni = i + 1;
+      if (x < W - 1 && ni < N && !isLand[ni] && dist[ni] === -1) {
+        dist[ni] = d + 1;
+        queue[qt++] = ni;
+      }
+      // up
+      ni = i - W;
+      if (ni >= 0 && !isLand[ni] && dist[ni] === -1) {
+        dist[ni] = d + 1;
+        queue[qt++] = ni;
+      }
+      // down
+      ni = i + W;
+      if (ni < N && !isLand[ni] && dist[ni] === -1) {
+        dist[ni] = d + 1;
+        queue[qt++] = ni;
+      }
+    }
+
+    // Second pass: raise sea floor near coasts to form a ramp
+    for (let i = 0; i < N; i++) {
+      if (isLand[i]) continue;       // only touch sea
+      const d = dist[i];
+      if (d < 0) continue;           // deep ocean beyond shelf radius
+
+      const idx = i * 4;
+      let v = S[idx];
+
+      // Normalized distance into the ocean: 0 at the coast, 1 at outer edge
+      let u = d / MAX_DIST;
+      if (u < 0) u = 0;
+      if (u > 1) u = 1;
+
+      // Allowed drop below SEA at this distance
+      //  - close to shore: ~MIN_DROP (shallow)
+      //  - farther: approaches MAX_DROP
+      const drop = MIN_DROP + (MAX_DROP - MIN_DROP) * Math.pow(u, EXP);
+      const vLimit = SEA - drop;  // sea should not be deeper (darker) than this
+
+      // If current sea is deeper than allowed, raise it up toward vLimit
+      if (v < vLimit) {
+        v = vLimit;
+      }
+
+      // Safety clamps
+      if (v >= SEA) v = SEA - 0.01; // stay sea
+      if (v < 0)    v = 0;
+      if (v > 255)  v = 255;
+
+      const g = v;
+      S[idx] = S[idx + 1] = S[idx + 2] = g;
+      S[idx + 3] = 255;
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast("Continental shelf ramp applied near coasts.");
+  }
+});
+
+
+Program.register({
+  id: "coastal-shelf-soften",
+  name: "Coastal Shelf Softener",
+  enabled: true,
+  desc: "Softens the sharp coastal dropoff around sea level by locally blurring only near the shoreline.",
+  async run(st) {
+    const W = st.W, H = st.H;
+    if (!W || !H) {
+      Program.toast("coastal-shelf-soften: canvas not initialized");
+      return;
+    }
+
+    const SEA = st.sea ?? 19;
+    const im  = st.work || cx.getImageData(0, 0, W, H);
+    const S   = im.data;
+    const N   = W * H;
+
+    // -------- Tunables ----------
+    // Range around SEA where we soften (in gray levels)
+    const BELOW_RANGE  = 10;   // how far below SEA we affect
+    const ABOVE_RANGE  = 250;   // how far above SEA we affect
+    const STRENGTH     = 0.85; // 0–1: how strongly we blend toward the blurred value
+    const EXPONENT     = 1.4;  // how sharply weight falls off away from SEA
+
+    // 3x3 Gaussian-ish kernel (1 2 1; 2 4 2; 1 2 1)
+    const KERNEL = [
+      1, 2, 1,
+      2, 4, 2,
+      1, 2, 1
+    ];
+    const KSUM = 16;
+
+    // Copy of the grayscale for reading so we don't smear as we go
+    const src = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      src[i] = S[i * 4]; // R channel (G/B same)
+    }
+
+    // Main pass: local blur + blending near coastline
+    for (let y = 0, i = 0; y < H; y++) {
+      for (let x = 0; x < W; x++, i++) {
+        const v = src[i];
+
+        // Only operate in a band around SEA to avoid touching deep ocean or high interior
+        if (v < SEA - BELOW_RANGE || v > SEA + ABOVE_RANGE) continue;
+
+        // How "coastal" are we? Strongest exactly at SEA, weaker away.
+        const dist =
+          v >= SEA
+            ? (v - SEA) / ABOVE_RANGE
+            : (SEA - v) / BELOW_RANGE;
+        let coastalWeight = 1 - Math.min(Math.max(dist, 0), 1); // 1 near SEA, 0 at band edges
+        coastalWeight = coastalWeight ** EXPONENT;
+
+        if (coastalWeight <= 0) continue;
+
+        // 3x3 blurred value from src
+        let acc = 0;
+        let wsum = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const yy = y + dy;
+          if (yy < 0 || yy >= H) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx;
+            if (xx < 0 || xx >= W) continue;
+            const kk = (dy + 1) * 3 + (dx + 1);
+            const w  = KERNEL[kk];
+            const j  = yy * W + xx;
+            acc  += src[j] * w;
+            wsum += w;
+          }
+        }
+        const vBlur = acc / (wsum || 1);
+
+        // Blend toward blurred value
+        let nv = v + (vBlur - v) * STRENGTH * coastalWeight;
+
+        // Keep land/sea classification stable at SEA
+        const wasLand = v >= SEA;
+        if (wasLand && nv < SEA) {
+          nv = SEA;
+        } else if (!wasLand && nv >= SEA) {
+          nv = SEA - 0.01;
+        }
+
+        if (nv < 0)   nv = 0;
+        if (nv > 255) nv = 255;
+
+        const idx = i * 4;
+        const g = nv;
+        S[idx] = S[idx + 1] = S[idx + 2] = g;
+        S[idx + 3] = 255;
+      }
+    }
+
+    st.work = im;
+    cx.putImageData(im, 0, 0);
+    Program.toast("Coastal shelf softening applied near sea level.");
+  }
+});
+
+
+
+
+
+//
+// UI wiring
+//
+UI.fit.onclick=()=>{if(Program.state.src){Program.setCanvasSize(Program.state.src.width,Program.state.src.height)}}
+UI.file.onchange = e => {
+  const f=e.target.files[0]; if(!f) return;
+  const im=new Image();
+  im.onload=()=>{
+    Program.setCanvasSize(im.naturalWidth, im.naturalHeight);
+    cx.drawImage(im,0,0,Program.state.W,Program.state.H);
+    // important: capture what we just drew as the source + work
+    Program.state.src = cx.getImageData(0,0,Program.state.W,Program.state.H);
+    Program.state.work = cx.getImageData(0,0,Program.state.W,Program.state.H);
+    Program.toast("Loaded");
+  };
+  im.src = URL.createObjectURL(f);
+};
+
+UI.run.onclick = () => { Program.run(); };
+UI.reroll.onclick=()=>{Program.state.seed=(Math.random()*1e9)|0;Program.state.rand=PRNG(Program.state.seed);Program.toast("Seed: "+Program.state.seed)};
+UI.save.onclick=()=>{const a=document.createElement("a");a.download="heightmap.png";a.href=UI.cv.toDataURL("image/png");a.click()};
+UI.snap.onclick=()=>{Program.run(["capture-edges"])};
+
+document.addEventListener("keydown",e=>{if(e.code==="Space"){e.preventDefault();Program.run()} if(e.key==="r"||e.key==="R"){UI.reroll.click()}});
+
+// Initialize canvas (small default)
+Program.setCanvasSize(1024,512);
+Program.refreshList();
+Program.setProgress(0,"idle");
+})();
+
+
+
+
+</script>
+</body></html>

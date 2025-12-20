@@ -1,0 +1,496 @@
+<!-- Full revised file: parchment theme + left-side menu + canvas fills remaining space -->
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Projections</title>
+</head>
+<body>
+
+<script>(()=>{"use strict";
+const d=document,b=d.body,e=(t,a)=>Object.assign(d.createElement(t),a||{});
+
+/* --- PARCHMENT + LEFT SIDEBAR LAYOUT --- */
+const s=e("style",{textContent:`
+:root{
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --parchment-edge:#dcccad;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --accent-2:#2f5f73;
+  --border:#c4b496;
+  --shadow:0 10px 30px rgba(34,26,18,.20);
+  --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+  --radius:14px;
+  --radius-sm:10px;
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  font-family:var(--font-sans);
+  overflow:hidden;
+
+  background:
+    radial-gradient(1200px 900px at 15% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+    radial-gradient(900px 700px at 80% 15%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+    radial-gradient(900px 700px at 30% 85%, rgba(60,47,33,.08), rgba(60,47,33,0) 65%),
+    linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+}
+
+/* paper grain overlay */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(60,47,33,.03) 0, rgba(60,47,33,.03) 1px, rgba(60,47,33,0) 3px, rgba(60,47,33,0) 6px),
+    repeating-linear-gradient(90deg, rgba(60,47,33,.02) 0, rgba(60,47,33,.02) 1px, rgba(60,47,33,0) 4px, rgba(60,47,33,0) 9px);
+  mix-blend-mode:multiply;
+  opacity:.35;
+}
+
+.app{
+  display:flex;
+  height:100vh;
+  width:100vw;
+  gap:14px;
+  padding:14px;
+}
+
+.sidebar{
+  width:340px;
+  max-width:38vw;
+  min-width:280px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  background:
+    radial-gradient(1200px 300px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.40), rgba(255,255,255,.18));
+  padding:14px 14px 12px;
+  overflow:auto;
+}
+
+.title{
+  font-family:var(--font-serif);
+  font-weight:800;
+  letter-spacing:.2px;
+  margin:2px 0 8px;
+  text-shadow:0 1px 0 rgba(255,255,255,.45);
+}
+.sub{
+  font-size:12px;
+  color:var(--ink-muted);
+  line-height:1.35;
+  margin:0 0 12px;
+}
+
+.ui{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:stretch;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+label{
+  font-size:12px;
+  font-weight:700;
+  color:var(--ink-muted);
+  letter-spacing:.15px;
+}
+
+.select, .file, .range{
+  width:100%;
+}
+
+input[type="file"]{
+  width:100%;
+  padding:10px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25));
+  color:var(--ink);
+  box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 2px 8px rgba(34,26,18,.08);
+}
+input[type="file"]::file-selector-button{
+  margin-right:10px;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid rgba(60,47,33,.25);
+  background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+  color:var(--ink);
+  font-weight:800;
+  cursor:pointer;
+}
+input[type="file"]::file-selector-button:hover{ filter:brightness(.98); }
+
+select{
+  width:100%;
+  padding:10px 10px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25));
+  color:var(--ink);
+  font-weight:700;
+  box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 2px 8px rgba(34,26,18,.08);
+}
+
+input[type="range"]{
+  width:100%;
+  accent-color: var(--accent);
+}
+
+.chip{
+  padding:6px 10px;
+  border:1px solid rgba(60,47,33,.22);
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  user-select:none;
+  background:rgba(255,255,255,.22);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset;
+  color:var(--ink);
+}
+.chip.inline{
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+}
+
+.hr{
+  height:1px;
+  background:rgba(60,47,33,.16);
+  margin:10px 0 8px;
+}
+
+.stage{
+  flex:1;
+  min-width:0;
+  border-radius:var(--radius);
+  border:1px solid rgba(60,47,33,.25);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  position:relative;
+
+  /* drafting-table feel */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.05)),
+    radial-gradient(900px 300px at 50% 0%, rgba(255,255,255,.35), rgba(255,255,255,0) 70%),
+    linear-gradient(45deg, rgba(60,47,33,.10) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(60,47,33,.10) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(60,47,33,.10) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(60,47,33,.10) 75%);
+  background-size:auto, auto, 22px 22px, 22px 22px, 22px 22px, 22px 22px;
+  background-position:0 0, 0 0, 0 0, 0 11px, 11px -11px, -11px 0;
+}
+
+canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  image-rendering:pixelated;
+}
+
+/* Responsive: collapse sidebar to top on small screens */
+@media (max-width: 860px){
+  body{ overflow:auto; }
+  .app{ flex-direction:column; height:auto; }
+  .sidebar{ width:auto; max-width:none; min-width:0; }
+  .stage{ height: 70vh; }
+}
+`});
+
+/* --- Build layout nodes --- */
+const app=e("div",{className:"app"});
+const sidebar=e("div",{className:"sidebar"});
+const stage=e("div",{className:"stage"});
+
+const title=e("div",{className:"title",textContent:"Heightmap Projection Viewer"});
+const sub=e("div",{className:"sub",innerHTML:``});  // Placeholder for subtext `});
+
+const u=e("div",{className:"ui"});
+
+/* Controls (same logic, new layout classes) */
+const f=e("input",{className:"file",type:"file",accept:"image/*"});
+const p=e("select",{className:"select"});
+
+const l=e("input",{className:"range",type:"range",min:-180,max:180,value:0,step:1});
+const L=e("span",{className:"chip",textContent:"Lon: 0°"});
+
+const q=e("input",{className:"range",type:"range",min:.2,max:1,step:.05,value:.6});
+const Q=e("span",{className:"chip",textContent:"Quality: 0.60x"});
+
+const rc=e("input",{type:"checkbox"});
+const RC=e("label",{className:"chip inline",textContent:"Keep colors"});
+RC.prepend(rc);
+
+const rs=e("input",{type:"checkbox"});
+const RS=e("label",{className:"chip inline",textContent:"Keep source size"});
+RS.prepend(rs);
+
+const c=e("canvas");
+const x=c.getContext("2d",{willReadFrequently:!0});
+const y=e("canvas");
+const k=y.getContext("2d",{willReadFrequently:!0});
+
+/* Assemble DOM */
+d.head.appendChild(s);
+b.appendChild(app);
+app.append(sidebar, stage);
+sidebar.append(title, sub, u);
+stage.appendChild(c);
+
+/* UI layout rows */
+p.innerHTML="<option>Equirectangular</option><option>Mercator</option><option>Mollweide</option><option>Orthographic</option>";
+
+u.append(
+  e("label",{textContent:"1) Source image"}),
+  f,
+  e("div",{className:"hr"}),
+  e("label",{textContent:"2) Projection"}),
+  p,
+  e("div",{className:"row"},[
+    e("label",{textContent:"Center lon"}),
+    L
+  ]),
+  l,
+  e("div",{className:"row"},[
+    e("label",{textContent:"Quality"}),
+    Q
+  ]),
+  q,
+  e("div",{className:"row"},[RC, RS])
+);
+
+/* --- Original projection engine (unchanged, except canvas sizing to fit stage) --- */
+let w=0,h=0,I=null,P=null,phi0=0,raf=0;
+
+const H=window.HeightmapProjection={
+  imgW:0,imgH:0,srcData:null,λ0:0,projections:{},render:()=>{},fit:()=>{},
+  keepColor:!1,keepSize:!1
+};
+
+const cl=(x,a,b)=>x<a?a:x>b?b:x,
+      wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,
+      dr=d=>d*Math.PI/180,
+      lr=(a,b,t)=>a+(b-a)*t;
+
+/* Canvas sizing: fill stage area (remaining space). If keepSize: use source pixels. */
+const alloc=()=>{
+  if(H.keepSize && H.imgW && H.imgH){
+    w=H.imgW; h=H.imgH;
+  }else{
+    // Fit to stage's current pixel size; apply quality scalar
+    const r = stage.getBoundingClientRect();
+    const scale = parseFloat(q.value);
+    w = Math.max(2, Math.floor(r.width  * scale));
+    h = Math.max(2, Math.floor(r.height * scale));
+  }
+  c.width=w; c.height=h;
+  I=x.createImageData(w,h); P=I.data;
+};
+
+const samp=(u,v)=>{
+  let iw=H.imgW,ih=H.imgH,d=H.srcData;
+  u=(u%iw+iw)%iw; v=cl(v,0,ih-1);
+  let x0=u|0,y0=v|0,x1=(x0+1)%iw,y1=Math.min(y0+1,ih-1),
+      fx=u-x0,fy=v-y0,
+      idx=(X,Y)=>((Y*iw+X)<<2),
+      i00=idx(x0,y0),i10=idx(x1,y0),i01=idx(x0,y1),i11=idx(x1,y1),
+      g00=d[i00],g10=d[i10],g01=d[i01],g11=d[i11],
+      g0=g00+(g10-g00)*fx,g1=g01+(g11-g01)*fx;
+  return g0+(g1-g0)*fy;
+};
+
+const sampRGB=(u,v)=>{
+  let iw=H.imgW,ih=H.imgH,d=H.srcData;
+  u=(u%iw+iw)%iw; v=cl(v,0,ih-1);
+  let x0=u|0,y0=v|0,x1=(x0+1)%iw,y1=Math.min(y0+1,ih-1),
+      fx=u-x0,fy=v-y0,
+      idx=(X,Y)=>((Y*iw+X)<<2),
+      i00=idx(x0,y0),i10=idx(x1,y0),i01=idx(x0,y1),i11=idx(x1,y1),
+      lerp=(a,b,t)=>a+(b-a)*t,
+      R0=d[i00],G0=d[i00+1],B0=d[i00+2],
+      R1=d[i10],G1=d[i10+1],B1=d[i10+2],
+      R2=d[i01],G2=d[i01+1],B2=d[i01+2],
+      R3=d[i11],G3=d[i11+1],B3=d[i11+2],
+      r0=lerp(R0,R1,fx),g0=lerp(G0,G1,fx),b0=lerp(B0,B1,fx),
+      r1=lerp(R2,R3,fx),g1=lerp(G2,G3,fx),b1=lerp(B2,B3,fx);
+  return[lerp(r0,r1,fy),lerp(g0,g1,fy),lerp(b0,b1,fy)];
+};
+
+const mask=i=>{P[i]=P[i+1]=P[i+2]=240;P[i+3]=255};
+
+H.projections.Equirectangular=(nx,ny,lc)=>({λ:wp((nx-.5)*2*Math.PI+lc),φ:(.5-ny)*Math.PI});
+H.projections.Mercator=(nx,ny,lc)=>{
+  let pm=dr(85),Ym=Math.log(Math.tan(Math.PI/4+pm/2)),ym=-Ym,yM=lr(ym,Ym,ny),
+      ph=cl(2*Math.atan(Math.exp(yM))-Math.PI/2,-pm,pm);
+  return{λ:wp((nx-.5)*2*Math.PI+lc),φ:ph};
+};
+H.projections.Mollweide=(nx,ny,lc)=>{
+  let X=(nx-.5)*4/Math.SQRT2,Y=(.5-ny)*Math.SQRT2;
+  if(Math.abs(Y)>Math.SQRT2)return null;
+  let th=Math.asin(cl(Y/Math.SQRT2,-1,1)),c=Math.cos(th);
+  if(!c)return null;
+  return{φ:Math.asin(cl((2*th+Math.sin(2*th))/Math.PI,-1,1)),λ:wp(lc+(Math.PI*X)/(2*c))};
+};
+H.projections.Orthographic=(nx,ny,lc)=>{
+  let xr=(nx-.5)*2,yr=(.5-ny)*2,r2=xr*xr+yr*yr;
+  if(r2>1)return null;
+  let r=Math.sqrt(r2),ca=Math.asin(r),si=r?Math.sin(ca)/r:1,co=Math.cos(ca),
+      ph=Math.asin(cl(Math.sin(phi0)*co+yr*si*Math.cos(phi0),-1,1)),
+      la=wp(lc+Math.atan2(xr*si,co*Math.cos(phi0)-yr*si*Math.sin(phi0)));
+  return{λ:la,φ:ph};
+};
+
+H.fit=()=>{alloc();H.render()};
+H.render=()=>{
+  if(!H.srcData)return;
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(()=>{
+    let pr=p.value,lc=dr(H.λ0),proj=H.projections[pr],i=0;
+    for(let y0=0;y0<h;y0++){
+      let ny=(y0+.5)/h;
+      for(let x0=0;x0<w;x0++,i+=4){
+        let nx=(x0+.5)/w,m=proj(nx,ny,lc);
+        if(!m||isNaN(m.λ)||isNaN(m.φ)){mask(i);continue}
+        let u=((wp(m.λ)+Math.PI)/(2*Math.PI))*H.imgW,
+            v=((Math.PI/2-m.φ)/Math.PI)*H.imgH;
+        if(H.keepColor){
+          let t=sampRGB(u,v);
+          P[i]=t[0]|0;P[i+1]=t[1]|0;P[i+2]=t[2]|0;
+        }else{
+          let g=samp(u,v)|0;
+          P[i]=P[i+1]=P[i+2]=g;
+        }
+        P[i+3]=255;
+      }
+    }
+    x.putImageData(I,0,0);
+  });
+};
+
+f.addEventListener("change",ev=>{
+  let F=ev.target.files&&ev.target.files[0];
+  if(!F)return;
+  let r=new FileReader;
+  r.onload=e2=>{
+    let im=new Image;
+    im.onload=()=>{
+      H.imgW=im.naturalWidth;H.imgH=im.naturalHeight;
+      y.width=H.imgW;y.height=H.imgH;
+      k.drawImage(im,0,0);
+      H.srcData=k.getImageData(0,0,H.imgW,H.imgH).data;
+      H.fit();
+    };
+    im.src=e2.target.result;
+  };
+  r.readAsDataURL(F);
+});
+
+p.addEventListener("change",H.render);
+l.addEventListener("input",()=>{
+  H.λ0=parseFloat(l.value)||0;
+  L.textContent="Lon: "+Math.round(H.λ0)+"°";
+  H.render();
+});
+q.addEventListener("input",()=>{
+  Q.textContent="Quality: "+(+q.value).toFixed(2)+"x";
+  if(!H.keepSize)H.fit();
+});
+rc.addEventListener("change",()=>{H.keepColor=rc.checked;H.render()});
+rs.addEventListener("change",()=>{
+  H.keepSize=rs.checked;
+  q.disabled=H.keepSize;
+  H.fit();
+});
+
+addEventListener("resize",()=>{ if(!H.keepSize)H.fit(); });
+
+/* init */
+H.fit();
+})();</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,dr=d=>d*Math.PI/180,cl=(x,a,b)=>x<a?a:x>b?b:x;A("Sinusoidal",(nx,ny,lc)=>{const φ=(.5-ny)*Math.PI,c=Math.cos(φ),x=(nx-.5)*2*Math.PI;if(Math.abs(x)>Math.PI*c||!c)return null;return{λ:wp(lc+x/c),φ}});(()=>{const φ0=dr(45),c0=Math.cos(φ0),s0=Math.sin(φ0);A("Gall-Peters",(nx,ny,lc)=>{const y=(.5-ny)*2,φ=Math.asin(cl(y*s0,-1,1)),x=(nx-.5)*2*Math.PI*c0;return{λ:wp(lc+x/c0),φ}})})();(()=>{const φ0=dr(30),c0=Math.cos(φ0),s0=Math.sin(φ0);A("Behrmann (CEA 30°)",(nx,ny,lc)=>{const y=(.5-ny)*2,φ=Math.asin(cl(y*s0,-1,1)),x=(nx-.5)*2*Math.PI*c0;return{λ:wp(lc+x/c0),φ}})})();A("Lambert Azimuthal Equal-Area",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>2)return null;if(ρ===0)return{λ:lc,φ:0};const c=2*Math.asin(cl(ρ/2,0,1)),sc=Math.sin(c),cc=Math.cos(c),φ=Math.asin(cl((y*sc)/ρ,-1,1)),λ=wp(lc+Math.atan2(x*sc,ρ*cc));return{λ,φ}});A("Azimuthal Equidistant",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>Math.PI)return null;if(ρ===0)return{λ:lc,φ:0};const c=ρ,sc=Math.sin(c),cc=Math.cos(c),φ=Math.asin(cl((y*sc)/ρ,-1,1)),λ=wp(lc+Math.atan2(x*sc,ρ*cc));return{λ,φ}});if(S&&!S.value)S.value="Sinusoidal";H.render()})();
+</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,dr=d=>d*Math.PI/180,cl=(x,a,b)=>x<a?a:x>b?b:x;A("Hammer",(nx,ny,lc)=>{const X=(nx-.5)*4/Math.SQRT2,Y=(.5-ny)*Math.SQRT2,t=X*X+Y*Y;if(t>4)return null;const z=Math.sqrt(1-t/4);return{φ:Math.asin(cl(Y*z/Math.SQRT2,-1,1)),λ:wp(lc+2*Math.atan2(z*X/Math.SQRT2,2*z*z-1))}});A("Kavrayskiy VII",(nx,ny,lc)=>{const C=(3*Math.PI/2)*Math.sqrt(1/3),X=(nx-.5)*2*C,Y=(.5-ny)*Math.PI,den=Math.sqrt(1/3-(Y/Math.PI)*(Y/Math.PI));if(den<=0)return null;return{λ:wp(lc+(2*X/3)/den),φ:cl(Y,-Math.PI/2,Math.PI/2)}});A("Eckert VI",(nx,ny,lc)=>{const X=(nx-.5)*2*Math.PI,Y=(.5-ny)*Math.PI;return{φ:cl(Y,-Math.PI/2,Math.PI/2),λ:wp(lc+2*X/(1+Math.cos(Y)))}});(()=>{const p0=dr(37.5),c0=Math.cos(p0);A("Hobo-Dyer (CEA 37.5°)",(nx,ny,lc)=>{const X=(nx-.5)*2*Math.PI*c0,y=(.5-ny)*2,sv=cl(y*c0,-1,1);return{φ:Math.asin(sv),λ:wp(lc+X/c0)}})})();(()=>{const c0=1;A("Lambert CEA (0°)",(nx,ny,lc)=>{const X=(nx-.5)*2*Math.PI*c0,y=(.5-ny)*2,sv=cl(y*c0,-1,1);return{φ:Math.asin(sv),λ:wp(lc+X/c0)}})})();if(S&&!S.value)S.value="Hammer";H.render()})();
+</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,cl=(x,a,b)=>x<a?a:x>b?b:x;A("Stereographic",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>4)return null;const c=2*Math.atan2(ρ,2),sc=ρ?Math.sin(c)/ρ:1,cc=Math.cos(c),φ=Math.asin(cl(y*sc,-1,1)),λ=wp(lc+Math.atan2(x*sc,cc));return{λ,φ}});A("Gnomonic",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>4)return null;const c=Math.atan(ρ),sc=ρ?Math.sin(c)/ρ:1,cc=Math.cos(c),φ=Math.asin(cl(y*sc,-1,1)),λ=wp(lc+Math.atan2(x*sc,cc));return{λ,φ}});A("Collignon",(nx,ny,lc)=>{const SQP=Math.sqrt(Math.PI),y=(1-ny)*2*SQP,s=cl(1-y/SQP,-1,1),φ=Math.asin(s),rt=Math.sqrt(Math.max(1-s,0));if(rt<1e-6)return{λ:lc,φ};const X=(nx-.5)*4*SQP,λ=wp(lc+X*SQP/(2*rt));return{λ,φ}});A("Werner",(nx,ny,lc)=>{const X=(nx-.5)*2,Y=(.5-ny)*2,sc=Math.PI/2,x=X*sc,y=Y*sc,r=Math.hypot(x,y);if(r>Math.PI)return null;const φ=Math.PI/2-r,λ=wp(lc+Math.atan2(x,-y));return{λ,φ}});A("Braun Cylindrical",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*2,φ=Math.atan(y),λ=wp(lc+x);return{λ,φ}});A("Miller Cylindrical",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*3,φ=2.5*Math.atan(Math.exp(.8*y))-Math.PI/2,λ=wp(lc+x);return{λ,φ}});if(S&&!S.value)S.value="Stereographic";H.render()})();
+</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,dr=d=>d*Math.PI/180,cl=(x,a,b)=>x<a?a:x>b?b:x;
+// Web Mercator (Spherical)
+(()=>{const p=85.05112878,P=dr(p),Y=Math.log(Math.tan(Math.PI/4+P/2));A("Web Mercator",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=((1-2*ny)*Y);return{λ:wp(lc+x),φ:cl(2*Math.atan(Math.exp(y))-Math.PI/2,-P,P)}})})();
+// Equidistant Cylindrical (30°, 60°)
+;[30,60].forEach(dg=>{const c=Math.cos(dr(dg));A(`Equidistant Cylindrical (${dg}°)`,(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*Math.PI;return{φ:cl(y,-Math.PI/2,Math.PI/2),λ:wp(lc+x/c)}})});
+// Cylindrical Equal-Area family
+;[{n:"CEA 37.383° (Trystan Edwards)",deg:37.383},{n:"CEA 50° (Balthasart)",deg:50}].forEach(o=>{const c=Math.cos(dr(o.deg));A(o.n,(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*2;return{φ:Math.asin(cl(y*c,-1,1)),λ:wp(lc+x/c)}})});
+// Central Cylindrical
+A("Central Cylindrical",(nx,ny,lc)=>{const X=(nx-.5)*2,Y=(.5-ny)*2,la=Math.atan(X),ph=Math.atan(Y*Math.cos(la));return{λ:wp(lc+la),φ:cl(ph,-Math.PI/2,Math.PI/2)}});
+// Equirectangular (60° standard parallel)
+(()=>{const c=Math.cos(dr(60));A("Equirectangular (60°)",(nx,ny,lc)=>({λ:wp(lc+((nx-.5)*2*Math.PI)/c),φ:(.5-ny)*Math.PI}))})();
+if(S&&!S.value)S.value="Web Mercator";H.render()})();
+</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,cl=(x,a,b)=>x<a?a:x>b?b:x,dr=d=>d*Math.PI/180;
+// Albers Equal-Area Conic (29.5°,45.5°), spherical inverse
+(()=>{const φ1=dr(29.5),φ2=dr(45.5),φ0=0,n=(Math.sin(φ1)+Math.sin(φ2))/2,C=Math.cos(φ1)**2+2*n*Math.sin(φ1),ρ0=Math.sqrt(Math.max(0,C-2*n*Math.sin(φ0)))/Math.abs(n),sg=Math.sign(n)||1;A("Albers EA Conic (29.5°,45.5°)",(nx,ny,lc)=>{const x=(nx-.5)*4,y=(.5-ny)*4,Y=ρ0-y,ρ=sg*Math.hypot(x,Y),θ=Math.atan2(x,Y);if(!isFinite(ρ))return null;const φ=Math.asin(cl((C-(n*n*ρ*ρ))/(2*n),-1,1)),λ=wp(lc+θ/n);return{λ,φ}})})();
+// Lambert Conformal Conic (33°,45°), spherical inverse
+(()=>{const φ1=dr(33),φ2=dr(45),φ0=0,n=Math.log(Math.cos(φ1)/Math.cos(φ2))/Math.log(Math.tan(Math.PI/4+φ2/2)/Math.tan(Math.PI/4+φ1/2)),F=(Math.cos(φ1)*((Math.tan(Math.PI/4+φ1/2))**n))/n,ρ0=F/((Math.tan(Math.PI/4+φ0/2))**n);A("Lambert Conformal Conic (33°,45°)",(nx,ny,lc)=>{const x=(nx-.5)*4,y=(.5-ny)*4;const Y=ρ0-y,ρ=Math.hypot(x,Y);if(!isFinite(ρ)||ρ===0)return{λ:lc,φ:0};const θ=Math.atan2(x,Y),φ=2*Math.atan((F/ρ)**(1/n))-Math.PI/2,λ=wp(lc+θ/n);return{λ,φ}})})();
+// Bonne (45° std parallel)
+(()=>{const φ1=dr(45),cot1=1/Math.tan(φ1),ρ0=cot1+φ1;A("Bonne (45°)",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*2*Math.PI;const Y=ρ0-y,ρ=Math.hypot(x,Y);if(ρ===0)return{λ:lc,φ:φ1};const E=Math.atan2(x,Y);const φ=(cot1+φ1)-ρ;const cφ=Math.cos(φ)||1e-9;const λ=wp(lc+ρ*E/cφ);return{λ,φ}})})();
+// Gall Stereographic (φ1=45°)
+(()=>{const φ1=dr(45),c1=Math.cos(φ1);A("Gall Stereographic",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI*c1,y=(.5-ny)*Math.PI*(1/c1);const φ=Math.atan(y*c1),λ=wp(lc+x/c1);return{λ,φ}})})();
+// Eckert I
+(()=>{const R=Math.sqrt(6*Math.PI);A("Eckert I",(nx,ny,lc)=>{const S=4*Math.PI/R;const x=(nx-.5)*2*S*Math.PI,y=(.5-ny)*R;const u=2-(2*y/R);const s=(4-u*u)/3;const φ=Math.asin(cl(s,-1,1));const den=u||1e-9;const λ=wp(lc+(x*R)/(2*den));return{λ,φ}})})();
+H.render()})();
+</script>
+
+<!--BIZARRE-->
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,cl=(x,a,b)=>x<a?a:x>b?b:x;A("Spiral Peanut (bizarre)",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>2)return null;const c=2*Math.asin(Math.min(1,ρ/2)),sc=ρ?Math.sin(c)/ρ:1,cc=Math.cos(c),φ=Math.asin(cl(y*sc,-1,1)),dl0=Math.atan2(x*sc,ρ*cc),θ=Math.atan2(y,x),r=ρ/2,tw=0.6*r*r*Math.sin(3*θ)+0.3*r*Math.sin(2*φ),dl=dl0+tw;return{λ:wp(lc+dl),φ}});if(S&&!S.value)S.value="Spiral Peanut (bizarre)";H.render()})();
+</script>
+
+<script>
+(()=>{"use strict";const H=window.HeightmapProjection;if(!H||!H.projections){console.warn("HeightmapProjection not found");return}const S=document.querySelector(".ui select")||document.querySelector("select"),A=(n,f)=>{H.projections[n]=f;if(S&&![...S.options].some(o=>o.textContent===n)){const o=document.createElement("option");o.textContent=n;S.appendChild(o)}},wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,cl=(x,a,b)=>x<a?a:x>b?b:x;
+// Slinky Vortex
+A("Slinky Vortex (bizarre)",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,r=Math.hypot(x,y);if(r>2)return null;const c=2*Math.asin(Math.min(1,r/2)),sc=r?Math.sin(c)/r:1,cc=Math.cos(c),φ=Math.asin(cl(y*sc,-1,1)),θ=Math.atan2(y,x),dl0=Math.atan2(x*sc,r*cc),dl=dl0+.55*(r*r)*Math.sin(3*θ)+.25*r*Math.sin(5*θ);return{λ:wp(lc+dl),φ}});
+// Crinkle Wrap
+A("Crinkle Wrap (bizarre)",(nx,ny,lc)=>{const x=(nx-.5)*2*Math.PI,y=(.5-ny)*Math.PI,φ=cl(y+.25*Math.sin(4*y),-Math.PI/2,Math.PI/2),λ=wp(lc+x+.35*Math.sin(6*y));return{λ,φ}});
+// Wobble-Octa
+A("Wobble-Octa (bizarre)",(nx,ny,lc)=>{const x=(nx-.5)*2,y=(.5-ny)*2,ρ=Math.hypot(x,y);if(ρ>1)return null;const cA=Math.asin(ρ),si=ρ?Math.sin(cA)/ρ:1,co=Math.cos(cA);let φ=Math.asin(cl(y*si,-1,1)),dl=Math.atan2(x*si,co),θ=Math.atan2(y,x);dl+=.35*Math.sin(8*θ)*(1-ρ);return{λ:wp(lc+dl),φ}});
+// Rippled Equal-Area
+A("Rippled Equal-Area (bizarre)",(nx,ny,lc)=>{const φ=cl((.5-ny)*Math.PI,-Math.PI/2,Math.PI/2),c=Math.cos(φ)||1e-9,x=(nx-.5)*2*Math.PI;let λ=lc+x/c+.18*Math.sin(10*φ);return{λ:wp(λ),φ}});
+// Twisted Ribbon
+A("Twisted Ribbon (bizarre)",(nx,ny,lc)=>{const λb=wp(lc+(nx-.5)*2*Math.PI),φb=cl((.5-ny)*Math.PI,-Math.PI/2,Math.PI/2),φ=cl(φb+.25*Math.sin(3*λb),-Math.PI/2,Math.PI/2),λ=wp(λb+.12*Math.sin(5*φb));return{λ,φ}});
+if(S&&!S.value)S.value="Slinky Vortex (bizarre)";H.render()})();
+</script>
+
+</body>
+</html>

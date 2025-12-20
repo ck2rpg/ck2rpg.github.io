@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Barrier-Aware Voronoi (Provinces + Titles)</title>
+<style>
+:root{
+  /* Warm parchment + ink palette */
+  --bg: #1a130c;
+  --panel: #f4e6c7;
+  --ink: #2b2115;
+  --muted: #8b6f4a;
+  --accent: #b45c2b;
+  --good: #4a7b4a;
+  --bad: #b54b3c;
+  --ocean: #1b4a5e; /* keep for your map rendering */
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  /* layered parchment-ish background with vignette */
+  background:
+    radial-gradient(1200px 800px at 15% -10%, rgba(255,255,255,0.16) 0, transparent 60%),
+    radial-gradient(1200px 900px at 80% 110%, rgba(0,0,0,0.5) 0, #120d08 55%, #080605 100%),
+    repeating-linear-gradient(
+      135deg,
+      rgba(0,0,0,0.03) 0,
+      rgba(0,0,0,0.03) 2px,
+      transparent 2px,
+      transparent 5px
+    );
+  color:var(--ink);
+  font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+}
+
+/* Top strip like an old map title cartouche */
+header{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  padding:10px 16px;
+  border-bottom:1px solid rgba(0,0,0,0.25);
+  background:
+    linear-gradient(180deg, #f8edd4 0%, #f0dfc0 50%, #e5d1aa 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 4px 14px rgba(0,0,0,0.35);
+}
+
+header h1{
+  font-size:17px;
+  margin:0 10px 0 0;
+  font-weight:600;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#3a2817;
+}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Panels = parchment cards with subtle frame */
+.card{
+  background:var(--panel);
+  border-radius:14px;
+  padding:10px 12px;
+  border:1px solid rgba(74,54,32,0.7);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.5) inset,
+    0 10px 25px rgba(0,0,0,0.35);
+  background-image:
+    radial-gradient(circle at 10% 0%, rgba(255,255,255,0.5) 0, transparent 55%),
+    radial-gradient(circle at 90% 100%, rgba(196,157,109,0.45) 0, transparent 60%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.03) 0,
+      rgba(0,0,0,0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+label{opacity:.96;color:var(--ink)}
+
+input[type="range"]{
+  width:160px;
+  accent-color:var(--accent);
+}
+
+input[type="number"]{
+  width:80px;
+  padding:4px 6px;
+  border-radius:6px;
+  border:1px solid rgba(90,62,38,0.7);
+  background:rgba(255,255,255,0.7);
+  color:var(--ink);
+}
+
+/* Buttons like ink labels or compass-rose controls */
+.btn{
+  appearance:none;
+  border:1px solid rgba(90,62,38,0.9);
+  background:linear-gradient(180deg,#f9edd6,#e7d1ac);
+  color:var(--ink);
+  padding:7px 11px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.65) inset,
+    0 3px 6px rgba(0,0,0,0.3);
+  font-size:13px;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.75) inset,
+    0 6px 14px rgba(0,0,0,0.4);
+}
+
+.btn:active{
+  transform:translateY(0);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.25) inset,
+    0 1px 4px rgba(0,0,0,0.4);
+}
+
+.btn.primary{
+  background:linear-gradient(180deg,#f5e0bd,#e4c697);
+  border-color:rgba(138,92,53,0.9);
+}
+
+.btn.good{
+  border-color:#356339;
+  background:linear-gradient(180deg,#e1f0dd,#c7e0c6);
+}
+
+.btn.bad{
+  border-color:#8a3b2b;
+  background:linear-gradient(180deg,#f7d6d2,#ebc0b8);
+}
+
+.wrap{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  gap:14px;
+  padding:14px;
+}
+
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* Canvas framed like a map plate */
+canvas{
+  image-rendering:pixelated;
+  border-radius:16px;
+  border:1px solid rgba(46,31,17,0.9);
+  background:#10202a;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.55) inset,
+    0 12px 30px rgba(0,0,0,0.55);
+}
+
+.mono{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+.small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.seg{display:flex;gap:6px}
+
+.seg .btn{padding:6px 10px;font-size:12px}
+
+/* Active segment like a selected map tool */
+.seg .btn.active{
+  outline:2px solid var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.75) inset,
+    0 0 0 2px rgba(180,92,43,0.45);
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <h1>Barrier-Aware Voronoi • Provinces + Feudal Titles</h1>
+
+    <div class="row card">
+      <button class="btn" id="loadHeightmap">Import Heightmap</button>
+      <button class="btn" id="loadTerrain">Import Terrain Map</button>
+      <button class="btn" id="loadKoppen">Import Köppen Map</button>
+      <input id="file" type="file" accept="image/*" style="display: none" />
+      <input id="terrainFile" type="file" accept="image/*" style="display: none" />
+      <input id="koppenFile" type="file" accept="image/*" style="display: none" />
+      <button class="btn" id="fit">Fit to View</button>
+      <button class="btn" id="download">Download PNG</button>
+      <button class="btn primary" id="downloadAll">Download ALL Exports</button>
+      <button class="btn" id="downloadDef">Export definition.csv</button>
+      <button class="btn" id="downloadLandedTitles">Export 00_landed_titles.txt</button>
+      <button class="btn" id="exportProvinceTerrain">Export Province Terrain</button>
+    </div>
+
+    <div class="row card">
+      <label>Sea level <span id="seaVal" class="mono"></span></label>
+      <input id="sea" type="number" min="0" max="255" value="19" />
+      <label><input id="invertMask" type="checkbox" /> invert (treat dark as land)</label>
+    </div>
+
+    <div class="row card">
+      <label>Land seeds</label><input id="landSeeds" type="number" min="0" value="5000">
+      <label>Sea seeds</label><input id="seaSeeds" type="number" min="0" value="1000">
+      <label>Cell size</label><input id="cellSize" type="number" min="4" value="16">
+      <button class="btn" id="autoSeeds">Auto-seed</button>
+      <button class="btn" id="clearSeeds">Clear</button>
+    </div>
+
+    <div class="row card">
+      <button class="btn primary" id="run">Run Barrier-Voronoi</button>
+      <button class="btn" id="recolor">Recolor</button>
+      <label><input type="checkbox" id="showEdges"> show edges</label>
+      <label><input type="checkbox" id="overlayMask"> overlay land/water</label>
+    </div>
+
+    <!-- Tiny-island controls -->
+    <div class="row card">
+      <label>Ignore islands under</label>
+      <input id="minIslandPx" type="number" min="0" value="400" />
+      <span class="small">px</span>
+      <label><input id="tinyAsSea" type="checkbox" checked /> Treat tiny islands as sea</label>
+      <span class="small">• Off = merge into nearest mainland province</span>
+    </div>
+
+
+    <div class="row card">
+      <div class="seg" id="levelSeg">
+        <button class="btn" data-level="landProvinces">Only Land Provinces</button>
+        <button class="btn active" data-level="provinces">Province Map</button>
+        <button class="btn" data-level="county">Counties</button>
+        <button class="btn" data-level="duchy">Duchies</button>
+        <button class="btn" data-level="kingdom">Kingdoms</button>
+        <button class="btn" data-level="empire">Empires</button>
+      </div>
+    </div>
+
+    <div class="row small">
+      Tip: click the preview to add or remove a seed (Shift-click removes). Land/sea is inferred from the (effective) mask.
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="left">
+      <div class="card">
+        <div class="small" style="margin-bottom:6px">Layers</div>
+        <div class="row" style="gap:8px;flex-wrap:nowrap">
+          <canvas id="heightCanvas" width="320" height="320" title="Loaded Heightmap" style="display: none"></canvas>
+          <canvas id="maskCanvas" width="320" height="320" title="Land/Sea Mask" style="display: none"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="small">Legend</div>
+        <div id="legend" class="small mono"></div>
+      </div>
+    </div>
+
+    <div class="card" style="position:relative">
+      <canvas id="view" width="1024" height="768" title="Voronoi Map" style="width:1024px;height:768px;"></canvas>
+      <div class="small" id="status" style="position:absolute;left:10px;bottom:8px;background:#0009;padding:4px 8px;border-radius:8px">Ready.</div>
+    </div>
+  </div>
+
+<script src="jsck3mapper/utilities.js"></script>
+<script src="jsck3mapper/startup.js"></script>
+<script src="jsck3mapper/uploads.js"></script>
+<script src="jsck3mapper/climate.js"></script>
+<script src="jsck3mapper/titles.js"></script>
+<script src="jsck3mapper/definitions.js"></script>
+<script src="jsck3mapper/locators.js"></script>
+<script src="jsck3mapper/gen_defines.js"></script>
+<script src="jsck3mapper/default.js"></script>
+<script src="jsck3mapper/rel.js"></script>
+<script src="jsck3mapper/langgen4.js"> </script>
+<script src="jsck3mapper/religion.js"> </script>
+<script src="jsck3mapper/annotater.js"></script>
+<script src="jsck3mapper/culture.js"></script>
+<script src="jsck3mapper/history.js"></script>
+<script src="jsck3mapper/k_generated.js"></script>
+<script src="jsck3mapper/landed_titles.js"></script>
+<script src="jsck3mapper/province_terrain.js"></script>
+<script src="jsck3mapper/titlepruner.js"></script>
+<script src="jsck3mapper/voronoidistortions.js"></script>
+<script src="jsck3mapper/heightmap_heightmap.js"></script>
+<script src="jsck3mapper/run.js"></script>
+<script src="jsck3mapper/hierarchyBuilder.js"></script>
+<script src="jsck3mapper/character_names.js"></script>
+<script src="jsck3mapper/place_names.js"></script>
+<script src="jsck3mapper/titleLocalization.js"></script>
+<script src="jsck3mapper/export_lang_and_culture.js"></script>
+<script src="jsck3mapper/terrain_view.js"></script>
+<script src="jsck3mapper/writeGenerators.js"></script>
+<script src="jsck3mapper/province_properties.js"></script>
+<script src="jsck3mapper/ethnicityGenerator.js"></script>
+<script src="jsck3mapper/ethnicityExporter.js"></script>
+<script src="jsck3mapper/waterTypes.js"></script>
+<script src="jsck3mapper/debugs.js"></script>
+<script src="jsck3mapper/downloadAll.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Heightmap Editor (8k-capable, Vanilla JS)</title>
+<style>
+:root{
+  /* Continent-maker palette */
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --border:#c4b496;
+  --shadow:0 4px 20px rgba(0,0,0,.15);
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-mono:"Courier New",Courier,monospace;
+
+  /* semantic */
+  --danger:#b54b3c;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:var(--font-serif);
+  background:#2a241e; /* dark wood surround */
+  color:var(--ink);
+  overflow:hidden; /* map owns the viewport */
+}
+
+/* --- Map viewport --- */
+
+#viewport-wrap{
+  position:fixed;
+  inset:0;
+  background:#1a1612; /* dark stage */
+  overflow:hidden; /* no native scroll */
+}
+
+#canvas-scroll{
+  position:absolute;
+  inset:0;
+  overflow:hidden; /* camera / pan control everything */
+  display:block;
+}
+
+#canvas-container{
+  position:relative;
+  width:100%;
+  height:100%;
+  background:#1a1612;
+}
+
+canvas{
+  position:absolute;
+  top:0;
+  left:0;
+  display:block;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  background:#fff;               /* parchment-like working surface */
+  transform-origin:top left;
+  box-shadow:0 0 50px rgba(0,0,0,.5);
+}
+
+/* Status bar -> parchment pill */
+#status-bar{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(244,233,213,.85);
+  border:1px solid rgba(60,47,33,.45);
+  font-size:12px;
+  color:var(--ink-muted);
+  pointer-events:none;
+  display:flex;
+  gap:10px;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+}
+#status-bar span.key{ color:var(--accent); }
+
+/* --- Floating UI layer --- */
+
+#ui-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none; /* only panels / minimap capture input */
+}
+
+/* Panels -> parchment cards like continent maker plugin panels */
+.tool-panel{
+  pointer-events:auto;
+  position:absolute;
+  min-width:230px;
+  max-width:280px;
+  background:var(--parchment-bg);
+  border-radius:2px;
+  border:2px solid var(--ink);
+  box-shadow:5px 8px 22px rgba(0,0,0,.35);
+  color:var(--ink);
+  font-size:12px;
+  overflow:hidden;
+  transition:box-shadow .12s ease, transform .12s ease, background .12s ease, border-color .12s ease;
+  background-image:radial-gradient(circle at 50% 50%, rgba(255,255,255,.20) 0%, transparent 100%);
+}
+.tool-panel:hover{
+  box-shadow:8px 12px 30px rgba(0,0,0,.45);
+  border-color:var(--ink);
+}
+.tool-panel.collapsed{ height:auto; }
+
+/* Panel header -> ink strip with movable feel */
+.panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 10px;
+  background:var(--parchment-dark);
+  border-bottom:1px solid var(--border);
+  cursor:move;
+  user-select:none;
+}
+.panel-header .title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-muted);
+  font-weight:700;
+}
+.panel-header .logo-dot{
+  width:8px;height:8px;border-radius:999px;
+  background:var(--accent);
+  box-shadow:none;
+}
+.panel-buttons{ display:flex; gap:6px; }
+
+/* Small round header buttons */
+.panel-btn{
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);
+  color:var(--ink);
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  padding:0;
+}
+.panel-btn:hover{
+  background:#fff;
+  color:var(--ink);
+}
+
+.panel-body{ padding:10px 12px 12px; }
+.tool-panel.collapsed .panel-body{ display:none; }
+
+h2{
+  font-size:.8rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-muted);
+  margin:0 0 8px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:6px;
+}
+
+/* Rows + labels */
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:6px;
+}
+.row label{
+  font-size:12px;
+  color:var(--ink);
+}
+.row span.value{
+  font-size:11px;
+  color:var(--ink-muted);
+}
+
+/* Inputs */
+input[type="range"]{
+  width:100%;
+  accent-color:var(--accent);
+}
+
+input[type="file"]{
+  width:100%;
+  font-size:11px;
+  color:var(--ink-muted);
+}
+
+input[type="number"]{
+  width:88px;
+  font-size:13px;
+  padding:6px 8px;
+  border-radius:2px;
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.40);
+  color:var(--ink);
+  font-family:var(--font-mono);
+}
+input[type="number"]:focus{
+  outline:2px solid var(--accent);
+  background:#fff;
+}
+
+/* Buttons -> continent-maker buttons */
+button{
+  cursor:pointer;
+  border-radius:2px;
+  border:1px solid var(--ink);
+  background:var(--parchment-dark);
+  color:var(--ink);
+  font-size:12px;
+  padding:10px 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:background .1s, transform .1s, box-shadow .1s;
+  font-family:var(--font-serif);
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  box-shadow:2px 2px 0 var(--ink);
+}
+button:hover{ background:#dfcfaf; }
+button:active{
+  transform:translate(1px,1px);
+  box-shadow:1px 1px 0 var(--ink);
+}
+
+.button-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:6px;
+}
+
+/* Radio pills -> parchment segments */
+.radio-group{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:6px;
+}
+.radio-pill{
+  font-size:11px;
+  padding:6px 6px;
+  border-radius:2px;
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+  color:var(--ink);
+  font-family:var(--font-serif);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.radio-pill.active{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  background:#fff;
+  color:var(--ink);
+}
+
+/* Sea level input is already number-styled, keep override width */
+#seaLevelInput{
+  width:88px;
+}
+
+/* Initial positions for panels (unchanged) */
+#panel-file  { top:16px; left:16px; }
+#panel-brush { top:16px; left:300px; }
+#panel-view  { bottom:100px; right:16px; }
+
+/* Minimap -> parchment framed box */
+#minimap-wrap{
+  position:absolute;
+  top:16px;
+  right:370px;
+  pointer-events:auto;
+  background:rgba(244,233,213,.85);
+  border-radius:2px;
+  padding:6px;
+  border:2px solid var(--ink);
+  box-shadow:5px 8px 22px rgba(0,0,0,.35);
+  z-index:10;
+}
+
+#minimap{
+  display:block;
+  width:360px;
+  height:180px;
+  image-rendering:pixelated;
+  cursor:pointer;
+  border:2px solid var(--danger); /* keep the red viewport border vibe */
+  border-radius:2px;
+  background:#fff;
+}
+
+</style>
+</head>
+<body>
+
+  <div id="viewport-wrap">
+    <div id="canvas-scroll">
+      <div id="canvas-container">
+        <canvas id="heightCanvas"></canvas>
+        <div id="status-bar">
+          <span id="statusSize">–</span>
+          <span id="statusBrush">–</span>
+          <span id="statusView">–</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ui-layer">
+    <!-- File panel -->
+    <div class="tool-panel" id="panel-file">
+      <div class="panel-header">
+        <div class="title">
+          <span class="logo-dot"></span>
+          <span>Heightmap Editor</span>
+        </div>
+        <div class="panel-buttons">
+          <button class="panel-btn panel-toggle" title="Minimize">–</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <h2>File</h2>
+        <div class="row">
+          <label for="fileInput">Load PNG</label>
+        </div>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+        <div class="button-row">
+          <button id="btnNew">New 2048²</button>
+          <button id="btnSave">Save PNG</button>
+        </div>
+        <small style="display:block;margin-top:4px;color:var(--muted);font-size:11px;">
+          Tip: large (8k) maps need a modern browser and plenty of RAM.
+        </small>
+      </div>
+    </div>
+
+    <!-- Brush panel -->
+    <div class="tool-panel" id="panel-brush">
+      <div class="panel-header">
+        <div class="title">
+          <span>Brush</span>
+        </div>
+        <div class="panel-buttons">
+          <button class="panel-btn panel-toggle" title="Minimize">–</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="radio-group" id="brushModeGroup">
+          <div class="radio-pill active" data-mode="raise">Raise</div>
+          <div class="radio-pill" data-mode="lower">Lower</div>
+          <div class="radio-pill" data-mode="smooth">Smooth</div>
+          <div class="radio-pill" data-mode="erode">Erode</div>
+          <div class="radio-pill" data-mode="constant">Constant</div>
+          <div class="radio-pill" data-mode="flatten">Flatten</div>
+          <div class="radio-pill" data-mode="noise">Noise</div>
+          <div class="radio-pill" data-mode="ridge">Ridge</div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <label for="radiusSlider">Radius</label>
+          <span class="value" id="radiusValue"></span>
+        </div>
+        <input type="range" id="radiusSlider" min="2" max="300" value="40">
+
+        <div class="row" style="margin-top:6px;">
+          <label for="strengthSlider">Strength</label>
+          <span class="value" id="strengthValue"></span>
+        </div>
+        <input type="range" id="strengthSlider" min="1" max="100" value="20">
+
+        <small style="display:block;margin-top:6px;color:var(--muted);font-size:11px;">
+          Paint with <b>left mouse</b>. Alt+click samples height for Constant brush.
+          Hand pan: hold <b>Space</b> and drag, or middle mouse drag.
+        </small>
+      </div>
+    </div>
+
+    <!-- View / sea / zoom panel -->
+    <div class="tool-panel" id="panel-view">
+      <div class="panel-header">
+        <div class="title">
+          <span>View</span>
+        </div>
+        <div class="panel-buttons">
+          <button class="panel-btn panel-toggle" title="Minimize">–</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="radio-group" id="viewModeGroup">
+          <div class="radio-pill active" data-view="height">Heightmap</div>
+          <div class="radio-pill" data-view="topo">Topo</div>
+          <div class="radio-pill" data-view="atlas">Atlas</div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <label for="seaLevelInput">Sea level</label>
+          <input type="number" id="seaLevelInput" min="0" max="255" value="19"
+                 title="First grayscale value (0–255) that counts as land.">
+        </div>
+        <div class="row" style="margin-top:6px;">
+            <label for="atlasBiasSlider">Atlas elevation bias</label>
+            <span class="value" id="atlasBiasValue"></span>
+         </div>
+        <input type="range" id="atlasBiasSlider" min="30" max="300" value="100">
+
+        <div class="row" style="margin-top:6px;">
+          <label for="zoomSlider">Zoom</label>
+          <span class="value" id="zoomValue"></span>
+        </div>
+        <input type="range" id="zoomSlider" min="10" max="400" value="100">
+
+        <small style="display:block;margin-top:6px;color:var(--muted);font-size:11px;">
+          Topo view uses sea level to separate water and land.
+          Zoom in for fine editing; pan to move around.
+        </small>
+      </div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="180" height="180"></canvas>
+    </div>
+  </div>
+
+<script>
+(function() {
+  "use strict";
+
+  // ---------------- Core data ----------------
+
+  const canvas   = document.getElementById("heightCanvas");
+  const ctx      = canvas.getContext("2d", { willReadFrequently: true });
+  const viewport = document.getElementById("viewport-wrap");
+
+  let mapWidth  = 0;
+  let mapHeight = 0;
+  let heightData = null;      // Float32Array of length mapWidth*mapHeight, 0..1
+  let viewBuffer = null;      // Uint8ClampedArray RGBA
+  let imageData = null;       // ImageData wrapper over viewBuffer
+
+const BrushMode = {
+  Raise: "raise",
+  Lower: "lower",
+  Smooth: "smooth",
+  Erode: "erode",
+  Constant: "constant",
+  Flatten: "flatten",
+  Noise: "noise",
+  Ridge: "ridge"      // NEW
+};
+  const ViewMode = {
+    Height: "height",
+    Topo: "topo",
+    Atlas: "atlas"
+  };
+
+  const brush = {
+    mode: BrushMode.Raise,
+    radius: 40,
+    strength: 0.20 // 0..1 (slider drives this)
+  };
+
+  let viewMode = ViewMode.Height;
+  let seaLevel = 19; // grayscale 0–255, first value that counts as land
+  let atlasBias = 1.0; // 1.0 = neutral; <1 lower mountains, >1 higher mountains
+  let constantTarget = seaLevel / 255; // 0..1; alt+click updates this
+
+  // Camera state (pan + zoom)
+  let zoom = 1.0;
+  let panX = 0;
+  let panY = 0;
+
+  // History (lightweight: per-brush-call rect)
+  const history = [];
+  let historyIndex = -1;
+  const HISTORY_LIMIT = 64;
+
+  // Minimap
+  const minimapCanvas = document.getElementById("minimap");
+  const minimapCtx = minimapCanvas.getContext("2d");
+  let minimapBase = null; // ImageData of base minimap (without viewport rect)
+
+  // UI elements
+  const radiusSlider   = document.getElementById("radiusSlider");
+  const radiusValue    = document.getElementById("radiusValue");
+  const strengthSlider = document.getElementById("strengthSlider");
+  const strengthValue  = document.getElementById("strengthValue");
+  const brushModeGroup = document.getElementById("brushModeGroup");
+  const viewModeGroup  = document.getElementById("viewModeGroup");
+  const fileInput      = document.getElementById("fileInput");
+  const btnNew         = document.getElementById("btnNew");
+  const btnSave        = document.getElementById("btnSave");
+  const statusSize     = document.getElementById("statusSize");
+  const statusBrush    = document.getElementById("statusBrush");
+  const statusView     = document.getElementById("statusView");
+  const seaLevelInput  = document.getElementById("seaLevelInput");
+  const zoomSlider     = document.getElementById("zoomSlider");
+  const zoomValue      = document.getElementById("zoomValue");
+  const atlasBiasSlider = document.getElementById("atlasBiasSlider");
+  const atlasBiasValue  = document.getElementById("atlasBiasValue");
+
+  // ---------------- Floating panels: drag + minimize ----------------
+
+  function initPanels() {
+    const panels = document.querySelectorAll(".tool-panel");
+    panels.forEach(panel => {
+      const header = panel.querySelector(".panel-header");
+      const toggleBtn = panel.querySelector(".panel-toggle");
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panel.classList.toggle("collapsed");
+        });
+      }
+      if (header) {
+        makeDraggable(panel, header);
+      }
+    });
+  }
+
+function hash2(i, j) {
+  // Cheap, deterministic pseudo-random in [0,1] from integer coords
+  const x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+// Smooth value noise: continuous in x,y, still uses hash2 at integer corners
+function valueNoise2(x, y) {
+  const ix = Math.floor(x);
+  const iy = Math.floor(y);
+  const fx = x - ix;
+  const fy = y - iy;
+
+  const v00 = hash2(ix,     iy    );
+  const v10 = hash2(ix + 1, iy    );
+  const v01 = hash2(ix,     iy + 1);
+  const v11 = hash2(ix + 1, iy + 1);
+
+  const i0 = v00 + (v10 - v00) * fx;
+  const i1 = v01 + (v11 - v01) * fx;
+  return i0 + (i1 - i0) * fy; // 0..1
+}
+
+// Fractal Brownian Motion: multi-octave noise in roughly [-1,1]
+function fbm2(x, y, octaves = 4, lacunarity = 2.0, gain = 0.5) {
+  let amp = 1.0;
+  let freq = 1.0;
+  let sum = 0.0;
+  let norm = 0.0;
+
+  for (let o = 0; o < octaves; o++) {
+    sum  += valueNoise2(x * freq, y * freq) * amp;
+    norm += amp;
+    amp  *= gain;
+    freq *= lacunarity;
+  }
+  if (norm === 0) return 0;
+  const v = sum / norm; // 0..1
+  return v * 2 - 1;     // -1..1
+}
+
+function ridgeNoise(x, y) {
+  // 0..1 pseudo-random but continuous as x,y vary
+  const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+  function makeDraggable(panel, handle) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startLeft = 0, startTop = 0;
+
+    handle.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".panel-btn")) return; // ignore clicks on buttons
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      panel.style.transition = "none";
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      panel.style.left = (startLeft + dx) + "px";
+      panel.style.top  = (startTop + dy) + "px";
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!isDragging) return;
+      isDragging = false;
+      panel.style.transition =
+        "box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease, border-color 0.12s ease";
+    });
+  }
+
+  // ---------------- Utility helpers ----------------
+
+  function clamp01(v) {
+    return v < 0 ? 0 : (v > 1 ? 1 : v);
+  }
+
+  function idx(x, y) {
+    return y * mapWidth + x;
+  }
+
+  function clampPan() {
+    if (!mapWidth || !mapHeight) return;
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const worldW = mapWidth * zoom;
+    const worldH = mapHeight * zoom;
+
+    if (worldW <= vw) {
+      panX = (vw - worldW) / 2;
+    } else {
+      const minX = vw - worldW;
+      const maxX = 0;
+      if (panX < minX) panX = minX;
+      if (panX > maxX) panX = maxX;
+    }
+
+    if (worldH <= vh) {
+      panY = (vh - worldH) / 2;
+    } else {
+      const minY = vh - worldH;
+      const maxY = 0;
+      if (panY < minY) panY = minY;
+      if (panY > maxY) panY = maxY;
+    }
+  }
+
+  function applyCamera() {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    zoomValue.textContent = `${Math.round(zoom * 100)}%`;
+    updateStatus();
+    drawMinimapOverlay();
+  }
+
+  function fitCameraToScreen() {
+    if (!mapWidth || !mapHeight) return;
+    const margin = 80;
+    const vw = viewport.clientWidth  - margin;
+    const vh = viewport.clientHeight - margin;
+    if (vw <= 0 || vh <= 0) return;
+
+    let z = Math.min(vw / mapWidth, vh / mapHeight);
+    z = Math.max(0.1, Math.min(1, z));
+
+    let zPercent = Math.round(z * 100);
+    const minZ = parseInt(zoomSlider.min, 10) || 10;
+    const maxZ = parseInt(zoomSlider.max, 10) || 400;
+    zPercent = Math.min(Math.max(zPercent, minZ), maxZ);
+
+    zoom = zPercent / 100;
+    zoomSlider.value = zPercent;
+
+    const worldW = mapWidth * zoom;
+    const worldH = mapHeight * zoom;
+
+    panX = (viewport.clientWidth  - worldW) / 2;
+    panY = (viewport.clientHeight - worldH) / 2;
+
+    clampPan();
+    applyCamera();
+  }
+
+  window.addEventListener("resize", () => {
+    fitCameraToScreen();
+  });
+
+  function makeEmptyHeightmap(w, h, base = 0.5) {
+    mapWidth  = w;
+    mapHeight = h;
+    heightData = new Float32Array(w * h);
+    heightData.fill(base);
+    allocateViewBuffers(w, h);
+    rebuildFullView();
+    fitCameraToScreen();
+    rebuildMinimap();
+    history.length = 0;
+    historyIndex = -1;
+    updateStatus();
+  }
+
+  function allocateViewBuffers(w, h) {
+    canvas.width  = w;
+    canvas.height = h;
+    viewBuffer = new Uint8ClampedArray(w * h * 4);
+    imageData = new ImageData(viewBuffer, w, h);
+    ctx.imageSmoothingEnabled = false;
+  }
+
+  function updateStatus() {
+    if (!heightData) {
+      statusSize.textContent = "No map loaded";
+    } else {
+      statusSize.textContent = `Size: ${mapWidth}×${mapHeight}`;
+    }
+    const constGrey = Math.round(constantTarget * 255);
+    statusBrush.textContent =
+      `Brush: ${brush.mode}, r=${brush.radius.toFixed(0)}, s=${brush.strength.toFixed(2)}, const=${constGrey}`;
+    statusView.textContent  = `View: ${viewMode}, zoom=${Math.round(zoom*100)}%`;
+  }
+
+  // ---------------- View generation ----------------
+
+  function encodeHeightColor(h) {
+    const v = Math.round(clamp01(h) * 255);
+    return [v, v, v];
+  }
+
+  function encodeTopoColor(h) {
+    const v = clamp01(h);
+    const seaF = clamp01(seaLevel / 255);
+    let r = 0, g = 0, b = 0;
+
+    if (v < seaF) {
+      const t = seaF > 0 ? (v / seaF) : 0;
+      if (t < 0.5) {
+        const k = t / 0.5;
+        r = 5 * (1 - k);
+        g = 20 * k;
+        b = 80 + 80 * k;
+      } else {
+        const k = (t - 0.5) / 0.5;
+        r = 20 + 30 * k;
+        g = 40 + 80 * k;
+        b = 140 + 60 * k;
+      }
+    } else {
+      const denom = (1 - seaF) || 1;
+      const t = (v - seaF) / denom;
+      if (t < 0.4) {
+        const k = t / 0.4;
+        r = 40 * k;
+        g = 110 + 60 * k;
+        b = 40 * (1 - k);
+      } else if (t < 0.8) {
+        const k = (t - 0.4) / 0.4;
+        r = 120 + 70 * k;
+        g = 140 + 30 * (1 - k);
+        b = 40 * (1 - k);
+      } else {
+        const k = (t - 0.8) / 0.2;
+        r = 220 + 35 * k;
+        g = 230 + 25 * k;
+        b = 235 + 20 * k;
+      }
+    }
+
+    const bands = 60;
+    const band = Math.floor(v * bands);
+    if (band % 5 === 0) {
+      r *= 0.85;
+      g *= 0.85;
+      b *= 0.85;
+    }
+    return [Math.round(r), Math.round(g), Math.round(b)];
+  }
+
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function lerpColor(stops, t) {
+  // stops: [ [pos, [r,g,b]], ... ] where pos in 0..1
+  t = clamp01(t);
+  let i = 0;
+  while (i < stops.length - 1 && t > stops[i + 1][0]) {
+    i++;
+  }
+  const [p0, c0] = stops[i];
+  const [p1, c1] = stops[Math.min(i + 1, stops.length - 1)];
+  const span = (p1 - p0) || 1;
+  const localT = (t - p0) / span;
+  return [
+    Math.round(lerp(c0[0], c1[0], localT)),
+    Math.round(lerp(c0[1], c1[1], localT)),
+    Math.round(lerp(c0[2], c1[2], localT))
+  ];
+}
+
+function encodeAtlasColor(h) {
+  const v = clamp01(h);
+  const seaF = clamp01(seaLevel / 255); // same as topo
+
+  // Water gradient (0 = deepest, 1 = just below sea level)
+  const waterStops = [
+    [0.00, [11,  59, 130]], // deep ocean
+    [0.40, [47, 127, 211]], // mid ocean
+    [0.75, [123,196, 255]], // shallower
+    [1.00, [185,229, 255]]  // near coast
+  ];
+
+  // Land gradient (0 = coastline, 1 = highest peaks)
+  const landStops = [
+    [0.00, [183,230, 176]], // coastal lowland green
+    [0.30, [140,192, 119]], // interior green
+    [0.55, [217,200, 127]], // foothills / dry upland
+    [0.75, [200,138,  90]], // mountain brown
+    [0.90, [242,242, 242]], // high snowy
+    [1.00, [255,255, 255]]  // brightest peaks
+  ];
+
+  if (v < seaF) {
+    // Normalize 0..seaF -> 0..1 for water (no bias here)
+    const tWater = seaF > 0 ? (v / seaF) : 0;
+    return lerpColor(waterStops, tWater);
+  } else {
+    // Normalize seaF..1 -> 0..1 for land
+    const denom = (1 - seaF) || 1;
+    let tLand = (v - seaF) / denom;
+
+    // Apply bias: <1 → mountains start lower, >1 → start higher
+    tLand = Math.pow(clamp01(tLand), atlasBias);
+
+    return lerpColor(landStops, tLand);
+  }
+}
+
+
+  function rebuildFullView() {
+    if (!heightData || !viewBuffer) return;
+    const N = mapWidth * mapHeight;
+    for (let i = 0; i < N; i++) {
+      const h = heightData[i];
+      const baseIndex = i * 4;
+      let r, g, b;
+        if (viewMode === ViewMode.Height) {
+        [r, g, b] = encodeHeightColor(h);
+        } else if (viewMode === ViewMode.Topo) {
+        [r, g, b] = encodeTopoColor(h);
+        } else { // ViewMode.Atlas
+        [r, g, b] = encodeAtlasColor(h);
+        }
+      viewBuffer[baseIndex    ] = r;
+      viewBuffer[baseIndex + 1] = g;
+      viewBuffer[baseIndex + 2] = b;
+      viewBuffer[baseIndex + 3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  function updateViewRect(x0, y0, x1, y1) {
+    if (!heightData || !viewBuffer) return;
+    x0 = Math.max(0, x0|0);
+    y0 = Math.max(0, y0|0);
+    x1 = Math.min(mapWidth - 1, x1|0);
+    y1 = Math.min(mapHeight - 1, y1|0);
+    for (let y = y0; y <= y1; y++) {
+      let rowOffset = y * mapWidth;
+      for (let x = x0; x <= x1; x++) {
+        const i = rowOffset + x;
+        const baseIndex = i * 4;
+        const h = heightData[i];
+        let r, g, b;
+        if (viewMode === ViewMode.Height) {
+        [r, g, b] = encodeHeightColor(h);
+        } else if (viewMode === ViewMode.Topo) {
+        [r, g, b] = encodeTopoColor(h);
+        } else { // ViewMode.Atlas
+        [r, g, b] = encodeAtlasColor(h);
+        }
+        viewBuffer[baseIndex    ] = r;
+        viewBuffer[baseIndex + 1] = g;
+        viewBuffer[baseIndex + 2] = b;
+        viewBuffer[baseIndex + 3] = 255;
+      }
+    }
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    ctx.putImageData(imageData, 0, 0, x0, y0, w, h);
+  }
+
+  // ---------------- History ----------------
+
+  function pushHistoryRect(x0, y0, x1, y1, before, after) {
+    if (!before || !after) return;
+    if (historyIndex < history.length - 1) {
+      history.splice(historyIndex + 1);
+    }
+    history.push({ x0, y0, x1, y1, before, after });
+    if (history.length > HISTORY_LIMIT) {
+      history.shift();
+      historyIndex = history.length - 1;
+    } else {
+      historyIndex = history.length - 1;
+    }
+  }
+
+  function undo() {
+    if (historyIndex < 0) return;
+    const step = history[historyIndex];
+    const { x0, y0, x1, y1, before } = step;
+    const wRect = x1 - x0 + 1;
+    const hRect = y1 - y0 + 1;
+    let k = 0;
+    for (let y = 0; y < hRect; y++) {
+      const yy = y0 + y;
+      const rowOffset = yy * mapWidth;
+      for (let x = 0; x < wRect; x++) {
+        const xx = x0 + x;
+        heightData[rowOffset + xx] = before[k++];
+      }
+    }
+    updateViewRect(x0, y0, x1, y1);
+    historyIndex--;
+    rebuildMinimap();
+  }
+
+  function redo() {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    const step = history[historyIndex];
+    const { x0, y0, x1, y1, after } = step;
+    const wRect = x1 - x0 + 1;
+    const hRect = y1 - y0 + 1;
+    let k = 0;
+    for (let y = 0; y < hRect; y++) {
+      const yy = y0 + y;
+      const rowOffset = yy * mapWidth;
+      for (let x = 0; x < wRect; x++) {
+        const xx = x0 + x;
+        heightData[rowOffset + xx] = after[k++];
+      }
+    }
+    updateViewRect(x0, y0, x1, y1);
+    rebuildMinimap();
+  }
+
+  // ---------------- Minimap ----------------
+
+  function rebuildMinimap() {
+    if (!heightData || !mapWidth || !mapHeight) return;
+    const wMini = minimapCanvas.width;
+    const hMini = minimapCanvas.height;
+    const imgData = minimapCtx.createImageData(wMini, hMini);
+    const d = imgData.data;
+
+    for (let y = 0; y < hMini; y++) {
+      const mapY = Math.floor(y * mapHeight / hMini);
+      let rowOffset = mapY * mapWidth;
+      for (let x = 0; x < wMini; x++) {
+        const mapX = Math.floor(x * mapWidth / wMini);
+        const hVal = heightData[rowOffset + mapX];
+        const v = Math.round(clamp01(hVal) * 255);
+        const i = (y * wMini + x) * 4;
+        d[i    ] = v;
+        d[i + 1] = v;
+        d[i + 2] = v;
+        d[i + 3] = 255;
+      }
+    }
+    minimapBase = imgData;
+    drawMinimapOverlay();
+  }
+
+  function drawMinimapOverlay() {
+    if (!minimapBase || !mapWidth || !mapHeight) return;
+    minimapCtx.putImageData(minimapBase, 0, 0);
+
+    const wMini = minimapCanvas.width;
+    const hMini = minimapCanvas.height;
+
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    if (!vw || !vh) return;
+
+    // viewport in map units
+    const viewX = -panX / zoom;
+    const viewY = -panY / zoom;
+    const vwMap = vw / zoom;
+    const vhMap = vh / zoom;
+
+    const x0Map = Math.max(0, viewX);
+    const y0Map = Math.max(0, viewY);
+    const x1Map = Math.min(mapWidth,  viewX + vwMap);
+    const y1Map = Math.min(mapHeight, viewY + vhMap);
+
+    const rectWMap = Math.max(0, x1Map - x0Map);
+    const rectHMap = Math.max(0, y1Map - y0Map);
+
+    const x0 = (x0Map / mapWidth)  * wMini;
+    const y0 = (y0Map / mapHeight) * hMini;
+    const rectW = (rectWMap / mapWidth)  * wMini;
+    const rectH = (rectHMap / mapHeight) * hMini;
+
+    minimapCtx.strokeStyle = "rgba(248,250,252,0.9)";
+    minimapCtx.lineWidth = 1;
+    minimapCtx.strokeRect(x0, y0, rectW, rectH);
+  }
+
+  minimapCanvas.addEventListener("mousedown", (e) => {
+    if (!mapWidth || !mapHeight) return;
+    const rect = minimapCanvas.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;   // 0..1
+    const ny = (e.clientY - rect.top)  / rect.height;  // 0..1
+
+    const mapX = nx * mapWidth;
+    const mapY = ny * mapHeight;
+
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+
+    // center this map point in the viewport
+    panX = vw / 2 - mapX * zoom;
+    panY = vh / 2 - mapY * zoom;
+    clampPan();
+    applyCamera();
+    e.preventDefault();
+  });
+
+  // ---------------- Brushes ----------------
+
+function applyBrush(cx, cy, dirX = 0, dirY = 0) {
+  if (!heightData) return;
+
+  const r  = brush.radius;
+  const r2 = r * r;
+
+  let x0 = Math.max(0, Math.floor(cx - r));
+  let y0 = Math.max(0, Math.floor(cy - r));
+  let x1 = Math.min(mapWidth  - 1, Math.ceil(cx + r));
+  let y1 = Math.min(mapHeight - 1, Math.ceil(cy + r));
+
+  const strength = brush.strength;
+
+  // --- snapshot BEFORE for history ---
+  const wRect = x1 - x0 + 1;
+  const hRect = y1 - y0 + 1;
+  const len   = wRect * hRect;
+
+  const before = new Float32Array(len);
+  {
+    let k = 0;
+    for (let yy = 0; yy < hRect; yy++) {
+      const y = y0 + yy;
+      const rowOffset = y * mapWidth;
+      for (let xx = 0; xx < wRect; xx++) {
+        const x = x0 + xx;
+        before[k++] = heightData[rowOffset + x];
+      }
+    }
+  }
+
+  const constantValue = constantTarget;
+
+  const centerX = Math.round(cx);
+  const centerY = Math.round(cy);
+  let centerHeight = 0.5;
+  if (centerX >= 0 && centerX < mapWidth && centerY >= 0 && centerY < mapHeight) {
+    centerHeight = heightData[idx(centerX, centerY)];
+  }
+
+  // --- oriented basis for Ridge brush (only if we have a stroke direction) ---
+  const ridgeOriented = (
+    brush.mode === BrushMode.Ridge &&
+    (dirX * dirX + dirY * dirY) > 1e-6
+  );
+  let tx = 1, ty = 0, nx = 0, ny = 1;
+  if (ridgeOriented) {
+    const lenDir = Math.sqrt(dirX * dirX + dirY * dirY);
+    tx = dirX / lenDir;    // along-stroke (ridge strike)
+    ty = dirY / lenDir;
+    nx = -ty;              // cross-stroke (perpendicular)
+    ny =  tx;
+  }
+
+  // --- main loop ---
+  for (let y = y0; y <= y1; y++) {
+    const dy  = y - cy;
+    const dy2 = dy * dy;
+    const rowOffset = y * mapWidth;
+
+    for (let x = x0; x <= x1; x++) {
+      const dx  = x - cx;
+      const d2  = dx * dx + dy2;
+      if (d2 > r2) continue;
+
+      const dist    = Math.sqrt(d2);
+      const falloff = 1.0 - dist / r; // 0..1
+      if (falloff <= 0) continue;
+
+      const i = rowOffset + x;
+      let h   = heightData[i];
+
+      switch (brush.mode) {
+        case BrushMode.Raise: {
+          const delta = strength * falloff * 0.25;
+          h = clamp01(h + delta);
+          break;
+        }
+        case BrushMode.Lower: {
+          const delta = strength * falloff * 0.25;
+          h = clamp01(h - delta);
+          break;
+        }
+        case BrushMode.Smooth: {
+          let sum = 0.0, count = 0;
+          for (let oy = -1; oy <= 1; oy++) {
+            const yy = y + oy;
+            if (yy < 0 || yy >= mapHeight) continue;
+            const base = yy * mapWidth;
+            for (let ox = -1; ox <= 1; ox++) {
+              const xx = x + ox;
+              if (xx < 0 || xx >= mapWidth) continue;
+              sum += heightData[base + xx];
+              count++;
+            }
+          }
+          if (count > 0) {
+            const avg = sum / count;
+            const t   = strength * falloff * 0.5;
+            h = clamp01(h * (1 - t) + avg * t);
+          }
+          break;
+        }
+        case BrushMode.Erode: {
+          let localMin = h;
+          for (let oy = -1; oy <= 1; oy++) {
+            const yy = y + oy;
+            if (yy < 0 || yy >= mapHeight) continue;
+            const base = yy * mapWidth;
+            for (let ox = -1; ox <= 1; ox++) {
+              const xx = x + ox;
+              if (xx < 0 || xx >= mapWidth) continue;
+              if (ox === 0 && oy === 0) continue;
+              const nh = heightData[base + xx];
+              if (nh < localMin) localMin = nh;
+            }
+          }
+          const diff = h - localMin;
+          if (diff > 0) {
+            const t = strength * falloff * 0.3;
+            h = clamp01(h - diff * t);
+          }
+          break;
+        }
+        case BrushMode.Constant: {
+          h = constantValue;
+          break;
+        }
+        case BrushMode.Flatten: {
+          const t = strength * falloff * 0.6;
+          h = clamp01(h * (1 - t) + centerHeight * t);
+          break;
+        }
+        case BrushMode.Noise: {
+          const amp = strength * falloff * 0.3;
+          const n   = (Math.random() * 2 - 1) * amp;
+          h = clamp01(h + n);
+          break;
+        }
+
+        // === NEW: Ridge brush ===
+        case BrushMode.Ridge: {
+          // If we don't know stroke direction yet, fall back to a nicer "mountain blob"
+          if (!ridgeOriented) {
+            const base  = strength * falloff * 0.4;
+            const n     = ridgeNoise(x * 0.08, y * 0.08) - 0.5;
+            const micro = n * base * 0.5;
+            h = clamp01(h + base + micro);
+          } else {
+            // Local coords: u along stroke, v across stroke
+            const u = dx * tx + dy * ty;
+            const v = dx * nx + dy * ny;
+
+            const halfLen   = r * 1.3; // ridge length influence
+            const halfWidth = r * 0.45; // ridge half-width
+
+            const ru = Math.abs(u) / halfLen;   // 0..1 along
+            const rv = Math.abs(v) / halfWidth; // 0..1 across
+            if (ru > 1 || rv > 1) break;
+
+            // Base ridge shape: tapered along, narrow across
+            let along  = 1 - ru * ru;                    // 0..1
+            let across = Math.exp(-rv * rv * 2.0);       // Gaussian-ish
+            along  = clamp01(along);
+            across = clamp01(across);
+
+            let core = along * across;                   // main ridge body
+
+            // Segmentation along ridge (peaks & saddles)
+            const segNoise = ridgeNoise(u * 0.03, 17.3); // 0..1
+            const segFactor = 0.7 + (segNoise - 0.5) * 0.6; // ~0.4..1.0
+            core *= segFactor;
+
+            // Fluting / “erosion off to the sides”:
+            // variation that is slowly changing along u, faster across v
+            const stripeNoise = ridgeNoise(u * 0.01, v * 0.12); // 0..1
+            const stripe = (stripeNoise - 0.5); // -0.5..0.5
+            const grooveStrength = 0.35;       // how strong the side grooves are
+            const grooveFactor   = 1 - grooveStrength * stripe * rv;
+            core *= grooveFactor;
+
+            // Overall amplitude
+            const amp = strength * 0.6;
+            let delta = amp * core * falloff;
+
+            // Tiny micro-relief to keep it from being too smooth
+            const microN = ridgeNoise(x * 0.14, y * 0.14) - 0.5;
+            const micro  = microN * amp * 0.18 * falloff;
+
+            // We only ADD terrain (no negative "moats")
+            if (delta < 0) delta = 0;
+
+            h = clamp01(h + delta + micro);
+          }
+          break;
+        }
+      }
+
+      heightData[i] = h;
+    }
+  }
+
+  // --- snapshot AFTER for history ---
+  const after = new Float32Array(len);
+  {
+    let k = 0;
+    for (let yy = 0; yy < hRect; yy++) {
+      const y = y0 + yy;
+      const rowOffset = y * mapWidth;
+      for (let xx = 0; xx < wRect; xx++) {
+        const x = x0 + xx;
+        after[k++] = heightData[rowOffset + x];
+      }
+    }
+  }
+
+  pushHistoryRect(x0, y0, x1, y1, before, after);
+  updateViewRect(x0, y0, x1, y1);
+  rebuildMinimap();
+}
+
+
+function paintSegment(x0, y0, x1, y1) {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const step = Math.max(brush.radius * 0.35, 3);
+  const samples = Math.max(1, Math.floor(dist / step));
+
+  for (let i = 0; i <= samples; i++) {
+    const t = samples === 0 ? 1 : (i / samples);
+    const sx = x0 + dx * t;
+    const sy = y0 + dy * t;
+    applyBrush(sx, sy, dx, dy);  // <— pass segment direction
+  }
+}
+
+  // ---------------- Mouse & pan handling ----------------
+
+  let isPainting = false;
+  let lastPX = 0, lastPY = 0;
+  let isPanning = false;
+  let panKey = false;
+  let panStartX = 0, panStartY = 0;
+  let panStartOffsetX = 0, panStartOffsetY = 0;
+
+  function getMouseMapCoords(evt) {
+    const rect = viewport.getBoundingClientRect();
+    const sx = evt.clientX - rect.left; // screen inside viewport
+    const sy = evt.clientY - rect.top;
+    const mx = (sx - panX) / zoom;
+    const my = (sy - panY) / zoom;
+    return { x: mx, y: my };
+  }
+
+  function sampleConstantFromEvent(evt) {
+    if (!heightData) return;
+    const { x, y } = getMouseMapCoords(evt);
+    const ix = Math.max(0, Math.min(mapWidth - 1, Math.round(x)));
+    const iy = Math.max(0, Math.min(mapHeight - 1, Math.round(y)));
+    const h = heightData[idx(ix, iy)];
+    constantTarget = h;
+    updateStatus();
+  }
+
+  canvas.addEventListener("mousedown", (evt) => {
+    if (!heightData) return;
+
+    // hand pan (if space is held or middle mouse)
+    if (evt.button === 1 || (panKey && evt.button === 0)) {
+      isPanning = true;
+      panStartX = evt.clientX;
+      panStartY = evt.clientY;
+      panStartOffsetX = panX;
+      panStartOffsetY = panY;
+      viewport.style.cursor = "grabbing";
+      evt.preventDefault();
+      return;
+    }
+
+    // Alt + left: sample constant
+    if (evt.button === 0 && evt.altKey) {
+      sampleConstantFromEvent(evt);
+      return;
+    }
+
+    // Left click: paint
+  if (evt.button === 0) {
+    const { x, y } = getMouseMapCoords(evt);
+    isPainting = true;
+    lastPX = x;
+    lastPY = y;
+    // First dab has no direction yet → pass 0,0 (falls back to radial)
+    applyBrush(x, y, 0, 0);
+  }
+  });
+
+  window.addEventListener("mousemove", (evt) => {
+    if (isPanning) {
+      const dx = evt.clientX - panStartX;
+      const dy = evt.clientY - panStartY;
+      panX = panStartOffsetX + dx;
+      panY = panStartOffsetY + dy;
+      clampPan();
+      applyCamera();
+      return;
+    }
+    if (!isPainting || !heightData) return;
+    const { x, y } = getMouseMapCoords(evt);
+    paintSegment(lastPX, lastPY, x, y);
+    lastPX = x;
+    lastPY = y;
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isPanning) {
+      isPanning = false;
+      viewport.style.cursor = panKey ? "grab" : "";
+    }
+    if (isPainting) {
+      isPainting = false;
+    }
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+      if (!panKey) {
+        panKey = true;
+        if (!isPanning) viewport.style.cursor = "grab";
+      }
+      e.preventDefault();
+    }
+
+    const meta = e.ctrlKey || e.metaKey;
+    if (meta && (e.key === "z" || e.key === "Z")) {
+      if (e.shiftKey) {
+        redo();
+      } else {
+        undo();
+      }
+      e.preventDefault();
+    } else if (meta && (e.key === "y" || e.key === "Y")) {
+      redo();
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space") {
+      panKey = false;
+      if (!isPanning) viewport.style.cursor = "";
+    }
+  });
+
+  // ---------------- UI wiring ----------------
+
+  radiusSlider.addEventListener("input", () => {
+    brush.radius = parseFloat(radiusSlider.value);
+    radiusValue.textContent = `${brush.radius.toFixed(0)} px`;
+    updateStatus();
+  });
+
+  strengthSlider.addEventListener("input", () => {
+    const t = parseFloat(strengthSlider.value) / 100;
+    brush.strength = 0.02 + 0.78 * t;
+    strengthValue.textContent = brush.strength.toFixed(2);
+    updateStatus();
+  });
+
+  function setBrushMode(mode) {
+    brush.mode = mode;
+    for (const pill of brushModeGroup.querySelectorAll(".radio-pill")) {
+      pill.classList.toggle("active", pill.dataset.mode === mode);
+    }
+    updateStatus();
+  }
+
+  brushModeGroup.addEventListener("click", (e) => {
+    const pill = e.target.closest(".radio-pill");
+    if (!pill) return;
+    setBrushMode(pill.dataset.mode);
+  });
+
+  function setViewMode(mode) {
+    viewMode = mode;
+    for (const pill of viewModeGroup.querySelectorAll(".radio-pill")) {
+      pill.classList.toggle("active", pill.dataset.view === mode);
+    }
+    rebuildFullView();
+    rebuildMinimap();
+    updateStatus();
+  }
+
+  viewModeGroup.addEventListener("click", (e) => {
+    const pill = e.target.closest(".radio-pill");
+    if (!pill) return;
+    setViewMode(pill.dataset.view);
+  });
+
+  seaLevelInput.addEventListener("input", () => {
+    let v = parseInt(seaLevelInput.value, 10);
+    if (isNaN(v)) v = 0;
+    if (v < 0) v = 0;
+    if (v > 255) v = 255;
+    seaLevel = v;
+    seaLevelInput.value = v;
+    constantTarget = seaLevel / 255;
+    rebuildFullView();
+    rebuildMinimap();
+    updateStatus();
+  });
+
+  zoomSlider.addEventListener("input", () => {
+    const val = parseInt(zoomSlider.value, 10) || 100;
+    const oldZoom = zoom;
+    zoom = val / 100;
+
+    // keep the point under the viewport center stable-ish
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const centerX = vw / 2;
+    const centerY = vh / 2;
+
+    const mapX = (centerX - panX) / oldZoom;
+    const mapY = (centerY - panY) / oldZoom;
+
+    panX = centerX - mapX * zoom;
+    panY = centerY - mapY * zoom;
+
+    clampPan();
+    applyCamera();
+  });
+
+    atlasBiasSlider.addEventListener("input", () => {
+        const v = parseInt(atlasBiasSlider.value, 10) || 100;
+        atlasBias = v / 100;             // 30..300  → 0.3..3.0
+        atlasBiasValue.textContent = atlasBias.toFixed(2);
+
+        // Only need to repaint if Atlas is active
+        if (viewMode === ViewMode.Atlas) {
+            rebuildFullView();
+            rebuildMinimap();
+        }
+    });
+
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const maxDim = 8192;
+      let w = img.naturalWidth;
+      let h = img.naturalHeight;
+      if (w > maxDim || h > maxDim) {
+        const scale = Math.min(maxDim / w, maxDim / h);
+        w = Math.floor(w * scale);
+        h = Math.floor(h * scale);
+      }
+
+      const off = document.createElement("canvas");
+      off.width  = w;
+      off.height = h;
+      const octx = off.getContext("2d");
+      octx.drawImage(img, 0, 0, w, h);
+      const imgData = octx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      mapWidth  = w;
+      mapHeight = h;
+      heightData = new Float32Array(w * h);
+      let j = 0;
+      for (let i = 0; i < w * h; i++) {
+        const r = data[j    ];
+        const g = data[j + 1];
+        const b = data[j + 2];
+        const v = (r + g + b) / (3 * 255);
+        heightData[i] = v;
+        j += 4;
+      }
+      allocateViewBuffers(w, h);
+      rebuildFullView();
+      fitCameraToScreen();
+      rebuildMinimap();
+      history.length = 0;
+      historyIndex = -1;
+      updateStatus();
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      alert("Failed to load image.");
+    };
+    img.src = url;
+  });
+
+  btnNew.addEventListener("click", () => {
+    const size = 2048;
+    if (heightData && !confirm("Discard current heightmap and create a new 2048×2048 map?")) {
+      return;
+    }
+    makeEmptyHeightmap(size, size, 0.5);
+  });
+
+  btnSave.addEventListener("click", () => {
+    if (!heightData) {
+      alert("No heightmap to save.");
+      return;
+    }
+    const off = document.createElement("canvas");
+    off.width  = mapWidth;
+    off.height = mapHeight;
+    const octx = off.getContext("2d");
+    const imgData = octx.createImageData(mapWidth, mapHeight);
+    const d = imgData.data;
+    const N = mapWidth * mapHeight;
+    for (let i = 0; i < N; i++) {
+      const v = Math.round(clamp01(heightData[i]) * 255);
+      const j = i * 4;
+      d[j    ] = v;
+      d[j + 1] = v;
+      d[j + 2] = v;
+      d[j + 3] = 255;
+    }
+    octx.putImageData(imgData, 0, 0);
+    off.toBlob((blob) => {
+      if (!blob) {
+        alert("Failed to create PNG blob.");
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "heightmap.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  });
+
+  // ---------------- Init ----------------
+
+  initPanels();
+  radiusSlider.dispatchEvent(new Event("input"));
+  strengthSlider.dispatchEvent(new Event("input"));
+  atlasBiasSlider.dispatchEvent(new Event("input"));
+  setBrushMode(BrushMode.Raise);
+  setViewMode(ViewMode.Height);
+  makeEmptyHeightmap(1024, 1024, 0.5);
+  
+
+})();
+</script>
+</body>
+</html>

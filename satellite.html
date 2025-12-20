@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Köppen → Google-Earth-Style Satellite Synthesizer (Single File)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    --bg:#0b1118; --panel:#131d29; --ink:#e7eef7; --muted:#9fb2c6; --accent:#58a6ff; --line:#0f1622;
+    --good:#4ade80; --warn:#fbbf24; --bad:#ef4444;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:radial-gradient(1200px 800px at 15% -10%,#0f172a 0,#0b1220 50%,#07101b 100%);
+    color:var(--ink); font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    display:grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; gap:0;
+    grid-template-areas: "header header" "sidebar main";
+  }
+  header{
+    grid-area:header; padding:12px 16px; border-bottom:1px solid #0e1522; display:flex; align-items:center; gap:14px;
+  }
+  header h1{font-size:16px; font-weight:600; margin:0; opacity:.95; letter-spacing:.2px}
+  header .hint{color:var(--muted); font-size:12px}
+  aside{
+    grid-area:sidebar; border-right:1px solid #0e1522; background:linear-gradient(180deg,#0f1826 0,#0e1522 100%);
+    padding:14px; overflow:auto;
+  }
+  main{ grid-area:main; position:relative; }
+  .panel{background:rgba(255,255,255,0.03); border:1px solid #0f1622; border-radius:12px; padding:12px; margin-bottom:12px}
+  .panel h2{margin:0 0 10px 0; font-size:13px; color:#cfe1f5; letter-spacing:.2px}
+  label{display:block; font-size:12px; color:var(--muted); margin:8px 0 6px}
+  input[type="file"]{width:100%; background:#0e1726; border:1px solid #112036; border-radius:8px; padding:10px; color:#b9cbe0}
+  .row{display:flex; align-items:center; gap:8px}
+  .row > *{flex:1}
+  .grid{display:grid; grid-template-columns: 1fr 60px; gap:8px}
+  input[type="range"]{width:100%}
+  .btn{
+    appearance:none; border:1px solid #113055; background:linear-gradient(180deg,#10253f,#0f2036);
+    color:#d6e7ff; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:600; letter-spacing:.2px;
+  }
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .btn.accent{border-color:#1e5fb9; background:linear-gradient(180deg,#144a8e,#123e77)}
+  .small{font-size:11px; color:var(--muted)}
+  .progress{
+    height:8px; background:#0e1625; border-radius:999px; overflow:hidden; border:1px solid #0f2038; margin-top:8px;
+  }
+  .bar{height:100%; width:0%; background:linear-gradient(90deg,#2ea7ff,#58a6ff); transition:width .15s}
+  canvas{max-width:100%; height:auto; display:block; background:#000}
+  .stage{
+    position:absolute; inset:0; display:grid; grid-template-rows:auto 1fr; gap:8px; padding:12px; overflow:auto;
+  }
+  .canwrap{
+    background:rgba(0,0,0,0.12); border:1px solid #0f1622; border-radius:12px; padding:8px;
+    display:grid; grid-template-columns:1fr; gap:8px; align-content:start;
+  }
+  .row2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+  .kv{display:flex; justify-content:space-between; font-size:12px; color:#9fb2c6}
+  .badge{display:inline-block; padding:2px 6px; border:1px solid #1f2f45; border-radius:999px; color:#bcd1ea; font-size:11px}
+  .legend{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; font-size:11px; color:#abc}
+  .chip{display:flex; align-items:center; gap:6px}
+  .swatch{width:14px; height:14px; border-radius:3px; border:1px solid #0007}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:11px}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Köppen ➜ Satellite Map (Google-Earth-Style)</h1>
+    <div class="hint">Load a heightmap + Koppen map (your palette). Tweak sliders. Export PNG.</div>
+  </header>
+
+  <aside>
+    <div class="panel">
+      <h2>Inputs</h2>
+      <label>Heightmap (8-bit grayscale PNG/JPG)</label>
+      <input id="heightFile" type="file" accept="image/*" />
+      <label>Köppen Map (colored with the provided palette)</label>
+      <input id="koppenFile" type="file" accept="image/*" />
+      <div class="row" style="margin-top:10px">
+        <button id="fitBtn" class="btn">Fit canvases</button>
+        <button id="renderBtn" class="btn accent" disabled>Render</button>
+      </div>
+      <div class="progress"><div id="prog" class="bar"></div></div>
+      <div class="kv" style="margin-top:8px">
+        <span class="small">Resolution</span><span id="meta" class="badge">—</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Shading & Materials</h2>
+      <div class="grid">
+        <label>Sea level <span id="seaLbl" class="small"></span></label>
+        <input id="sea" type="range" min="0" max="255" value="18" />
+        <label>Sun azimuth ° <span id="aziLbl" class="small"></span></label>
+        <input id="azimuth" type="range" min="0" max="359" value="315" />
+        <label>Sun altitude ° <span id="altLbl" class="small"></span></label>
+        <input id="altitude" type="range" min="1" max="89" value="50" />
+        <label>Relief strength <span id="relLbl" class="small"></span></label>
+        <input id="relief" type="range" min="0" max="300" value="120" />
+        <label>Ambient (%) <span id="ambLbl" class="small"></span></label>
+        <input id="ambient" type="range" min="0" max="100" value="22" />
+        <label>Rock on steep (%) <span id="rockLbl" class="small"></span></label>
+        <input id="rockiness" type="range" min="0" max="100" value="45" />
+        <label>Vegetation intensity (%) <span id="vegLbl" class="small"></span></label>
+        <input id="veg" type="range" min="0" max="150" value="100" />
+        <label>Snowline boost (%) <span id="snowLbl" class="small"></span></label>
+        <input id="snow" type="range" min="0" max="100" value="10" />
+        <label>Contrast (%) <span id="ctrLbl" class="small"></span></label>
+        <input id="contrast" type="range" min="0" max="100" value="10" />
+        <label>Haze (%) <span id="hazeLbl" class="small"></span></label>
+        <input id="haze" type="range" min="0" max="100" value="8" />
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Processing</h2>
+      <div class="grid">
+        <label>Tile size (px) <span id="tileLbl" class="small"></span></label>
+        <input id="tile" type="range" min="64" max="1024" step="64" value="512" />
+        <label>Match tolerance (Köppen RGB) <span id="tolLbl" class="small"></span></label>
+        <input id="tol" type="range" min="0" max="8" value="2" />
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="dlBtn" class="btn" disabled>Download PNG</button>
+        <button id="resetBtn" class="btn">Reset</button>
+      </div>
+      <div class="small mono" style="margin-top:8px">
+        Tip: Use a smaller tile size if memory is tight; larger tiles render faster.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Palette Legend (detected)</h2>
+      <div id="legend" class="legend"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="stage">
+      <div class="canwrap">
+        <div class="row2">
+          <div>
+            <div class="kv"><span>Heightmap</span><span id="hMeta" class="small">—</span></div>
+            <canvas id="hCanvas"></canvas>
+          </div>
+          <div>
+            <div class="kv"><span>Köppen</span><span id="kMeta" class="small">—</span></div>
+            <canvas id="kCanvas"></canvas>
+          </div>
+        </div>
+        <div>
+          <div class="kv" style="margin:8px 0 6px"><span>Satellite Output</span><span id="oMeta" class="small">—</span></div>
+          <canvas id="oCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  // ---- 1) Required Köppen palette (RGBs must match this in your input map) ----
+  const PALETTE = {
+    Af:[60,0,251], Am:[47,102,251], Aw:[69,151,251], As:[70,190,40],
+    BWh:[253,15,0], BWk:[254,146,143], BSh:[243,160,0], BSk:[250,217,93],
+    Csa:[246,255,9], Csb:[200,203,7], Csc:[255,205,160],
+    Cfa:[189,255,75], Cfb:[77,255,53], Cfc:[14,197,6],
+    Cwa:[137,255,147], Cwb:[81,198,96], Cwc:[33,146,48],
+    Dfa:[0,250,253], Dfb:[68,194,249], Dfc:[0,123,124], Dfd:[2,68,90],
+    Dsa:[255,0,249], Dsb:[202,0,193], Dsc:[150,39,145], Dsd:[140,86,141],
+    Dwa:[164,167,255], Dwb:[80,110,223], Dwc:[76,71,176], Dwd:[53,0,135],
+    ET:[169,172,168], EF:[98,99,97]
+  };
+
+  // Reverse lookup: "r,g,b" -> code
+  const rgb2code = new Map(Object.entries(PALETTE).map(([k,v]) => [v.join(','), k]));
+
+  // ---- 2) DOM helpers ----
+  const $ = sel => document.querySelector(sel);
+  const heightFile = $('#heightFile');
+  const koppenFile = $('#koppenFile');
+  const fitBtn = $('#fitBtn');
+  const renderBtn = $('#renderBtn');
+  const dlBtn = $('#dlBtn');
+  const resetBtn = $('#resetBtn');
+  const prog = $('#prog');
+  const meta = $('#meta');
+  const hCanvas = $('#hCanvas'), kCanvas = $('#kCanvas'), oCanvas = $('#oCanvas');
+  const hCtx = hCanvas.getContext('2d', { willReadFrequently:true });
+  const kCtx = kCanvas.getContext('2d', { willReadFrequently:true });
+  const oCtx = oCanvas.getContext('2d', { willReadFrequently:true });
+  const legend = $('#legend');
+
+  // Controls
+  const sea=$('#sea'), azimuth=$('#azimuth'), altitude=$('#altitude'), relief=$('#relief'),
+        ambient=$('#ambient'), rockiness=$('#rockiness'), veg=$('#veg'), snow=$('#snow'),
+        contrast=$('#contrast'), haze=$('#haze'), tile=$('#tile'), tol=$('#tol');
+  const seaLbl=$('#seaLbl'), aziLbl=$('#aziLbl'), altLbl=$('#altLbl'), relLbl=$('#relLbl'),
+        ambLbl=$('#ambLbl'), rockLbl=$('#rockLbl'), vegLbl=$('#vegLbl'), snowLbl=$('#snowLbl'),
+        ctrLbl=$('#ctrLbl'), hazeLbl=$('#hazeLbl'), tileLbl=$('#tileLbl'), tolLbl=$('#tolLbl');
+  const hMeta=$('#hMeta'), kMeta=$('#kMeta'), oMeta=$('#oMeta');
+
+  function syncLabels(){
+    seaLbl.textContent = sea.value;
+    aziLbl.textContent = azimuth.value;
+    altLbl.textContent = altitude.value;
+    relLbl.textContent = relief.value;
+    ambLbl.textContent = ambient.value + '%';
+    rockLbl.textContent = rockiness.value + '%';
+    vegLbl.textContent = veg.value + '%';
+    snowLbl.textContent = snow.value + '%';
+    ctrLbl.textContent = contrast.value + '%';
+    hazeLbl.textContent = haze.value + '%';
+    tileLbl.textContent = tile.value + ' px';
+    tolLbl.textContent  = '±' + tol.value;
+  }
+  [sea,azimuth,altitude,relief,ambient,rockiness,veg,snow,contrast,haze,tile,tol]
+    .forEach(el => el.addEventListener('input', syncLabels));
+  syncLabels();
+
+  // ---- 3) Image loaders ----
+  let H=null, K=null; // ImageData
+  function loadImageToCanvas(file, canvas, cb){
+    const img = new Image(); img.onload = () => {
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      cb(ctx.getImageData(0,0,canvas.width,canvas.height));
+    };
+    img.onerror = () => alert('Failed to load image: ' + file.name);
+    const url = URL.createObjectURL(file);
+    img.src = url;
+  }
+
+  heightFile.addEventListener('change', e=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    loadImageToCanvas(f, hCanvas, (id)=>{ H=id; hMeta.textContent = `${id.width}×${id.height}`; updateMeta(); maybeEnable(); });
+  });
+  koppenFile.addEventListener('change', e=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    loadImageToCanvas(f, kCanvas, (id)=>{ K=id; kMeta.textContent = `${id.width}×${id.height}`; updateMeta(); buildLegend(); maybeEnable(); });
+  });
+  function maybeEnable(){ renderBtn.disabled = !(H && K && H.width===K.width && H.height===K.height); }
+  function updateMeta(){ meta.textContent = (H && K && H.width===K.width) ? `${H.width}×${H.height}` : '—'; }
+
+  fitBtn.addEventListener('click', ()=>{
+    if(!(H && K)){ alert('Load both images first.'); return; }
+    const w = Math.max(H.width, K.width), h = Math.max(H.height, K.height);
+    [hCanvas,kCanvas,oCanvas].forEach(c => { c.width = w; c.height = h; });
+    // redraw originals to aligned sizes (with top-left fit)
+    hCtx.putImageData(H,0,0);
+    kCtx.putImageData(K,0,0);
+    oCtx.clearRect(0,0,oCanvas.width,oCanvas.height);
+    oMeta.textContent = `${oCanvas.width}×${oCanvas.height}`;
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    [hCanvas,kCanvas,oCanvas].forEach(c=>{ c.width=0; c.height=0; });
+    H=K=null; hMeta.textContent=kMeta.textContent=oMeta.textContent='—';
+    heightFile.value = ''; koppenFile.value = '';
+    renderBtn.disabled = true; dlBtn.disabled = true; prog.style.width='0%';
+    legend.innerHTML='';
+  });
+
+  dlBtn.addEventListener('click', ()=>{
+    const a = document.createElement('a');
+    a.download = 'satellite.png';
+    a.href = oCanvas.toDataURL('image/png');
+    a.click();
+  });
+
+  // ---- 4) Legend (from PALETTE) ----
+  function buildLegend(){
+    legend.innerHTML='';
+    Object.entries(PALETTE).forEach(([code, rgb])=>{
+      const div = document.createElement('div'); div.className='chip';
+      const sw = document.createElement('span'); sw.className='swatch'; sw.style.background=`rgb(${rgb.join(',')})`;
+      const sp = document.createElement('span'); sp.textContent = code;
+      div.appendChild(sw); div.appendChild(sp);
+      legend.appendChild(div);
+    });
+  }
+
+  // ---- 5) Math helpers (noise, color, shading) ----
+  // Value noise (fast hash + bilinear)
+  function vh(x,y){
+    // 2D pseudo-random hash -> [0,1]
+    let n = (x*374761393 + y*668265263)>>>0;
+    n = (n ^ (n >>> 13)) * 1274126177 >>> 0;
+    return ((n ^ (n>>>16)) & 0x7fffffff) / 0x7fffffff;
+  }
+  function vnoise(x,y,scale=32){
+    const xf = x/scale, yf=y/scale;
+    const x0 = Math.floor(xf), y0=Math.floor(yf);
+    const x1 = x0+1, y1=y0+1;
+    const sx = xf - x0, sy = yf - y0;
+    const n00 = vh(x0,y0), n10 = vh(x1,y0), n01 = vh(x0,y1), n11 = vh(x1,y1);
+    const ix0 = n00*(1-sx)+n10*sx;
+    const ix1 = n01*(1-sx)+n11*sx;
+    return ix0*(1-sy)+ix1*sy;
+  }
+  function clamp(v,min,max){ return v<min?min:(v>max?max:v); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function mixColor(a,b,t){ return [(a[0]+(b[0]-a[0])*t),(a[1]+(b[1]-a[1])*t),(a[2]+(b[2]-a[2])*t)]; }
+  function mulColor(c,s){ return [c[0]*s,c[1]*s,c[2]*s]; }
+  function addColor(a,b){ return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]; }
+  function satColor(c,s){ // saturation adjust in HSL-ish quick way (toward gray)
+    const avg = (c[0]+c[1]+c[2])/3;
+    return [avg + (c[0]-avg)*s, avg + (c[1]-avg)*s, avg + (c[2]-avg)*s];
+  }
+  function applyContrast(c, amt){ // amt in [0,1]
+    const f = (1.0 + amt);
+    return c.map(v => clamp((v-128)*f + 128, 0, 255));
+  }
+
+  function idx(x,y,w){ return (y*w + x) * 4; }
+
+  // Convert height 0..255 to slope/normal using Sobel
+  function sobelNormal(H, x,y,w,h, reliefScale){
+    // Sample 3x3
+    function g(xx,yy){
+      xx=clamp(xx,0,w-1); yy=clamp(yy,0,h-1);
+      const i = idx(xx,yy,w);
+      // height from red (grayscale)
+      return H.data[i]; // assume 8-bit grayscale in R
+    }
+    const tl=g(x-1,y-1), t=g(x,y-1), tr=g(x+1,y-1);
+    const l =g(x-1,y  ), c=g(x,y  ), r =g(x+1,y  );
+    const bl=g(x-1,y+1), b=g(x,y+1), br=g(x+1,y+1);
+
+    // Sobel kernels
+    const dx = (tr + 2*r + br) - (tl + 2*l + bl);
+    const dy = (bl + 2*b + br) - (tl + 2*t + tr);
+    // dz is 255/reliefScale tuning: larger reliefScale -> more pronounced slopes in lighting
+    const dz = 255.0 / (reliefScale||100);
+    // Normalized normal
+    let nx = -dx, ny = -dy, nz = dz;
+    const len = Math.hypot(nx,ny,nz) || 1;
+    return [nx/len, ny/len, nz/len, Math.hypot(dx,dy)/1024]; // last is crude slope magnitude (0..~0.7+)
+  }
+
+  // Directional light
+  function lambert(n, L, ambient=0.2){
+    const d = Math.max(0, n[0]*L[0] + n[1]*L[1] + n[2]*L[2]);
+    return clamp(ambient + d*(1-ambient), 0, 1);
+  }
+
+  // ---- 6) Köppen -> biome base color model (procedural, not the palette) ----
+  // We craft "satellite" base albedo; then vegetation & moisture tints are applied.
+  function koppenBaseColor(code){
+    const group = code[0]; // A,B,C,D,E
+    const sub = code[1] || '';
+    const sub2 = code[2] || '';
+
+    // Base colors (approx albedo under clear sky)
+    // We'll return [r,g,b] in 0..255
+    if(group==='A'){ // Tropical
+      // Deep, lush greens; lighter in savanna (Aw/As)
+      const sav = (code==='Aw'||code==='As') ? 1 : 0;
+      return sav ? [82,126,54] : [46,94,42]; // wetter -> darker green
+    }
+    if(group==='B'){ // Arid
+      if(sub==='W'){ // desert
+        return [194,174,120]; // sandy
+      }else{ // steppe
+        return [170,156,110]; // semi-arid grass/soil mix
+      }
+    }
+    if(group==='C'){ // Temperate
+      // Mediterranean (s) more ochre; oceanic (f/b) greener
+      if(sub==='s') return [148,138,86];
+      if(sub==='w') return [110,140,92];
+      return [96,136,88]; // default temperate mixed
+    }
+    if(group==='D'){ // Continental
+      // Open forests, meadows; cooler hue
+      return [88,124,86];
+    }
+    // E (Polar)
+    if(code==='ET') return [210,214,210]; // tundra with lichen/rock
+    if(code==='EF') return [238,242,246]; // ice/snow
+    return [128,128,128];
+  }
+
+  // Vegetation & dryness multipliers from code
+  function biomeParams(code){
+    const g = code[0];
+    if(g==='A') return { veg:1.0, dryness:0.1 };
+    if(g==='B'){
+      return (/BW/.test(code)) ? { veg:0.08, dryness:1.0 } : { veg:0.25, dryness:0.7 };
+    }
+    if(g==='C') return { veg:0.7, dryness:0.4 };
+    if(g==='D') return { veg:0.6, dryness:0.45 };
+    // E
+    return { veg:0.12, dryness:0.8 };
+  }
+
+  // ---- 7) RGB -> Köppen code (with tolerance) ----
+  function rgbToKoppen(r,g,b, tolVal){
+    // exact fast path
+    const key = `${r},${g},${b}`;
+    let c = rgb2code.get(key);
+    if(c) return c;
+    // tolerant nearest
+    let best=null, bestd=1e9;
+    for(const [code, arr] of Object.entries(PALETTE)){
+      const dr=r-arr[0], dg=g-arr[1], db=b-arr[2];
+      const d = Math.abs(dr)+Math.abs(dg)+Math.abs(db); // L1 is cheap
+      if(d < bestd){ bestd=d; best=code; }
+    }
+    return (bestd <= tolVal*3) ? best : 'Cfb'; // default safe greenery if unknown
+  }
+
+  // ---- 8) Render pipeline (tiled) ----
+  async function renderSatellite(){
+    if(!(H && K)){ alert('Load both images first'); return; }
+    if(H.width!==K.width || H.height!==K.height){ alert('Images must be same size'); return; }
+    const w=H.width, h=H.height;
+    oCanvas.width=w; oCanvas.height=h; oMeta.textContent = `${w}×${h}`;
+    const out = oCtx.createImageData(w,h);
+
+    const seaLevel = +sea.value;           // 0..255
+    const azi = (+azimuth.value)*Math.PI/180;
+    const alt = (+altitude.value)*Math.PI/180;
+    const L = [
+      -Math.cos(alt)*Math.cos(azi),
+      -Math.cos(alt)*Math.sin(azi),
+      Math.sin(alt)
+    ]; // light dir (negating makes it work like a GIS program - direction from which light arrives) 0° = north (top of map) 90° = east (right) 180° = south (bottom) 270° = west (left)
+    const reliefScale = +relief.value;     // affects normals
+    const ambientK = +ambient.value/100;
+    const rockK = +rockiness.value/100;
+    const vegK = +veg.value/100;
+    const snowBoost = +snow.value/100;
+    const contrastAmt = +contrast.value/100;
+    const hazeAmt = +haze.value/100;
+    const tsize = +tile.value|0;
+    const tolVal = +tol.value|0;
+
+    const Hdata = H.data, Kdata = K.data, Odata = out.data;
+
+    let done=0, total = Math.ceil(h/tsize) * Math.ceil(w/tsize);
+    function updateProg(){ prog.style.width = Math.round((done/total)*100) + '%'; }
+
+    for(let ty=0; ty<h; ty+=tsize){
+      for(let tx=0; tx<w; tx+=tsize){
+        const tw = Math.min(tsize, w-tx), th = Math.min(tsize, h-ty);
+
+        for(let yy=0; yy<th; yy++){
+          const y = ty+yy;
+          for(let xx=0; xx<tw; xx++){
+            const x = tx+xx;
+            const i = idx(x,y,w);
+
+            const hr = Hdata[i]; // height grayscale (R is enough)
+            const kr = Kdata[i], kg = Kdata[i+1], kb = Kdata[i+2];
+            const code = rgbToKoppen(kr,kg,kb, tolVal);
+
+            const [nx,ny,nz, slopeMag] = sobelNormal(H, x,y,w,h, reliefScale);
+            const shade = lambert([nx,ny,nz],[L[0],L[1],L[2]], ambientK);
+
+            // Determine land/water by sea level threshold
+            const isWater = (hr <= seaLevel);
+
+            let color;
+            if(isWater){
+              // Depth-based blue ramp
+              const depth = clamp((seaLevel - hr)/Math.max(1,seaLevel), 0, 1);
+              const shallow = [50,140,170], deep=[5,35,60];
+              color = mixColor(shallow, deep, Math.pow(depth,0.75));
+              // add shoreline brightening
+              const shore = 1.0 - clamp((seaLevel - hr)/20, 0, 1);
+              color = mixColor(color, [180,220,230], shore*0.15);
+            }else{
+              // Base biome albedo
+              let base = koppenBaseColor(code);
+
+              // Slope -> expose rock/soil (desaturate & lighten toward khaki/rock)
+              const rockCol = [172,160,130];
+              const rockT = clamp(slopeMag*2.2 * rockK, 0, 0.85);
+              base = mixColor(base, rockCol, rockT);
+
+              // Vegetation tint: greener for wetter biomes; diminished on steep slopes
+              const p = biomeParams(code);
+              const vegIntensity = clamp(p.veg * vegK * (1.0 - slopeMag*0.7), 0, 1);
+              const vegTint = [24, 60, 22]; // dark green add
+              base = addColor(base, mulColor(vegTint, vegIntensity*0.6));
+
+              // Procedural texture: mix fine + coarse noise to get foliage/soil micro-variation
+              const n1 = vnoise(x,y, 18);
+              const n2 = vnoise(x+1000,y-700, 64);
+              const tex = (n1*0.65 + n2*0.35) - 0.5; // -0.5..+0.5
+              base = base.map(v => clamp(v + tex*22, 0, 255));
+
+              // Snow / high-lat / ET/EF whitening
+              if(code==='EF' || code==='ET'){
+                base = mixColor(base, [242,244,246], code==='EF' ? 0.85 : 0.55);
+              }else{
+                // elevation-driven snowline boost
+                const elev = hr/255;
+                const snowline = 0.78 - snowBoost*0.25; // adjustable
+                if(elev>snowline){
+                  const t = clamp((elev - snowline)/ (0.22), 0, 1);
+                  base = mixColor(base, [234,238,244], t*0.9);
+                }
+              }
+
+              // Dryness-based dusting (subtle warm add for arid)
+              const dry = biomeParams(code).dryness;
+              if(dry>0.5){
+                const dust = [18,12,0];
+                base = addColor(base, mulColor(dust, (dry-0.5)*0.8));
+              }
+
+              // Apply hillshade
+              base = mulColor(base, shade*1.05);
+
+              // Haze (lift blacks a bit)
+              const hazeLift = hazeAmt*22;
+              base = base.map(v => clamp(v*(1.0) + hazeLift, 0, 255));
+
+              // Contrast
+              if(contrastAmt>0){
+                base = applyContrast(base, contrastAmt);
+              }
+              color = base;
+            }
+
+            Odata[i  ] = clamp(color[0],0,255)|0;
+            Odata[i+1] = clamp(color[1],0,255)|0;
+            Odata[i+2] = clamp(color[2],0,255)|0;
+            Odata[i+3] = 255;
+          }
+        }
+
+        done++; if(done%4===0) updateProg();
+        // Yield to keep UI responsive on huge maps
+        if((done%8)===0) await new Promise(r => setTimeout(r,0));
+      }
+    }
+    prog.style.width='100%';
+    oCtx.putImageData(out,0,0);
+    dlBtn.disabled = false;
+  }
+
+  renderBtn.addEventListener('click', ()=>{
+    renderBtn.disabled = true;
+    renderSatellite().finally(()=>{ renderBtn.disabled = false; });
+  });
+
+})();
+</script>
+</body>
+</html>

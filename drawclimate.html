@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Köppen Climate Drawer (sidebar + efficient zoom + minimap + height underlay toggle)</title>
+<style>
+:root{
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --border:#c4b496;
+  --shadow:0 4px 20px rgba(0,0,0,.15);
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-mono:"Courier New",Courier,monospace;
+  --danger:#b54b3c;
+  --stage:#1a1612;
+  --sidebar-w: 360px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font-serif);
+  background:#2a241e;
+  color:var(--ink);
+  overflow:hidden;
+}
+
+/* App layout */
+#app{
+  position:fixed; inset:0;
+  display:grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  background:#2a241e;
+}
+
+#sidebar{
+  height:100%;
+  overflow:auto;
+  background: linear-gradient(180deg, rgba(244,233,213,.95), rgba(232,219,195,.95));
+  border-right:2px solid rgba(60,47,33,.7);
+  box-shadow: inset -10px 0 30px rgba(0,0,0,.15);
+  padding:14px 14px 18px;
+}
+
+#viewport-wrap{
+  position:relative;
+  height:100%;
+  background:var(--stage);
+  overflow:hidden;
+}
+
+/* Canvas stage */
+#canvas-scroll{ position:absolute; inset:0; overflow:hidden; }
+#canvas-container{ position:relative; width:100%; height:100%; }
+
+canvas#climateCanvas{
+  position:absolute;
+  top:0; left:0;
+  display:block;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  background:#fff;
+  transform-origin:top left;
+  box-shadow:0 0 50px rgba(0,0,0,.5);
+}
+
+/* Sidebar blocks */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 10px;
+  border:2px solid var(--ink);
+  background: rgba(244,233,213,.85);
+  box-shadow: 4px 6px 18px rgba(0,0,0,.25);
+  border-radius:2px;
+  margin-bottom:10px;
+}
+.brand .dot{ width:10px; height:10px; border-radius:999px; background:var(--accent); }
+.brand .title{
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+  font-size:12px;
+}
+.brand .subtitle{
+  display:block;
+  font-weight:700;
+  color:var(--ink);
+  letter-spacing:.4px;
+  font-size:12px;
+  margin-top:1px;
+}
+
+.section{
+  border:2px solid rgba(60,47,33,.85);
+  background: rgba(244,233,213,.85);
+  box-shadow: 4px 6px 18px rgba(0,0,0,.22);
+  border-radius:2px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.section .hdr{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 10px;
+  background: var(--parchment-dark);
+  border-bottom:1px solid rgba(196,180,150,.85);
+  user-select:none;
+}
+.section .hdr .h{
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-muted);
+}
+.section .hdr button.collapse{
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);
+  color:var(--ink);
+  width:20px; height:20px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:900;
+  line-height:18px;
+}
+.section .hdr button.collapse:hover{ background:#fff; }
+.section.collapsed .body{ display:none; }
+
+.section .body{ padding:10px 12px 12px; }
+
+.row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.row label{ font-size:12px; color:var(--ink); }
+.row .value{ font-size:11px; color:var(--ink-muted); }
+
+input[type="file"]{ width:100%; font-size:11px; color:var(--ink-muted); }
+input[type="number"]{
+  width:92px;
+  font-size:13px;
+  padding:6px 8px;
+  border-radius:2px;
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.40);
+  color:var(--ink);
+  font-family:var(--font-mono);
+}
+input[type="number"]:focus{ outline:2px solid var(--accent); background:#fff; }
+
+input[type="range"]{ width:100%; accent-color:var(--accent); }
+input[type="checkbox"]{ accent-color:var(--accent); }
+
+button{
+  cursor:pointer;
+  border-radius:2px;
+  border:1px solid var(--ink);
+  background:var(--parchment-dark);
+  color:var(--ink);
+  font-size:12px;
+  padding:10px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  transition:background .1s, transform .1s, box-shadow .1s;
+  font-family:var(--font-serif);
+  font-weight:900;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  box-shadow:2px 2px 0 var(--ink);
+  width:100%;
+}
+button:hover{ background:#dfcfaf; }
+button:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink); }
+button.primary{
+  background:var(--accent);
+  color:#fff;
+}
+button:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
+
+.small{
+  font-size:11px;
+  color:var(--ink-muted);
+  line-height:1.35;
+}
+
+/* Palette grid */
+#palette{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:6px;
+  max-height: 260px;
+  overflow:auto;
+  padding-right:2px;
+}
+.pal-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  border-radius:2px;
+  background:rgba(255,255,255,.35);
+  border:1px solid var(--border);
+  cursor:pointer;
+  user-select:none;
+}
+.pal-item:hover{ background:#fff; }
+.pal-item.active{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  background:#fff;
+}
+.swatch{
+  width:16px; height:12px;
+  border-radius:2px;
+  border:1px solid rgba(0,0,0,.25);
+}
+.code{ font-family:var(--font-mono); font-size:12px; color:var(--ink); }
+.name{ font-size:11px; color:var(--ink-muted); font-style:italic; }
+
+/* Status pill */
+#status-pill{
+  display:flex; align-items:center; gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(244,233,213,.85);
+  border:1px solid rgba(60,47,33,.45);
+  font-size:12px;
+  color:var(--ink-muted);
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+  margin-top:10px;
+}
+#status-pill .dot{ width:8px; height:8px; border-radius:999px; background:var(--accent); }
+
+/* Minimap top-right (always on-screen) */
+#minimap-wrap{
+  position:absolute;
+  top:16px;
+  right:16px;
+  pointer-events:auto;
+  background:rgba(244,233,213,.85);
+  border-radius:2px;
+  padding:6px;
+  border:2px solid var(--ink);
+  box-shadow:5px 8px 22px rgba(0,0,0,.35);
+  z-index:10;
+}
+#minimap{
+  display:block;
+  width:300px;
+  height:150px;
+  image-rendering:pixelated;
+  cursor:pointer;
+  border:2px solid var(--danger);
+  border-radius:2px;
+  background:#fff;
+}
+
+/* Tiny status in viewport bottom-left */
+#view-status{
+  position:absolute;
+  left:12px;
+  bottom:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(244,233,213,.85);
+  border:1px solid rgba(60,47,33,.45);
+  font-size:12px;
+  color:var(--ink-muted);
+  pointer-events:none;
+  display:flex;
+  gap:10px;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+}
+#view-status .k{ color:var(--accent); font-weight:900; }
+
+.radio-group{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:6px;
+  margin-bottom:8px;
+}
+.radio-pill{
+  font-size:11px;
+  padding:7px 6px;
+  border-radius:2px;
+  border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+  color:var(--ink);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.radio-pill.active{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  background:#fff;
+  color:var(--ink);
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- LEFT: single anchored sidebar -->
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <div class="title">Köppen Climate Drawer</div>
+        <span class="subtitle">Paint climates on land (>= sea level)</span>
+      </div>
+    </div>
+
+    <div class="section" id="sec-files">
+      <div class="hdr">
+        <div class="h">Files</div>
+        <button class="collapse" data-target="#sec-files">–</button>
+      </div>
+      <div class="body">
+        <div class="row"><label>Heightmap (required)</label></div>
+        <input id="heightFile" type="file" accept="image/png,image/jpeg,image/webp">
+        <div class="row" style="margin-top:10px;"><label>Köppen map (optional)</label></div>
+        <input id="koppenFile" type="file" accept="image/png,image/jpeg,image/webp">
+        <div class="row" style="margin-top:10px;">
+          <label for="saveName">Save name</label>
+          <input id="saveName" type="text" value="koppen.png" style="width:160px;padding:6px 8px;border-radius:2px;border:1px solid var(--ink-muted);background:rgba(255,255,255,.40);font-family:var(--font-mono);">
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <label for="seaLevel">Sea level</label>
+          <input id="seaLevel" type="number" min="0" max="255" value="19" title="Below this is ocean; you cannot paint there.">
+        </div>
+
+        <div class="small">
+          Heightmap greyscale is read from the red channel (or avg RGB if not greyscale). Land = >= sea.
+        </div>
+
+        <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+          <button id="btnNewBlank" title="Start from a blank Köppen map">Blank Köppen</button>
+          <button id="btnSave" class="primary" disabled>Save PNG</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="sec-brush">
+      <div class="hdr">
+        <div class="h">Brush</div>
+        <button class="collapse" data-target="#sec-brush">–</button>
+      </div>
+      <div class="body">
+        <div class="row">
+          <label>Mode</label>
+          <span class="value" id="brushModeLabel">Paint</span>
+        </div>
+        <div class="radio-group" id="modeGroup">
+          <div class="radio-pill active" data-mode="paint">Paint</div>
+          <div class="radio-pill" data-mode="erase">Erase</div>
+        </div>
+
+        <div class="row" style="margin-top:6px;">
+          <label for="radius">Radius</label>
+          <span class="value" id="radiusLabel">40 px</span>
+        </div>
+        <input id="radius" type="range" min="2" max="300" value="40">
+
+        <div class="row" style="margin-top:6px;">
+          <label for="strength">Strength</label>
+          <span class="value" id="strengthLabel">0.35</span>
+        </div>
+        <input id="strength" type="range" min="1" max="100" value="35">
+
+        <div class="small" style="margin-top:6px;">
+          Paint with <b>left mouse</b>. Pan: hold <b>Space</b> + drag (or middle mouse).<br/>
+          Alt+click: sample climate from the map.
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="sec-view">
+      <div class="hdr">
+        <div class="h">View</div>
+        <button class="collapse" data-target="#sec-view">–</button>
+      </div>
+      <div class="body">
+        <div class="row">
+          <label for="zoom">Zoom</label>
+          <span class="value" id="zoomLabel">100%</span>
+        </div>
+        <input id="zoom" type="range" min="10" max="400" value="100">
+
+        <div class="row" style="margin-top:8px;">
+          <label style="display:flex; align-items:center; gap:8px;">
+            <input id="toggleHeightUnderlay" type="checkbox">
+            Height underlay
+          </label>
+          <span class="value" id="underlayHint">off</span>
+        </div>
+        <div class="small">
+          When enabled, the heightmap is shown underneath the Köppen colors (handy for painting along terrain).
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <label>Underlay opacity</label>
+          <span class="value" id="blendLabel">0.85</span>
+        </div>
+        <input id="blend" type="range" min="10" max="100" value="85" title="How strong the Köppen overlay is when height underlay is on.">
+
+        <div class="small" style="margin-top:6px;">
+          Ocean is always deep blue. Painting is still blocked below sea level.
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="sec-palette">
+      <div class="hdr">
+        <div class="h">Palette</div>
+        <button class="collapse" data-target="#sec-palette">–</button>
+      </div>
+      <div class="body">
+        <div id="palette"></div>
+        <div class="small" style="margin-top:8px;">
+          Selected: <span class="code" id="selCode">–</span>
+          <span class="name" id="selName"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-pill">
+      <span class="dot"></span>
+      <span id="status">Load a heightmap to begin…</span>
+    </div>
+  </aside>
+
+  <!-- RIGHT: viewport -->
+  <section id="viewport-wrap">
+    <div id="canvas-scroll">
+      <div id="canvas-container">
+        <canvas id="climateCanvas"></canvas>
+
+        <div id="minimap-wrap" title="Click to jump">
+          <canvas id="minimap" width="300" height="150"></canvas>
+        </div>
+
+        <div id="view-status">
+          <span><span class="k">Size</span> <span id="stSize">–</span></span>
+          <span><span class="k">Zoom</span> <span id="stZoom">–</span></span>
+          <span><span class="k">Sea</span> <span id="stSea">19</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------------- Köppen palette (matches your generator) ----------------
+  const KOPPEN_CLASSES = [
+    { code:'Af',  name:'Equatorial rainforest', group:'A', color:'#3c00fb' },
+    { code:'Am',  name:'Equatorial monsoon', group:'A', color:'#2f66fb' },
+    { code:'Aw',  name:'Equatorial savanna (winter dry)', group:'A', color:'#4597fb' },
+    { code:'As',  name:'Equatorial savanna (summer dry)', group:'A', color:'#46be28' },
+
+    { code:'BWh', name:'Subtropical desert (hot)', group:'B', color:'#fd0f00' },
+    { code:'BWk', name:'Mid-latitude desert (cold)', group:'B', color:'#fe928f' },
+    { code:'BSh', name:'Subtropical steppe (hot)', group:'B', color:'#f3a000' },
+    { code:'BSk', name:'Mid-latitude steppe (cold)', group:'B', color:'#fad95d' },
+
+    { code:'Csa', name:'Mediterranean hot summer', group:'C', color:'#f6ff09' },
+    { code:'Csb', name:'Mediterranean warm summer', group:'C', color:'#c8cb07' },
+    { code:'Csc', name:'Mediterranean cool summer', group:'C', color:'#ffcda0' },
+
+    { code:'Cfa', name:'Humid subtropical (no dry season, hot)', group:'C', color:'#bdff4b' },
+    { code:'Cfb', name:'Marine west coast (warm summer)', group:'C', color:'#4dff35' },
+    { code:'Cfc', name:'Marine west coast (cool summer)', group:'C', color:'#0ec506' },
+
+    { code:'Cwa', name:'Humid subtropical (dry winter, hot summer)', group:'C', color:'#89ff93' },
+    { code:'Cwb', name:'Humid subtropical highland (warm summer)', group:'C', color:'#51c660' },
+    { code:'Cwc', name:'Humid subtropical highland (cool summer)', group:'C', color:'#219230' },
+
+    { code:'Dfa', name:'Humid continental hot summer', group:'D', color:'#00fafd' },
+    { code:'Dfb', name:'Humid continental warm summer', group:'D', color:'#44c2f9' },
+    { code:'Dfc', name:'Subarctic cool summer', group:'D', color:'#007b7c' },
+    { code:'Dfd', name:'Subarctic very cold winter', group:'D', color:'#02445a' },
+
+    { code:'Dsa', name:'Continental hot summer, dry summer', group:'D', color:'#ff00f9' },
+    { code:'Dsb', name:'Continental warm summer, dry summer', group:'D', color:'#ca00c1' },
+    { code:'Dsc', name:'Continental cool summer, dry summer', group:'D', color:'#962791' },
+    { code:'Dsd', name:'Continental very cold winter, dry summer', group:'D', color:'#8c568d' },
+
+    { code:'Dwa', name:'Humid continental dry winter, hot summer', group:'D', color:'#a4a7ff' },
+    { code:'Dwb', name:'Humid continental dry winter, warm summer', group:'D', color:'#506edf' },
+    { code:'Dwc', name:'Subarctic dry winter, cool summer', group:'D', color:'#4c47b0' },
+    { code:'Dwd', name:'Subarctic dry winter, very cold winter', group:'D', color:'#350087' },
+
+    { code:'ET',  name:'Tundra', group:'E', color:'#a9aca8' },
+    { code:'EF',  name:'Ice cap', group:'E', color:'#626361' },
+
+    { code:'H',   name:'Complex highland', group:'H', color:'#808080' },
+  ];
+
+  const OCEAN_RGB = [10, 30, 80];
+
+  function hexToRgb(hex){
+    const s = hex.replace('#','');
+    const v = parseInt(s,16);
+    return [(v>>16)&255,(v>>8)&255,v&255];
+  }
+  const CLASS_RGB = KOPPEN_CLASSES.map(c => hexToRgb(c.color));
+
+  // ---------------- DOM ----------------
+  const canvas = document.getElementById("climateCanvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently:true });
+
+  const minimapCanvas = document.getElementById("minimap");
+  const minimapCtx = minimapCanvas.getContext("2d");
+
+  const viewport = document.getElementById("viewport-wrap");
+
+  const heightFile = document.getElementById("heightFile");
+  const koppenFile = document.getElementById("koppenFile");
+  const seaLevelEl = document.getElementById("seaLevel");
+  const saveNameEl = document.getElementById("saveName");
+  const btnSave = document.getElementById("btnSave");
+  const btnNewBlank = document.getElementById("btnNewBlank");
+
+  const radiusEl = document.getElementById("radius");
+  const strengthEl = document.getElementById("strength");
+  const radiusLabel = document.getElementById("radiusLabel");
+  const strengthLabel = document.getElementById("strengthLabel");
+  const modeGroup = document.getElementById("modeGroup");
+  const brushModeLabel = document.getElementById("brushModeLabel");
+
+  const zoomEl = document.getElementById("zoom");
+  const zoomLabel = document.getElementById("zoomLabel");
+
+  const toggleHeightUnderlay = document.getElementById("toggleHeightUnderlay");
+  const underlayHint = document.getElementById("underlayHint");
+  const blendEl = document.getElementById("blend");
+  const blendLabel = document.getElementById("blendLabel");
+
+  const paletteEl = document.getElementById("palette");
+  const selCodeEl = document.getElementById("selCode");
+  const selNameEl = document.getElementById("selName");
+
+  const statusEl = document.getElementById("status");
+  const stSize = document.getElementById("stSize");
+  const stZoom = document.getElementById("stZoom");
+  const stSea  = document.getElementById("stSea");
+
+  // Collapse sections
+  document.querySelectorAll(".collapse").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sec = document.querySelector(btn.dataset.target);
+      if (!sec) return;
+      sec.classList.toggle("collapsed");
+      btn.textContent = sec.classList.contains("collapsed") ? "+" : "–";
+    });
+  });
+
+  // ---------------- Core data (memory-friendly) ----------------
+  let W=0, H=0, N=0;
+
+  // Heightmap grayscale 0..255 per pixel (Uint8Array)
+  let heightGray = null;
+
+  // Climate class index per pixel (Uint8Array), 255 means ocean/none
+  let climateIdx = null;
+
+  // View buffer for main canvas (Uint8ClampedArray RGBA) + ImageData wrapper
+  let viewBuffer = null;
+  let imageData = null;
+
+  // Minimap base imageData (no viewport rect)
+  let minimapBase = null;
+
+  // Painting state
+  const BrushMode = { Paint:"paint", Erase:"erase" };
+  const brush = { mode:BrushMode.Paint, radius:40, strength:0.35 };
+  let selectedClass = 0;
+
+  // Underlay toggle + blend
+  let showHeightUnderlay = false;   // toggle
+  let koppenBlend = 0.85;           // 0..1 (only used when underlay is on)
+
+  // Camera (pan+zoom)
+  let zoom = 1.0;
+  let panX = 0;
+  let panY = 0;
+
+  // Space-pan
+  let panKey = false;
+  let isPanning = false;
+  let panStartX=0, panStartY=0, panStartOffX=0, panStartOffY=0;
+
+  // Paint
+  let isPainting=false;
+  let lastPX=0, lastPY=0;
+
+  // ---------------- Helpers ----------------
+  function setStatus(msg){ statusEl.textContent = msg; }
+
+  function allocateBuffers(w,h){
+    W=w|0; H=h|0; N=W*H;
+    canvas.width=W; canvas.height=H;
+    ctx.imageSmoothingEnabled=false;
+
+    heightGray = new Uint8Array(N);
+    climateIdx = new Uint8Array(N);
+    climateIdx.fill(255);
+
+    viewBuffer = new Uint8ClampedArray(N*4);
+    imageData = new ImageData(viewBuffer, W, H);
+
+    btnSave.disabled = false;
+    stSize.textContent = `${W}×${H}`;
+  }
+
+  function clampPan(){
+    if(!W||!H) return;
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const worldW = W * zoom;
+    const worldH = H * zoom;
+
+    if (worldW <= vw) panX = (vw - worldW)/2;
+    else {
+      const minX = vw - worldW, maxX = 0;
+      if (panX < minX) panX = minX;
+      if (panX > maxX) panX = maxX;
+    }
+
+    if (worldH <= vh) panY = (vh - worldH)/2;
+    else {
+      const minY = vh - worldH, maxY = 0;
+      if (panY < minY) panY = minY;
+      if (panY > maxY) panY = maxY;
+    }
+  }
+
+  function applyCamera(){
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    zoomLabel.textContent = `${Math.round(zoom*100)}%`;
+    stZoom.textContent = `${Math.round(zoom*100)}%`;
+    drawMinimapOverlay();
+  }
+
+  function fitCameraToScreen(){
+    if(!W||!H) return;
+    const margin = 40;
+    const vw = viewport.clientWidth  - margin;
+    const vh = viewport.clientHeight - margin;
+    if (vw<=0||vh<=0) return;
+
+    let z = Math.min(vw / W, vh / H);
+    z = Math.max(0.1, Math.min(1, z));
+
+    let zPct = Math.round(z*100);
+    const minZ = parseInt(zoomEl.min,10)||10;
+    const maxZ = parseInt(zoomEl.max,10)||400;
+    zPct = Math.max(minZ, Math.min(maxZ, zPct));
+
+    zoom = zPct/100;
+    zoomEl.value = zPct;
+
+    const worldW = W*zoom, worldH = H*zoom;
+    panX = (viewport.clientWidth - worldW)/2;
+    panY = (viewport.clientHeight - worldH)/2;
+
+    clampPan();
+    applyCamera();
+  }
+
+  window.addEventListener("resize", () => fitCameraToScreen());
+
+  function idx(x,y){ return y*W + x; }
+
+  function getMouseMapCoords(evt){
+    const rect = viewport.getBoundingClientRect();
+    const sx = evt.clientX - rect.left;
+    const sy = evt.clientY - rect.top;
+    return { x:(sx - panX)/zoom, y:(sy - panY)/zoom };
+  }
+
+  function isLandPixel(i){
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+    return heightGray && heightGray[i] >= sea;
+  }
+
+  function encodeHeightUnderlay(i){
+    // Show water as deep blue, land as grayscale.
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+    const g = heightGray ? heightGray[i] : 0;
+    if (g < sea) return OCEAN_RGB;
+    return [g,g,g];
+  }
+
+  function blendOver(baseRGB, topRGB, a){
+    // out = base*(1-a) + top*a
+    const ia = 1-a;
+    return [
+      (baseRGB[0]*ia + topRGB[0]*a) | 0,
+      (baseRGB[1]*ia + topRGB[1]*a) | 0,
+      (baseRGB[2]*ia + topRGB[2]*a) | 0
+    ];
+  }
+
+  // ---------------- Rendering (fast, single buffer) ----------------
+  function rebuildFullView(){
+    if(!viewBuffer || !climateIdx) return;
+
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+    stSea.textContent = String(sea);
+
+    const useUnderlay = showHeightUnderlay && !!heightGray;
+    const a = koppenBlend;
+
+    for(let i=0;i<N;i++){
+      const j = i*4;
+      const ci = climateIdx[i];
+
+      if (!heightGray){
+        // No height: just show koppen if present, else ocean-ish
+        if (ci === 255){
+          viewBuffer[j]=OCEAN_RGB[0]; viewBuffer[j+1]=OCEAN_RGB[1]; viewBuffer[j+2]=OCEAN_RGB[2]; viewBuffer[j+3]=255;
+        } else {
+          const rgb = CLASS_RGB[ci];
+          viewBuffer[j]=rgb[0]; viewBuffer[j+1]=rgb[1]; viewBuffer[j+2]=rgb[2]; viewBuffer[j+3]=255;
+        }
+        continue;
+      }
+
+      const g = heightGray[i];
+
+      if (g < sea){
+        // ocean always ocean
+        viewBuffer[j]=OCEAN_RGB[0]; viewBuffer[j+1]=OCEAN_RGB[1]; viewBuffer[j+2]=OCEAN_RGB[2]; viewBuffer[j+3]=255;
+        continue;
+      }
+
+      if (!useUnderlay){
+        // pure Köppen view (land pixels without a class render as a light parchment tint)
+        if (ci === 255){
+          viewBuffer[j]=244; viewBuffer[j+1]=233; viewBuffer[j+2]=213; viewBuffer[j+3]=255;
+        } else {
+          const rgb = CLASS_RGB[ci];
+          viewBuffer[j]=rgb[0]; viewBuffer[j+1]=rgb[1]; viewBuffer[j+2]=rgb[2]; viewBuffer[j+3]=255;
+        }
+      } else {
+        // height underlay + Köppen overlay
+        const base = [g,g,g];
+        if (ci === 255){
+          // no class: just base
+          viewBuffer[j]=base[0]; viewBuffer[j+1]=base[1]; viewBuffer[j+2]=base[2]; viewBuffer[j+3]=255;
+        } else {
+          const rgb = CLASS_RGB[ci];
+          const out = blendOver(base, rgb, a);
+          viewBuffer[j]=out[0]; viewBuffer[j+1]=out[1]; viewBuffer[j+2]=out[2]; viewBuffer[j+3]=255;
+        }
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    rebuildMinimap();
+  }
+
+  function updateViewRect(x0,y0,x1,y1){
+    if(!viewBuffer || !climateIdx || !heightGray) { rebuildFullView(); return; }
+
+    x0 = Math.max(0, x0|0); y0 = Math.max(0, y0|0);
+    x1 = Math.min(W-1, x1|0); y1 = Math.min(H-1, y1|0);
+
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+    const useUnderlay = showHeightUnderlay && !!heightGray;
+    const a = koppenBlend;
+
+    for(let y=y0; y<=y1; y++){
+      const row = y*W;
+      for(let x=x0; x<=x1; x++){
+        const i = row + x;
+        const j = i*4;
+        const g = heightGray[i];
+        const ci = climateIdx[i];
+
+        if (g < sea){
+          viewBuffer[j]=OCEAN_RGB[0]; viewBuffer[j+1]=OCEAN_RGB[1]; viewBuffer[j+2]=OCEAN_RGB[2]; viewBuffer[j+3]=255;
+          continue;
+        }
+
+        if (!useUnderlay){
+          if (ci === 255){
+            viewBuffer[j]=244; viewBuffer[j+1]=233; viewBuffer[j+2]=213; viewBuffer[j+3]=255;
+          } else {
+            const rgb = CLASS_RGB[ci];
+            viewBuffer[j]=rgb[0]; viewBuffer[j+1]=rgb[1]; viewBuffer[j+2]=rgb[2]; viewBuffer[j+3]=255;
+          }
+        } else {
+          const base = [g,g,g];
+          if (ci === 255){
+            viewBuffer[j]=base[0]; viewBuffer[j+1]=base[1]; viewBuffer[j+2]=base[2]; viewBuffer[j+3]=255;
+          } else {
+            const rgb = CLASS_RGB[ci];
+            const out = blendOver(base, rgb, a);
+            viewBuffer[j]=out[0]; viewBuffer[j+1]=out[1]; viewBuffer[j+2]=out[2]; viewBuffer[j+3]=255;
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0, x0, y0, (x1-x0+1), (y1-y0+1));
+    rebuildMinimap(); // small, cheap
+  }
+
+  // ---------------- Minimap ----------------
+  function rebuildMinimap(){
+    if(!W||!H||!heightGray) return;
+
+    const wMini = minimapCanvas.width;
+    const hMini = minimapCanvas.height;
+    const img = minimapCtx.createImageData(wMini, hMini);
+    const d = img.data;
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+
+    // Underlay choice affects minimap too (so it matches what you're seeing)
+    const useUnderlay = showHeightUnderlay;
+    const a = koppenBlend;
+
+    for(let y=0; y<hMini; y++){
+      const mapY = (y * H / hMini) | 0;
+      const row = mapY * W;
+      for(let x=0; x<wMini; x++){
+        const mapX = (x * W / wMini) | 0;
+        const i = row + mapX;
+
+        let r=0,g=0,b=0;
+        const hg = heightGray[i];
+        const ci = climateIdx ? climateIdx[i] : 255;
+
+        if (hg < sea){
+          r=OCEAN_RGB[0]; g=OCEAN_RGB[1]; b=OCEAN_RGB[2];
+        } else if (!useUnderlay){
+          if (ci === 255){ r=244; g=233; b=213; }
+          else { const rgb=CLASS_RGB[ci]; r=rgb[0]; g=rgb[1]; b=rgb[2]; }
+        } else {
+          const base = [hg,hg,hg];
+          if (ci === 255){ r=base[0]; g=base[1]; b=base[2]; }
+          else {
+            const rgb=CLASS_RGB[ci];
+            const out = blendOver(base, rgb, a);
+            r=out[0]; g=out[1]; b=out[2];
+          }
+        }
+
+        const j = (y*wMini + x)*4;
+        d[j]=r; d[j+1]=g; d[j+2]=b; d[j+3]=255;
+      }
+    }
+
+    minimapBase = img;
+    drawMinimapOverlay();
+  }
+
+  function drawMinimapOverlay(){
+    if(!minimapBase || !W || !H) return;
+    minimapCtx.putImageData(minimapBase, 0, 0);
+
+    const wMini = minimapCanvas.width, hMini = minimapCanvas.height;
+    const vw = viewport.clientWidth, vh = viewport.clientHeight;
+    if(!vw||!vh) return;
+
+    const viewX = -panX / zoom;
+    const viewY = -panY / zoom;
+    const vwMap = vw / zoom;
+    const vhMap = vh / zoom;
+
+    const x0Map = Math.max(0, viewX);
+    const y0Map = Math.max(0, viewY);
+    const x1Map = Math.min(W, viewX + vwMap);
+    const y1Map = Math.min(H, viewY + vhMap);
+
+    const rectWMap = Math.max(0, x1Map - x0Map);
+    const rectHMap = Math.max(0, y1Map - y0Map);
+
+    const x0 = (x0Map / W) * wMini;
+    const y0 = (y0Map / H) * hMini;
+    const rw = (rectWMap / W) * wMini;
+    const rh = (rectHMap / H) * hMini;
+
+    minimapCtx.strokeStyle = "rgba(248,250,252,0.92)";
+    minimapCtx.lineWidth = 1;
+    minimapCtx.strokeRect(x0, y0, rw, rh);
+  }
+
+  minimapCanvas.addEventListener("mousedown", (e)=>{
+    if(!W||!H) return;
+    const rect = minimapCanvas.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width;
+    const ny = (e.clientY - rect.top)  / rect.height;
+
+    const mapX = nx * W;
+    const mapY = ny * H;
+
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+
+    panX = vw/2 - mapX*zoom;
+    panY = vh/2 - mapY*zoom;
+    clampPan();
+    applyCamera();
+    e.preventDefault();
+  });
+
+  // ---------------- Palette UI ----------------
+  function buildPalette(){
+    paletteEl.innerHTML = "";
+    KOPPEN_CLASSES.forEach((c, i)=>{
+      const div = document.createElement("div");
+      div.className = "pal-item" + (i===selectedClass ? " active":"");
+      div.dataset.idx = String(i);
+
+      const sw = document.createElement("div");
+      sw.className="swatch";
+      sw.style.background = c.color;
+
+      const text = document.createElement("div");
+      const code = document.createElement("div");
+      code.className="code";
+      code.textContent = c.code;
+      const name = document.createElement("div");
+      name.className="name";
+      name.textContent = c.name;
+
+      text.appendChild(code);
+      text.appendChild(name);
+      div.appendChild(sw);
+      div.appendChild(text);
+
+      div.addEventListener("click", ()=>{
+        selectedClass = i;
+        paletteEl.querySelectorAll(".pal-item").forEach(el=>el.classList.toggle("active", el===div));
+        selCodeEl.textContent = c.code;
+        selNameEl.textContent = " — " + c.name;
+      });
+
+      paletteEl.appendChild(div);
+    });
+
+    const c = KOPPEN_CLASSES[selectedClass];
+    selCodeEl.textContent = c.code;
+    selNameEl.textContent = " — " + c.name;
+  }
+
+  // ---------------- File loading ----------------
+  async function decodeToImageData(file){
+    const url = URL.createObjectURL(file);
+    try{
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const w = img.naturalWidth|0;
+      const h = img.naturalHeight|0;
+      const c = document.createElement("canvas");
+      c.width=w; c.height=h;
+      const cctx = c.getContext("2d");
+      cctx.drawImage(img,0,0);
+      return cctx.getImageData(0,0,w,h);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function parseHeightFromImageData(img){
+    allocateBuffers(img.width, img.height);
+
+    const d = img.data;
+    for(let i=0, j=0; i<N; i++, j+=4){
+      // if it’s greyscale, r≈g≈b. We still average to be safe.
+      const v = ((d[j] + d[j+1] + d[j+2]) / 3) | 0;
+      heightGray[i] = v;
+    }
+
+    setStatus("Heightmap loaded. You can paint climates on land.");
+    fitCameraToScreen();
+    rebuildFullView();
+  }
+
+  function nearestClassFromRGB(r,g,b){
+    let best = 0;
+    let bestD = 1e18;
+    for(let i=0;i<CLASS_RGB.length;i++){
+      const cr = CLASS_RGB[i][0], cg = CLASS_RGB[i][1], cb = CLASS_RGB[i][2];
+      const dr=r-cr, dg=g-cg, db=b-cb;
+      const d = dr*dr + dg*dg + db*db;
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    return best;
+  }
+
+  function loadKoppenFromImageData(img){
+    if(!W||!H){
+      setStatus("Load heightmap first (so we know the dimensions).");
+      return;
+    }
+    if(img.width !== W || img.height !== H){
+      setStatus(`Köppen map must match heightmap size (${W}×${H}).`);
+      return;
+    }
+
+    const d = img.data;
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+
+    for(let i=0,j=0;i<N;i++,j+=4){
+      if (!heightGray){ climateIdx[i]=255; continue; }
+
+      // Force ocean to 255 (unpaintable), based on height
+      if (heightGray[i] < sea){
+        climateIdx[i] = 255;
+        continue;
+      }
+
+      const a = d[j+3];
+      if (a === 0){
+        climateIdx[i] = 255; // treat transparent as empty
+        continue;
+      }
+
+      // If pixel looks like ocean, treat as empty (optional convenience)
+      const r=d[j], g=d[j+1], b=d[j+2];
+      if (r===OCEAN_RGB[0] && g===OCEAN_RGB[1] && b===OCEAN_RGB[2]){
+        climateIdx[i] = 255;
+      } else {
+        climateIdx[i] = nearestClassFromRGB(r,g,b);
+      }
+    }
+
+    setStatus("Köppen map loaded. You can paint on top.");
+    rebuildFullView();
+  }
+
+  heightFile.addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    try{
+      setStatus("Loading heightmap…");
+      const img = await decodeToImageData(file);
+      parseHeightFromImageData(img);
+      btnSave.disabled = false;
+    } catch(err){
+      console.error(err);
+      setStatus("Failed to load heightmap.");
+    }
+  });
+
+  koppenFile.addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    try{
+      setStatus("Loading Köppen map…");
+      const img = await decodeToImageData(file);
+      loadKoppenFromImageData(img);
+    } catch(err){
+      console.error(err);
+      setStatus("Failed to load Köppen map.");
+    }
+  });
+
+  btnNewBlank.addEventListener("click", ()=>{
+    if(!W||!H||!climateIdx){
+      setStatus("Load a heightmap first.");
+      return;
+    }
+    climateIdx.fill(255);
+    setStatus("Blank Köppen map (land is empty).");
+    rebuildFullView();
+  });
+
+  // ---------------- Brush painting (fast rect updates) ----------------
+  function applyBrush(cx, cy){
+    if(!W||!H||!climateIdx||!heightGray) return;
+
+    const r = brush.radius;
+    const r2 = r*r;
+
+    let x0 = Math.max(0, Math.floor(cx - r));
+    let y0 = Math.max(0, Math.floor(cy - r));
+    let x1 = Math.min(W - 1, Math.ceil(cx + r));
+    let y1 = Math.min(H - 1, Math.ceil(cy + r));
+
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+
+    for(let y=y0; y<=y1; y++){
+      const dy = y - cy;
+      const dy2 = dy*dy;
+      const row = y*W;
+      for(let x=x0; x<=x1; x++){
+        const dx = x - cx;
+        const d2 = dx*dx + dy2;
+        if (d2 > r2) continue;
+
+        const i = row + x;
+        if (heightGray[i] < sea) continue; // never paint ocean
+
+        if (brush.mode === BrushMode.Paint){
+          climateIdx[i] = selectedClass;
+        } else {
+          climateIdx[i] = 255;
+        }
+      }
+    }
+
+    updateViewRect(x0,y0,x1,y1);
+  }
+
+  function paintSegment(x0, y0, x1, y1){
+    const dx = x1 - x0, dy = y1 - y0;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const step = Math.max(brush.radius * 0.35, 3);
+    const samples = Math.max(1, Math.floor(dist / step));
+
+    for(let i=0;i<=samples;i++){
+      const t = samples===0 ? 1 : (i/samples);
+      applyBrush(x0 + dx*t, y0 + dy*t);
+    }
+  }
+
+  function sampleClassAt(x,y){
+    if(!W||!H||!climateIdx) return;
+    const ix = Math.max(0, Math.min(W-1, Math.round(x)));
+    const iy = Math.max(0, Math.min(H-1, Math.round(y)));
+    const i = idx(ix,iy);
+    const ci = climateIdx[i];
+    if (ci === 255) return;
+    selectedClass = ci;
+    const c = KOPPEN_CLASSES[ci];
+    paletteEl.querySelectorAll(".pal-item").forEach(el=>{
+      el.classList.toggle("active", parseInt(el.dataset.idx,10) === ci);
+    });
+    selCodeEl.textContent = c.code;
+    selNameEl.textContent = " — " + c.name;
+  }
+
+  // ---------------- Mouse & pan handling ----------------
+  canvas.addEventListener("mousedown", (evt)=>{
+    if(!W||!H) return;
+
+    // pan
+    if (evt.button === 1 || (panKey && evt.button === 0)){
+      isPanning = true;
+      panStartX = evt.clientX;
+      panStartY = evt.clientY;
+      panStartOffX = panX;
+      panStartOffY = panY;
+      viewport.style.cursor = "grabbing";
+      evt.preventDefault();
+      return;
+    }
+
+    if (evt.button === 0 && evt.altKey){
+      const {x,y} = getMouseMapCoords(evt);
+      sampleClassAt(x,y);
+      evt.preventDefault();
+      return;
+    }
+
+    if (evt.button === 0){
+      const {x,y} = getMouseMapCoords(evt);
+      isPainting = true;
+      lastPX = x; lastPY = y;
+      applyBrush(x,y);
+      evt.preventDefault();
+    }
+  });
+
+  window.addEventListener("mousemove", (evt)=>{
+    if (isPanning){
+      const dx = evt.clientX - panStartX;
+      const dy = evt.clientY - panStartY;
+      panX = panStartOffX + dx;
+      panY = panStartOffY + dy;
+      clampPan();
+      applyCamera();
+      return;
+    }
+    if (!isPainting) return;
+    const {x,y} = getMouseMapCoords(evt);
+    paintSegment(lastPX,lastPY,x,y);
+    lastPX=x; lastPY=y;
+  });
+
+  window.addEventListener("mouseup", ()=>{
+    if (isPanning){
+      isPanning = false;
+      viewport.style.cursor = panKey ? "grab" : "";
+    }
+    isPainting = false;
+  });
+
+  window.addEventListener("keydown", (e)=>{
+    if (e.code === "Space"){
+      if(!panKey){
+        panKey = true;
+        if(!isPanning) viewport.style.cursor = "grab";
+      }
+      e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup", (e)=>{
+    if (e.code === "Space"){
+      panKey = false;
+      if(!isPanning) viewport.style.cursor = "";
+    }
+  });
+
+  // ---------------- UI wiring ----------------
+  function setBrushMode(mode){
+    brush.mode = mode;
+    brushModeLabel.textContent = (mode === BrushMode.Paint) ? "Paint" : "Erase";
+    modeGroup.querySelectorAll(".radio-pill").forEach(p=>{
+      p.classList.toggle("active", p.dataset.mode === mode);
+    });
+  }
+  modeGroup.addEventListener("click", (e)=>{
+    const pill = e.target.closest(".radio-pill");
+    if(!pill) return;
+    setBrushMode(pill.dataset.mode);
+  });
+
+  radiusEl.addEventListener("input", ()=>{
+    brush.radius = parseFloat(radiusEl.value);
+    radiusLabel.textContent = `${brush.radius.toFixed(0)} px`;
+  });
+  strengthEl.addEventListener("input", ()=>{
+    brush.strength = Math.max(0.01, Math.min(1, parseFloat(strengthEl.value)/100));
+    strengthLabel.textContent = brush.strength.toFixed(2);
+    // (Strength currently doesn't scale painting intensity; it's available if you want later feathering.)
+  });
+
+  seaLevelEl.addEventListener("input", ()=>{
+    let v = parseInt(seaLevelEl.value,10);
+    if (isNaN(v)) v = 19;
+    v = Math.max(0, Math.min(255, v));
+    seaLevelEl.value = v;
+    stSea.textContent = String(v);
+
+    // Any pixels that became ocean should be cleared
+    if (heightGray && climateIdx){
+      for(let i=0;i<N;i++){
+        if (heightGray[i] < v) climateIdx[i] = 255;
+      }
+    }
+    rebuildFullView();
+    setStatus("Sea level updated.");
+  });
+
+  zoomEl.addEventListener("input", ()=>{
+    const val = parseInt(zoomEl.value,10) || 100;
+    const oldZoom = zoom;
+    zoom = val/100;
+
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const cx = vw/2, cy = vh/2;
+
+    const mapX = (cx - panX)/oldZoom;
+    const mapY = (cy - panY)/oldZoom;
+
+    panX = cx - mapX*zoom;
+    panY = cy - mapY*zoom;
+
+    clampPan();
+    applyCamera();
+  });
+
+  toggleHeightUnderlay.addEventListener("change", ()=>{
+    showHeightUnderlay = !!toggleHeightUnderlay.checked;
+    underlayHint.textContent = showHeightUnderlay ? "on" : "off";
+    rebuildFullView();
+  });
+
+  blendEl.addEventListener("input", ()=>{
+    const v = parseInt(blendEl.value,10) || 85;
+    koppenBlend = Math.max(0.1, Math.min(1.0, v/100));
+    blendLabel.textContent = koppenBlend.toFixed(2);
+    if (showHeightUnderlay) rebuildFullView();
+  });
+
+  // Save
+  btnSave.addEventListener("click", ()=>{
+    if(!W||!H||!viewBuffer) return;
+
+    // Save the pure Köppen map (NOT the height-underlay composite):
+    // ocean = deep blue, land = class colors, empty land = transparent (optional)
+    const off = document.createElement("canvas");
+    off.width = W; off.height = H;
+    const octx = off.getContext("2d");
+    const out = octx.createImageData(W,H);
+    const d = out.data;
+
+    const sea = parseInt(seaLevelEl.value,10) || 19;
+
+    for(let i=0;i<N;i++){
+      const j=i*4;
+      const hg = heightGray ? heightGray[i] : 0;
+      const ci = climateIdx ? climateIdx[i] : 255;
+
+      if (heightGray && hg < sea){
+        d[j]=OCEAN_RGB[0]; d[j+1]=OCEAN_RGB[1]; d[j+2]=OCEAN_RGB[2]; d[j+3]=255;
+      } else {
+        if (ci === 255){
+          // empty land -> transparent so you can layer it, but still keep ocean solid
+          d[j]=0; d[j+1]=0; d[j+2]=0; d[j+3]=0;
+        } else {
+          const rgb = CLASS_RGB[ci];
+          d[j]=rgb[0]; d[j+1]=rgb[1]; d[j+2]=rgb[2]; d[j+3]=255;
+        }
+      }
+    }
+
+    octx.putImageData(out,0,0);
+    off.toBlob((blob)=>{
+      if(!blob){ alert("Failed to create PNG."); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const nm = (saveNameEl.value || "koppen.png").trim();
+      a.download = nm.endsWith(".png") ? nm : (nm + ".png");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  });
+
+  // ---------------- Init ----------------
+  buildPalette();
+  setBrushMode(BrushMode.Paint);
+  radiusEl.dispatchEvent(new Event("input"));
+  strengthEl.dispatchEvent(new Event("input"));
+  blendEl.dispatchEvent(new Event("input"));
+
+  underlayHint.textContent = "off";
+  setStatus("Load a heightmap to begin…");
+
+  // Small starter canvas so UI feels alive (optional)
+  // (You can delete this block if you prefer a blank state.)
+  (function makeStarter(){
+    const w=512,h=256;
+    allocateBuffers(w,h);
+    // Flat-ish height with a simple landmass, just for immediate testing:
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const i=y*w+x;
+        const nx=(x/w), ny=(y/h);
+        const blob = Math.exp(-((nx-0.55)**2/(2*0.09**2) + (ny-0.52)**2/(2*0.16**2)));
+        const v = Math.max(0, Math.min(255, Math.round(10 + blob*220)));
+        heightGray[i]=v;
+      }
+    }
+    climateIdx.fill(255);
+    fitCameraToScreen();
+    rebuildFullView();
+    setStatus("Starter map loaded (replace by uploading your heightmap).");
+  })();
+
+})();
+</script>
+</body>
+</html>

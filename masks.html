@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>High-Performance Map Texture Generator</title>
+<!-- Replace ONLY the <style>...</style> block in your <head> with this parchment version -->
+<style>
+  :root{
+    /* Continent-maker parchment + ink (matches your other tools) */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --accent:#a65d37;          /* burnt sienna */
+    --accent-2:#2f5f73;        /* ink-blue accent (subtle) */
+    --border:#c4b496;
+    --shadow:0 10px 30px rgba(34, 26, 18, .20);
+    --shadow-soft:0 6px 16px rgba(34, 26, 18, .14);
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+
+    /* UI sizing */
+    --radius:14px;
+    --radius-sm:10px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    padding:22px;
+    color:var(--ink);
+    font-family:var(--font-sans);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    /* Parchment page */
+    background:
+      radial-gradient(1200px 900px at 15% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      radial-gradient(900px 700px at 80% 15%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+      radial-gradient(900px 700px at 30% 85%, rgba(60,47,33,.08), rgba(60,47,33,0) 65%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  }
+
+  /* A subtle “paper grain” overlay */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg, rgba(60,47,33,.03) 0, rgba(60,47,33,.03) 1px, rgba(60,47,33,0) 3px, rgba(60,47,33,0) 6px),
+      repeating-linear-gradient(90deg, rgba(60,47,33,.02) 0, rgba(60,47,33,.02) 1px, rgba(60,47,33,0) 4px, rgba(60,47,33,0) 9px);
+    mix-blend-mode:multiply;
+    opacity:.35;
+  }
+
+  h1{
+    margin: 8px 0 16px;
+    font-family:var(--font-serif);
+    font-weight:700;
+    letter-spacing:.2px;
+    color:var(--ink);
+    text-shadow:0 1px 0 rgba(255,255,255,.45);
+  }
+
+  .controls{
+    width:100%;
+    max-width:1100px;
+    margin-bottom:14px;
+    padding:18px 18px 14px;
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    background:
+      radial-gradient(1200px 300px at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,.40), rgba(255,255,255,.18));
+    box-shadow:var(--shadow);
+    backdrop-filter: blur(2px);
+
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:14px 16px;
+  }
+
+  .input-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-width:0;
+  }
+
+  label{
+    font-size:.88rem;
+    font-weight:700;
+    color:var(--ink-muted);
+    letter-spacing:.15px;
+  }
+
+  input[type="file"]{
+    width:100%;
+    padding:10px 10px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25));
+    color:var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 2px 8px rgba(34,26,18,.08);
+  }
+  input[type="file"]::file-selector-button{
+    margin-right:10px;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid rgba(60,47,33,.25);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+    color:var(--ink);
+    font-weight:700;
+    cursor:pointer;
+  }
+  input[type="file"]::file-selector-button:hover{
+    filter:brightness(.98);
+  }
+  input[type="file"]:focus-visible{
+    outline:2px solid rgba(166,93,55,.35);
+    outline-offset:2px;
+  }
+
+  /* Buttons sit in the grid but should feel like a grouped footer */
+  button{
+    grid-column:1 / -1;
+    padding:13px 14px;
+    border-radius:var(--radius-sm);
+    border:1px solid rgba(60,47,33,.25);
+    background:
+      linear-gradient(180deg, rgba(166,93,55,.95), rgba(141,72,37,.95));
+    color:#fff;
+    font-size:1.02rem;
+    font-weight:800;
+    letter-spacing:.2px;
+    cursor:pointer;
+    box-shadow: 0 10px 18px rgba(60,47,33,.18), 0 1px 0 rgba(255,255,255,.18) inset;
+    transition: transform .08s ease, filter .15s ease, box-shadow .15s ease;
+  }
+  button:hover{
+    filter:brightness(1.03);
+    box-shadow: 0 12px 22px rgba(60,47,33,.22), 0 1px 0 rgba(255,255,255,.18) inset;
+  }
+  button:active{
+    transform: translateY(1px);
+    filter:brightness(.99);
+  }
+  button:disabled{
+    cursor:not-allowed;
+    filter:saturate(.25) brightness(.95);
+    background: linear-gradient(180deg, rgba(120,110,98,.85), rgba(96,88,79,.85));
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Give the secondary buttons a slightly “ink” tone if you want */
+  #terrainBtn, #downloadMasksBtn, #downloadTreeMasksBtn{
+    background:
+      linear-gradient(180deg, rgba(47,95,115,.92), rgba(34,73,90,.92));
+  }
+  #terrainBtn:disabled, #downloadMasksBtn:disabled, #downloadTreeMasksBtn:disabled{
+    background: linear-gradient(180deg, rgba(120,110,98,.85), rgba(96,88,79,.85));
+  }
+
+  /* Inline info box inside the 3rd column */
+  .controls .input-group > div[style]{
+    /* Override the inline styling without changing your HTML */
+    font-family:var(--font-serif) !important;
+    font-size:.92rem !important;
+    color:var(--ink) !important;
+    line-height:1.45 !important;
+    padding:10px 12px;
+    border-radius:var(--radius-sm);
+    border:1px dashed rgba(60,47,33,.28);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,.18));
+    box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 6px 14px rgba(34,26,18,.08);
+  }
+  .controls strong{
+    color:var(--accent);
+    font-weight:900;
+  }
+
+  #status{
+    width:100%;
+    max-width:1100px;
+    margin: 0 0 12px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(60,47,33,.18);
+    background: rgba(255,255,255,.28);
+    box-shadow: var(--shadow-soft);
+    font-family:var(--mono);
+    color:var(--ink-muted);
+  }
+
+  .canvas-container{
+    width:100%;
+    max-width:1100px;
+    position:relative;
+    border-radius:var(--radius);
+    border:1px solid rgba(60,47,33,.25);
+    box-shadow: var(--shadow);
+    overflow:auto;
+
+    /* “Drafting table” look */
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.05)),
+      radial-gradient(900px 300px at 50% 0%, rgba(255,255,255,.35), rgba(255,255,255,0) 70%),
+      /* subtle checker for transparency hint */
+      linear-gradient(45deg, rgba(60,47,33,.10) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(60,47,33,.10) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(60,47,33,.10) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(60,47,33,.10) 75%);
+    background-size: auto, auto, 22px 22px, 22px 22px, 22px 22px, 22px 22px;
+    background-position: 0 0, 0 0, 0 0, 0 11px, 11px -11px, -11px 0;
+  }
+
+  canvas{
+    display:block;
+    max-width:100%;
+    height:auto;
+    image-rendering: pixelated;
+    /* make it feel “printed” */
+    filter: saturate(1.02) contrast(1.02);
+  }
+
+  .hidden{ display:none; }
+
+  /* Responsive: stack controls nicely */
+  @media (max-width: 980px){
+    .controls{ grid-template-columns: 1fr; }
+    button{ font-size:1rem; }
+  }
+</style>
+
+</head>
+<body>
+
+  <h1>Texture Mask Generator</h1>
+
+  <div class="controls">
+    <div class="input-group">
+      <label for="heightInput">1. Heightmap (Grayscale)</label>
+      <input type="file" id="heightInput" accept="image/*">
+    </div>
+    <div class="input-group">
+      <label for="koppenInput">2. Climate Map (Exact Colors)</label>
+      <input type="file" id="koppenInput" accept="image/*">
+    </div>
+    <div class="input-group">
+      <label>Info</label>
+      <div style="font-size: 0.85em; color: #888; line-height: 1.4;">
+        Sea Level: <strong>19</strong><br>
+        Ocean Color: <strong>#ADD8E6</strong><br>
+        Ensure inputs are same resolution.
+      </div>
+    </div>
+    <button id="genBtn">Generate Texture Map</button>
+    <button id="terrainBtn" disabled>Draw Terrain Map</button>
+    <button id="downloadMasksBtn" disabled>Download All Masks</button>
+    <button id="downloadTreeMasksBtn" disabled>Download Tree Masks (Half-Size)</button>
+  </div>
+
+  <div id="status">Ready</div>
+
+  <div class="canvas-container">
+    <canvas id="outputCanvas"></canvas>
+  </div>
+
+  <canvas id="heightCanvas" class="hidden"></canvas>
+  <canvas id="koppenCanvas" class="hidden"></canvas>
+
+<script>
+/**
+ * CONFIGURATION DATA
+ */
+const KOPPEN_CLASSES = [
+  { code: 'Af', color: '#3c00fb' }, { code: 'Am', color: '#2f66fb' }, { code: 'Aw', color: '#4597fb' }, { code: 'As', color: '#46be28' },
+  { code: 'BWh', color: '#fd0f00' }, { code: 'BWk', color: '#fe928f' }, { code: 'BSh', color: '#f3a000' }, { code: 'BSk', color: '#fad95d' },
+  { code: 'Csa', color: '#f6ff09' }, { code: 'Csb', color: '#c8cb07' }, { code: 'Csc', color: '#ffcda0' },
+  { code: 'Cfa', color: '#bdff4b' }, { code: 'Cfb', color: '#4dff35' }, { code: 'Cfc', color: '#0ec506' },
+  { code: 'Cwa', color: '#89ff93' }, { code: 'Cwb', color: '#51c660' }, { code: 'Cwc', color: '#219230' },
+  { code: 'Dfa', color: '#00fafd' }, { code: 'Dfb', color: '#44c2f9' }, { code: 'Dfc', color: '#007b7c' }, { code: 'Dfd', color: '#02445a' },
+  { code: 'Dsa', color: '#ff00f9' }, { code: 'Dsb', color: '#ca00c1' }, { code: 'Dsc', color: '#962791' }, { code: 'Dsd', color: '#8c568d' },
+  { code: 'Dwa', color: '#a4a7ff' }, { code: 'Dwb', color: '#506edf' }, { code: 'Dwc', color: '#4c47b0' }, { code: 'Dwd', color: '#350087' },
+  { code: 'ET', color: '#a9aca8' }, { code: 'EF', color: '#626361' }, { code: 'H', color: '#808080' }
+];
+
+const TEXTURE_MASKS = [
+  // --- UNDERWATER / BASE ---
+  { name: "beach_02", color: "#ADD8E6", minimumElevation: 0, maximumElevation: 18, possibleClimates: ['Af','Am','Aw','As','Cfa','Cfb','Cfc','Cwa','Cwb','Cwc','Dfa','Dfb','Dfc','Dfd','Dsa','Dsb','Dsc','Dsd','Dwa','Dwb','Dwc','Dwd'], terrain: "sea" },
+
+  // --- COASTAL & LOWLANDS ---
+  { name: "beach_02_mediterranean", color: "#C2B280", minimumElevation: 19, maximumElevation: 25, possibleClimates: ['Csa','Csb','Csc'], terrain: "plains" },
+  { name: "beach_02_pebbles", color: "#695F50", minimumElevation: 19, maximumElevation: 28, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','ET'], terrain: "plains" },
+  { name: "flood", color: "#DCC8B8", minimumElevation: 19, maximumElevation: 24, possibleClimates: ['Af','Am','Aw','Cfa','Cwa','Dfa','Dwa'], terrain: "floodplains" },
+  { name: "wetlands_02", color: "#565236", minimumElevation: 19, maximumElevation: 30, possibleClimates: ['Af','Am','Cfa','Cfb','Dfa','Dfb'], terrain: "wetlands" },
+  { name: "wetlands_02_mud", color: "#7B6246", minimumElevation: 19, maximumElevation: 30, possibleClimates: ['Af','Am','Cfa','Cfb','Dfa','Dfb'], terrain: "wetlands" },
+  { name: "floodplains_01", color: "#4F7942", minimumElevation: 19, maximumElevation: 30, possibleClimates: ['Am','Aw','Cfa','Cwa'], terrain: "floodplains" },
+  { name: "mud_wet_01", color: "#3D2B1F", minimumElevation: 19, maximumElevation: 35, possibleClimates: ['Af','Am','Cfa','Cfb','Dfa','Dfb','ET'], terrain: "wetlands" },
+  { name: "farm_paddy_01", color: "#6B8E23", minimumElevation: 20, maximumElevation: 60, possibleClimates: ['Am','Aw','Cfa','Cwa'], terrain: "farmlands" },
+  { name: "farmland_01", color: "#556B2F", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Dfa','Dfb','Cwa','Dwa'], terrain: "farmlands" },
+  { name: "india_farmlands", color: "#6E734E", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Aw','Am','Cwa','BSh'], terrain: "farmlands" },
+  { name: "medi_farmlands", color: "#8F9779", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['Csa','Csb','Csc'], terrain: "farmlands" },
+
+  // --- GENERAL PLAINS & DESERT ---
+  { name: "plains_01", color: "#4CA64C", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Dfa','Dfb','Dwa'], terrain: "plains" },
+  { name: "plains_01_noisy", color: "#5FA75F", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Dfa','Dfb','Dwa'], terrain: "plains" },
+  { name: "gen_central_lowlands", color: "#6B8E23", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb','Dwa','Dwb'], terrain: "plains" },
+  { name: "gen_central_lowlands_02", color: "#556B2F", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb','Dwa','Dwb'], terrain: "plains" },
+  { name: "gen_central_lowlands_03", color: "#606840", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb','Dwa','Dwb'], terrain: "plains" },
+  { name: "desert_01", color: "#EDC9AF", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['BWh','BWk','BSh'], terrain: "desert" },
+  { name: "desert_02", color: "#E6BE8A", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['BWh','BWk','BSh'], terrain: "desert" },
+  { name: "desert_flat_01", color: "#F5DEB3", minimumElevation: 20, maximumElevation: 70, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "desert_wavy_01", color: "#E3C898", minimumElevation: 30, maximumElevation: 110, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "desert_wavy_01_larger", color: "#E3C898", minimumElevation: 30, maximumElevation: 110, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "gen_desert_base", color: "#E6CCAA", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "gen_desert_lowlands", color: "#8F806E", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['BWh','BWk','BSh'], terrain: "desert" },
+  { name: "gen_desert_lowlands_02", color: "#F0E68C", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "gen_desert_lowlands_03", color: "#EEE8AA", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+  { name: "gen_desert_lowlands_04", color: "#F5F5DC", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['BWh','BWk'], terrain: "desert" },
+
+  // --- FORESTS ---
+  { name: "forest_jungle_01", color: "#006400", minimumElevation: 25, maximumElevation: 110, possibleClimates: ['Af','Am'], terrain: "jungle" },
+  { name: "gen_tropical_base", color: "#005020", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['Af','Am','Aw','As'], terrain: "jungle" },
+  { name: "gen_tropical_lowlands", color: "#228B22", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['Af','Am','Aw','As'], terrain: "jungle" },
+  { name: "gen_tropical_lowlands_02", color: "#3CB371", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['Af','Am','Aw','As'], terrain: "jungle" },
+  { name: "gen_tropical_lowlands_03", color: "#6E8B3D", minimumElevation: 20, maximumElevation: 90, possibleClimates: ['Aw','As','Am'], terrain: "jungle" },
+  { name: "forest_leaf_01", color: "#228B22", minimumElevation: 30, maximumElevation: 120, possibleClimates: ['Cfa','Cfb','Cwa','Dfa','Dfb','Dwa','Dwb'], terrain: "forest" },
+  { name: "forest_pine_01", color: "#013220", minimumElevation: 30, maximumElevation: 160, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','Dsc','Dsd','H'], terrain: "forest" },
+  { name: "forestfloor", color: "#5D5E37", minimumElevation: 30, maximumElevation: 130, possibleClimates: ['Cfb','Cfc','Dfa','Dfb','Dfc','Dwa','Dwb'], terrain: "forest" },
+
+  // --- HILLS & STEPPE ---
+  { name: "hills_01", color: "#808000", minimumElevation: 50, maximumElevation: 140, possibleClimates: ['Cfb','Cwb','Dfb','Dwb','H'], terrain: "hills" },
+  { name: "gen_central_hills", color: "#706858", minimumElevation: 60, maximumElevation: 150, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb'], terrain: "hills" },
+  { name: "gen_tropical_hills", color: "#556B2F", minimumElevation: 60, maximumElevation: 150, possibleClimates: ['Af','Am','Aw','As','H'], terrain: "hills" },
+  { name: "drylands_01", color: "#8B5A2B", minimumElevation: 40, maximumElevation: 130, possibleClimates: ['BSh','BSk','Csa','Dsa'], terrain: "drylands" },
+  { name: "gen_drylands_hills", color: "#748074", minimumElevation: 60, maximumElevation: 160, possibleClimates: ['BSh','BSk','H'], terrain: "drylands" },
+  { name: "gen_steppe_base", color: "#A7C2A7", minimumElevation: 50, maximumElevation: 140, possibleClimates: ['BSk','Dsa','Dsb','Dsc'], terrain: "steppe" },
+  { name: "gen_steppe_lowlands", color: "#787D43", minimumElevation: 50, maximumElevation: 140, possibleClimates: ['BSk','Dsa','Dsb','Dsc'], terrain: "steppe" },
+  { name: "gen_steppe_hills", color: "#838B83", minimumElevation: 70, maximumElevation: 170, possibleClimates: ['BSk','H'], terrain: "steppe" },
+  { name: "steppe_grass", color: "#C2B280", minimumElevation: 50, maximumElevation: 130, possibleClimates: ['BSk','BSh'], terrain: "steppe" },
+  { name: "steppe_rocks", color: "#787266", minimumElevation: 60, maximumElevation: 160, possibleClimates: ['BSk','BSh','H'], terrain: "steppe" },
+  { name: "coastline_cliff_desert", color: "#D2B48C", minimumElevation: 19, maximumElevation: 80, possibleClimates: ['BWh','BWk','BSh'], terrain: "desert" },
+  { name: "coastline_cliff_grey", color: "#4F4F4F", minimumElevation: 19, maximumElevation: 120, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','ET','H'], terrain: "hills" },
+  { name: "gen_mediterranean_hills", color: "#A9A9A9", minimumElevation: 50, maximumElevation: 140, possibleClimates: ['Csa','Csb','Csc'], terrain: "hills" },
+  { name: "gen_northern_hills", color: "#696969", minimumElevation: 50, maximumElevation: 150, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','H'], terrain: "hills" },
+
+  // --- MOUNTAINS ---
+  { name: "central_mountain", color: "#4A453F", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+  { name: "gen_central_mountain", color: "#2F4F4F", minimumElevation: 110, maximumElevation: 255, possibleClimates: ['Cfa','Cfb','Dfa','Dfb','H'], terrain: "mountains" },
+  { name: "gen_central_mountain_transition", color: "#5C5E45", minimumElevation: 80, maximumElevation: 120, possibleClimates: ['Cfa','Cfb','Dfa','Dfb','H'], terrain: "mountains" },
+  { name: "gen_tropical_mountain", color: "#A0522D", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['Af','Am','Aw','As','H'], terrain: "mountains" },
+  { name: "gen_tropical_mountain_transition", color: "#3A4B35", minimumElevation: 90, maximumElevation: 130, possibleClimates: ['Af','Am','Aw','As','H'], terrain: "mountains" },
+  { name: "gen_desert_mountain", color: "#3F2918", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['BWh','BWk','BSh','BSk','H'], terrain: "desert_mountains" },
+  { name: "gen_drylands_mountain", color: "#BCAEA6", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['BSh','BSk','H'], terrain: "drylands" },
+  { name: "gen_northern_mountain", color: "#3e3d3d", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','H'], terrain: "mountains" },
+  { name: "gen_mediterranean_mountain", color: "#5C5045", minimumElevation: 100, maximumElevation: 255, possibleClimates: ['Csa','Csb','Csc','H'], terrain: "mountains" },
+
+  // --- PEAKS & SNOW ---
+  { name: "gen_steppe_mountain", color: "#DCDCDC", minimumElevation: 150, maximumElevation: 255, possibleClimates: ['BSk','ET','H'], terrain: "mountains" },
+  { name: "snow", color: "#F0F8FF", minimumElevation: 160, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','EF','H'], terrain: "mountains" },
+  { name: "winter_effect", color: "#B0C4DE", minimumElevation: 180, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','EF','H'], terrain: "mountains" },
+
+  // --- MISC / FILLERS ---
+  { name: "drought", color: "#E0D2B4", minimumElevation: 20, maximumElevation: 120, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "drylands" },
+  { name: "drought_cracks", color: "#8B7D6B", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "drylands" },
+
+  // Central lowlands variants
+  { name: "central_lowlands_02", color: "#687347", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb','Dwa','Dwb'], terrain: "plains" },
+  { name: "central_lowlands_03", color: "#7B8A52", minimumElevation: 20, maximumElevation: 80, possibleClimates: ['Cfa','Cfb','Cwa','Cwb','Dfa','Dfb','Dwa','Dwb'], terrain: "plains" },
+
+  { name: "desert_cracked", color: "#D8C2A0", minimumElevation: 20, maximumElevation: 100, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "desert" },
+  { name: "drylands_02", color: "#9A7F52", minimumElevation: 40, maximumElevation: 130, possibleClimates: ['BSh','BSk','Csa','Dsa'], terrain: "drylands" },
+
+  // placeholders / special
+  { name: "gen_beach_01", color: "#B4A692", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: [
+    'Af','Am','Aw','As',
+    'Cfa','Cfb','Cfc','Cwa','Cwb','Cwc',
+    'Dfa','Dfb','Dfc','Dfd',
+    'Dsa','Dsb','Dsc','Dsd',
+    'Dwa','Dwb','Dwc','Dwd',
+    'ET', 'EF'
+  ], terrain: "coastal_sea" },
+
+  { name: "gen_desert_hills", color: "#C8B28A", minimumElevation: 60, maximumElevation: 150, possibleClimates: ['BWh','BWk','BSh','BSk','H'], terrain: "desert" },
+
+  { name: "mountain_02", color: "#4F4238", minimumElevation: 100, maximumElevation: 220, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+  { name: "mountain_02_b", color: "#5A4B3E", minimumElevation: 110, maximumElevation: 230, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+  { name: "mountain_02_c", color: "#665344", minimumElevation: 120, maximumElevation: 240, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+  { name: "mountain_02_c_snow", color: "#E5E7EC", minimumElevation: 180, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','H'], terrain: "mountains" },
+  { name: "mountain_02_d", color: "#3E352C", minimumElevation: 130, maximumElevation: 240, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+  { name: "mountain_02_d_desert", color: "#A8865C", minimumElevation: 120, maximumElevation: 240, possibleClimates: ['BWh','BWk','BSh','BSk','H'], terrain: "desert_mountains" },
+  { name: "mountain_02_d_snow", color: "#F5F7FA", minimumElevation: 190, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','H'], terrain: "mountains" },
+  { name: "mountain_02_d_valleys", color: "#50443A", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: ['Cfa','Cfb','Dfa','Dfb','H'], terrain: "mountains" },
+  { name: "mountain_02_desert_c", color: "#B38E63", minimumElevation: 110, maximumElevation: 240, possibleClimates: ['BWh','BWk','BSh','BSk','H'], terrain: "desert_mountains" },
+  { name: "mountain_02_desert_mask_old", color: "#C49A6A", minimumElevation: 100, maximumElevation: 230, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "desert_mountains" },
+  { name: "mountain_02_snow", color: "#FFFFFF", minimumElevation: 185, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','EF','H'], terrain: "mountains" },
+  { name: "mountain_03", color: "#70665E", minimumElevation: 120, maximumElevation: 240, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
+
+  { name: "northern_hills_01", color: "#737B5C", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET'], terrain: "hills" },
+
+  { name: "oasis", color: "#008080", minimumElevation:1000, maximumElevation: 1001, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "oasis" },
+
+  { name: "steppe_01", color: "#B5C18B", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: ['BSk','BSh','Dsa','Dsb','Dsc'], terrain: "steppe" },
+
+  { name: "_debug", color: "#DAA520", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: [
+    'Af','Am','Aw','As',
+    'BWh','BWk','BSh','BSk',
+    'Csa','Csb','Csc',
+    'Cfa','Cfb','Cfc',
+    'Cwa','Cwb','Cwc',
+    'Dfa','Dfb','Dfc','Dfd',
+    'Dsa','Dsb','Dsc','Dsd',
+    'Dwa','Dwb','Dwc','Dwd',
+    'ET','EF','H'
+  ], terrain: "plains" },
+];
+
+// TERRAIN COLOR LOOKUP FOR TERRAIN MAP VIEW
+const TERRAIN_COLORS = {
+  sea:              { r: 10,  g: 30,  b: 80  },
+  coastal_sea:      { r: 25,  g: 80,  b: 140 },
+  plains:           { r: 204, g: 163, b: 102  },
+  farmlands:        { r: 255, g: 0,   b: 0 },
+  hills:            { r: 90,  g: 50,  b: 12  },
+  mountains:        { r: 100, g: 100, b: 100 },
+  desert:           { r: 255, g: 230, b: 0 },
+  desert_mountains: { r: 23,  g: 19,  b: 38  },
+  oasis:            { r: 155, g: 143, b: 204 },
+  jungle:           { r: 10,  g: 60,  b: 35  },
+  forest:           { r: 71,  g: 179, b: 45  },
+  taiga:            { r: 46,  g: 153, b: 89 },
+  wetlands:         { r: 77,  g: 153, b: 153 },
+  floodplains:      { r: 55,  g: 31,  b: 153 },
+  steppe:           { r: 200, g: 100, b: 25 },
+  drylands:         { r: 220, g: 45,  b: 120 },
+  default:          { r: 120, g: 120, b: 120 }
+};
+
+// Terrain id mapping (stable buffer for preview)
+const TERRAIN_KEYS = Object.keys(TERRAIN_COLORS);
+const TERRAIN_ID = Object.create(null);
+for (let i = 0; i < TERRAIN_KEYS.length; i++) TERRAIN_ID[TERRAIN_KEYS[i]] = i;
+const TERRAIN_DEFAULT_ID = TERRAIN_ID.default ?? 0;
+
+// ------------- FALLBACK MASKS -------------
+const FALLBACK_MASK_FOR_GROUP = {
+  A: 'gen_tropical_base',
+  B: 'gen_drylands_hills',
+  C: 'gen_central_lowlands',
+  D: 'gen_northern_hills',
+  E: 'snow',
+  H: 'gen_steppe_mountain',
+};
+
+const FALLBACK_IDX_BY_CODE = {};
+KOPPEN_CLASSES.forEach(c => {
+  const group = c.code[0];
+  const maskName = FALLBACK_MASK_FOR_GROUP[group];
+  if (!maskName) return;
+  const idx = TEXTURE_MASKS.findIndex(m => m.name === maskName);
+  if (idx >= 0) FALLBACK_IDX_BY_CODE[c.code] = idx;
+});
+
+const KOPPEN_CODE_BY_COLOR_INT = {};
+const BEACH_IDX = TEXTURE_MASKS.findIndex(m => m.name === "beach_02");
+TEXTURE_MASKS.forEach((m, idx) => { m._idx = idx; });
+
+const lut = {}; // kColorInt -> array[256] of { terrain, variants[] }
+
+function hexToInt(hex) { return parseInt(hex.replace(/^#/, ''), 16); }
+
+// --------- Terrain selection to avoid speckle ----------
+function terrainPriorityForElev(elev) {
+  // Higher number = preferred when tie
+  if (elev >= 160) return {
+    mountains: 100, desert_mountains: 98, hills: 80,
+    snow: 95,
+    forest: 40, jungle: 35, steppe: 35, drylands: 35, plains: 30, farmlands: 30,
+    wetlands: 20, floodplains: 20, coastal_sea: 10, sea: 0, oasis: 15, default: 1
+  };
+  if (elev >= 100) return {
+    mountains: 90, desert_mountains: 88, hills: 70,
+    forest: 45, jungle: 40, steppe: 40, drylands: 40, plains: 35, farmlands: 35,
+    wetlands: 20, floodplains: 20, coastal_sea: 10, sea: 0, oasis: 20, default: 1
+  };
+  if (elev >= 60) return {
+    hills: 80, mountains: 70, desert_mountains: 68,
+    forest: 55, jungle: 50, steppe: 50, drylands: 50, plains: 45, farmlands: 40,
+    wetlands: 25, floodplains: 25, coastal_sea: 10, sea: 0, oasis: 25, default: 1
+  };
+  // lowlands
+  return {
+    wetlands: 90, floodplains: 88, farmlands: 80, plains: 75,
+    jungle: 70, forest: 65, steppe: 60, drylands: 60, desert: 60,
+    hills: 30, mountains: 20, desert_mountains: 20,
+    coastal_sea: 10, sea: 0, oasis: 50, default: 1
+  };
+}
+
+function chooseTerrainForMatches(matches, elev) {
+  // Pick MOST COMMON terrain; tie-break by elev-weighted priority.
+  const counts = Object.create(null);
+  for (const m of matches) {
+    const t = m.terrain || "default";
+    counts[t] = (counts[t] || 0) + 1;
+  }
+  let bestT = "default";
+  let bestCount = -1;
+  let bestScore = -1;
+  const pr = terrainPriorityForElev(elev);
+
+  for (const t in counts) {
+    const c = counts[t];
+    const score = (pr[t] ?? 0);
+    if (c > bestCount || (c === bestCount && score > bestScore)) {
+      bestCount = c;
+      bestScore = score;
+      bestT = t;
+    }
+  }
+  return bestT;
+}
+
+function buildLookupTable() {
+  console.time("Building LUT");
+
+  KOPPEN_CLASSES.forEach(c => {
+    const colorInt = hexToInt(c.color);
+    KOPPEN_CODE_BY_COLOR_INT[colorInt] = c.code;
+    lut[colorInt] = new Array(256).fill(null);
+
+    for (let elev = 0; elev < 256; elev++) {
+      // Land LUT entries only (sea handled directly in render)
+      if (elev < 19) continue;
+
+      const matches = TEXTURE_MASKS.filter(mask =>
+        elev >= mask.minimumElevation &&
+        elev <= mask.maximumElevation &&
+        mask.possibleClimates.includes(c.code)
+      );
+
+      if (matches.length > 0) {
+        // CRITICAL FIX: choose terrain once, then only variants within that terrain
+        const terrain = chooseTerrainForMatches(matches, elev);
+        const variants = matches.filter(m => (m.terrain || "default") === terrain);
+
+        const optimized = variants.map(m => ({
+          colorInt: hexToInt(m.color),
+          idx: m._idx
+        }));
+
+        lut[colorInt][elev] = { terrain, variants: optimized };
+      }
+    }
+  });
+
+  console.timeEnd("Building LUT");
+  document.getElementById('status').innerText = "Ready. System Initialized.";
+}
+
+// --- Noise helpers (unchanged) ---
+function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+function toByte01(v){ return (clamp01(v) * 255 + 0.5) | 0; }
+
+function chooseMaskIndicesDeterministic(kColor, elev, options) {
+  const count = Math.min(3, options.length);
+  let h = (kColor * 73856093) ^ (elev * 19349663);
+  h ^= (h >>> 13);
+  h = (h * 1274126177) >>> 0;
+  const offset = h % options.length;
+  const ids = [];
+  for (let i = 0; i < count; i++) ids.push((offset + i) % options.length);
+
+  let weights;
+  if (count === 1) weights = [255];
+  else if (count === 2) weights = [220, 140];
+  else weights = [210, 140, 90];
+
+  return { ids, weights };
+}
+
+// UI
+const heightInput = document.getElementById('heightInput');
+const koppenInput = document.getElementById('koppenInput');
+const genBtn = document.getElementById('genBtn');
+const terrainBtn = document.getElementById('terrainBtn');
+const downloadMasksBtn = document.getElementById('downloadMasksBtn');
+const downloadTreeMasksBtn = document.getElementById('downloadTreeMasksBtn');
+const statusDiv = document.getElementById('status');
+
+const outputCanvas = document.getElementById('outputCanvas');
+const heightCanvas = document.getElementById('heightCanvas');
+const koppenCanvas = document.getElementById('koppenCanvas');
+const outputCtx = outputCanvas.getContext('2d');
+const heightCtx = heightCanvas.getContext('2d', { willReadFrequently: true });
+const koppenCtx = koppenCanvas.getContext('2d', { willReadFrequently: true });
+
+const maskCanvas = document.createElement('canvas');
+const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+
+let heightLoaded = false;
+let koppenLoaded = false;
+
+// per-mask coverage
+let maskBuffers = null;
+let maskWidth = 0;
+let maskHeight = 0;
+
+// primary mask index per pixel (for texture)
+let primaryMaskIndex = null;
+
+// NEW: stable terrain per pixel (for terrain preview)
+let terrainId = null;
+
+// ===== HALF-SIZE TREE MASKS (3D vegetation) =====
+const TREE_MASK_NAMES = [
+  "reeds_01_mask",
+  "steppe_bush_01_mask",
+  "tree_cypress_01_mask",
+  "tree_jungle_01_c_mask",
+  "tree_jungle_01_d_mask",
+  "tree_leaf_01_mask",
+  "tree_leaf_01_single_mask",
+  "tree_leaf_02_mask",
+  "tree_palm_01_mask",
+  "tree_pine_01_a_mask",
+  "tree_pine_01_b_mask",
+  "tree_pine_impassable_01_a_mask",
+  "tree_sakura_01_mask",
+  "tree_sakura_02_mask",
+  "tree_sakura_03_mask",
+  "tree_sakura_forest_mask"
+];
+
+// Packed Köppen per full-res pixel (2 bytes: hi=first char, lo=second char or 0)
+let kopPacked = null;     // Uint16Array (full-res)
+let elev8     = null;     // Uint8Array (full-res)
+let nearCoast = null;     // Uint8Array (full-res) 1 if adjacent to sea
+let treeHalfMasks = null; // Map name -> Uint8ClampedArray(halfW*halfH)
+let halfW = 0, halfH = 0;
+
+// Pack like 'Cfa' -> 'C' 'f' (we mostly care about first 2 letters)
+function packKoppen(code) {
+  if (!code || !code.length) return 0;
+  const a = code.charCodeAt(0) & 255;
+  const b = (code.length > 1 ? code.charCodeAt(1) : 0) & 255;
+  return (a << 8) | b;
+}
+function kopA(p) { return (kopPacked[p] >>> 8) & 255; } // first letter
+function kopB(p) { return kopPacked[p] & 255; }         // second letter
+
+function isSea(p) { return elev8[p] < 19; }
+function isLand(p){ return elev8[p] >= 19; }
+
+// Tiny deterministic noise in [0,1)
+function hash01(x, y, salt=0) {
+  let h = (x * 374761393) ^ (y * 668265263) ^ (salt * 2147483647);
+  h = (h ^ (h >>> 13)) * 1274126177;
+  h = (h ^ (h >>> 16)) >>> 0;
+  return h / 4294967295;
+}
+
+function getTerrainAt(p) {
+  if (!terrainId) return "default";
+  const id = terrainId[p];
+  return TERRAIN_KEYS[id] || "default";
+}
+
+// Rough “temperate” / “cold” buckets from Köppen
+function isTemperateForestClimate(p) {
+  const A = kopA(p);
+  return (A === 67 /*C*/ || A === 68 /*D*/);
+}
+function isMediterranean(p) {
+  return (kopA(p) === 67 /*C*/ && kopB(p) === 115 /*s*/);
+}
+function isTropical(p) { return kopA(p) === 65 /*A*/; }
+function isArid(p)     { return kopA(p) === 66 /*B*/; }
+function isCold(p) {
+  const A = kopA(p);
+  return (A === 68 /*D*/ || A === 69 /*E*/ || A === 72 /*H*/);
+}
+
+/* ============================================================
+   BLUE-NOISE / POISSON-ISH SAMPLER
+   ============================================================ */
+function cellPoint(cx, cy, cellSize, salt) {
+  const jx = hash01(cx, cy, salt * 101 + 17);
+  const jy = hash01(cx, cy, salt * 101 + 73);
+  return { x: (cx + jx) * cellSize, y: (cy + jy) * cellSize };
+}
+function bluePoisson01(x, y, cellSize, salt) {
+  const cx = Math.floor(x / cellSize);
+  const cy = Math.floor(y / cellSize);
+  let bestD2 = 1e30;
+
+  for (let oy = -1; oy <= 1; oy++) {
+    for (let ox = -1; ox <= 1; ox++) {
+      const px = cx + ox;
+      const py = cy + oy;
+      const pt = cellPoint(px, py, cellSize, salt);
+      const dx = x - pt.x, dy = y - pt.y;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < bestD2) bestD2 = d2;
+    }
+  }
+
+  const d = Math.sqrt(bestD2);
+  const r = cellSize * 0.75;
+  const t = clamp01(d / r);
+  return t * t;
+}
+function poissonGateDensity(x, y, suitability01, cellSize, salt, softness = 0.15) {
+  const bn = bluePoisson01(x, y, cellSize, salt);
+  const th = clamp01(suitability01);
+  const a = (th - bn) / Math.max(1e-6, softness);
+  return clamp01(a);
+}
+
+/* ============================================================
+   TREE PREDICATES (unchanged from your revision)
+   ============================================================ */
+function buildTreePredicate(name) {
+  const CELL = 22;
+  const SOFT = 0.14;
+
+  switch (name) {
+    case "reeds_01_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        const t = getTerrainAt(p);
+        if (t !== "wetlands" && t !== "floodplains") return 0;
+
+        const e = elev8[p];
+        let suit = 0.0;
+        suit += (1.0 - clamp01((e - 22) / 28)) * 0.55;
+        suit += (nearCoast[p] ? 0.25 : 0.05);
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 18, 9001, 0.18);
+      };
+
+    case "steppe_bush_01_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        const t = getTerrainAt(p);
+        if (t !== "steppe" && t !== "drylands" && t !== "desert") return 0;
+        if (!isArid(p) && kopA(p) !== 67 /*C*/) return 0;
+
+        const e = elev8[p];
+        const band = 1.0 - clamp01(Math.abs(e - 85) / 85);
+        let suit = 0.08 + 0.22 * band;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 26, 9011, 0.16);
+      };
+
+    case "tree_cypress_01_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!isMediterranean(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "forest" && t !== "hills" && t !== "plains" && t !== "farmlands") return 0;
+
+        const e = elev8[p];
+        const mid = 1.0 - clamp01(Math.abs(e - 85) / 80);
+
+        let suit = 0.06 + 0.16 * mid;
+        suit += (nearCoast[p] ? 0.04 : 0.0);
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 28, 9021, 0.13);
+      };
+
+    case "tree_jungle_01_c_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!isTropical(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "jungle" && t !== "forest") return 0;
+
+        const e = elev8[p];
+        if (e > 110) return 0;
+
+        const moist = 1.0 - clamp01((e - 30) / 90);
+
+        let suit = 0.18 + 0.22 * moist;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 18, 9031, 0.15);
+      };
+
+    case "tree_jungle_01_d_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!isTropical(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "jungle" && t !== "forest" && t !== "hills") return 0;
+
+        const e = elev8[p];
+        if (e < 45) return 0;
+
+        const upland = clamp01((e - 45) / 120);
+
+        let suit = 0.10 + 0.22 * upland;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 22, 9032, 0.14);
+      };
+
+    case "tree_leaf_01_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "forest" && t !== "farmlands" && t !== "plains") return 0;
+        if (!isTemperateForestClimate(p)) return 0;
+
+        const A = kopA(p);
+        let suit = (A === 67 /*C*/) ? 0.16 : 0.12;
+        if (t === "forest") suit += 0.10;
+        if (t === "farmlands") suit -= 0.04;
+        if (t === "plains") suit -= 0.03;
+
+        suit = clamp01(suit);
+        return poissonGateDensity(x, y, suit, CELL, 9041, SOFT);
+      };
+
+    case "tree_leaf_01_single_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "plains" && t !== "farmlands" && t !== "hills") return 0;
+        if (!isTemperateForestClimate(p)) return 0;
+
+        let suit = 0.02;
+        if (t === "hills") suit += 0.02;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 34, 9042, 0.10);
+      };
+
+    case "tree_leaf_02_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (kopA(p) !== 68 /*D*/) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "forest" && t !== "hills") return 0;
+
+        let suit = 0.08;
+        if (t === "forest") suit += 0.08;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 26, 9043, 0.13);
+      };
+
+    case "tree_palm_01_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+
+        const e = elev8[p];
+        if (e > 55) return 0;
+
+        const tropical = isTropical(p);
+        const hotArid = isArid(p) && !isCold(p);
+        if (!tropical && !hotArid) return 0;
+        if (!nearCoast[p]) return 0;
+
+        let suit = 0.06;
+        suit += tropical ? 0.05 : 0.02;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 30, 9051, 0.12);
+      };
+
+    case "tree_pine_01_a_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!(kopA(p) === 68 /*D*/ || kopA(p) === 72 /*H*/)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "forest" && t !== "hills" && t !== "mountains") return 0;
+
+        const e = elev8[p];
+        if (e < 40 || e > 170) return 0;
+
+        const mid = 1.0 - clamp01(Math.abs(e - 110) / 70);
+
+        let suit = 0.10 + 0.14 * mid;
+        if (t === "forest") suit += 0.08;
+        if (t === "mountains") suit -= 0.02;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 24, 9061, 0.14);
+      };
+
+    case "tree_pine_01_b_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!(kopA(p) === 68 /*D*/ || kopA(p) === 72 /*H*/ || kopA(p) === 69 /*E*/)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "forest" && t !== "hills" && t !== "mountains") return 0;
+
+        const e = elev8[p];
+        if (e < 90 || e > 210) return 0;
+
+        const hi = clamp01((e - 90) / 120);
+
+        let suit = 0.06 + 0.12 * hi;
+        if (t === "forest") suit += 0.06;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 26, 9062, 0.14);
+      };
+
+    case "tree_pine_impassable_01_a_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (!isCold(p)) return 0;
+
+        const t = getTerrainAt(p);
+        if (t !== "mountains") return 0;
+
+        const e = elev8[p];
+        if (e < 175) return 0;
+
+        const hi = clamp01((e - 175) / 80);
+
+        let suit = 0.02 + 0.08 * hi;
+        suit = clamp01(suit);
+
+        return poissonGateDensity(x, y, suit, 36, 9063, 0.10);
+      };
+
+    case "tree_sakura_01_mask":
+    case "tree_sakura_02_mask":
+    case "tree_sakura_03_mask":
+    case "tree_sakura_forest_mask":
+      return (p, x, y) => {
+        if (!isLand(p)) return 0;
+        if (kopA(p) !== 67 /*C*/) return 0;
+
+        const second = kopB(p);
+        if (!(second === 119 /*w*/ || second === 102 /*f*/)) return 0;
+
+        const t = getTerrainAt(p);
+        const isForestish = (t === "forest" || t === "hills" || t === "plains" || t === "farmlands");
+        if (!isForestish) return 0;
+
+        const e = elev8[p];
+        if (e < 25 || e > 160) return 0;
+
+        const bandSeed = (hash01((x/8)|0, (y/8)|0, 7071) * 3) | 0;
+
+        if (name !== "tree_sakura_forest_mask") {
+          if (name === "tree_sakura_01_mask" && bandSeed !== 0) return 0;
+          if (name === "tree_sakura_02_mask" && bandSeed !== 1) return 0;
+          if (name === "tree_sakura_03_mask" && bandSeed !== 2) return 0;
+        }
+
+        let suit = 0.03;
+        if (t === "forest") suit += 0.06;
+        if (t === "hills") suit += 0.03;
+        suit = clamp01(suit);
+
+        const cell = (name === "tree_sakura_forest_mask") ? 28 : 34;
+        return poissonGateDensity(x, y, suit, cell, 9071, 0.11);
+      };
+
+    default:
+      return () => 0;
+  }
+}
+
+function computeNearCoast(width, height) {
+  const N = width * height;
+  nearCoast = new Uint8Array(N);
+  for (let y = 0; y < height; y++) {
+    const row = y * width;
+    for (let x = 0; x < width; x++) {
+      const p = row + x;
+      if (!isLand(p)) continue;
+
+      // 4-neighborhood is fine for your usage
+      let seaAdj = 0;
+      if (x > 0            && isSea(p - 1))          seaAdj = 1;
+      else if (x < width-1 && isSea(p + 1))          seaAdj = 1;
+      else if (y > 0       && isSea(p - width))      seaAdj = 1;
+      else if (y < height-1&& isSea(p + width))      seaAdj = 1;
+
+      nearCoast[p] = seaAdj;
+    }
+  }
+}
+
+function buildHalfTreeMasks() {
+  if (!primaryMaskIndex || !elev8 || !kopPacked || !terrainId) {
+    alert("Generate the texture map first.");
+    return;
+  }
+
+  const width = maskWidth, height = maskHeight;
+  halfW = (width  / 2) | 0;
+  halfH = (height / 2) | 0;
+  if (halfW <= 0 || halfH <= 0) {
+    alert("Image too small to half-size.");
+    return;
+  }
+
+  treeHalfMasks = Object.create(null);
+
+  if (!nearCoast) computeNearCoast(width, height);
+
+  for (const name of TREE_MASK_NAMES) {
+    const pred = buildTreePredicate(name);
+    const out = new Uint8ClampedArray(halfW * halfH);
+
+    for (let hy = 0; hy < halfH; hy++) {
+      const y0 = hy * 2;
+      for (let hx = 0; hx < halfW; hx++) {
+        const x0 = hx * 2;
+
+        // MEAN pooling avoids "fill-in"
+        let sum = 0;
+        for (let oy = 0; oy < 2; oy++) {
+          const y = y0 + oy;
+          const base = y * width;
+          for (let ox = 0; ox < 2; ox++) {
+            const x = x0 + ox;
+            const p = base + x;
+            sum += pred(p, x, y);
+          }
+        }
+
+        out[hy * halfW + hx] = toByte01(sum * 0.25);
+      }
+    }
+
+    treeHalfMasks[name] = out;
+  }
+}
+
+function canvasToBlob(canvas, type="image/png", quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) reject(new Error("toBlob returned null (possibly blocked)"));
+      else resolve(blob);
+    }, type, quality);
+  });
+}
+
+async function downloadTreeMasksHalfSize() {
+  if (!maskBuffers || !primaryMaskIndex) { alert("Generate first."); return; }
+  buildHalfTreeMasks();
+  if (!treeHalfMasks) { alert("Tree masks not built."); return; }
+
+  maskCanvas.width = halfW;
+  maskCanvas.height = halfH;
+
+  const link = document.createElement("a");
+  document.body.appendChild(link);
+
+  try {
+    for (let i = 0; i < TREE_MASK_NAMES.length; i++) {
+      const name = TREE_MASK_NAMES[i];
+      const buf = treeHalfMasks[name];
+      if (!buf) continue;
+
+      const img = maskCtx.createImageData(halfW, halfH);
+      const d = img.data;
+      for (let p = 0; p < buf.length; p++) {
+        const v = buf[p];
+        const j = p * 4;
+        d[j] = d[j+1] = d[j+2] = v;
+        d[j+3] = 255;
+      }
+      maskCtx.putImageData(img, 0, 0);
+
+      await new Promise(r => requestAnimationFrame(r));
+
+      const blob = await canvasToBlob(maskCanvas, "image/png");
+      const url = URL.createObjectURL(blob);
+
+      link.href = url;
+      link.download = `${name}.png`;
+      link.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      await new Promise(r => setTimeout(r, 150));
+    }
+  } catch (e) {
+    console.error("Tree download aborted:", e);
+    alert("Tree download aborted—check console for the error.");
+  } finally {
+    document.body.removeChild(link);
+  }
+}
+
+function handleImageUpload(e, canvas, ctx, type) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    try {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      if (type === 'height') heightLoaded = true;
+      if (type === 'koppen') koppenLoaded = true;
+      statusDiv.innerText = `${type === 'height' ? 'Heightmap' : 'Climate Map'} loaded (${img.width}x${img.height}).`;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    alert("Failed to decode image. Try PNG (no color profile), or re-export.");
+  };
+  img.src = url;
+}
+
+heightInput.addEventListener('change', e => handleImageUpload(e, heightCanvas, heightCtx, 'height'));
+koppenInput.addEventListener('change', e => handleImageUpload(e, koppenCanvas, koppenCtx, 'koppen'));
+
+genBtn.addEventListener('click', () => {
+  if (!heightLoaded || !koppenLoaded) {
+    alert("Please upload both maps first.");
+    return;
+  }
+  if (heightCanvas.width !== koppenCanvas.width || heightCanvas.height !== koppenCanvas.height) {
+    alert("Error: Image dimensions do not match!");
+    return;
+  }
+  statusDiv.innerText = "Processing... (This may take a moment)";
+  genBtn.disabled = true;
+  terrainBtn.disabled = true;
+  downloadTreeMasksBtn.disabled = true;
+  setTimeout(renderMap, 50);
+});
+
+/**
+ * RENDER TEXTURE MAP + FILL MASK BUFFERS & PRIMARY MASK INDEX + TERRAIN ID
+ */
+function renderMap() {
+  console.time("Render");
+
+  const width = heightCanvas.width;
+  const height = heightCanvas.height;
+
+  outputCanvas.width = width;
+  outputCanvas.height = height;
+
+  const hData = heightCtx.getImageData(0, 0, width, height).data;
+  const kData = koppenCtx.getImageData(0, 0, width, height).data;
+
+  const finalImage = outputCtx.createImageData(width, height);
+  const fData = finalImage.data;
+
+  maskBuffers = TEXTURE_MASKS.map(() => new Uint8ClampedArray(width * height));
+  primaryMaskIndex = new Int16Array(width * height);
+  primaryMaskIndex.fill(-1);
+
+  // NEW: stable terrain buffer
+  terrainId = new Uint8Array(width * height);
+  terrainId.fill(TERRAIN_DEFAULT_ID);
+
+  maskWidth = width;
+  maskHeight = height;
+
+  elev8 = new Uint8Array(width * height);
+  kopPacked = new Uint16Array(width * height);
+  nearCoast = null;
+  treeHalfMasks = null;
+
+  const OCEAN_R = 173, OCEAN_G = 216, OCEAN_B = 230;
+  const len = hData.length;
+
+  for (let i = 0; i < len; i += 4) {
+    const elev = hData[i];
+    const p = i >>> 2;
+
+    elev8[p] = elev;
+
+    // SEA
+    if (elev < 19) {
+      fData[i]     = OCEAN_R;
+      fData[i + 1] = OCEAN_G;
+      fData[i + 2] = OCEAN_B;
+      fData[i + 3] = 255;
+
+      // beach_02 mask coverage remains as you had it (NO change requested)
+      if (BEACH_IDX !== -1 && maskBuffers) {
+        maskBuffers[BEACH_IDX][p] = 255;
+        primaryMaskIndex[p] = BEACH_IDX;
+      }
+
+      terrainId[p] = TERRAIN_ID.sea ?? TERRAIN_DEFAULT_ID;
+      continue;
+    }
+
+    const kColor = (kData[i] << 16) | (kData[i + 1] << 8) | kData[i + 2];
+    const kopCodeForTree = KOPPEN_CODE_BY_COLOR_INT[kColor] || "";
+    kopPacked[p] = packKoppen(kopCodeForTree);
+
+    const rec = lut[kColor]?.[elev]; // { terrain, variants }
+    if (rec && rec.variants && rec.variants.length) {
+      const variants = rec.variants;
+      const { ids, weights } = chooseMaskIndicesDeterministic(kColor, elev, variants);
+
+      // stable terrain (the key fix)
+      const t = rec.terrain || "default";
+      terrainId[p] = TERRAIN_ID[t] ?? TERRAIN_DEFAULT_ID;
+
+      // pick texture within terrain-locked variants
+      const primary = variants[ids[0]];
+      const hex = primary.colorInt;
+
+      fData[i]     = (hex >> 16) & 0xFF;
+      fData[i + 1] = (hex >> 8) & 0xFF;
+      fData[i + 2] = hex & 0xFF;
+      fData[i + 3] = 255;
+
+      primaryMaskIndex[p] = primary.idx;
+
+      for (let m = 0; m < ids.length; m++) {
+        const v = variants[ids[m]];
+        const buf = maskBuffers[v.idx];
+        const w = weights[m];
+        if (w > buf[p]) buf[p] = w;
+      }
+    } else {
+      // climate-aware fallback
+      const kopCode = KOPPEN_CODE_BY_COLOR_INT[kColor];
+      let fbIdx = (kopCode && Object.prototype.hasOwnProperty.call(FALLBACK_IDX_BY_CODE, kopCode))
+        ? FALLBACK_IDX_BY_CODE[kopCode]
+        : -1;
+
+      if (fbIdx < 0) fbIdx = TEXTURE_MASKS.findIndex(m => m.name === 'plains_01');
+
+      if (fbIdx >= 0) {
+        const fbMask = TEXTURE_MASKS[fbIdx];
+        const hex = hexToInt(fbMask.color);
+
+        fData[i]     = (hex >> 16) & 0xFF;
+        fData[i + 1] = (hex >> 8)  & 0xFF;
+        fData[i + 2] =  hex        & 0xFF;
+        fData[i + 3] = 255;
+
+        const buf = maskBuffers[fbIdx];
+        if (buf[p] < 255) buf[p] = 255;
+        primaryMaskIndex[p] = fbIdx;
+
+        const t = fbMask.terrain || "default";
+        terrainId[p] = TERRAIN_ID[t] ?? TERRAIN_DEFAULT_ID;
+      } else {
+        fData[i]     = kData[i];
+        fData[i + 1] = kData[i + 1];
+        fData[i + 2] = kData[i + 2];
+        fData[i + 3] = 255;
+        terrainId[p] = TERRAIN_DEFAULT_ID;
+      }
+    }
+  }
+
+  // DEBUG: mark maskless land in _debug
+  {
+    const DEBUG_IDX = TEXTURE_MASKS.findIndex(m => m.name === "_debug");
+    if (DEBUG_IDX !== -1) {
+      const dbgBuf = maskBuffers[DEBUG_IDX];
+      const N = maskWidth * maskHeight;
+      for (let p = 0; p < N; p++) {
+        if (elev8[p] < 19) continue;
+        let covered = false;
+        for (let m = 0; m < TEXTURE_MASKS.length; m++) {
+          if (m === DEBUG_IDX) continue;
+          if (maskBuffers[m][p] > 0) { covered = true; break; }
+        }
+        if (!covered) dbgBuf[p] = 255;
+      }
+    }
+  }
+
+  outputCtx.putImageData(finalImage, 0, 0);
+
+  console.timeEnd("Render");
+  statusDiv.innerText = `Generation Complete. ${width}x${height} pixels processed.`;
+  genBtn.disabled = false;
+  downloadMasksBtn.disabled = false;
+  terrainBtn.disabled = false;
+  downloadTreeMasksBtn.disabled = false;
+}
+
+/**
+ * DRAW TERRAIN MAP USING stable terrainId buffer (NO speckle)
+ */
+function drawTerrainMap() {
+  if (!terrainId || !maskWidth || !maskHeight) {
+    alert("Please generate the texture map first.");
+    return;
+  }
+
+  const width = maskWidth;
+  const height = maskHeight;
+
+  const img = outputCtx.createImageData(width, height);
+  const data = img.data;
+  const N = width * height;
+
+  for (let p = 0; p < N; p++) {
+    const idx4 = p * 4;
+    const tKey = TERRAIN_KEYS[terrainId[p]] || "default";
+    const color = TERRAIN_COLORS[tKey] || TERRAIN_COLORS.default;
+
+    data[idx4]     = color.r;
+    data[idx4 + 1] = color.g;
+    data[idx4 + 2] = color.b;
+    data[idx4 + 3] = 255;
+  }
+
+  outputCtx.putImageData(img, 0, 0);
+  statusDiv.innerText = "Terrain map drawn (stable terrain buffer).";
+}
+
+/**
+ * MASK EXPORT (full size) - blob-based (more reliable than huge dataURL)
+ */
+async function downloadAllMasks() {
+  if (!maskBuffers || !maskBuffers.length) {
+    alert("No mask data. Generate the map first.");
+    return;
+  }
+
+  const width = maskWidth;
+  const height = maskHeight;
+
+  statusDiv.innerText = "Generating mask pack...";
+  downloadMasksBtn.disabled = true;
+  genBtn.disabled = true;
+  terrainBtn.disabled = true;
+  downloadTreeMasksBtn.disabled = true;
+
+  maskCanvas.width = width;
+  maskCanvas.height = height;
+
+  const link = document.createElement('a');
+  document.body.appendChild(link);
+
+  try {
+    for (let m = 0; m < TEXTURE_MASKS.length; m++) {
+      const maskInfo = TEXTURE_MASKS[m];
+      const buf = maskBuffers[m];
+
+      const maskImage = maskCtx.createImageData(width, height);
+      const mData = maskImage.data;
+      const N = buf.length;
+
+      statusDiv.innerText = `Mask ${m + 1}/${TEXTURE_MASKS.length}: ${maskInfo.name}...`;
+
+      for (let p = 0; p < N; p++) {
+        const v = buf[p];
+        const j = p * 4;
+        mData[j] = mData[j + 1] = mData[j + 2] = v;
+        mData[j + 3] = 255;
+      }
+
+      maskCtx.putImageData(maskImage, 0, 0);
+
+      await new Promise(r => requestAnimationFrame(r));
+
+      const blob = await canvasToBlob(maskCanvas, 'image/png');
+      const url = URL.createObjectURL(blob);
+
+      link.href = url;
+      link.download = `${maskInfo.name}_mask.png`;
+      link.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      await new Promise(r => setTimeout(r, 80));
+    }
+  } finally {
+    document.body.removeChild(link);
+    statusDiv.innerText = "All mask downloads triggered.";
+    downloadMasksBtn.disabled = false;
+    genBtn.disabled = false;
+    terrainBtn.disabled = false;
+    downloadTreeMasksBtn.disabled = false;
+  }
+}
+
+downloadMasksBtn.addEventListener('click', downloadAllMasks);
+terrainBtn.addEventListener('click', drawTerrainMap);
+downloadTreeMasksBtn.addEventListener('click', downloadTreeMasksHalfSize);
+
+// init
+buildLookupTable();
+</script>
+
+</body>
+</html>

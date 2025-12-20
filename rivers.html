@@ -1,0 +1,1546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CK3 River Drawer (Scrollable Height / Topo Viewer)</title>
+<style>
+  :root{
+    /* Continent-maker parchment + ink (matches the projections vibe) */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --accent:#a65d37;
+    --accent-2:#2f5f73;
+    --border:#c4b496;
+    --shadow:0 10px 30px rgba(34,26,18,.20);
+    --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+    --radius:14px;
+    --radius-sm:10px;
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font-family:var(--font-sans);
+    overflow:hidden;
+
+    background:
+      radial-gradient(1200px 900px at 15% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      radial-gradient(900px 700px at 80% 15%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+      radial-gradient(900px 700px at 30% 85%, rgba(60,47,33,.08), rgba(60,47,33,0) 65%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg, rgba(60,47,33,.03) 0, rgba(60,47,33,.03) 1px, rgba(60,47,33,0) 3px, rgba(60,47,33,0) 6px),
+      repeating-linear-gradient(90deg, rgba(60,47,33,.02) 0, rgba(60,47,33,.02) 1px, rgba(60,47,33,0) 4px, rgba(60,47,33,0) 9px);
+    mix-blend-mode:multiply;
+    opacity:.35;
+  }
+
+  /* --- Map viewport --- */
+
+  #viewport-wrap{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    background:
+      radial-gradient(1100px 700px at 50% -10%, rgba(255,255,255,.35), rgba(255,255,255,0) 65%),
+      linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.06));
+  }
+
+  #canvas-scroll{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    display:block;
+  }
+
+  #canvas-container{
+    position:relative;
+    width:100%;
+    height:100%;
+    background:transparent;
+  }
+
+  canvas{
+    position:absolute;
+    top:0;
+    left:0;
+    display:block;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    background:transparent;
+    transform-origin:top left;
+
+    /* parchment frame effect on the rendered map */
+    border-radius: 12px;
+    box-shadow:
+      0 0 0 1px rgba(196,180,150,.75),
+      0 18px 44px rgba(34,26,18,.18);
+  }
+
+  #status-bar{
+    position:absolute;
+    left:14px;
+    bottom:14px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(244,233,213,.86);
+    border:1px solid rgba(196,180,150,.95);
+    box-shadow: var(--shadow-soft);
+    font-size:11px;
+    color:var(--ink-muted);
+    pointer-events:none;
+    display:flex;
+    gap:12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* --- Floating UI layer --- */
+
+  #ui-layer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+  }
+
+  .tool-panel{
+    pointer-events:auto;
+    position:absolute;
+    min-width:270px;
+    max-width:340px;
+
+    background:
+      radial-gradient(900px 420px at 10% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    border-radius: var(--radius);
+    border: 1px solid rgba(196,180,150,.95);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+    font-size: 12px;
+    overflow: hidden;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .tool-panel:hover{
+    box-shadow: 0 14px 40px rgba(34,26,18,.26);
+    border-color: rgba(166,93,55,.65);
+  }
+  .tool-panel.collapsed .panel-body{ display:none; }
+
+  .panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 10px;
+    background:
+      linear-gradient(180deg, rgba(244,233,213,.82), rgba(232,219,195,.82));
+    border-bottom: 1px solid rgba(196,180,150,.85);
+    cursor: move;
+    user-select:none;
+  }
+  .panel-header .title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-muted);
+    font-family: var(--font-serif);
+  }
+  .panel-header .logo-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    background: linear-gradient(135deg, #2f5f73, #a65d37);
+    box-shadow: 0 0 10px rgba(166,93,55,.35);
+  }
+
+  .panel-buttons{ display:flex; gap:6px; }
+
+  .panel-btn{
+    border: 1px solid rgba(196,180,150,.85);
+    background: rgba(244,233,213,.65);
+    color: var(--ink-muted);
+    width:20px;
+    height:20px;
+    border-radius:999px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    padding:0;
+    transition: transform .06s ease, background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .panel-btn:hover{
+    background: rgba(244,233,213,.92);
+    border-color: rgba(166,93,55,.55);
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+
+  .panel-body{ padding:10px 12px 12px; }
+
+  h2{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-muted);
+    margin: 0 0 8px;
+    font-family: var(--font-serif);
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .row label{
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .row span.value{
+    font-size: 11px;
+    color: var(--ink);
+    opacity: .9;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input[type="file"], input[type="number"]{ font-size: 11px; }
+  input[type="file"]{ width:100%; }
+
+  input[type="number"]{
+    width: 86px;
+    padding: 4px 6px;
+    background: rgba(255,255,255,.45);
+    border-radius: 10px;
+    border: 1px solid rgba(196,180,150,.95);
+    color: var(--ink);
+    outline: none;
+  }
+  input[type="number"]:focus{
+    border-color: rgba(166,93,55,.75);
+    box-shadow: 0 0 0 3px rgba(166,93,55,.18);
+  }
+
+  input[type="range"]{
+    width:100%;
+    accent-color: var(--accent);
+  }
+
+  button{
+    cursor:pointer;
+    border-radius: 12px;
+    border: 1px solid rgba(196,180,150,.95);
+    background:
+      radial-gradient(180px 120px at 0 0, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    color: var(--ink);
+    font-size: 12px;
+    padding: 7px 10px;
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    transition: background .12s ease, border-color .12s ease, transform .06s ease, opacity .1s ease, box-shadow .12s ease;
+    box-shadow: 0 2px 0 rgba(60,47,33,.10);
+  }
+  button:hover{
+    border-color: rgba(166,93,55,.75);
+    background:
+      radial-gradient(180px 120px at 0 0, rgba(255,255,255,.70), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(244,233,213,1), rgba(232,219,195,1));
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(34,26,18,.16);
+  }
+  button:active{
+    transform: translateY(0px);
+    box-shadow: 0 2px 0 rgba(60,47,33,.10);
+  }
+  button:disabled{
+    opacity:.45;
+    cursor:default;
+    transform:none;
+    box-shadow:none;
+  }
+
+  .radio-group{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:6px;
+  }
+  .radio-pill{
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(196,180,150,.95);
+    background: rgba(255,255,255,.35);
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+    color: var(--ink-muted);
+    transition: background .12s ease, border-color .12s ease, box-shadow .12s ease, transform .06s ease, color .12s ease;
+  }
+  .radio-pill:hover{
+    border-color: rgba(47,95,115,.55);
+    transform: translateY(-1px);
+  }
+  .radio-pill.active{
+    border-color: rgba(166,93,55,.85);
+    color: var(--ink);
+    background:
+      radial-gradient(180px 120px at 0 0, rgba(166,93,55,.18), rgba(166,93,55,0) 65%),
+      rgba(255,255,255,.40);
+    box-shadow: 0 0 0 3px rgba(166,93,55,.12);
+  }
+
+  /* Panel positions (keep your existing IDs) */
+  #panel-file{ top:16px; left:16px; }
+  #panel-view{ top:16px; right:16px; }
+
+  /* Minimap */
+  #minimap-wrap{
+    position:absolute;
+    top:16px;
+    right: 372px;
+    pointer-events:auto;
+
+    background:
+      radial-gradient(700px 260px at 10% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    border-radius: var(--radius);
+    padding: 6px;
+    border: 1px solid rgba(196,180,150,.95);
+    box-shadow: var(--shadow);
+    z-index: 10;
+  }
+  #minimap{
+    display:block;
+    width: 360px;
+    height: 180px;
+    image-rendering: pixelated;
+    cursor: pointer;
+
+    border: 2px solid rgba(166,93,55,.65);
+    border-radius: 12px;
+    background: rgba(255,255,255,.35);
+  }
+
+  /* Small helper text */
+  small{
+    color: var(--ink-muted) !important;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="viewport-wrap">
+  <div id="canvas-scroll">
+    <div id="canvas-container">
+      <canvas id="mapCanvas"></canvas>
+      <div id="status-bar">
+        <span id="statusSize">–</span>
+        <span id="statusView">–</span>
+        <span id="statusRiver">Click START point.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ui-layer">
+  <!-- File / Rivers panel -->
+  <div class="tool-panel" id="panel-file">
+    <div class="panel-header">
+      <div class="title">
+        <span class="logo-dot"></span>
+        <span>CK3 River Drawer</span>
+      </div>
+      <div class="panel-buttons">
+        <button class="panel-btn panel-toggle" title="Minimize">–</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <h2>Heightmap</h2>
+      <div class="row">
+        <label for="fileInput">Load PNG</label>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+      <div class="row" style="margin-top:8px;">
+        <label for="seaLevelInput">Sea level (0–255)</label>
+        <input type="number" id="seaLevelInput" value="19" min="0" max="255">
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <label for="downhillSlider">Downhill strictness</label>
+        <span class="value" id="downhillValue"></span>
+      </div>
+      <input type="range" id="downhillSlider" min="1" max="5" value="4">
+
+      <div class="row" style="margin-top:8px;">
+        <button id="btnUndo"  disabled>Undo Last River</button>
+        <button id="btnClear" disabled>Clear Rivers</button>
+      </div>
+      <div class="row" style="margin-top:4px;">
+        <button id="btnSave" disabled>Download CK3 PNG</button>
+      </div>
+      <small style="display:block;margin-top:6px;color:var(--muted);font-size:11px;">
+        Usage: click <b>START</b> on the map, then <b>END</b>. A river will follow a strongly
+        downhill path, respecting CK3 adjacency rules.<br>
+        Hold <b>Space</b> (or middle mouse) to pan, use the <b>Zoom</b> slider or mouse wheel to zoom.
+      </small>
+    </div>
+  </div>
+
+  <!-- View / zoom panel -->
+  <div class="tool-panel" id="panel-view">
+    <div class="panel-header">
+      <div class="title"><span>View</span></div>
+      <div class="panel-buttons">
+        <button class="panel-btn panel-toggle" title="Minimize">–</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="radio-group" id="viewModeGroup">
+        <div class="radio-pill active" data-view="height">Heightmap</div>
+        <div class="radio-pill" data-view="topo">Wide Topo</div>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <label for="zoomSlider">Zoom</label>
+        <span class="value" id="zoomValue"></span>
+      </div>
+      <input type="range" id="zoomSlider" min="10" max="400" value="100">
+      <small style="display:block;margin-top:6px;color:var(--muted);font-size:11px;">
+        Zoom slider + mouse wheel both control the view. Topo uses a wide gradient with 1-step elevation bands.
+      </small>
+    </div>
+  </div>
+
+  <!-- Minimap -->
+  <div id="minimap-wrap">
+    <canvas id="minimap" width="360" height="180"></canvas>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  const RIVER_INDEXED_PALETTE = [
+    [  0, 255, 255],
+    [  0, 200, 255],
+    [  0, 150, 255],
+    [  0, 100, 255],
+    [  0,   0, 255],
+    [  0,   0, 200],
+    [  0,   0, 150],
+    [  0,   0, 100],
+    [  0,  85,   0],
+    [  0, 125,   0],
+    [  0, 158,   0],
+    [ 24, 206,   0],
+  ]
+
+  
+
+  const canvas   = document.getElementById("mapCanvas");
+  const ctx      = canvas.getContext("2d", { willReadFrequently: true });
+  const viewport = document.getElementById("viewport-wrap");
+
+  const minimapCanvas = document.getElementById("minimap");
+  const minimapCtx    = minimapCanvas.getContext("2d");
+
+  const fileInput  = document.getElementById("fileInput");
+  const seaLevelInput = document.getElementById("seaLevelInput");
+  const btnClear   = document.getElementById("btnClear");
+  const btnUndo    = document.getElementById("btnUndo");
+  const btnSave    = document.getElementById("btnSave");
+  const downhillSlider = document.getElementById("downhillSlider");
+  const downhillValue  = document.getElementById("downhillValue");
+  const viewModeGroup  = document.getElementById("viewModeGroup");
+  const zoomSlider     = document.getElementById("zoomSlider");
+  const zoomValue      = document.getElementById("zoomValue");
+
+  const statusSize  = document.getElementById("statusSize");
+  const statusView  = document.getElementById("statusView");
+  const statusRiver = document.getElementById("statusRiver");
+
+  let mapWidth  = 0;
+  let mapHeight = 0;
+  let heightData = null;     // Float32 0..1
+  let seaMask   = null;      // Uint8 0/1
+  let viewBuffer = null;     // Uint8 RGBA base (height or topo)
+  let baseImage  = null;     // ImageData snapshot of viewBuffer
+  let imageData  = null;     // ImageData wrapper for viewBuffer
+  let minimapBase = null;    // minimap base
+
+  // Rivers
+  let riverMask = null; // Uint8: 0/1
+  let riverType = null; // Uint8: 0 normal, 1 source, 2 join
+  let riverDeg  = null; // Uint8: degree (4-neighbor)
+  let blueLevel = null; // Uint8: 0..4
+  const N4 = [[1,0],[-1,0],[0,1],[0,-1]];
+  const idx = (x,y)=> y*mapWidth + x;
+
+  // Per-river storage for undo
+  let rivers = []; // each: {cells: Int32Array, isTrib: boolean}
+
+  // Pathfinding (A*)
+  let gCost=null, cameFrom=null, seen=null, stamp=1;
+  class MinHeap {
+    constructor(){ this.data=[]; }
+    push(id,f){ const n={id,f}; this.data.push(n); this._up(this.data.length-1); }
+    isEmpty(){ return this.data.length===0; }
+    pop(){
+      if(!this.data.length) return null;
+      const root=this.data[0];
+      const last=this.data.pop();
+      if(this.data.length){ this.data[0]=last; this._down(0); }
+      return root;
+    }
+    _up(i){
+      while(i>0){
+        const p=(i-1)>>1;
+        if(this.data[p].f<=this.data[i].f) break;
+        [this.data[p],this.data[i]]=[this.data[i],this.data[p]];
+        i=p;
+      }
+    }
+    _down(i){
+      const n=this.data.length;
+      while(true){
+        let l=i*2+1,r=i*2+2,s=i;
+        if(l<n && this.data[l].f<this.data[s].f) s=l;
+        if(r<n && this.data[r].f<this.data[s].f) s=r;
+        if(s===i) break;
+        [this.data[s],this.data[i]]=[this.data[i],this.data[s]];
+        i=s;
+      }
+    }
+  }
+
+  // Camera
+  let zoom = 1.0;
+  let panX = 0;
+  let panY = 0;
+
+  const ViewMode = { Height: "height", Topo: "topo" };
+  let viewMode = ViewMode.Height;
+  let seaLevel = 19;
+
+  // Click state
+  let clickStage = 0; // 0: waiting for start, 1: waiting for end
+  let startPoint = null;
+
+  /* ---------- Panels ---------- */
+
+  function initPanels() {
+    const panels = document.querySelectorAll(".tool-panel");
+    panels.forEach(panel=>{
+      const header = panel.querySelector(".panel-header");
+      const toggle = panel.querySelector(".panel-toggle");
+      if(toggle){
+        toggle.addEventListener("click", e=>{
+          e.stopPropagation();
+          panel.classList.toggle("collapsed");
+        });
+      }
+      if(header) makeDraggable(panel,header);
+    });
+  }
+  function makeDraggable(panel,handle){
+    let dragging=false, sx=0,sy=0, sl=0,st=0;
+    handle.addEventListener("mousedown", e=>{
+      if(e.target.closest(".panel-btn")) return;
+      dragging=true;
+      sx=e.clientX; sy=e.clientY;
+      const r=panel.getBoundingClientRect();
+      sl=r.left; st=r.top;
+      panel.style.transition="none";
+      e.preventDefault();
+    });
+    window.addEventListener("mousemove", e=>{
+      if(!dragging) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      panel.style.left=(sl+dx)+"px";
+      panel.style.top =(st+dy)+"px";
+    });
+    window.addEventListener("mouseup", ()=>{
+      if(!dragging) return;
+      dragging=false;
+      panel.style.transition=
+        "box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease, border-color 0.12s ease";
+    });
+  }
+
+  /* ---------- Camera / minimap ---------- */
+
+  function clampPan(){
+    if(!mapWidth||!mapHeight) return;
+    const vw=viewport.clientWidth, vh=viewport.clientHeight;
+    const worldW=mapWidth*zoom, worldH=mapHeight*zoom;
+    if(worldW<=vw) panX=(vw-worldW)/2;
+    else {
+      const minX=vw-worldW, maxX=0;
+      if(panX<minX) panX=minX;
+      if(panX>maxX) panX=maxX;
+    }
+    if(worldH<=vh) panY=(vh-worldH)/2;
+    else {
+      const minY=vh-worldH, maxY=0;
+      if(panY<minY) panY=minY;
+      if(panY>maxY) panY=maxY;
+    }
+  }
+  function applyCamera(){
+    canvas.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
+    zoomValue.textContent=`${Math.round(zoom*100)}%`;
+    updateStatus();
+    drawMinimapOverlay();
+  }
+  function fitCamera(){
+    if(!mapWidth||!mapHeight) return;
+    const margin=80;
+    const vw=viewport.clientWidth-margin;
+    const vh=viewport.clientHeight-margin;
+    let z=Math.min(vw/mapWidth, vh/mapHeight);
+    z=Math.max(0.1,Math.min(1,z));
+    let zPct=Math.round(z*100);
+    const minZ=parseInt(zoomSlider.min,10), maxZ=parseInt(zoomSlider.max,10);
+    zPct=Math.min(Math.max(zPct,minZ),maxZ);
+    zoom=zPct/100;
+    zoomSlider.value=zPct;
+    const worldW=mapWidth*zoom, worldH=mapHeight*zoom;
+    panX=(viewport.clientWidth-worldW)/2;
+    panY=(viewport.clientHeight-worldH)/2;
+    clampPan(); applyCamera();
+  }
+  window.addEventListener("resize", fitCamera);
+
+  function rebuildMinimap(){
+    if(!heightData) return;
+    const wMini=minimapCanvas.width, hMini=minimapCanvas.height;
+    const img=minimapCtx.createImageData(wMini,hMini);
+    const d=img.data;
+    for(let y=0;y<hMini;y++){
+      const my=Math.floor(y*mapHeight/hMini);
+      const row=my*mapWidth;
+      for(let x=0;x<wMini;x++){
+        const mx=Math.floor(x*mapWidth/wMini);
+        const h=heightData[row+mx];
+        const v=Math.round(h*255);
+        const i=(y*wMini+x)*4;
+        d[i]=v; d[i+1]=v; d[i+2]=v; d[i+3]=255;
+      }
+    }
+    minimapBase=img;
+    drawMinimapOverlay();
+  }
+  function drawMinimapOverlay(){
+    if(!minimapBase||!mapWidth||!mapHeight) return;
+    minimapCtx.putImageData(minimapBase,0,0);
+    const wMini=minimapCanvas.width, hMini=minimapCanvas.height;
+    const vw=viewport.clientWidth, vh=viewport.clientHeight;
+    if(!vw||!vh) return;
+    const viewX=-panX/zoom, viewY=-panY/zoom;
+    const vwMap=vw/zoom, vhMap=vh/zoom;
+    const x0Map=Math.max(0,viewX);
+    const y0Map=Math.max(0,viewY);
+    const x1Map=Math.min(mapWidth, viewX+vwMap);
+    const y1Map=Math.min(mapHeight,viewY+vhMap);
+    const rectWMap=Math.max(0,x1Map-x0Map);
+    const rectHMap=Math.max(0,y1Map-y0Map);
+    const x0=x0Map/mapWidth*wMini;
+    const y0=y0Map/mapHeight*hMini;
+    const rectW=rectWMap/mapWidth*wMini;
+    const rectH=rectHMap/mapHeight*hMini;
+    minimapCtx.strokeStyle="rgba(248,250,252,0.9)";
+    minimapCtx.lineWidth=1;
+    minimapCtx.strokeRect(x0,y0,rectW,rectH);
+  }
+  minimapCanvas.addEventListener("mousedown",e=>{
+    if(!mapWidth||!mapHeight) return;
+    const rect=minimapCanvas.getBoundingClientRect();
+    const nx=(e.clientX-rect.left)/rect.width;
+    const ny=(e.clientY-rect.top)/rect.height;
+    const mapX=nx*mapWidth, mapY=ny*mapHeight;
+    const vw=viewport.clientWidth, vh=viewport.clientHeight;
+    panX=vw/2-mapX*zoom;
+    panY=vh/2-mapY*zoom;
+    clampPan(); applyCamera();
+    e.preventDefault();
+  });
+
+  /* ---------- View rendering ---------- */
+
+  function clamp01(v){ return v<0?0:v>1?1:v; }
+
+  function allocBuffers(w,h){
+    canvas.width=w; canvas.height=h;
+    viewBuffer = new Uint8ClampedArray(w*h*4);
+    imageData  = new ImageData(viewBuffer,w,h);
+  }
+
+  function encodeHeightColor(v){
+    const g=Math.round(clamp01(v)*255);
+    return [g,g,g];
+  }
+
+  function encodeTopoColor(v){
+    const h = Math.round(clamp01(v)*255);
+    const seaF = seaLevel;
+    let r=0,g=0,b=0;
+    if(h < seaF){
+      const t = seaF>0 ? h/seaF : 0;
+      const t2=t*t;
+      r = Math.round(10 + 40*t2);
+      g = Math.round(30 + 150*t);
+      b = Math.round(80 + 140*t);
+    } else {
+      const t = (h-seaF)/Math.max(1,255-seaF);
+      if(t < 0.25){
+        const k=t/0.25;
+        r=Math.round(50+40*k);
+        g=Math.round(120+80*k);
+        b=Math.round(40+10*k);
+      } else if(t<0.55){
+        const k=(t-0.25)/0.30;
+        r=Math.round(90+80*k);
+        g=Math.round(180-40*k);
+        b=Math.round(50-10*k);
+      } else if(t<0.8){
+        const k=(t-0.55)/0.25;
+        r=Math.round(170+50*k);
+        g=Math.round(140+20*k);
+        b=Math.round(70+20*k);
+      } else {
+        const k=(t-0.8)/0.2;
+        r=Math.round(220+35*k);
+        g=Math.round(230+25*k);
+        b=Math.round(235+20*k);
+      }
+    }
+    const band = h % 8;
+    if(band===0){
+      r=Math.round(r*0.85);
+      g=Math.round(g*0.85);
+      b=Math.round(b*0.85);
+    }
+    return [r,g,b];
+  }
+
+  function rebuildView(){
+    if(!heightData || !viewBuffer) return;
+    const N=mapWidth*mapHeight;
+    for(let i=0;i<N;i++){
+      const v=heightData[i];
+      let r,g,b;
+      if(viewMode===ViewMode.Height) [r,g,b]=encodeHeightColor(v);
+      else [r,g,b]=encodeTopoColor(v);
+      const k=i*4;
+      viewBuffer[k]=r; viewBuffer[k+1]=g; viewBuffer[k+2]=b; viewBuffer[k+3]=255;
+    }
+    baseImage = new ImageData(new Uint8ClampedArray(viewBuffer),mapWidth,mapHeight);
+    composeRiversAndDraw();
+    rebuildMinimap();
+  }
+
+  
+
+  function composeRiversAndDraw(){
+    if(!baseImage) return;
+    const out = new ImageData(new Uint8ClampedArray(baseImage.data),mapWidth,mapHeight);
+    if(riverMask){
+      const palette = RIVER_INDEXED_PALETTE
+      for(let y=0;y<mapHeight;y++){
+        for(let x=0;x<mapWidth;x++){
+          const id=idx(x,y);
+          if(!riverMask[id]) continue;
+          let r,g,b;
+          const t=riverType[id];
+          if(t===1){ r=0x00; g=0xff; b=0x00; }
+          else if(t===2){ r=0xff; g=0x00; b=0x00; }
+          else {
+            const lvl = Math.max(0, Math.min(palette.length - 1, blueLevel[id] | 0));
+            [r,g,b] = palette[lvl];
+          }
+          const k=(y*mapWidth+x)*4;
+          out.data[k]=r; out.data[k+1]=g; out.data[k+2]=b; out.data[k+3]=255;
+        }
+      }
+    }
+    ctx.putImageData(out,0,0);
+  }
+
+  function updateStatus(){
+    if(!heightData) statusSize.textContent="No map";
+    else statusSize.textContent=`Size: ${mapWidth}×${mapHeight}`;
+    statusView.textContent=`View: ${viewMode}, sea=${seaLevel}`;
+  }
+
+  /* ---------- Mouse / pan / zoom ---------- */
+
+  let isPanning=false, panKey=false;
+  let panStartX=0,panStartY=0, panStartOffsetX=0,panStartOffsetY=0;
+
+  function getMouseMapCoords(evt){
+    const rect=viewport.getBoundingClientRect();
+    const sx=evt.clientX-rect.left;
+    const sy=evt.clientY-rect.top;
+    const mx=(sx-panX)/zoom;
+    const my=(sy-panY)/zoom;
+    return {x:mx,y:my};
+  }
+
+  /* ---------- Click snapping to rivers (NEW) ---------- */
+
+  const SNAP_RADIUS = 5;
+
+  const SNAP_OFFSETS = (() => {
+    const arr = [];
+    for (let dy = -SNAP_RADIUS; dy <= SNAP_RADIUS; dy++) {
+      for (let dx = -SNAP_RADIUS; dx <= SNAP_RADIUS; dx++) {
+        const d2 = dx*dx + dy*dy;
+        if (d2 === 0) continue;
+        if (d2 <= SNAP_RADIUS*SNAP_RADIUS) arr.push({ dx, dy, d2 });
+      }
+    }
+    arr.sort((a,b)=>a.d2-b.d2);
+    return arr;
+  })();
+
+  function inBounds(x,y){
+    return x>=0 && y>=0 && x<mapWidth && y<mapHeight;
+  }
+
+  function isRiverXY(x,y){
+    if(!riverMask) return false;
+    return riverMask[idx(x,y)] === 1;
+  }
+
+  function hasRiverNeighbor4(x,y){
+    for(const [dx,dy] of N4){
+      const nx=x+dx, ny=y+dy;
+      if(!inBounds(nx,ny)) continue;
+      if(isRiverXY(nx,ny)) return true;
+    }
+    return false;
+  }
+
+function snapPointNearRiver(x, y){
+  if(!riverMask) return { x, y, snapped:false };
+
+  // If the clicked cell is already a perfect connect cell (non-river but touches river), keep it.
+  if(!isRiverXY(x,y) && hasRiverNeighbor4(x,y)){
+    return { x, y, snapped:false };
+  }
+
+  // Search within radius for the nearest non-river cell that touches an existing river.
+  // This works whether you clicked ON the river, or 1..5 cells away from it.
+  let best = null;
+  let bestD2 = 1e9;
+
+  // Also consider the center cell as a candidate (distance 0)
+  if(!isRiverXY(x,y) && hasRiverNeighbor4(x,y)){
+    best = { x, y };
+    bestD2 = 0;
+  }
+
+  for(const o of SNAP_OFFSETS){
+    const nx = x + o.dx;
+    const ny = y + o.dy;
+    if(!inBounds(nx,ny)) continue;
+    if(isRiverXY(nx,ny)) continue;           // must be non-river
+    if(!hasRiverNeighbor4(nx,ny)) continue;  // must touch river
+
+    // nearest-first because offsets are sorted, but keep it robust anyway
+    if(o.d2 < bestD2){
+      bestD2 = o.d2;
+      best = { x:nx, y:ny };
+    }
+
+    // Since SNAP_OFFSETS is sorted, first hit is already the closest.
+    break;
+  }
+
+  if(best){
+    return { x: best.x, y: best.y, snapped: !(best.x===x && best.y===y), fromX:x, fromY:y };
+  }
+
+  // No connectable cell in radius -> don't snap (avoids weird offsets)
+  return { x, y, snapped:false };
+}
+
+  canvas.addEventListener("mousedown",e=>{
+    if(!heightData) return;
+    if(e.button===1 || (panKey && e.button===0)){
+      isPanning=true;
+      panStartX=e.clientX; panStartY=e.clientY;
+      panStartOffsetX=panX; panStartOffsetY=panY;
+      viewport.style.cursor="grabbing";
+      e.preventDefault();
+      return;
+    }
+
+    if(e.button===0){
+      const {x,y}=getMouseMapCoords(e);
+      const ix0=Math.round(x), iy0=Math.round(y);
+      if(ix0<0||iy0<0||ix0>=mapWidth||iy0>=mapHeight) return;
+
+      const sp = (clickStage === 1) ? snapPointNearRiver(ix0, iy0) : { x:ix0, y:iy0, snapped:false };
+      const ix = sp.x, iy = sp.y;
+
+      if(clickStage===0){
+        startPoint={x:ix,y:iy};
+        clickStage=1;
+        statusRiver.textContent = sp.snapped
+          ? `Start (snapped): (${ix0}, ${iy0}) → (${ix}, ${iy}). Click END.`
+          : `Start: (${ix}, ${iy}). Click END.`;
+      } else {
+        const endPoint={x:ix,y:iy};
+        clickStage=0;
+        statusRiver.textContent = sp.snapped
+          ? `End (snapped): (${ix0}, ${iy0}) → (${ix}, ${iy}). Computing path...`
+          : "Computing path...";
+        setTimeout(()=>{
+          addRiverFromClick(startPoint,endPoint);
+          startPoint=null;
+          statusRiver.textContent="Click START point.";
+        },0);
+      }
+    }
+  });
+
+  window.addEventListener("mousemove",e=>{
+    if(isPanning){
+      const dx=e.clientX-panStartX, dy=e.clientY-panStartY;
+      panX=panStartOffsetX+dx; panY=panStartOffsetY+dy;
+      clampPan(); applyCamera();
+    }
+  });
+  window.addEventListener("mouseup",()=>{
+    if(isPanning){
+      isPanning=false;
+      viewport.style.cursor=panKey?"grab":"";
+    }
+  });
+
+  window.addEventListener("keydown",e=>{
+    if(e.code==="Space"){
+      if(!panKey){
+        panKey=true;
+        if(!isPanning) viewport.style.cursor="grab";
+      }
+      e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup",e=>{
+    if(e.code==="Space"){
+      panKey=false;
+      if(!isPanning) viewport.style.cursor="";
+    }
+  });
+
+  // Zoom slider
+  zoomSlider.addEventListener("input",()=>{
+    if(!mapWidth) return;
+    const val=parseInt(zoomSlider.value,10)||100;
+    const oldZoom=zoom;
+    zoom=val/100;
+    const vw=viewport.clientWidth, vh=viewport.clientHeight;
+    const cx=vw/2, cy=vh/2;
+    const mapX=(cx-panX)/oldZoom;
+    const mapY=(cy-panY)/oldZoom;
+    panX=cx-mapX*zoom;
+    panY=cy-mapY*zoom;
+    clampPan(); applyCamera();
+  });
+
+  // Mouse wheel zoom
+  viewport.addEventListener("wheel",e=>{
+    if(!mapWidth) return;
+    e.preventDefault();
+    const delta=e.deltaY;
+    const factor = delta>0 ? 0.9 : 1.1;
+    const oldZoom=zoom;
+    let newZoom=oldZoom*factor;
+    newZoom=Math.max(0.1,Math.min(4,newZoom)); // 10%..400%
+    const rect=viewport.getBoundingClientRect();
+    const sx=e.clientX-rect.left;
+    const sy=e.clientY-rect.top;
+    const mapX=(sx-panX)/oldZoom;
+    const mapY=(sy-panY)/oldZoom;
+    zoom=newZoom;
+    panX=sx-mapX*zoom;
+    panY=sy-mapY*zoom;
+    clampPan();
+    const zPct=Math.round(zoom*100);
+    zoomSlider.value=Math.min(Math.max(zPct,parseInt(zoomSlider.min,10)),parseInt(zoomSlider.max,10));
+    applyCamera();
+  }, {passive:false});
+
+  /* ---------- Heightmap loading ---------- */
+
+  fileInput.addEventListener("change",e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.naturalWidth, h=img.naturalHeight;
+      const maxDim=8192;
+      if(w>maxDim||h>maxDim){
+        const s=Math.min(maxDim/w,maxDim/h);
+        w=Math.floor(w*s); h=Math.floor(h*s);
+      }
+      const off=document.createElement("canvas");
+      off.width=w; off.height=h;
+      const octx=off.getContext("2d");
+      octx.drawImage(img,0,0,w,h);
+      const data=octx.getImageData(0,0,w,h).data;
+
+      mapWidth=w; mapHeight=h;
+      heightData=new Float32Array(w*h);
+      seaMask   =new Uint8ClampedArray(w*h);
+      riverMask =new Uint8ClampedArray(w*h);
+      riverType =new Uint8ClampedArray(w*h);
+      riverDeg  =new Uint8ClampedArray(w*h);
+      blueLevel =new Uint8ClampedArray(w*h);
+      rivers    =[];
+
+      let j=0;
+      for(let i=0;i<w*h;i++){
+        const r=data[j], g=data[j+1], b=data[j+2];
+        const v=(r+g+b)/(3*255);
+        heightData[i]=v;
+        seaMask[i]=0;
+        riverMask[i]=0; riverType[i]=0; riverDeg[i]=0; blueLevel[i]=0;
+        j+=4;
+      }
+
+      gCost=new Float32Array(w*h);
+      cameFrom=new Int32Array(w*h);
+      seen=new Int32Array(w*h);
+      stamp=1;
+
+      allocBuffers(w,h);
+      updateSeaMask();
+      rebuildView();
+      fitCamera();
+      btnSave.disabled=false;
+      updateRiverButtons();
+    };
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      alert("Failed to load image.");
+    };
+    img.src=url;
+  });
+
+  function updateSeaMask(){
+    if(!heightData) return;
+    const N=mapWidth*mapHeight;
+    for(let i=0;i<N;i++){
+      const h=Math.round(heightData[i]*255);
+      seaMask[i]= h<seaLevel ? 1 : 0;
+    }
+  }
+
+  seaLevelInput.addEventListener("input",()=>{
+    let v=parseInt(seaLevelInput.value,10);
+    if(isNaN(v)) v=0;
+    if(v<0) v=0; if(v>255) v=255;
+    seaLevel=v;
+    seaLevelInput.value=v;
+    updateSeaMask();
+    rebuildView();
+  });
+
+  /* ---------- River logic ---------- */
+
+  function heuristic(a,b){
+    const x1=a%mapWidth, y1=(a/mapWidth)|0;
+    const x2=b%mapWidth, y2=(b/mapWidth)|0;
+    return Math.abs(x1-x2)+Math.abs(y1-y2);
+  }
+
+  function findPath(startId,endId){
+    stamp++;
+    if(stamp===0x7fffffff){ seen.fill(0); stamp=1; }
+    const heap=new MinHeap();
+    gCost[startId]=0;
+    cameFrom[startId]=-1;
+    seen[startId]=stamp;
+    heap.push(startId,heuristic(startId,endId));
+
+    const strictness=parseInt(downhillSlider.value,10)||4;
+    const uphillBase = 5*strictness;
+
+    while(!heap.isEmpty()){
+      const node=heap.pop();
+      const cur=node.id;
+      if(cur===endId){
+        const path=[];
+        let c=cur;
+        while(c!==-1){ path.push(c); c=cameFrom[c]; }
+        path.reverse();
+        return path;
+      }
+      const gCur=gCost[cur];
+      const cx=cur%mapWidth, cy=(cur/mapWidth)|0;
+      const hCur=Math.round(heightData[cur]*255);
+
+      for(let k=0;k<4;k++){
+        const nx=cx+N4[k][0], ny=cy+N4[k][1];
+        if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+        const nid=idx(nx,ny);
+        const hNext=Math.round(heightData[nid]*255);
+        const dh=hNext-hCur;
+        let step=1;
+        if(dh<=0){
+          step += 0.1*Math.abs(dh);
+        } else {
+          step += uphillBase + dh*strictness*2;
+        }
+        const tentative=gCur+step;
+        if(seen[nid]!==stamp || tentative<gCost[nid]){
+          gCost[nid]=tentative;
+          cameFrom[nid]=cur;
+          seen[nid]=stamp;
+          heap.push(nid, tentative + heuristic(nid,endId));
+        }
+      }
+    }
+    return null;
+  }
+
+  function addRiverFromClick(start,end){
+    if(!heightData) return;
+    const startId=idx(start.x,start.y);
+    const endId  =idx(end.x,end.y);
+    const rawPath=findPath(startId,endId);
+    if(!rawPath || rawPath.length<2){
+      alert("No valid path between points.");
+      return;
+    }
+
+    // forbid stepping directly onto existing rivers
+    for(const id of rawPath){
+      if(riverMask && riverMask[id]){
+        alert("Path crosses existing river; adjust start/end.");
+        return;
+      }
+    }
+
+    // detect first adjacency to existing river (= tributary join)
+    let joinIndex=-1;
+    for(let i=1;i<rawPath.length;i++){
+      const id=rawPath[i];
+      const x=id%mapWidth, y=(id/mapWidth)|0;
+      for(const [dx,dy] of N4){
+        const nx=x+dx, ny=y+dy;
+        if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+        const nid=idx(nx,ny);
+        if(riverMask && riverMask[nid]){
+          joinIndex=i;
+          break;
+        }
+      }
+      if(joinIndex!==-1) break;
+    }
+
+    let finalPath, isTrib=false;
+    if(joinIndex!==-1){
+      finalPath=rawPath.slice(0,joinIndex+1);
+      isTrib=true;
+    } else finalPath=rawPath.slice();
+
+    if(finalPath.length<5){
+      alert("Path too short to be a river.");
+      return;
+    }
+
+    const newSet=new Set(finalPath);
+    const affectedExisting=new Set();
+
+    // adjacency check for new pixels
+    for(let pi=0;pi<finalPath.length;pi++){
+      const id=finalPath[pi];
+      const x=id%mapWidth, y=(id/mapWidth)|0;
+      let nR=0;
+      for(const [dx,dy] of N4){
+        const nx=x+dx, ny=y+dy;
+        if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+        const nid=idx(nx,ny);
+        if((riverMask && riverMask[nid]) || newSet.has(nid)){
+          nR++;
+          if(riverMask && riverMask[nid]) affectedExisting.add(nid);
+        }
+      }
+      const isJoinPixel=isTrib && pi===finalPath.length-1;
+      const isStartPixel=pi===0;
+      const isEndPixel=pi===finalPath.length-1;
+      if(isJoinPixel){
+        if(nR>3){ alert("Adjacency violation at join pixel."); return; }
+      } else if(isStartPixel||isEndPixel){
+        if(nR>2){ alert("Adjacency violation at endpoint."); return; }
+      } else {
+        if(nR>2){ alert("Adjacency violation along river."); return; }
+      }
+    }
+
+    // adjacency check for existing pixels touched
+    let bad=false;
+    affectedExisting.forEach(eid=>{
+      if(bad) return;
+      const x=eid%mapWidth, y=(eid/mapWidth)|0;
+      let d=0;
+      for(const [dx,dy] of N4){
+        const nx=x+dx, ny=y+dy;
+        if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+        const nid=idx(nx,ny);
+        if((riverMask && riverMask[nid]) || newSet.has(nid)) d++;
+      }
+      if(d>3){
+        bad=true;
+      }
+    });
+    if(bad){
+      alert("Join would give an existing river pixel >3 orthogonal neighbors.");
+      return;
+    }
+
+    // store river for undo and rebuild mask
+    rivers.push({cells:Int32Array.from(finalPath), isTrib});
+    rebuildRiverMasksFromRivers();
+    composeRiversAndDraw();
+    updateRiverButtons();
+  }
+
+  function rebuildRiverMasksFromRivers(){
+    if(!riverMask) return;
+    riverMask.fill(0);
+    riverType.fill(0);
+    riverDeg.fill(0);
+    blueLevel.fill(0);
+
+    // mask
+    for(const r of rivers){
+      const cells=r.cells;
+      for(let i=0;i<cells.length;i++){
+        riverMask[cells[i]]=1;
+      }
+    }
+
+    // degrees
+    for(let y=0;y<mapHeight;y++){
+      for(let x=0;x<mapWidth;x++){
+        const id=idx(x,y);
+        if(!riverMask[id]) continue;
+        let d=0;
+        for(const [dx,dy] of N4){
+          const nx=x+dx, ny=y+dy;
+          if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+          const nid=idx(nx,ny);
+          if(riverMask[nid]) d++;
+        }
+        riverDeg[id]=d;
+      }
+    }
+
+        // types only (NO blueLevel here)
+    for(const r of rivers){
+    const cells=r.cells;
+    const n=cells.length;
+    for(let i=0;i<n;i++){
+        riverType[cells[i]] = 0;
+    }
+    if(r.isTrib){
+        riverType[cells[n-1]] = 2; // join
+    } else {
+        riverType[cells[0]] = 1;   // source
+    }
+    }
+
+    recomputeRiverWidthsFromNetwork();
+  }
+
+  function updateRiverButtons(){
+    const hasRivers = rivers.length>0;
+    btnClear.disabled = !hasRivers;
+    btnUndo.disabled  = !hasRivers;
+  }
+
+  btnClear.addEventListener("click",()=>{
+    if(!riverMask) return;
+    rivers=[];
+    riverMask.fill(0);
+    riverType.fill(0);
+    riverDeg.fill(0);
+    blueLevel.fill(0);
+    composeRiversAndDraw();
+    updateRiverButtons();
+  });
+
+  btnUndo.addEventListener("click",()=>{
+    if(rivers.length===0) return;
+    rivers.pop();
+    rebuildRiverMasksFromRivers();
+    composeRiversAndDraw();
+    updateRiverButtons();
+  });
+
+  // Download CK3 river map
+  btnSave.addEventListener("click",()=>{
+    if(!heightData || !seaMask) return;
+    const out=document.createElement("canvas");
+    out.width=mapWidth; out.height=mapHeight;
+    const octx=out.getContext("2d");
+    const img=octx.createImageData(mapWidth,mapHeight);
+    const d=img.data;
+    const N=mapWidth*mapHeight;
+    for(let i=0;i<N;i++){
+      let r,g,b;
+      if(seaMask[i]){
+        r=0xff; g=0x00; b=0x80; // magenta
+      } else {
+        r=0xff; g=0xff; b=0xff; // white land
+      }
+      if(riverMask && riverMask[i]){
+        const t=riverType[i];
+        if(t===1){ r=0x00; g=0xff; b=0x00; }
+        else if(t===2){ r=0xff; g=0x00; b=0x00; }
+        else {
+            const palette = RIVER_INDEXED_PALETTE;
+            const lvl = Math.max(0, Math.min(palette.length - 1, blueLevel[i] | 0));
+            [r,g,b] = palette[lvl];
+        }
+      }
+      const j=i*4;
+      d[j]=r; d[j+1]=g; d[j+2]=b; d[j+3]=255;
+    }
+    octx.putImageData(img,0,0);
+    out.toBlob(blob=>{
+      if(!blob){ alert("Failed to create PNG."); return; }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download="ck3_rivers.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },"image/png");
+  });
+
+  /* ---------- View mode & downhill UI ---------- */
+
+  function setViewMode(mode){
+    viewMode=mode;
+    viewModeGroup.querySelectorAll(".radio-pill").forEach(pill=>{
+      pill.classList.toggle("active",pill.dataset.view===mode);
+    });
+    rebuildView();
+    updateStatus();
+  }
+  viewModeGroup.addEventListener("click",e=>{
+    const pill=e.target.closest(".radio-pill"); if(!pill) return;
+    setViewMode(pill.dataset.view);
+  });
+
+  downhillSlider.addEventListener("input",()=>{
+    downhillValue.textContent=`${downhillSlider.value} / 5`;
+  });
+
+  /* ---------- Init ---------- */
+
+  function init(){
+    initPanels();
+    downhillSlider.dispatchEvent(new Event("input"));
+    zoomValue.textContent=`${zoomSlider.value}%`;
+    updateStatus();
+  }
+  init();
+
+  function recomputeRiverWidthsFromNetwork(){
+  if(!riverMask || !blueLevel || !rivers || !rivers.length) return;
+
+  const N = mapWidth * mapHeight;
+
+  // Directed graph: u -> downstream[u]
+  const downstream = new Int32Array(N);
+  downstream.fill(-1);
+
+  // Split rivers so main stems get directed first
+  const main = [];
+  const trib = [];
+  for(const r of rivers){
+    if(r && r.cells && r.cells.length) (r.isTrib ? trib : main).push(r);
+  }
+
+  function setEdgesForRiver(r){
+    const cells = r.cells;
+    for(let i=0;i<cells.length-1;i++){
+      downstream[cells[i]] = cells[i+1];
+    }
+  }
+
+  // 1) Main stems: strict polyline direction
+  for(const r of main) setEdgesForRiver(r);
+
+  // Helper: pick best adjacent EXISTING river pixel as join target,
+  // but NEVER allow targeting the tributary itself (avoids cycles).
+  function pickJoinTarget(joinId, tribSet){
+    const x = joinId % mapWidth, y = (joinId / mapWidth) | 0;
+
+    let best = -1;
+    let bestScore = 1e18;
+
+    for(const [dx,dy] of N4){
+      const nx = x + dx, ny = y + dy;
+      if(nx<0||ny<0||nx>=mapWidth||ny>=mapHeight) continue;
+      const nid = idx(nx,ny);
+      if(!riverMask[nid]) continue;
+
+      // CRITICAL: don't ever join into the tributary’s own pixels
+      if(tribSet && tribSet.has(nid)) continue;
+
+      // CRITICAL: avoid immediate 2-cycles (nid -> joinId already?)
+      if(downstream[nid] === joinId) continue;
+
+      // Prefer an already-directed pixel (part of main stem / earlier processed)
+      const hasDown = downstream[nid] !== -1;
+
+      // Prefer lower elevation among equals (usually helps pick the main stem side)
+      const h = heightData ? Math.round(heightData[nid] * 255) : 0;
+
+      // Score: already-directed beats not-directed, then lower height
+      const score = (hasDown ? 0 : 1) * 1e6 + h;
+
+      if(score < bestScore){
+        bestScore = score;
+        best = nid;
+      }
+    }
+    return best; // -1 if none
+  }
+
+  // 2) Tributaries: polyline direction + final edge into main network
+  for(const r of trib){
+    setEdgesForRiver(r);
+
+    const cells = r.cells;
+    const joinId = cells[cells.length - 1];
+
+    // Build a set of this tributary's cells to prevent self-joins/cycles
+    const tribSet = new Set(cells);
+
+    const target = pickJoinTarget(joinId, tribSet);
+    if(target !== -1){
+      downstream[joinId] = target;
+    } else {
+      downstream[joinId] = -1; // no attach; still valid, just won't add to a stem
+    }
+  }
+
+  // --- Flow accumulation on the directed graph (should be DAG in practice) ---
+  const indeg = new Uint16Array(N);
+  const flow  = new Uint32Array(N);
+
+  for(let i=0;i<N;i++){
+    if(!riverMask[i]) continue;
+    const d = downstream[i];
+    if(d !== -1 && riverMask[d]) indeg[d]++;
+  }
+
+  // Kahn queue of sources (indeg=0)
+  const q = new Int32Array(N);
+  let qh=0, qt=0;
+  for(let i=0;i<N;i++){
+    if(!riverMask[i]) continue;
+    if(indeg[i]===0){
+      flow[i]=1;
+      q[qt++]=i;
+    }
+  }
+
+  const order = new Int32Array(N);
+  let orderLen = 0;
+
+  while(qh<qt){
+    const u = q[qh++];
+    order[orderLen++] = u;
+
+    const d = downstream[u];
+    if(d !== -1 && riverMask[d]){
+      flow[d] += (flow[u] || 1);
+      if(indeg[d]>0) indeg[d]--;
+      if(indeg[d]===0){
+        if(flow[d]===0) flow[d]=1;
+        q[qt++]=d;
+      }
+    }
+  }
+
+  // If orderLen is suspiciously small, you still have a cycle somewhere.
+  // (Usually from a bad join target; this fix prevents the common one.)
+
+  // Distance-to-mouth (gentle thickening downstream)
+  const dist = new Uint16Array(N);
+  for(let oi=orderLen-1; oi>=0; oi--){
+    const u = order[oi];
+    const d = downstream[u];
+    dist[u] = (d !== -1 && riverMask[d]) ? (dist[d] + 1) : 0;
+  }
+
+  // Map to indexed palette levels
+  const L = RIVER_INDEXED_PALETTE.length;
+
+  const DIST_SCALE = 260;     // bigger = weaker distance effect
+  const DIST_BONUS_MAX = 3;   // cap distance contribution
+
+  for(let i=0;i<N;i++){
+    if(!riverMask[i]) continue;
+
+    const f = flow[i] || 1;
+
+    // Width from accumulated tributaries
+    let lvl = Math.floor(Math.log2(f)); // 1->0, 2->1, 4->2, ...
+
+    // Optional small downstream bonus
+    let bonus = Math.floor(dist[i] / DIST_SCALE);
+    if(bonus > DIST_BONUS_MAX) bonus = DIST_BONUS_MAX;
+
+    lvl += bonus;
+
+    if(lvl < 0) lvl = 0;
+    if(lvl > L-1) lvl = L-1;
+
+    blueLevel[i] = lvl;
+  }
+}
+
+
+})();
+</script>
+
+</body>
+</html>

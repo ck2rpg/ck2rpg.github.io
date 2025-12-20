@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Heightmap Domain Warp — Single File (HTML/CSS/JS)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    /* Parchment + ink theme */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --accent:#a65d37;
+    --accent-2:#2f5f73;
+    --border:#c4b496;
+
+    --shadow:0 10px 30px rgba(34,26,18,.20);
+    --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+
+    --radius:14px;
+    --radius-sm:10px;
+
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font:14px/1.35 var(--font-sans);
+    overflow:hidden;
+
+    /* Layout: left menu + right canvas */
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:12px;
+    padding:12px;
+
+    background:
+      radial-gradient(1200px 900px at 15% 10%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      radial-gradient(900px 700px at 80% 15%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+      radial-gradient(900px 700px at 30% 85%, rgba(60,47,33,.08), rgba(60,47,33,0) 65%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg, rgba(60,47,33,.03) 0, rgba(60,47,33,.03) 1px, rgba(60,47,33,0) 3px, rgba(60,47,33,0) 6px),
+      repeating-linear-gradient(90deg, rgba(60,47,33,.02) 0, rgba(60,47,33,.02) 1px, rgba(60,47,33,0) 4px, rgba(60,47,33,0) 9px);
+    mix-blend-mode:multiply;
+    opacity:.35;
+  }
+
+  /* Panels */
+  .panel{
+    background:
+      radial-gradient(900px 420px at 10% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    border:1px solid rgba(196,180,150,.95);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    position:relative;
+    overflow:auto;
+    max-height: calc(100vh - 24px);
+    padding:14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Left menu: keep it sticky-ish within its own scroll */
+  .panel.sticky{
+    position:sticky;
+    top:12px;
+    align-self:start;
+  }
+
+  h1{
+    font-size:16px;
+    margin:0 0 10px;
+    color:var(--ink);
+    letter-spacing:.2px;
+    font-family: var(--font-serif);
+    text-transform: uppercase;
+  }
+
+  .sub{
+    color:var(--ink-muted);
+    font-size:12px;
+    margin:2px 0 12px;
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:10px 0 6px;
+  }
+
+  input[type="range"]{ width:100%; accent-color: var(--accent); }
+
+  input[type="number"], select{
+    width:100%;
+    border-radius: 10px;
+    background: rgba(255,255,255,.45);
+    color: var(--ink);
+    border:1px solid rgba(196,180,150,.95);
+    padding:8px 10px;
+    font:12px var(--font-sans);
+    outline:none;
+  }
+  input[type="number"]:focus, select:focus{
+    border-color: rgba(166,93,55,.75);
+    box-shadow: 0 0 0 3px rgba(166,93,55,.18);
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 92px;
+    gap:10px;
+    align-items:center;
+  }
+
+  .grid2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+
+  .rowbtns{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:9px 12px;
+
+    border-radius: 12px;
+    border:1px solid rgba(196,180,150,.95);
+    background:
+      radial-gradient(180px 120px at 0 0, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    color: var(--ink);
+    cursor:pointer;
+    user-select:none;
+
+    transition: transform .06s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
+    box-shadow: 0 2px 0 rgba(60,47,33,.10);
+  }
+  .btn:hover{
+    transform: translateY(-1px);
+    border-color: rgba(166,93,55,.75);
+    box-shadow: 0 6px 14px rgba(34,26,18,.16);
+    background:
+      radial-gradient(180px 120px at 0 0, rgba(255,255,255,.70), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(244,233,213,1), rgba(232,219,195,1));
+  }
+  .btn:active{ transform: translateY(0px); box-shadow: 0 2px 0 rgba(60,47,33,.10); }
+  .btn:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
+
+  .btn.good{
+    border-color: rgba(47,95,115,.55);
+    box-shadow: 0 2px 0 rgba(47,95,115,.10);
+  }
+  .btn.warn{
+    border-color: rgba(166,93,55,.75);
+  }
+
+  .meter{
+    height:8px;
+    background: rgba(255,255,255,.35);
+    border:1px solid rgba(196,180,150,.95);
+    border-radius: 999px;
+    overflow:hidden;
+    box-shadow: var(--shadow-soft);
+  }
+  .meter > i{
+    display:block;
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, rgba(47,95,115,.85), rgba(166,93,55,.85));
+    transition: width .08s;
+  }
+
+  .small{
+    font-size:11px;
+    color: var(--ink-muted);
+  }
+
+  .pill{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:999px;
+    background: rgba(255,255,255,.40);
+    border:1px solid rgba(196,180,150,.95);
+    color: var(--ink);
+    font-size:11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kv{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color: var(--ink-muted);
+    gap:10px;
+  }
+
+  .muted{ opacity:.7; }
+
+  /* RIGHT SIDE: make the canvas fill the remainder cleanly */
+  body > .panel:last-of-type{
+    padding:10px;           /* a little tighter around the canvas */
+    overflow:hidden;        /* canvas is centered; no scrollbars */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  canvas{
+    /* Fill the available right panel while preserving aspect ratio */
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+
+    display:block;
+    background: transparent;
+
+    border-radius: 12px;
+    border:1px solid rgba(196,180,150,.95);
+    box-shadow:
+      0 0 0 1px rgba(196,180,150,.55),
+      0 18px 44px rgba(34,26,18,.14);
+  }
+
+  /* Make the file input look consistent */
+  input[type="file"]{
+    width:100%;
+    font-size:11px;
+    color: var(--ink-muted);
+  }
+
+  /* Slightly nicer scrollbar on the left panel */
+  .panel::-webkit-scrollbar{ width:10px; }
+  .panel::-webkit-scrollbar-thumb{
+    background: rgba(60,47,33,.18);
+    border: 2px solid rgba(244,233,213,.8);
+    border-radius: 999px;
+  }
+  .panel::-webkit-scrollbar-track{
+    background: rgba(255,255,255,.18);
+    border-radius: 999px;
+  }
+
+  /* Responsive: stack menu above canvas on small screens */
+  @media (max-width: 980px){
+    body{
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    body > .panel:last-of-type{
+      min-height: 55vh;
+    }
+  }
+</style>
+
+</head>
+<body>
+  <div class="panel sticky">
+    <h1>Heightmap Domain Warp</h1>
+    <div class="sub">Upload a grayscale heightmap, warp with noise, then download the result. Non-destructive; original stays untouched.</div>
+
+    <label>Upload heightmap (PNG/JPG)</label>
+    <input id="file" type="file" accept="image/png,image/jpeg,image/webp" />
+
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <label class="kv"><span>Seed</span><span id="seedVal" class="pill">1337</span></label>
+        <div class="row">
+          <input id="seed" type="range" min="0" max="999999" step="1" value="1337" />
+          <input id="seedNum" type="number" min="0" max="999999" step="1" value="1337" />
+        </div>
+      </div>
+      <div>
+        <label>Quality</label>
+        <select id="quality">
+          <option value="fast" selected>Fast (vector field grid)</option>
+          <option value="high">High (per-pixel noise)</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="kv"><span>Warp strength (px)</span><span id="strengthVal" class="pill">24</span></label>
+    <div class="row">
+      <input id="strength" type="range" min="0" max="200" step="1" value="24" />
+      <input id="strengthNum" type="number" min="0" max="200" step="1" value="24" />
+    </div>
+
+    <label class="kv"><span>Base frequency (cycles / image)</span><span id="freqVal" class="pill">3.0</span></label>
+    <div class="row">
+      <input id="freq" type="range" min="0.1" max="12" step="0.1" value="3" />
+      <input id="freqNum" type="number" min="0.1" max="12" step="0.1" value="3" />
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label class="kv"><span>Octaves</span><span id="octVal" class="pill">3</span></label>
+        <div class="row">
+          <input id="oct" type="range" min="1" max="8" step="1" value="3" />
+          <input id="octNum" type="number" min="1" max="8" step="1" value="3" />
+        </div>
+      </div>
+      <div>
+        <label class="kv"><span>Lacunarity</span><span id="lacVal" class="pill">2.0</span></label>
+        <div class="row">
+          <input id="lac" type="range" min="1.5" max="3.5" step="0.1" value="2.0" />
+          <input id="lacNum" type="number" min="1.5" max="3.5" step="0.1" value="2.0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label class="kv"><span>Gain</span><span id="gainVal" class="pill">0.5</span></label>
+        <div class="row">
+          <input id="gain" type="range" min="0.1" max="1.0" step="0.05" value="0.5" />
+          <input id="gainNum" type="number" min="0.1" max="1.0" step="0.05" value="0.5" />
+        </div>
+      </div>
+      <div>
+        <label>Preserve edges (soft clamp)</label>
+        <select id="preserve">
+          <option value="none" selected>None</option>
+          <option value="mild">Mild</option>
+          <option value="strong">Strong</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="rowbtns" style="margin-top:10px">
+      <button id="warpBtn" class="btn">Warp</button>
+      <button id="resetBtn" class="btn warn">Reset</button>
+      <button id="downloadBtn" class="btn good">Download PNG</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="meter"><i id="meterFill"></i></div>
+      <div class="small muted" id="status">Waiting for image…</div>
+    </div>
+
+    <div class="small" style="margin-top:8px">
+      Tip: <span class="pill">Fast</span> computes a lower-res vector field and bilinearly upsamples (great for 4k–8k). 
+      <span class="pill">High</span> samples noise per pixel (prettier micro-detail, slower).
+    </div>
+  </div>
+
+  <div class="panel">
+    <canvas id="canvas" width="1024" height="1024"></canvas>
+  </div>
+
+<script>
+/* ----------------------- Seeded RNG & Simplex 2D ----------------------- */
+function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function makeGradTable(rng){
+  const g=[]; for(let i=0;i<256;i++){
+    const a=rng()*Math.PI*2; g[i]=[Math.cos(a),Math.sin(a)];
+  } return g;
+}
+function makePerm(rng){
+  const p=new Uint8Array(256); for(let i=0;i<256;i++) p[i]=i;
+  for(let i=255;i>0;i--){const j=(rng()* (i+1))|0; [p[i],p[j]]=[p[j],p[i]]}
+  const perm=new Uint8Array(512); for(let i=0;i<512;i++) perm[i]=p[i&255]; return perm;
+}
+function Simplex2D(seed=1337){
+  const rng = mulberry32(seed>>>0);
+  const perm = makePerm(rng);
+  const grad = makeGradTable(rng);
+  const F2 = 0.5*(Math.sqrt(3)-1), G2=(3-Math.sqrt(3))/6;
+  function dot(g, x, y){return g[0]*x+g[1]*y}
+  function noise(xin, yin){
+    let n0,n1,n2;
+    const s=(xin+yin)*F2;
+    const i=Math.floor(xin+s), j=Math.floor(yin+s);
+    const t=(i+j)*G2;
+    const X0=i-t, Y0=j-t;
+    const x0=xin - X0, y0=yin - Y0;
+    let i1, j1; if(x0>y0){i1=1; j1=0;} else {i1=0; j1=1;}
+    const x1=x0 - i1 + G2, y1=y0 - j1 + G2;
+    const x2=x0 - 1 + 2*G2, y2=y0 - 1 + 2*G2;
+    const ii=i & 255, jj=j & 255;
+    const gi0 = grad[perm[ii+perm[jj]]];
+    const gi1 = grad[perm[ii+i1+perm[jj+j1]]];
+    const gi2 = grad[perm[ii+1+perm[jj+1]]];
+    let t0=0.5 - x0*x0 - y0*y0;
+    if(t0<0) n0=0; else {t0*=t0; n0=t0*t0*dot(gi0,x0,y0);}
+    let t1=0.5 - x1*x1 - y1*y1;
+    if(t1<0) n1=0; else {t1*=t1; n1=t1*t1*dot(gi1,x1,y1);}
+    let t2=0.5 - x2*x2 - y2*y2;
+    if(t2<0) n2=0; else {t2*=t2; n2=t2*t2*dot(gi2,x2,y2);}
+    // ~[-1,1]
+    return 70*(n0+n1+n2);
+  }
+  return noise;
+}
+function fbm2(noise, x, y, oct=3, lac=2.0, gain=0.5){
+  let amp=1, freq=1, sum=0, norm=0;
+  for(let i=0;i<oct;i++){
+    sum += amp*noise(x*freq, y*freq);
+    norm += amp; amp*=gain; freq*=lac;
+  }
+  return sum / (norm||1);
+}
+
+/* ---------------------------- UI Elements ------------------------------ */
+const el = s => document.getElementById(s);
+const file = el('file');
+const canvas = el('canvas');
+const ctx = canvas.getContext('2d', {willReadFrequently:true});
+const warpBtn = el('warpBtn');
+const resetBtn = el('resetBtn');
+const downloadBtn = el('downloadBtn');
+const statusEl = el('status');
+const meter = el('meterFill');
+
+const seed = el('seed'), seedNum = el('seedNum'), seedVal = el('seedVal');
+const strength = el('strength'), strengthNum = el('strengthNum'), strengthVal = el('strengthVal');
+const freq = el('freq'), freqNum = el('freqNum'), freqVal = el('freqVal');
+const oct = el('oct'), octNum = el('octNum'), octVal = el('octVal');
+const lac = el('lac'), lacNum = el('lacNum'), lacVal = el('lacVal');
+const gain = el('gain'), gainNum = el('gainNum'), gainVal = el('gainVal');
+const quality = el('quality');
+const preserve = el('preserve');
+
+;[['seed',seed,seedNum,seedVal],['strength',strength,strengthNum,strengthVal],
+  ['freq',freq,freqNum,freqVal],['oct',oct,octNum,octVal],
+  ['lac',lac,lacNum,lacVal],['gain',gain,gainNum,gainVal]
+].forEach(([name, rng, num, pill])=>{
+  const sync = () => { num.value = rng.value; pill.textContent = rng.value; };
+  const syncBack = () => { rng.value = num.value; pill.textContent = num.value; };
+  rng.addEventListener('input', sync);
+  num.addEventListener('input', syncBack);
+  sync();
+});
+
+/* ----------------------------- Image I/O -------------------------------- */
+let originalImageData = null; // Uint8ClampedArray RGBA
+let w=0, h=0;
+
+file.addEventListener('change', async () => {
+  if(!file.files?.[0]) return;
+  const img = new Image();
+  img.onload = () => {
+    w = img.naturalWidth; h = img.naturalHeight;
+    canvas.width = w; canvas.height = h;
+    ctx.drawImage(img, 0, 0, w, h);
+    const data = ctx.getImageData(0,0,w,h);
+    originalImageData = data;
+    status(`Loaded ${w}×${h} image. Ready to warp.`);
+  };
+  img.onerror = () => status('Failed to load image.', true);
+  img.src = URL.createObjectURL(file.files[0]);
+});
+
+resetBtn.addEventListener('click', () => {
+  if(!originalImageData){status('No image loaded.', true); return;}
+  ctx.putImageData(originalImageData, 0, 0);
+  status('Reset to original.');
+});
+
+downloadBtn.addEventListener('click', () => {
+  if(!w||!h){status('No image to download.', true); return;}
+  const a=document.createElement('a');
+  a.download = 'heightmap_domain_warp.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  status('Downloaded PNG.');
+});
+
+/* ------------------------------ Warping --------------------------------- */
+warpBtn.addEventListener('click', async () => {
+  if(!originalImageData){status('Please upload a heightmap first.', true); return;}
+  const s = +strength.value;
+  const f = +freq.value;
+  const o = +oct.value|0;
+  const L = +lac.value;
+  const G = +gain.value;
+  const q = quality.value; // 'fast' | 'high'
+  const p = preserve.value; // 'none' | 'mild' | 'strong'
+  const sd = (+seed.value)|0;
+
+  // Build noise fields
+  const baseNoise = Simplex2D(sd);
+  const nX = (x,y)=> fbm2(baseNoise, x, y, o, L, G);
+  const nY = (x,y)=> fbm2(baseNoise, x+123.4567, y+765.4321, o, L, G);
+
+  // Pre-grab gray channel & build sampler
+  const src = originalImageData.data;
+  const srcGray = new Float32Array(w*h);
+  for(let i=0, j=0;i<src.length;i+=4, j++){
+    // assume grayscale or treat luminance
+    const r=src[i], g=src[i+1], b=src[i+2];
+    srcGray[j] = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
+  }
+
+  // Optional: preserve edges by softly compressing warp near high-gradient zones
+  // Build a quick gradient magnitude map (Sobel-lite)
+  let atten = null;
+  if(p!=='none'){
+    atten = new Float32Array(w*h);
+    const k = p==='mild' ? 0.5 : 0.8;
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const i = y*w + x;
+        const gx = (srcGray[i+1]-srcGray[i-1]) + (srcGray[i+1+w]-srcGray[i-1+w]) + (srcGray[i+1-w]-srcGray[i-1-w]);
+        const gy = (srcGray[i+w]-srcGray[i-w]) + (srcGray[i+1+w]-srcGray[i+1-w]) + (srcGray[i-1+w]-srcGray[i-1-w]);
+        const gmag = Math.min(1, Math.sqrt(gx*gx+gy*gy)*1.5);
+        atten[i] = 1 - k*gmag; // lower warp where edges are strong
+      }
+    }
+  }
+
+  // Build vector field (Fast: low-res grid → upscale; High: per-pixel)
+  status('Warping…');
+  meter.style.width = '5%';
+  const out = ctx.createImageData(w,h);
+  const outData = out.data;
+
+  const cyclesX = f;          // noise cycles across image width
+  const cyclesY = f * (h/w);  // keep aspect ratio
+  const scaleX = cyclesX / w;
+  const scaleY = cyclesY / h;
+
+  let vx=null, vy=null, grid=0;
+  if(q==='fast'){
+    // Vector field at grid resolution then bilinear upsample
+    const step = Math.max(4, Math.floor(Math.min(w,h)/256)); // adaptive grid spacing
+    const gw = Math.floor(w/step)+2, gh = Math.floor(h/step)+2;
+    grid = step;
+    vx = new Float32Array(gw*gh);
+    vy = new Float32Array(gw*gh);
+    let c=0;
+    for(let gyI=0; gyI<gh; gyI++){
+      for(let gxI=0; gxI<gw; gxI++){
+        const x = gxI*step, y = gyI*step;
+        const nx = nX(x*scaleX, y*scaleY);
+        const ny = nY(x*scaleX, y*scaleY);
+        vx[c] = nx; vy[c] = ny; c++;
+      }
+      meter.style.width = (5 + 25*gyI/gh).toFixed(1)+'%';
+    }
+  }
+
+  // Bilinear sampler for source gray
+  function sampleGray(x, y){
+    // clamp
+    x = x<0?0:(x>w-1?w-1:x);
+    y = y<0?0:(y>h-1?h-1:y);
+    const x0 = x|0, y0 = y|0;
+    const x1 = Math.min(w-1, x0+1);
+    const y1 = Math.min(h-1, y0+1);
+    const tx = x - x0, ty = y - y0;
+    const i00 = y0*w + x0, i10 = y0*w + x1, i01 = y1*w + x0, i11 = y1*w + x1;
+    const a = srcGray[i00]*(1-tx)+srcGray[i10]*tx;
+    const b = srcGray[i01]*(1-tx)+srcGray[i11]*tx;
+    return a*(1-ty)+b*ty;
+  }
+
+  // Main pass
+  const CHUNK = Math.max(8192, (w*h/24)|0); // progress chunks
+  let processed = 0;
+  const S = s; // strength in pixels
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let nx, ny;
+      if(q==='high'){
+        nx = nX(x*scaleX, y*scaleY);
+        ny = nY(x*scaleX, y*scaleY);
+      }else{
+        // upsample vector field
+        const gx = x / grid, gy = y / grid;
+        const gx0 = Math.floor(gx), gy0 = Math.floor(gy);
+        const gx1 = Math.min(gx0+1, (Math.floor(w/grid)+1));
+        const gy1 = Math.min(gy0+1, (Math.floor(h/grid)+1));
+        const tx = gx - gx0, ty = gy - gy0;
+        const i00 = gy0*(Math.floor(w/grid)+2)+gx0;
+        const i10 = gy0*(Math.floor(w/grid)+2)+gx1;
+        const i01 = gy1*(Math.floor(w/grid)+2)+gx0;
+        const i11 = gy1*(Math.floor(w/grid)+2)+gx1;
+        const vx0 = vx[i00]*(1-tx)+vx[i10]*tx;
+        const vx1 = vx[i01]*(1-tx)+vx[i11]*tx;
+        const vy0 = vy[i00]*(1-tx)+vy[i10]*tx;
+        const vy1 = vy[i01]*(1-tx)+vy[i11]*tx;
+        nx = vx0*(1-ty)+vx1*ty;
+        ny = vy0*(1-ty)+vy1*ty;
+      }
+
+      // Optional attenuation near edges
+      let att = 1;
+      if(atten){ att = atten[y*w + x]; }
+
+      const dx = nx * S * att;
+      const dy = ny * S * att;
+
+      const srcX = x + dx;
+      const srcY = y + dy;
+
+      const g = sampleGray(srcX, srcY);
+      const G = Math.max(0, Math.min(255, Math.round(g*255)));
+      const o = (y*w + x)*4;
+      outData[o] = outData[o+1] = outData[o+2] = G;
+      outData[o+3] = 255;
+
+      processed++;
+      if((processed % CHUNK)===0){
+        const pct = 30 + 70*(processed/(w*h));
+        meter.style.width = pct.toFixed(1)+'%';
+      }
+    }
+  }
+
+  ctx.putImageData(out, 0, 0);
+  meter.style.width = '100%';
+  status('Warp complete.');
+});
+
+/* ------------------------------ Helpers --------------------------------- */
+function status(msg, isWarn=false){
+  statusEl.textContent = msg;
+  statusEl.style.color = isWarn ? getComputedStyle(document.documentElement).getPropertyValue('--warn') : 'var(--muted)';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Erosion (Range & Texture)</title>
+    <style>
+        :root{
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --border:#c4b496;
+  --shadow:0 4px 20px rgba(0,0,0,.15);
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-mono:"Courier New",Courier,monospace;
+
+  /* keep your "accent green" concept for value readouts if you want */
+  --ok:#2f8f4e;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#2a241e;              /* dark wood surround */
+  color:var(--ink);
+  font-family:var(--font-serif);
+  display:flex;
+  height:100vh;
+  width:100vw;
+  overflow:hidden;
+}
+
+/* Sidebar (parchment panel like continent maker) */
+#sidebar{
+  width:340px;
+  background:var(--parchment-bg);
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  overflow-y:auto;
+  border-right:2px solid var(--ink);
+  flex-shrink:0;
+  z-index:100;
+  box-shadow:5px 0 15px rgba(0,0,0,.30);
+  background-image:radial-gradient(circle at 50% 50%, rgba(255,255,255,.20) 0%, transparent 100%);
+}
+
+/* Main View (dark stage) */
+#viewport{
+  flex:1;
+  background:#1a1612;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  overflow:auto;
+}
+
+/* Canvas presentation like the continent maker */
+canvas{
+  image-rendering:pixelated;
+  box-shadow:0 0 50px rgba(0,0,0,.5);
+  border:0;
+  background:#fff;
+  max-width:none; /* allow scrolling for huge canvases */
+}
+
+/* Controls groups -> parchment cards */
+.group{
+  background:var(--parchment-dark);
+  padding:12px;
+  border:1px solid var(--ink-muted);
+  border-radius:2px;
+  box-shadow:2px 2px 5px rgba(0,0,0,.06);
+}
+
+/* Section headers -> continent maker style label */
+h3{
+  margin:0 0 10px 0;
+  font-size:.85rem;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+  border-bottom:1px solid var(--border);
+  padding-bottom:6px;
+}
+
+/* Labels + value readouts */
+label{
+  font-size:.8rem;
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:4px;
+  color:var(--ink);
+}
+
+.val{
+  color:var(--accent);
+  font-family:var(--font-mono);
+  font-weight:700;
+}
+
+/* Sliders */
+input[type="range"]{
+  width:100%;
+  accent-color:var(--accent);
+  margin-bottom:8px;
+}
+
+/* Dual Slider container */
+.dual-range{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.dual-range input{ flex:1; }
+
+/* Buttons -> continent maker buttons */
+button{
+  background:var(--parchment-dark);
+  color:var(--ink);
+  border:1px solid var(--ink);
+  padding:12px;
+  border-radius:2px;
+  cursor:pointer;
+  font-weight:700;
+  text-transform:uppercase;
+  font-size:.8rem;
+  letter-spacing:.6px;
+  box-shadow:2px 2px 0 var(--ink);
+  transition:background .1s, transform .1s, box-shadow .1s;
+}
+
+button:hover{ background:#dfcfaf; }
+button:active{
+  transform:translate(1px,1px);
+  box-shadow:1px 1px 0 var(--ink);
+}
+
+/* Secondary button style (still parchment, just muted) */
+button.secondary{
+  background:rgba(255,255,255,.35);
+  color:var(--ink);
+  border:1px solid var(--ink-muted);
+  box-shadow:2px 2px 0 rgba(60,47,33,.6);
+}
+
+/* Small info text */
+.info{
+  font-size:.72rem;
+  color:var(--ink-muted);
+  margin-top:-5px;
+  margin-bottom:5px;
+  line-height:1.3;
+  font-style:italic;
+}
+
+/* Loader pill — keep same behavior, parchment-compatible */
+#loader{
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(42,36,30,.92);
+  color:#fff;
+  padding:10px 20px;
+  border-radius:20px;
+  font-size:.9rem;
+  display:none;
+  pointer-events:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="group">
+        <h3>1. Input</h3>
+        <input type="file" id="file-input" accept="image/*" style="width:100%; font-size:0.8rem;">
+        <div style="margin-top:10px;">
+            <label>Surface Noise <span id="noise-disp" class="val">0.00</span></label>
+            <input type="range" id="noise-param" min="0" max="0.05" step="0.001" value="0.00">
+            <div class="info">Vital for flat maps. Adds roughness so rivers can form in the center.</div>
+            <button class="secondary" onclick="applyNoise()" style="padding:6px; font-size:0.7rem; width:100%;">Re-Apply Noise</button>
+        </div>
+    </div>
+
+    <div class="group">
+        <h3>2. Erosion Settings</h3>
+        <label>Erosion Power <span id="ke-disp" class="val">1.0</span></label>
+        <input type="range" id="ke-param" min="0.1" max="3.0" step="0.1" value="1.0">
+
+        <label>Rainfall / Flux <span id="rain-disp" class="val">1.0</span></label>
+        <input type="range" id="rain-param" min="0.5" max="3.0" step="0.1" value="1.0">
+        
+        <label>Constraint (Uplift) <span id="const-disp" class="val">0.05</span></label>
+        <input type="range" id="const-param" min="0.0" max="0.2" step="0.001" value="0.05">
+    </div>
+
+    <div class="group">
+        <h3>3. Active Range (0-255)</h3>
+        <div class="info">Erosion only happens between these heights.</div>
+        
+        <label>Min Height <span id="hmin-disp" class="val">19</span></label>
+        <input type="range" id="hmin-param" min="0" max="255" step="1" value="19">
+
+        <label>Max Height <span id="hmax-disp" class="val">255</span></label>
+        <input type="range" id="hmax-param" min="0" max="255" step="1" value="255">
+    </div>
+
+    <div class="group">
+        <h3>4. Rendering</h3>
+        <label>
+            <span>Show Rivers</span>
+            <input type="checkbox" id="show-water" checked onchange="render()">
+        </label>
+        <label>
+            <span>Show Mask (Red)</span>
+            <input type="checkbox" id="show-mask" onchange="render()">
+        </label>
+        <div class="info">Red overlay shows where erosion is active (based on Range).</div>
+    </div>
+
+    <button id="btn-toggle" onclick="toggleSim()">Start Erosion</button>
+    <button class="secondary" onclick="resetMap()" style="margin-top:10px;">Reset Map</button>
+    
+    <div style="margin-top:auto; color:#555; font-size:0.7rem; font-family:monospace;" id="stats">
+        Ready
+    </div>
+</div>
+
+<div id="viewport">
+    <div id="loader">Processing...</div>
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+// === Core System ===
+const STATE = {
+    w: 0, h: 0,
+    running: false,
+    iterations: 0,
+    oceanLevel: 10 // Hard floor for input data
+};
+
+// Buffers (Float32 for precision)
+let heightMap, constraintMap, fluxMap, maskMap, originalMap;
+let slopes, downstream, inDegree; // Graph structures
+
+// UI Binding
+const ui = {
+    ke: document.getElementById('ke-param'),
+    rain: document.getElementById('rain-param'),
+    uplift: document.getElementById('const-param'),
+    noise: document.getElementById('noise-param'),
+    hmin: document.getElementById('hmin-param'),
+    hmax: document.getElementById('hmax-param'),
+    canvas: document.getElementById('canvas'),
+    ctx: document.getElementById('canvas').getContext('2d'),
+    stats: document.getElementById('stats'),
+    loader: document.getElementById('loader'),
+    btn: document.getElementById('btn-toggle')
+};
+
+// Helper: Link range inputs to text displays
+['ke', 'rain', 'uplift', 'noise', 'hmin', 'hmax'].forEach(k => {
+    const disp = document.getElementById(k+'-disp');
+    ui[k].oninput = () => {
+        disp.innerText = ui[k].value;
+        if(k === 'hmin' || k === 'hmax') render(); // Re-render mask if range changes
+    };
+});
+
+// === Initialization ===
+
+document.getElementById('file-input').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if(!f) return;
+    
+    ui.loader.style.display = 'block';
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => { loadMap(img); ui.loader.style.display = 'none'; };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(f);
+});
+
+function loadMap(img) {
+    STATE.w = img.width;
+    STATE.h = img.height;
+    STATE.iterations = 0;
+    STATE.running = false;
+    updateBtn();
+
+    ui.canvas.width = STATE.w;
+    ui.canvas.height = STATE.h;
+
+    const size = STATE.w * STATE.h;
+    heightMap = new Float32Array(size);
+    constraintMap = new Float32Array(size);
+    originalMap = new Float32Array(size); // Keep clean copy for resets
+    fluxMap = new Float32Array(size);
+    maskMap = new Uint8Array(size); // 1 = Land, 0 = Ocean
+    
+    // Graph Arrays (Allocate once)
+    slopes = new Float32Array(size);
+    downstream = new Int32Array(size);
+    inDegree = new Int32Array(size);
+
+    // Draw to temp canvas to read pixels
+    const tCan = document.createElement('canvas');
+    tCan.width = STATE.w;
+    tCan.height = STATE.h;
+    const tCtx = tCan.getContext('2d');
+    tCtx.drawImage(img, 0, 0);
+    const data = tCtx.getImageData(0, 0, STATE.w, STATE.h).data;
+
+    for(let i=0; i<size; i++) {
+        const val = data[i*4];
+        
+        // Check against ocean floor
+        if (val < STATE.oceanLevel) {
+            maskMap[i] = 0; // Ocean
+            originalMap[i] = 0;
+        } else {
+            maskMap[i] = 1; // Land
+            originalMap[i] = val / 255.0;
+        }
+    }
+
+    // Set initial state
+    heightMap.set(originalMap);
+    constraintMap.set(originalMap);
+
+    // Apply initial slight noise if requested (or default small amount to help flat maps)
+    // Just a tiny bit to break perfect flatness
+    if (parseFloat(ui.noise.value) === 0) {
+        ui.noise.value = "0.005"; // Auto-suggest a tiny bit
+        document.getElementById('noise-disp').innerText = "0.005";
+    }
+    applyNoise();
+
+    render();
+    ui.stats.innerText = `Map: ${STATE.w}x${STATE.h} | Loaded`;
+}
+
+function applyNoise() {
+    if(!heightMap) return;
+    const strength = parseFloat(ui.noise.value);
+    
+    // Reset to clean state first so noise doesn't stack infinitely on button clicks
+    heightMap.set(originalMap); 
+    constraintMap.set(originalMap);
+
+    if (strength > 0) {
+        for(let i=0; i<heightMap.length; i++) {
+            if(maskMap[i]) {
+                const n = (Math.random() * 2.0 - 1.0) * strength;
+                heightMap[i] += n;
+                // Also noisy up the constraint, otherwise Uplift will undo our rivers instantly
+                constraintMap[i] += n; 
+            }
+        }
+    }
+    render();
+}
+
+function resetMap() {
+    if(!originalMap) return;
+    STATE.iterations = 0;
+    applyNoise(); // Resets to original + current noise setting
+    render();
+    ui.stats.innerText = `Reset Complete`;
+}
+
+// === Simulation Step ===
+
+function step() {
+    if(!heightMap) return;
+    const size = STATE.w * STATE.h;
+    const w = STATE.w;
+    
+    // Parameters
+    const Ke = parseFloat(ui.ke.value) * 0.05; // Scale down for stability
+    const rain = parseFloat(ui.rain.value);
+    const K_uplift = parseFloat(ui.uplift.value);
+    
+    // Range Limits (normalized 0.0 - 1.0)
+    const minH = parseInt(ui.hmin.value) / 255.0;
+    const maxH = parseInt(ui.hmax.value) / 255.0;
+
+    // 1. Build Graph (8-Way) & Calculate Slopes
+    const SQRT2 = 1.414;
+    inDegree.fill(0);
+    
+    for(let i=0; i<size; i++) {
+        if(!maskMap[i]) {
+            downstream[i] = -1;
+            continue;
+        }
+
+        let maxSlope = 0;
+        let bestN = -1;
+        const h = heightMap[i];
+        const r = (i/w)|0; // fast floor
+        const c = i%w;
+        
+        // 8 Neighbors
+        // N, S, W, E, NW, NE, SW, SE
+        const offsets = [-w, w, -1, 1, -w-1, -w+1, w-1, w+1];
+        const dists = [1, 1, 1, 1, SQRT2, SQRT2, SQRT2, SQRT2];
+        
+        for(let k=0; k<8; k++) {
+            const nIdx = i + offsets[k];
+            
+            // Bounds Check (Lazy/Fast)
+            if (nIdx < 0 || nIdx >= size) continue;
+            // Wrap check for L/R edges
+            const nc = nIdx%w;
+            if (Math.abs(c - nc) > 1) continue; 
+
+            const diff = h - heightMap[nIdx];
+            if (diff > 0) {
+                const slope = diff / dists[k];
+                if (slope > maxSlope) {
+                    maxSlope = slope;
+                    bestN = nIdx;
+                }
+            }
+        }
+        
+        downstream[i] = bestN;
+        slopes[i] = maxSlope;
+        if (bestN !== -1) inDegree[bestN]++;
+    }
+
+    // 2. Accumulate Flux
+    const stack = [];
+    for(let i=0; i<size; i++) {
+        fluxMap[i] = rain;
+        // Start BFS from peaks (inDegree 0)
+        if(inDegree[i] === 0 && maskMap[i]) stack.push(i);
+    }
+    
+    // Process Queue
+    let ptr = 0;
+    while(ptr < stack.length) {
+        const u = stack[ptr++];
+        const target = downstream[u];
+        
+        if (target !== -1 && maskMap[target]) {
+            fluxMap[target] += fluxMap[u];
+            inDegree[target]--;
+            if (inDegree[target] === 0) stack.push(target);
+        }
+    }
+
+    // 3. Apply Erosion (With Range Check)
+    for(let i=0; i<size; i++) {
+        if(!maskMap[i]) continue;
+
+        // RANGE CHECK: Only erode if within User's Min/Max
+        const currentH = heightMap[i];
+        if (currentH < minH || currentH > maxH) {
+            // We skip erosion, but we still apply Uplift to keep it stable
+            // Or maybe we skip everything? Let's skip erosion only.
+        } else {
+            // Apply Erosion
+            const target = downstream[i];
+            if (target !== -1) {
+                // Stream Power Law: Flux * Slope
+                let erosion = Ke * fluxMap[i] * slopes[i];
+                
+                // Cap erosion to avoid spikes (max 50% of diff)
+                const diff = currentH - heightMap[target];
+                if (erosion > diff * 0.5) erosion = diff * 0.5;
+                
+                heightMap[i] -= erosion;
+            }
+        }
+
+        // Apply Uplift / Constraint (Restores shape)
+        // We apply this everywhere to prevent "melting", or maybe restrict it too?
+        // Usually better to apply everywhere for consistency.
+        if (K_uplift > 0) {
+            heightMap[i] += (constraintMap[i] - heightMap[i]) * K_uplift;
+        }
+    }
+    
+    // 4. Simple Thermal Weathering (Smooths Noise)
+    // Quick neighbor average
+    const tempH = new Float32Array(heightMap); // Copy
+    const blend = 0.05; // Fixed small smoothing
+    
+    // Random Sampling or Full Pass? Full pass for quality.
+    // Optimized: just blend with 4 neighbors
+    for(let i=0; i<size; i++) {
+        if(!maskMap[i]) continue;
+        const r = (i/w)|0; 
+        if (r>0 && r<STATE.h-1) { // Skip very edges for speed
+             const avg = (tempH[i-1] + tempH[i+1] + tempH[i-w] + tempH[i+w]) * 0.25;
+             heightMap[i] = heightMap[i]*(1-blend) + avg*blend;
+        }
+    }
+
+    STATE.iterations++;
+    ui.stats.innerText = `Iterations: ${STATE.iterations}`;
+}
+
+// === Loop & Render ===
+
+function toggleSim() {
+    if(!heightMap) return alert("Please upload a map first.");
+    STATE.running = !STATE.running;
+    updateBtn();
+    if(STATE.running) loop();
+}
+
+function updateBtn() {
+    ui.btn.innerText = STATE.running ? "STOP EROSION" : "START EROSION";
+    ui.btn.className = STATE.running ? "secondary" : "";
+}
+
+function loop() {
+    if(!STATE.running) return;
+    step();
+    render();
+    requestAnimationFrame(loop);
+}
+
+function render() {
+    if(!heightMap) return;
+    
+    const w = STATE.w;
+    const h = STATE.h;
+    const imgData = ui.ctx.createImageData(w, h);
+    const d = imgData.data;
+    
+    const showWater = document.getElementById('show-water').checked;
+    const showMask = document.getElementById('show-mask').checked;
+    
+    const minH = parseInt(ui.hmin.value) / 255.0;
+    const maxH = parseInt(ui.hmax.value) / 255.0;
+
+    for(let i=0; i<heightMap.length; i++) {
+        // Ocean
+        if(!maskMap[i]) {
+            d[i*4] = 0; d[i*4+1] = 0; d[i*4+2] = 0; d[i*4+3] = 255;
+            continue;
+        }
+
+        let val = heightMap[i];
+        // Clamp
+        if(val<0) val=0; if(val>1) val=1;
+        
+        let r = val * 255;
+        let g = val * 255;
+        let b = val * 255;
+
+        // Visualization: Active Range Mask
+        if (showMask) {
+            if (val >= minH && val <= maxH) {
+                // Tint Red for "Active Erosion Zone"
+                r += 40; 
+                g -= 20; 
+                b -= 20;
+            } else {
+                // Tint Blue/Grey for "Protected Zone"
+                b += 40;
+            }
+        }
+
+        // Visualization: Rivers
+        if (showWater) {
+            const flux = fluxMap[i];
+            if (flux > 50) { // Threshold
+                const alpha = Math.min(0.8, Math.log(flux) / 10);
+                // Cyan river
+                r = r*(1-alpha);
+                g = g*(1-alpha) + 255*alpha;
+                b = b*(1-alpha) + 255*alpha;
+            }
+        }
+
+        d[i*4] = r;
+        d[i*4+1] = g;
+        d[i*4+2] = b;
+        d[i*4+3] = 255;
+    }
+    
+    ui.ctx.putImageData(imgData, 0, 0);
+}
+</script>
+</body>
+</html>

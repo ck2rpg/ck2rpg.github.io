@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tectonic Map Drafter</title>
+
+  <style>
+    :root {
+      --parchment-bg: #f4e9d5;
+      --parchment-dark: #e8dbc3;
+      --ink: #3c2f21;
+      --ink-muted: #6b5a46;
+      --accent: #a65d37;
+      --border: #c4b496;
+      --shadow: 0 4px 20px rgba(0,0,0,0.15);
+      --font-serif: "Georgia", "Times New Roman", serif;
+      --font-mono: "Courier New", Courier, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #2a241e;
+      color: var(--ink);
+      font-family: var(--font-serif);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 340px;
+      background: var(--parchment-bg);
+      border-right: 2px solid var(--ink);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+      background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 100%);
+    }
+
+    #stage {
+      flex-grow: 1;
+      position: relative;
+      background: #1a1612;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #heightmap-canvas {
+      height: 100vh;
+      width: auto;
+      max-width: 100%;
+      image-rendering: pixelated;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      background: white;
+    }
+
+    header {
+      padding: 30px 20px;
+      border-bottom: 1px double var(--ink);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--ink);
+      display: inline-block;
+      padding-bottom: 5px;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    section { margin-bottom: 30px; }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    label { font-size: 0.85rem; color: var(--ink); display: block; margin-bottom: 5px; }
+
+    .field {
+      background: rgba(255,255,255,0.4);
+      border: 1px solid var(--ink-muted);
+      border-radius: 2px;
+      color: var(--ink);
+      padding: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .field:focus { outline: 2px solid var(--accent); background: white; }
+
+    .btn-group { display: flex; flex-direction: column; gap: 10px; }
+
+    .btn {
+      background: var(--parchment-dark);
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      padding: 12px;
+      font-family: var(--font-serif);
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--ink);
+      transition: all 0.1s;
+    }
+
+    .btn:hover { background: #dfcfaf; }
+    .btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--ink); }
+
+    .btn.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .plugin-item {
+      background: var(--parchment-dark);
+      border: 1px solid var(--ink-muted);
+      margin-bottom: 10px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .plugin-head {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: rgba(0,0,0,0.03);
+      gap: 10px;
+    }
+
+    .plugin-title { font-size: 0.9rem; font-weight: bold; }
+
+    .plugin-body {
+      padding: 15px 10px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .plugin-item[data-open="1"] .plugin-body { display: block; }
+
+    input[type=number].field { padding-right: 2px; }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+
+    .hint { font-size: 0.75rem; color: var(--ink-muted); font-style: italic; margin-top: 15px; }
+    .mini { font-size: 0.75rem; color: var(--ink-muted); margin-top: 6px; line-height: 1.25; }
+  </style>
+</head>
+
+<body>
+  <aside id="sidebar">
+    <header>
+      <h1>Map Drafter</h1>
+      <div style="font-size: 0.7rem; color: var(--ink-muted); margin-top:5px;">TECTONIC PLATE ENGINE</div>
+    </header>
+
+    <div class="scroll-area">
+      <section>
+        <div class="section-label">Dimensions</div>
+        <div class="field-row">
+          <div>
+            <label>Width</label>
+            <input type="number" id="canvas-width" value="2048" class="field" />
+          </div>
+          <div>
+            <label>Height</label>
+            <input type="number" id="canvas-height" value="1024" class="field" />
+          </div>
+        </div>
+        <div class="btn-group">
+          <button id="generate-btn" class="btn primary">Draft New Map</button>
+          <button id="download-btn" class="btn">Save Parchment</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">Pipeline Nodes</div>
+        <div id="plugin-pipeline-container"></div>
+      </section>
+
+      <div class="hint">
+        This base layer still outputs strictly <b>0 / 19</b>. It just makes the outline look like real continents:
+        multi-craton continents, boundary-only breakup, probabilistic rifts, and pre-sample domain warp.
+      </div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <canvas id="heightmap-canvas"></canvas>
+  </main>
+
+<script>
+  window.HeightmapGenerator = {
+    plugins: [],
+    register: function (name, processFunction, optionsUIFunction, isBaseLayer = false) {
+      this.plugins.push({
+        name: name,
+        process: processFunction,
+        createOptionsUI: optionsUIFunction,
+        isBaseLayer: isBaseLayer
+      });
+    },
+    getPlugins: function () { return this.plugins; }
+  };
+</script>
+
+<script>
+/* ========= Shared utils ========= */
+(function(){
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function smoothstep(a,b,x){
+    const t = clamp((x-a)/(b-a),0,1);
+    return t*t*(3-2*t);
+  }
+  function LCG(seed){ let s=(seed>>>0)||123456789; return ()=> (s=(1664525*s+1013904223)>>>0)/4294967296; }
+
+  function makePerm(seed){
+    const rnd = LCG(seed);
+    const p = new Uint16Array(512), base = new Uint16Array(256);
+    for(let i=0;i<256;i++) base[i]=i;
+    for(let i=255;i>0;i--){
+      const j=(rnd()*(i+1))|0; const t=base[i]; base[i]=base[j]; base[j]=t;
+    }
+    for(let i=0;i<512;i++) p[i]=base[i&255];
+    return p;
+  }
+  function fade(t){ return t*t*t*(t*(t*6-15)+10); }
+  const grad2 = [[1,1],[-1,1],[1,-1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+  function dot2(gx,gy,x,y){ return gx*x + gy*y; }
+  function perlin2(x,y,perm){
+    const X = Math.floor(x)&255, Y=Math.floor(y)&255;
+    const xf=x-Math.floor(x), yf=y-Math.floor(y);
+    const u=fade(xf), v=fade(yf);
+    const aa=perm[X+perm[Y]]&7, ab=perm[X+perm[Y+1]]&7, ba=perm[X+1+perm[Y]]&7, bb=perm[X+1+perm[Y+1]]&7;
+    const x1 = lerp(dot2(grad2[aa][0],grad2[aa][1],xf,yf),   dot2(grad2[ba][0],grad2[ba][1],xf-1,yf), u);
+    const x2 = lerp(dot2(grad2[ab][0],grad2[ab][1],xf,yf-1), dot2(grad2[bb][0],grad2[bb][1],xf-1,yf-1), u);
+    return lerp(x1,x2,v); // roughly [-1..1]
+  }
+  function fbm2(x,y,perm,oct,lac,gain){
+    let amp=1,f=1,sum=0,norm=0;
+    for(let o=0;o<oct;o++){ sum += amp*perlin2(x*f,y*f,perm); norm += amp; amp*=gain; f*=lac; }
+    return sum/(norm||1);
+  }
+
+  function sampleMinDistPoints(rnd, x0, y0, x1, y1, count, minDist, maxTriesPerPoint=5000){
+    const pts=[], minD2=minDist*minDist;
+    function ok(px,py){
+      for(let i=0;i<pts.length;i++){
+        const dx=px-pts[i].x, dy=py-pts[i].y;
+        if(dx*dx+dy*dy<minD2) return false;
+      }
+      return true;
+    }
+    for(let k=0;k<count;k++){
+      let placed=false;
+      for(let t=0;t<maxTriesPerPoint;t++){
+        const px=x0+rnd()*(x1-x0), py=y0+rnd()*(y1-y0);
+        if(ok(px,py)){ pts.push({x:px,y:py}); placed=true; break; }
+      }
+      if(!placed){
+        // relax slightly if too crowded
+        return sampleMinDistPoints(rnd,x0,y0,x1,y1,count,minDist*0.92,maxTriesPerPoint);
+      }
+    }
+    return pts;
+  }
+
+  window.__HMU = { clamp, lerp, smoothstep, LCG, makePerm, fbm2, sampleMinDistPoints };
+})();
+</script>
+
+<script>
+/* ============================================================================
+   Base Layer: Realistic Continents (Binary 0/19)
+   - Multi-craton continents (fixes blobs)
+   - Boundary-only noise breakup (bays/peninsulas without speckle)
+   - Probabilistic rifts (allows some land bridges)
+   - Pre-sample domain warp (better silhouette than warping after threshold)
+   Output is STRICTLY 0 or 19.
+============================================================================ */
+(function(){
+  const { clamp, lerp, smoothstep, LCG, makePerm, fbm2, sampleMinDistPoints } = window.__HMU;
+
+  function optionsUI(container){
+    container.innerHTML = `
+      <div class="field-row">
+        <div>
+          <label>Seed</label>
+          <input type="number" id="rc-seed" value="1337" class="field">
+        </div>
+        <div>
+          <label>Continents</label>
+          <input type="number" id="rc-num-continents" value="7" min="1" max="128" class="field">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label>Cratons / Continent</label>
+          <input type="number" id="rc-cratons" value="7" min="2" max="32" class="field">
+          <div class="mini">Higher = less blobby outlines</div>
+        </div>
+        <div>
+          <label>Ocean Plates</label>
+          <input type="number" id="rc-num-oceans" value="10" min="1" max="256" class="field">
+        </div>
+      </div>
+
+      <label>Spawn Margin (0.0 - 0.49)</label>
+      <input type="number" id="rc-margin" value="0.14" step="0.01" min="0" max="0.49" class="field">
+
+      <label>Continent Separation (fraction of min-dim)</label>
+      <input type="number" id="rc-continent-sep" value="0.20" step="0.01" min="0.01" max="0.95" class="field">
+
+      <label>Continent Spread (craton cluster radius frac)</label>
+      <input type="number" id="rc-spread" value="0.20" step="0.01" min="0.02" max="0.65" class="field">
+
+      <label>Ocean Bias (stronger oceans = fewer land bridges)</label>
+      <input type="number" id="rc-ocean-bias" value="1.05" step="0.05" min="0.5" max="3.0" class="field">
+
+      <div class="field-row">
+        <div>
+          <label>Rift Strength</label>
+          <input type="number" id="rc-rift" value="0.65" step="0.05" min="0" max="2.0" class="field">
+          <div class="mini">Higher = more straits</div>
+        </div>
+        <div>
+          <label>Land Bridge Chance</label>
+          <input type="number" id="rc-bridges" value="0.22" step="0.02" min="0" max="1.0" class="field">
+          <div class="mini">Higher = more chokepoints</div>
+        </div>
+      </div>
+
+      <label>Coastline Breakup (boundary-only)</label>
+      <input type="number" id="rc-coast" value="0.85" step="0.05" min="0" max="2.5" class="field">
+      <div class="mini">Adds bays/peninsulas without salt-noise</div>
+
+      <div class="field-row">
+        <div>
+          <label>Warp Power</label>
+          <input type="number" id="rc-warp" value="220" step="10" min="0" max="1800" class="field">
+          <div class="mini">Pre-sample domain warp</div>
+        </div>
+        <div>
+          <label>Warp Scale</label>
+          <input type="number" id="rc-warp-scale" value="4.0" step="0.25" min="0.5" max="12" class="field">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label>Edge Mode</label>
+          <select id="rc-edge-mode" class="field">
+            <option value="avoid" selected>Avoid edges</option>
+            <option value="allow">Allow edges</option>
+            <option value="force">Force edges</option>
+          </select>
+        </div>
+        <div>
+          <label>Edge Band (fraction)</label>
+          <input type="number" id="rc-edge-band" value="0.08" step="0.01" min="0" max="0.5" class="field">
+        </div>
+      </div>
+    `;
+  }
+
+  function process(ctx, width, height, _currentImageData, opts){
+    const seed = (parseInt(opts["rc-seed"] || 1337) >>> 0);
+    const rnd = LCG(seed);
+
+    const numContinents = clamp(parseInt(opts["rc-num-continents"] || 7), 1, 128);
+    const cratonsPer = clamp(parseInt(opts["rc-cratons"] || 7), 2, 32);
+    const numOceans = clamp(parseInt(opts["rc-num-oceans"] || 10), 1, 256);
+
+    const margin = clamp(parseFloat(opts["rc-margin"] || 0.14), 0, 0.49);
+    const contSepFrac = clamp(parseFloat(opts["rc-continent-sep"] || 0.20), 0.01, 0.95);
+    const spreadFrac = clamp(parseFloat(opts["rc-spread"] || 0.20), 0.02, 0.65);
+
+    const oceanBias = clamp(parseFloat(opts["rc-ocean-bias"] || 1.05), 0.5, 3.0);
+    const riftStrength = clamp(parseFloat(opts["rc-rift"] || 0.65), 0, 2.0);
+    const bridgeChance = clamp(parseFloat(opts["rc-bridges"] || 0.22), 0, 1.0);
+    const coastAmt = clamp(parseFloat(opts["rc-coast"] || 0.85), 0, 2.5);
+
+    const warpPower = clamp(parseFloat(opts["rc-warp"] || 220), 0, 1800);
+    const warpScale = clamp(parseFloat(opts["rc-warp-scale"] || 4.0), 0.5, 12.0);
+
+    const edgeMode = String(opts["rc-edge-mode"] || "avoid");
+    const edgeBandFrac = clamp(parseFloat(opts["rc-edge-band"] || 0.08), 0.0, 0.5);
+
+    const LAND_VALUE = 19, OCEAN_VALUE = 0;
+
+    const minDim = Math.min(width, height);
+    const asp = width / height;
+
+    const marginX = width * margin;
+    const marginY = height * margin;
+    const spawnX0 = marginX, spawnY0 = marginY;
+    const spawnX1 = width - marginX, spawnY1 = height - marginY;
+
+    const contMinSep = contSepFrac * minDim;
+    const spreadPx = spreadFrac * minDim;
+    const edgeBandPx = edgeBandFrac * minDim;
+
+    // noise perms
+    const permWarpA = makePerm(seed ^ 0x1234ABCD);
+    const permWarpB = makePerm(seed ^ 0xC0FFEE11);
+    const permCoast = makePerm(seed ^ 0x9E3779B9);
+    const permRift  = makePerm(seed ^ 0xBADC0FFE);
+    const permEdge  = makePerm(seed ^ 0xFEEDBEEF);
+
+    // Place continent centers spaced apart
+    const centers = sampleMinDistPoints(rnd, spawnX0, spawnY0, spawnX1, spawnY1, numContinents, contMinSep);
+
+    // Build multi-craton continents
+    const continents = centers.map((p, i) => {
+      const baseR = lerp(0.22, 0.52, rnd()) * minDim; // continent scale
+      const cratons = [];
+      for (let k = 0; k < cratonsPer; k++) {
+        const ang = rnd() * Math.PI * 2;
+        const rad = Math.pow(rnd(), 0.7) * spreadPx; // denser near center
+        const cx = clamp(p.x + Math.cos(ang) * rad, 0, width - 1);
+        const cy = clamp(p.y + Math.sin(ang) * rad, 0, height - 1);
+        const r  = baseR * lerp(0.45, 1.05, rnd());
+        const w  = lerp(0.85, 1.30, rnd());
+        cratons.push({ x: cx, y: cy, r, w });
+      }
+      return { id: i, cx: p.x, cy: p.y, cratons };
+    });
+
+    // Ocean seeds (broad)
+    const oceanMinSep = Math.max(2, contMinSep * 0.6);
+    const oceans = sampleMinDistPoints(rnd, 0, 0, width, height, numOceans, oceanMinSep).map((p, i) => {
+      const r = lerp(0.45, 0.95, rnd()) * minDim;
+      return { id: i, x: p.x, y: p.y, r };
+    });
+
+    function continentInfluence(x, y, cont) {
+      // Max-of-cratons gives a coherent landmass; softSum adds lobes.
+      let best = -1e30;
+      let soft = 0;
+      for (let i = 0; i < cont.cratons.length; i++) {
+        const c = cont.cratons[i];
+        const dx = x - c.x, dy = y - c.y;
+        const dist = Math.hypot(dx, dy);
+        const v = (c.r - dist) * c.w;
+        if (v > best) best = v;
+        if (v > 0) soft += v * 0.18;
+      }
+      return best + soft;
+    }
+
+    function nearestOcean(x, y) {
+      let bestD = Infinity, bestI = 0;
+      for (let i = 0; i < oceans.length; i++) {
+        const s = oceans[i];
+        const dx = x - s.x, dy = y - s.y;
+        const d = dx*dx + dy*dy;
+        if (d < bestD) { bestD = d; bestI = i; }
+      }
+      return bestI;
+    }
+
+    function oceanInfluence(x, y, o) {
+      const dx = x - o.x, dy = y - o.y;
+      const dist = Math.hypot(dx, dy);
+      return (o.r - dist) * oceanBias;
+    }
+
+    function edgeLandBias(x, y) {
+      if (edgeBandPx <= 0 || edgeMode === "allow") return 0;
+      const dEdge = Math.min(x, width - 1 - x, y, height - 1 - y);
+      const t = clamp(dEdge / edgeBandPx, 0, 1);
+      let s = 1 - smoothstep(0, 1, t); // 1 at edge
+
+      // noise-modulate so it's not a perfect rectangle effect
+      const nx = x / width, ny = y / height;
+      const n = fbm2(nx*2.0, ny*2.0/asp, permEdge, 3, 2, 0.5); // ~[-0.5..0.5]
+      s *= (0.85 + 0.35 * (n + 0.5)); // ~[0.85..1.2]
+
+      if (edgeMode === "avoid") return -0.85 * minDim * s;
+      if (edgeMode === "force") return +0.60 * minDim * s;
+      return 0;
+    }
+
+    // Find best + second-best continent by influence (for rift zones)
+    function bestTwoContinents(x, y) {
+      let bestS = -1e30, bestI = 0;
+      let secS  = -1e30, secI = 0;
+      for (let i = 0; i < continents.length; i++) {
+        const s = continentInfluence(x, y, continents[i]);
+        if (s > bestS) { secS = bestS; secI = bestI; bestS = s; bestI = i; }
+        else if (s > secS) { secS = s; secI = i; }
+      }
+      return { bestS, bestI, secS, secI };
+    }
+
+    const imageData = ctx.createImageData(width, height);
+    const data = imageData.data;
+
+    // Warp frequency normalized to map size (similar to your earlier warp control)
+    const wf = (warpScale / width);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+
+        // --- pre-sample domain warp (warps the *coordinate*, not the binary result)
+        let sx = x, sy = y;
+        if (warpPower > 0) {
+          const nx = x * wf, ny = (y * wf) / asp;
+          const dx = fbm2(nx,       ny,       permWarpA, 4, 2, 0.5) * warpPower;
+          const dy = fbm2(nx + 41,  ny - 19,  permWarpB, 4, 2, 0.5) * warpPower;
+          sx = clamp(x + dx, 0, width - 1);
+          sy = clamp(y + dy, 0, height - 1);
+        }
+
+        // --- base contest
+        const { bestS, bestI, secS, secI } = bestTwoContinents(sx, sy);
+        const oi = nearestOcean(sx, sy);
+
+        let landScore = bestS;
+        let oceanScore = oceanInfluence(sx, sy, oceans[oi]);
+
+        // --- edge policy
+        landScore += edgeLandBias(x, y);
+
+        // Signed "landness"
+        let s = landScore - oceanScore;
+
+        // Boundary-only coastline breakup:
+        // We only add this when s is near 0 (i.e., near coastline decision).
+        // That yields bays/peninsulas without speckling land interiors or open ocean.
+        if (coastAmt > 0) {
+          const nxx = (sx / width), nyy = (sy / height);
+          const coastN =
+            0.70 * fbm2(nxx*5.0,  nyy*5.0/asp,  permCoast, 5, 2, 0.5) +
+            0.30 * fbm2(nxx*13.0, nyy*13.0/asp, permCoast, 3, 2, 0.5);
+          // coast band: 1 near s≈0, 0 far away
+          const band = 1 - smoothstep(0.0, 1.0, Math.min(1, Math.abs(s) / (0.18 * minDim)));
+          s += coastAmt * band * coastN * (0.22 * minDim);
+        }
+
+        // Probabilistic rifts between competing continents:
+        // If best and second-best are close, we're in a plate competition zone.
+        // We sometimes carve ocean (straits), but gate it so some bridges survive.
+        if (riftStrength > 0 && bestI !== secI) {
+          const competition = 1 - smoothstep(0.0, 1.0, Math.min(1, (bestS - secS) / (0.22 * minDim)));
+          if (competition > 0.001) {
+            const nxx = (sx / width), nyy = (sy / height);
+            const rN = fbm2(nxx*7.0 + 9.3, nyy*7.0/asp - 3.7, permRift, 4, 2, 0.5);
+            const rv = (rN + 1) * 0.5; // 0..1
+            const carveGate = smoothstep(bridgeChance, 1.0, rv); // higher rv => more carve
+            s -= riftStrength * competition * carveGate * (0.55 * minDim);
+          }
+        }
+
+        const isLand = (s > 0);
+
+        const v = isLand ? LAND_VALUE : OCEAN_VALUE;
+        const ii = (y * width + x) * 4;
+        data[ii] = data[ii+1] = data[ii+2] = v;
+        data[ii+3] = 255;
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  window.HeightmapGenerator.register("Realistic Continents (0/19)", process, optionsUI, true);
+})();
+</script>
+
+<script>
+/* ============================================================================
+   Optional second pass plugin slot (kept for your pipeline style)
+   If you later add smoothing, do it here (but currently disabled by default).
+============================================================================ */
+(function(){
+  function ui(container){
+    container.innerHTML = `
+      <div class="mini">
+        Reserved slot for downstream steps. Keep disabled for now.
+      </div>
+    `;
+  }
+  function proc(ctx,w,h,img,opts){
+    // No-op (intentionally). Keeps pipeline structure.
+  }
+  window.HeightmapGenerator.register("Downstream Slot (No-op)", proc, ui, false);
+})();
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('heightmap-canvas');
+    const generateBtn = document.getElementById('generate-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const pipelineContainer = document.getElementById('plugin-pipeline-container');
+    const widthInput = document.getElementById('canvas-width');
+    const heightInput = document.getElementById('canvas-height');
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    function populatePipeline() {
+      pipelineContainer.innerHTML = '';
+      window.HeightmapGenerator.getPlugins().forEach((plugin, index) => {
+        const item = document.createElement('div');
+        item.className = 'plugin-item';
+        item.dataset.open = plugin.isBaseLayer ? "1" : "0";
+
+        item.innerHTML = `
+          <div class="plugin-head">
+            <div class="plugin-title">${plugin.name}</div>
+            <input type="checkbox" id="plugin-check-${index}" ${plugin.isBaseLayer ? 'checked disabled' : ''}>
+          </div>
+          <div class="plugin-body"></div>
+        `;
+
+        const head = item.querySelector('.plugin-head');
+        head.addEventListener('click', (e) => {
+          if (e.target.tagName === 'INPUT') return;
+          item.dataset.open = item.dataset.open === "1" ? "0" : "1";
+        });
+
+        plugin.createOptionsUI(item.querySelector('.plugin-body'));
+        pipelineContainer.appendChild(item);
+      });
+    }
+
+    function newSeed32() {
+      if (window.crypto && crypto.getRandomValues) {
+        const a = new Uint32Array(1);
+        crypto.getRandomValues(a);
+        return a[0] >>> 0;
+      }
+      return ((Math.random() * 0xFFFFFFFF) >>> 0);
+    }
+
+    function reseedUI() {
+      const s = newSeed32();
+      const tp = document.getElementById("rc-seed");
+      if (tp) tp.value = String(s);
+    }
+
+    function generateHeightmap() {
+      reseedUI();
+
+      const w = parseInt(widthInput.value) || 2048;
+      const h = parseInt(heightInput.value) || 1024;
+      canvas.width = w; canvas.height = h;
+
+      const allOptions = {};
+      pipelineContainer.querySelectorAll('input, select').forEach(i => {
+        if (i.id) allOptions[i.id] = i.type === 'checkbox' ? i.checked : i.value;
+      });
+
+      let currentImageData = ctx.getImageData(0, 0, w, h);
+      window.HeightmapGenerator.getPlugins().forEach((plugin, index) => {
+        const chk = document.getElementById(`plugin-check-${index}`);
+        const active = chk ? chk.checked : true;
+        if (!active) return;
+        plugin.process(ctx, w, h, plugin.isBaseLayer ? null : currentImageData, allOptions);
+        currentImageData = ctx.getImageData(0, 0, w, h);
+      });
+    }
+
+    generateBtn.addEventListener('click', generateHeightmap);
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'tectonic_draft.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    populatePipeline();
+    generateHeightmap();
+  });
+</script>
+
+</body>
+</html>
