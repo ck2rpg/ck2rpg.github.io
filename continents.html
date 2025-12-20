@@ -196,8 +196,8 @@
           </div>
         </div>
         <div class="btn-group">
-          <button id="generate-btn" class="btn primary">Draft New Map</button>
-          <button id="download-btn" class="btn">Save Parchment</button>
+          <button id="generate-btn" class="btn primary">Generate</button>
+          <button id="download-btn" class="btn">Save</button>
         </div>
       </section>
 
@@ -672,8 +672,8 @@
     function generateHeightmap() {
       reseedUI();
 
-      const w = parseInt(widthInput.value) || 2048;
-      const h = parseInt(heightInput.value) || 1024;
+      const w = parseInt(widthInput.value) || 4096;
+      const h = parseInt(heightInput.value) || 2048;
       canvas.width = w; canvas.height = h;
 
       const allOptions = {};
