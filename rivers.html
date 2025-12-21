@@ -1007,11 +1007,6 @@ function snapPointNearRiver(x, y){
     img.onload=()=>{
       URL.revokeObjectURL(url);
       let w=img.naturalWidth, h=img.naturalHeight;
-      const maxDim=8192;
-      if(w>maxDim||h>maxDim){
-        const s=Math.min(maxDim/w,maxDim/h);
-        w=Math.floor(w*s); h=Math.floor(h*s);
-      }
       const off=document.createElement("canvas");
       off.width=w; off.height=h;
       const octx=off.getContext("2d");
