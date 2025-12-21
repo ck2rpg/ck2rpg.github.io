@@ -336,7 +336,7 @@
         <div class="divider"></div>
 
         <div class="sliderrow">
-          <label>Sea level cutoff (0–255)<br><span class="hint">Affects <b>Ocean-masked</b> view/export (debounced)</span></label>
+          <label>Sea level cutoff (0–255)<br><span class="hint">Affects <b>Ocean-masked</b> view/export </span></label>
           <div style="display:grid;gap:6px">
             <input id="seaLevel" type="range" min="0" max="255" value="90" />
             <span class="badge" id="seaVal">90</span>
@@ -346,7 +346,7 @@
         <div class="divider"></div>
 
         <div class="sliderrow">
-          <label>Brightness (add)<br><span class="hint">-128…+128 (debounced)</span></label>
+          <label>Brightness (add)<br><span class="hint">-128…+128 </span></label>
           <div style="display:grid;gap:6px">
             <input id="bright" type="range" min="-128" max="128" value="0" />
             <span class="badge" id="brightVal">0</span>
@@ -354,7 +354,7 @@
         </div>
 
         <div class="sliderrow">
-          <label>Contrast (scale)<br><span class="hint">0.50…1.80 (debounced)</span></label>
+          <label>Contrast (scale)<br><span class="hint">0.50…1.80 </span></label>
           <div style="display:grid;gap:6px">
             <input id="contrast" type="range" min="50" max="180" value="100" />
             <span class="badge" id="contrastVal">1.00</span>
@@ -362,7 +362,7 @@
         </div>
 
         <div class="sliderrow">
-          <label>Gamma<br><span class="hint">0.50…2.50 (debounced)</span></label>
+          <label>Gamma<br><span class="hint">0.50…2.50 </span></label>
           <div style="display:grid;gap:6px">
             <input id="gamma" type="range" min="50" max="250" value="100" />
             <span class="badge" id="gammaVal">1.00</span>
@@ -372,7 +372,7 @@
         <div class="divider"></div>
 
         <div class="sliderrow">
-          <label>Remap min (black point)<br><span class="hint">(debounced)</span></label>
+          <label>Remap min (black point)<br><span class="hint"></span></label>
           <div style="display:grid;gap:6px">
             <input id="remapMin" type="range" min="0" max="255" value="0" />
             <span class="badge" id="remapMinVal">0</span>
@@ -380,7 +380,7 @@
         </div>
 
         <div class="sliderrow">
-          <label>Remap max (white point)<br><span class="hint">(debounced)</span></label>
+          <label>Remap max (white point)<br><span class="hint"></span></label>
           <div style="display:grid;gap:6px">
             <input id="remapMax" type="range" min="0" max="255" value="255" />
             <span class="badge" id="remapMaxVal">255</span>
@@ -388,7 +388,7 @@
         </div>
 
         <div class="sliderrow">
-          <label>Smoothing (box blur)<br><span class="hint">0 = none, 3 = small cleanup (debounced)</span></label>
+          <label>Smoothing (box blur)<br><span class="hint">0 = none, 3 = small cleanup </span></label>
           <div style="display:grid;gap:6px">
             <input id="smooth" type="range" min="0" max="6" value="0" />
             <span class="badge" id="smoothVal">0</span>
@@ -918,7 +918,7 @@
     ctxView.font = "20px Georgia, serif";
     ctxView.fillText("Load a gradient or grayscale image to convert to a grayscale heightmap", 24, 44);
     ctxView.font = "14px system-ui, -apple-system, Segoe UI, sans-serif";
-    ctxView.fillText("Sea cutoff applies to Ocean-masked view/export. All sliders are debounced.", 24, 70);
+    ctxView.fillText("Sea cutoff applies to Ocean-masked view/export.", 24, 70);
 
     updateBadges();
     setEnabled(false);
