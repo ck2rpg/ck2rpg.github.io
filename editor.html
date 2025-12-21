@@ -1475,6 +1475,60 @@ function paintSegment(x0, y0, x1, y1) {
     applyCamera();
   });
 
+  // --- Wheel zoom (zoom-to-cursor, syncs zoomSlider) ---
+(function addWheelZoom(){
+  const Z_MIN = (parseInt(zoomSlider.min,10) || 10) / 100;
+  const Z_MAX = (parseInt(zoomSlider.max,10) || 400) / 100;
+
+  // feel: smaller = slower
+  const WHEEL_SENS = 0.0016;
+
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+  function setZoomAtCursor(newZoom, clientX, clientY){
+    if(!mapWidth || !mapHeight) return;
+
+    const oldZoom = zoom;
+    newZoom = clamp(newZoom, Z_MIN, Z_MAX);
+    if (newZoom === oldZoom) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+
+    // Map point under cursor before zoom
+    const mapX = (sx - panX) / oldZoom;
+    const mapY = (sy - panY) / oldZoom;
+
+    zoom = newZoom;
+
+    // Keep that map point under cursor
+    panX = sx - mapX * zoom;
+    panY = sy - mapY * zoom;
+
+    clampPan();
+    applyCamera();
+
+    // Sync slider (and your zoomValue text updates via applyCamera)
+    zoomSlider.value = String(Math.round(zoom * 100));
+  }
+
+  // Only zoom when wheel is over the map viewport; prevent page scroll
+  viewport.addEventListener("wheel", (e) => {
+    // Don't steal Shift+wheel (often horizontal scrolling)
+    if (e.shiftKey) return;
+
+    // OPTIONAL: only zoom when Ctrl/Meta is held
+    // if (!e.ctrlKey && !e.metaKey) return;
+
+    e.preventDefault();
+
+    // Exponential zoom makes mouse wheels + trackpads feel consistent
+    const factor = Math.exp(-e.deltaY * WHEEL_SENS);
+    setZoomAtCursor(zoom * factor, e.clientX, e.clientY);
+  }, { passive:false });
+})();
+
     atlasBiasSlider.addEventListener("input", () => {
         const v = parseInt(atlasBiasSlider.value, 10) || 100;
         atlasBias = v / 100;             // 30..300  → 0.3..3.0

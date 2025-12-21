@@ -1282,6 +1282,59 @@ button:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
     clampPan();
     applyCamera();
   });
+  
+  // --- Scroll wheel zoom (INSIDE the IIFE) ---
+(function addWheelZoom(){
+  const Z_MIN = (parseInt(zoomEl.min,10) || 10) / 100;
+  const Z_MAX = (parseInt(zoomEl.max,10) || 400) / 100;
+
+  // Tune speed (smaller = slower)
+  const WHEEL_SENS = 0.0016;
+
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+  function setZoomAroundPoint(newZoom, clientX, clientY){
+    if(!W || !H) return;
+
+    const oldZoom = zoom;
+    newZoom = clamp(newZoom, Z_MIN, Z_MAX);
+    if (newZoom === oldZoom) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+
+    // map point under cursor at old zoom
+    const mapX = (sx - panX) / oldZoom;
+    const mapY = (sy - panY) / oldZoom;
+
+    zoom = newZoom;
+    panX = sx - mapX * zoom;
+    panY = sy - mapY * zoom;
+
+    clampPan();
+    applyCamera();
+
+    // keep slider in sync
+    zoomEl.value = String(Math.round(zoom * 100));
+  }
+
+  // Attach to the viewport area (NOT window) so it only triggers over the map
+  viewport.addEventListener("wheel", (e) => {
+    // Don't hijack scrolling if the user is over the sidebar
+    if (sidebar && sidebar.contains(e.target)) return;
+
+    // Optional: let Shift+wheel remain horizontal scroll behavior
+    if (e.shiftKey) return;
+
+    e.preventDefault();
+
+    // Exponential zoom feels consistent across devices
+    const factor = Math.exp(-e.deltaY * WHEEL_SENS);
+    setZoomAroundPoint(zoom * factor, e.clientX, e.clientY);
+  }, { passive:false });
+})();
+
 
   toggleHeightUnderlay.addEventListener("change", ()=>{
     showHeightUnderlay = !!toggleHeightUnderlay.checked;
@@ -1373,6 +1426,8 @@ button:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
     rebuildFullView();
     setStatus("Starter map loaded (replace by uploading your heightmap).");
   })();
+
+  
 
 })();
 </script>

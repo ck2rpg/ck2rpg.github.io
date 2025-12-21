@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Gradient ➜ Grayscale Heightmap (Parchment, Fullscreen)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    /* Parchment + ink */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+
+    --accent:#a65d37;     /* burnt sienna */
+    --accent-2:#2f5f73;   /* ink-blue */
+    --border:#c4b496;
+
+    --panel: rgba(244,233,213,0.74);
+    --panel-strong: rgba(244,233,213,0.92);
+
+    --shadow:0 14px 34px rgba(34,26,18,.18);
+    --shadow-soft:0 8px 18px rgba(34,26,18,.14);
+
+    --radius:16px;
+    --radius-sm:12px;
+
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family:var(--font-sans);
+    overflow:hidden;
+
+    background:
+      radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.65), rgba(255,255,255,0) 55%),
+      radial-gradient(900px 700px at 85% 25%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  }
+
+  .app{
+    height:100%;
+    display:grid;
+    grid-template-columns: 360px 1fr;
+  }
+
+  .sidebar{
+    height:100%;
+    overflow:auto;
+    padding:14px;
+    border-right:1px solid var(--border);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0)),
+      radial-gradient(900px 600px at 30% -10%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  }
+
+  .main{
+    height:100%;
+    position:relative;
+    display:grid;
+    grid-template-rows: auto 1fr;
+    min-width:0;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 12px;
+    border-bottom:1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.15));
+    box-shadow: 0 1px 0 rgba(255,255,255,.4) inset;
+  }
+
+  .title{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .title h1{
+    margin:0;
+    font-family:var(--font-serif);
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:.2px;
+    color:#2f2317;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .sub{ font-size:12px; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .badge{
+    padding:2px 8px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.55);
+    color:var(--ink-muted);
+    font-size:11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn{
+    appearance:none;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.35));
+    color:var(--ink);
+    padding:8px 12px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow: var(--shadow-soft);
+    transition: transform .06s ease, box-shadow .12s ease;
+    user-select:none;
+    white-space:nowrap;
+  }
+  .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn:active{ transform: translateY(0px); box-shadow: var(--shadow-soft); }
+  .btn.primary{
+    border-color: rgba(166,93,55,.55);
+    background:
+      linear-gradient(180deg, rgba(166,93,55,.28), rgba(166,93,55,.12)),
+      linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.28));
+  }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+  .card{
+    border:1px solid var(--border);
+    background: var(--panel);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    overflow:hidden;
+  }
+  .card h2{
+    margin:0;
+    padding:12px 12px 10px;
+    font-family:var(--font-serif);
+    font-size:13px;
+    letter-spacing:.25px;
+    color:#2f2317;
+    border-bottom:1px solid rgba(196,180,150,.7);
+    background: rgba(255,255,255,.35);
+  }
+  .card .body{ padding:12px; display:grid; gap:12px; }
+
+  label{ font-size:12px; color: var(--ink-muted); line-height:1.2; }
+  .hint{ font-size:12px; color: var(--ink-muted); line-height:1.35; }
+  .row{ display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; }
+  .sliderrow{ display:grid; grid-template-columns: 1fr 92px; gap:10px; align-items:center; }
+
+  input[type="file"]{ width:100%; font-size:12px; color: var(--ink-muted); }
+
+  select{
+    width:100%;
+    padding:8px 10px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    font-weight:750;
+  }
+
+  .miniGrad{
+    height:12px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.9);
+    box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+  }
+
+  .divider{
+    height:1px;
+    background: rgba(196,180,150,.85);
+    box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+  }
+
+  /* ---- Parchment-style sliders ---- */
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:22px;
+    background: transparent;
+    margin:0;
+    padding:0;
+  }
+
+  /* Track (Chromium/Safari) */
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:10px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.95);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.30)),
+      repeating-linear-gradient(90deg, rgba(60,47,33,.10) 0 10px, rgba(60,47,33,.05) 10px 20px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.7) inset;
+  }
+
+  /* Thumb (Chromium/Safari) */
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    margin-top:-6px;
+    width:22px;
+    height:22px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.95);
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,.90), rgba(255,255,255,.25) 55%, rgba(0,0,0,.05) 100%),
+      linear-gradient(180deg, rgba(166,93,55,.30), rgba(47,95,115,.10));
+    box-shadow: 0 10px 18px rgba(34,26,18,.18), 0 1px 0 rgba(255,255,255,.75) inset;
+    cursor:pointer;
+  }
+
+  /* Track (Firefox) */
+  input[type="range"]::-moz-range-track{
+    height:10px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.95);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.30)),
+      repeating-linear-gradient(90deg, rgba(60,47,33,.10) 0 10px, rgba(60,47,33,.05) 10px 20px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.7) inset;
+  }
+
+  /* Thumb (Firefox) */
+  input[type="range"]::-moz-range-thumb{
+    width:22px;
+    height:22px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.95);
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,.90), rgba(255,255,255,.25) 55%, rgba(0,0,0,.05) 100%),
+      linear-gradient(180deg, rgba(166,93,55,.30), rgba(47,95,115,.10));
+    box-shadow: 0 10px 18px rgba(34,26,18,.18), 0 1px 0 rgba(255,255,255,.75) inset;
+    cursor:pointer;
+  }
+
+  input[type="range"]:focus{ outline:none; }
+  input[type="range"]:focus::-webkit-slider-thumb{
+    box-shadow: 0 10px 18px rgba(34,26,18,.18), 0 0 0 4px rgba(47,95,115,.15);
+  }
+  input[type="range"]:focus::-moz-range-thumb{
+    box-shadow: 0 10px 18px rgba(34,26,18,.18), 0 0 0 4px rgba(47,95,115,.15);
+  }
+
+  /* Main canvas area */
+  .stage{
+    position:relative;
+    min-width:0;
+    min-height:0;
+    background:
+      radial-gradient(1200px 900px at 20% 20%, rgba(255,255,255,.55), rgba(255,255,255,0) 58%),
+      linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0));
+  }
+  .stage canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    image-rendering: pixelated;
+    background: rgba(255,255,255,.12);
+  }
+
+  .stageOverlay{
+    position:absolute;
+    left:12px;
+    bottom:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    z-index:5;
+    pointer-events:none;
+  }
+  .stageOverlay .badge, .stageOverlay .viewSeg{ pointer-events:auto; }
+
+  .viewSeg{
+    display:flex;
+    border:1px solid var(--border);
+    border-radius:999px;
+    overflow:hidden;
+    box-shadow: var(--shadow-soft);
+    background: rgba(255,255,255,.55);
+  }
+  .viewSeg button{
+    border:0;
+    border-right:1px solid rgba(196,180,150,.7);
+    background: transparent;
+    padding:8px 12px;
+    font-weight:900;
+    cursor:pointer;
+    color: var(--ink-muted);
+  }
+  .viewSeg button:last-child{ border-right:0; }
+  .viewSeg button.active{
+    background: linear-gradient(180deg, rgba(47,95,115,.18), rgba(47,95,115,.10));
+    color: var(--ink);
+  }
+
+  @media (max-width: 980px){
+    .app{ grid-template-columns: 1fr; }
+    .sidebar{ height:auto; max-height: 46vh; border-right:0; border-bottom:1px solid var(--border); }
+    .main{ height: calc(100vh - 46vh); }
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="card">
+      <h2>Decode + Adjust</h2>
+      <div class="body">
+        <div class="row">
+          <div>
+            <label><b>Import</b><br><span class="hint">Transparent pixels are treated as black (0,0,0).</span></label>
+          </div>
+          <span class="badge" id="dimInfo">No image</span>
+        </div>
+
+        <input id="file" type="file" accept="image/*" />
+
+        <div class="row">
+          <label>Elevation decode mode<br><span class="hint">Auto detects palette vs grayscale-ish</span></label>
+          <select id="elevMode">
+            <option value="auto" selected>Auto</option>
+            <option value="gradient">Colored gradient palette</option>
+            <option value="grayscale">Grayscale</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sliderrow">
+          <label>Sea level cutoff (0–255)<br><span class="hint">Affects <b>Ocean-masked</b> view/export (debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="seaLevel" type="range" min="0" max="255" value="90" />
+            <span class="badge" id="seaVal">90</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sliderrow">
+          <label>Brightness (add)<br><span class="hint">-128…+128 (debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="bright" type="range" min="-128" max="128" value="0" />
+            <span class="badge" id="brightVal">0</span>
+          </div>
+        </div>
+
+        <div class="sliderrow">
+          <label>Contrast (scale)<br><span class="hint">0.50…1.80 (debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="contrast" type="range" min="50" max="180" value="100" />
+            <span class="badge" id="contrastVal">1.00</span>
+          </div>
+        </div>
+
+        <div class="sliderrow">
+          <label>Gamma<br><span class="hint">0.50…2.50 (debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="gamma" type="range" min="50" max="250" value="100" />
+            <span class="badge" id="gammaVal">1.00</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sliderrow">
+          <label>Remap min (black point)<br><span class="hint">(debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="remapMin" type="range" min="0" max="255" value="0" />
+            <span class="badge" id="remapMinVal">0</span>
+          </div>
+        </div>
+
+        <div class="sliderrow">
+          <label>Remap max (white point)<br><span class="hint">(debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="remapMax" type="range" min="0" max="255" value="255" />
+            <span class="badge" id="remapMaxVal">255</span>
+          </div>
+        </div>
+
+        <div class="sliderrow">
+          <label>Smoothing (box blur)<br><span class="hint">0 = none, 3 = small cleanup (debounced)</span></label>
+          <div style="display:grid;gap:6px">
+            <input id="smooth" type="range" min="0" max="6" value="0" />
+            <span class="badge" id="smoothVal">0</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="btnReset" class="btn" disabled>Reset adjustments</button>
+          <span class="badge" id="modeInfo">mode: —</span>
+        </div>
+
+        <div>
+          <div class="hint">Expected gradient (used for decoding):</div>
+          <div id="gradPreview" class="miniGrad"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row" style="grid-template-columns:1fr;gap:8px">
+          <button id="btnDownloadAdj" class="btn primary" disabled>Download Adjusted Heightmap (PNG)</button>
+          <button id="btnDownloadMasked" class="btn" disabled>Download Ocean-Masked Preview (PNG)</button>
+        </div>
+
+        <div class="hint">
+          <b>Adjusted</b> = grayscale after knobs.<br/>
+          <b>Ocean-Masked</b> = adjusted + sea clamp (values below cutoff → black).<br/>
+          If sea “does nothing”, switch the view toggle at bottom-left to <b>Ocean-masked</b>.
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <h1>Gradient ➜ Grayscale Heightmap</h1>
+        <div class="sub" id="stats">Load an image to begin.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="badge" id="seaInfo">sea: —</span>
+        <span class="badge" id="viewInfo">view: adjusted</span>
+        <span class="badge" id="pxInfo">—</span>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="canvasView"></canvas>
+
+      <div class="stageOverlay">
+        <div class="viewSeg" title="Toggle view">
+          <button id="viewAdjusted" class="active">Adjusted</button>
+          <button id="viewMasked">Ocean-masked</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+(() => {
+  // ========= Gradient palette (tweak stops if your palette differs) =========
+  const GRADIENT_STOPS = [
+    {t:0.00, c:[0,0,0]},
+    {t:0.10, c:[0,60,0]},
+    {t:0.20, c:[0,128,0]},
+    {t:0.35, c:[140,190,0]},
+    {t:0.50, c:[200,160,40]},
+    {t:0.70, c:[185,120,70]},
+    {t:0.85, c:[220,210,210]},
+    {t:1.00, c:[255,255,255]}
+  ];
+  const GRAD_LUT_SIZE = 256;
+  const GRAD_LUT = buildGradientLUT(GRADIENT_STOPS, GRAD_LUT_SIZE);
+
+  // mini preview bar
+  const gradPrev = document.getElementById('gradPreview');
+  gradPrev.style.background =
+    `linear-gradient(90deg, ${GRADIENT_STOPS.map(s=>`rgb(${s.c[0]} ${s.c[1]} ${s.c[2]}) ${Math.round(s.t*100)}%`).join(', ')})`;
+
+  function buildGradientLUT(stops, size){
+    const lut = new Uint8Array(size*3);
+    for(let i=0;i<size;i++){
+      const t = i/(size-1);
+      let a=stops[0], b=stops[stops.length-1];
+      for(let s=0;s<stops.length-1;s++){
+        if(t>=stops[s].t && t<=stops[s+1].t){ a=stops[s]; b=stops[s+1]; break; }
+      }
+      const u = (t - a.t) / Math.max(1e-6, (b.t - a.t));
+      const r = Math.round(lerp(a.c[0], b.c[0], u));
+      const g = Math.round(lerp(a.c[1], b.c[1], u));
+      const bl = Math.round(lerp(a.c[2], b.c[2], u));
+      const p = 3*i; lut[p]=r; lut[p+1]=g; lut[p+2]=bl;
+    }
+    return lut;
+  }
+
+  function isGrayish(r,g,b){
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    return (max - min) <= 5;
+  }
+
+  function rgbToElevGradient(r,g,b){
+    if (r===0&&g===0&&b===0) return 0;
+    if (r===255&&g===255&&b===255) return 1;
+    let bestI=0, bestD=1e15;
+    for(let i=0, p=0;i<GRAD_LUT_SIZE;i++, p+=3){
+      const dr=r-GRAD_LUT[p], dg=g-GRAD_LUT[p+1], db=b-GRAD_LUT[p+2];
+      const d2=dr*dr+dg*dg+db*db;
+      if(d2<bestD){ bestD=d2; bestI=i; }
+    }
+    return bestI/(GRAD_LUT_SIZE-1);
+  }
+
+  // ========= UI refs =========
+  const elFile = document.getElementById('file');
+  const elevModeSel = document.getElementById('elevMode');
+
+  const elSea = document.getElementById('seaLevel');
+  const elBright = document.getElementById('bright');
+  const elContrast = document.getElementById('contrast');
+  const elGamma = document.getElementById('gamma');
+  const elRemapMin = document.getElementById('remapMin');
+  const elRemapMax = document.getElementById('remapMax');
+  const elSmooth = document.getElementById('smooth');
+
+  const seaVal = document.getElementById('seaVal');
+  const brightVal = document.getElementById('brightVal');
+  const contrastVal = document.getElementById('contrastVal');
+  const gammaVal = document.getElementById('gammaVal');
+  const remapMinVal = document.getElementById('remapMinVal');
+  const remapMaxVal = document.getElementById('remapMaxVal');
+  const smoothVal = document.getElementById('smoothVal');
+
+  const dimInfo = document.getElementById('dimInfo');
+  const modeInfo = document.getElementById('modeInfo');
+  const seaInfo = document.getElementById('seaInfo');
+  const statsEl = document.getElementById('stats');
+  const viewInfo = document.getElementById('viewInfo');
+  const pxInfo = document.getElementById('pxInfo');
+
+  const btnReset = document.getElementById('btnReset');
+  const btnDownloadAdj = document.getElementById('btnDownloadAdj');
+  const btnDownloadMasked = document.getElementById('btnDownloadMasked');
+
+  const btnViewAdjusted = document.getElementById('viewAdjusted');
+  const btnViewMasked = document.getElementById('viewMasked');
+
+  const canView = document.getElementById('canvasView');
+  const ctxView = canView.getContext('2d', { willReadFrequently: true });
+
+  const canExport = document.createElement('canvas');
+  const ctxExport = canExport.getContext('2d', { willReadFrequently: true });
+
+  // ========= State =========
+  const state = {
+    w:0,h:0,
+    decodedBase8: null,
+    adjusted8: null,
+    masked8: null,
+    lastMode: '—',
+    ready: false,
+    view: 'adjusted',
+    originalRGBA: null
+  };
+
+  const defaults = {
+    seaLevel: 90,
+    bright: 0,
+    contrast: 100,
+    gamma: 100,
+    remapMin: 0,
+    remapMax: 255,
+    smooth: 0
+  };
+
+  function setEnabled(on){
+    btnReset.disabled = !on;
+    btnDownloadAdj.disabled = !on;
+    btnDownloadMasked.disabled = !on;
+  }
+
+  // ========= Debounce: EVERYTHING =========
+  function debounce(fn, ms){
+    let t=null;
+    return (...args)=>{
+      if(t) clearTimeout(t);
+      t=setTimeout(()=>fn(...args), ms);
+    };
+  }
+
+  // Single debounced recompute for all controls
+  const scheduleRecompute = debounce(() => {
+    if(!state.ready) return;
+    recomputeAllNow();
+  }, 120);
+
+  // ========= Import =========
+  elFile.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if(!f) return;
+    const img = new Image();
+    img.onload = () => {
+      state.w = img.naturalWidth;
+      state.h = img.naturalHeight;
+
+      canView.width = state.w; canView.height = state.h;
+      canExport.width = state.w; canExport.height = state.h;
+
+      const tmp = document.createElement('canvas');
+      tmp.width = state.w; tmp.height = state.h;
+      const tctx = tmp.getContext('2d', { willReadFrequently: true });
+      tctx.drawImage(img, 0, 0);
+
+      const id = tctx.getImageData(0,0,state.w,state.h);
+      state.originalRGBA = id.data;
+
+      state.decodedBase8 = decodeElevation(state.originalRGBA, state.w, state.h);
+      state.adjusted8 = new Uint8ClampedArray(state.w*state.h);
+      state.masked8 = new Uint8ClampedArray(state.w*state.h);
+
+      state.ready = true;
+      dimInfo.textContent = `${state.w}×${state.h}`;
+      modeInfo.textContent = `mode: ${state.lastMode}`;
+      pxInfo.textContent = `${state.w}×${state.h}`;
+
+      setEnabled(true);
+      resetUIToDefaults(false);
+
+      // do an immediate compute on load
+      recomputeAllNow();
+    };
+    img.src = URL.createObjectURL(f);
+  });
+
+  elevModeSel.addEventListener('change', () => {
+    if(!state.ready || !state.originalRGBA) return;
+    // Debounced too
+    scheduleDecodeAndRecompute();
+  });
+
+  const scheduleDecodeAndRecompute = debounce(() => {
+    if(!state.ready || !state.originalRGBA) return;
+    state.decodedBase8 = decodeElevation(state.originalRGBA, state.w, state.h);
+    modeInfo.textContent = `mode: ${state.lastMode}`;
+    recomputeAllNow();
+  }, 120);
+
+  // ========= Transparent pixels treated as black =========
+  function decodeElevation(srcRGBA, w, h){
+    const N = w*h;
+    const out = new Uint8ClampedArray(N);
+    const mode = elevModeSel.value;
+
+    function readRGB(p){
+      const a = srcRGBA[p+3];
+      if (a === 0) return [0,0,0];
+      return [srcRGBA[p], srcRGBA[p+1], srcRGBA[p+2]];
+    }
+
+    if(mode === 'grayscale'){
+      for(let i=0,p=0;i<N;i++,p+=4){
+        const [r,g,b] = readRGB(p);
+        out[i] = (0.299*r + 0.587*g + 0.114*b + 0.5) | 0;
+      }
+      state.lastMode = 'grayscale';
+      return out;
+    }
+
+    if(mode === 'gradient'){
+      for(let i=0,p=0;i<N;i++,p+=4){
+        const [r,g,b] = readRGB(p);
+        out[i] = (rgbToElevGradient(r,g,b)*255 + 0.5) | 0;
+      }
+      state.lastMode = 'gradient';
+      return out;
+    }
+
+    // auto
+    let colorish = 0;
+    const sampleN = Math.min(N, 6000);
+    for(let i=0,p=0;i<sampleN;i++,p+=4){
+      const [r,g,b] = readRGB(p);
+      if(!isGrayish(r,g,b)) colorish++;
+    }
+    const guessGradient = colorish > (sampleN*0.10);
+
+    if(guessGradient){
+      for(let i=0,p=0;i<N;i++,p+=4){
+        const [r,g,b] = readRGB(p);
+        const t = isGrayish(r,g,b) ? (r/255) : rgbToElevGradient(r,g,b);
+        out[i] = (t*255 + 0.5) | 0;
+      }
+      state.lastMode = 'auto:gradient';
+    }else{
+      for(let i=0,p=0;i<N;i++,p+=4){
+        const [r,g,b] = readRGB(p);
+        out[i] = (0.299*r + 0.587*g + 0.114*b + 0.5) | 0;
+      }
+      state.lastMode = 'auto:grayscale';
+    }
+    return out;
+  }
+
+  // ========= Compute =========
+  function recomputeAllNow(){
+    if(!state.ready) return;
+
+    // keep remap sane
+    const minv = +elRemapMin.value|0;
+    const maxv = +elRemapMax.value|0;
+    if(minv > maxv){
+      elRemapMin.value = String(maxv);
+      elRemapMax.value = String(minv);
+    }
+
+    buildAdjusted();
+    buildMasked();  // <-- ensures sea level always affects masked after debounce
+    redrawView();
+    updateBadges();
+    updateStats();
+  }
+
+  function buildAdjusted(){
+    const N = state.w*state.h;
+    const src = state.decodedBase8;
+    const out = state.adjusted8;
+
+    const bright = (+elBright.value)|0;
+    const contrast = (+elContrast.value)/100;
+    const gamma = (+elGamma.value)/100;
+    const rmin = (+elRemapMin.value)|0;
+    const rmax = (+elRemapMax.value)|0;
+    const span = Math.max(1, rmax - rmin);
+
+    // gamma LUT
+    const gLUT = new Uint8ClampedArray(256);
+    for(let v=0; v<256; v++){
+      const x = v/255;
+      const y = Math.pow(x, 1/Math.max(1e-6, gamma));
+      gLUT[v] = (y*255 + 0.5)|0;
+    }
+
+    for(let i=0;i<N;i++){
+      let v = src[i];
+      v = ((v - 128) * contrast + 128) + bright;
+      v = v<0 ? 0 : (v>255 ? 255 : v);
+      v = gLUT[v|0];
+      v = ((v - rmin) * 255) / span;
+      v = v<0 ? 0 : (v>255 ? 255 : v);
+      out[i] = v|0;
+    }
+
+    const rad = (+elSmooth.value)|0;
+    if(rad > 0) boxBlurInPlace(out, state.w, state.h, rad);
+  }
+
+  function buildMasked(){
+    const N = state.w*state.h;
+    const src = state.adjusted8;
+    const out = state.masked8;
+    const sea = (+elSea.value)|0;
+    for(let i=0;i<N;i++){
+      const v = src[i];
+      out[i] = (v < sea) ? 0 : v;
+    }
+  }
+
+  function boxBlurInPlace(arr, w, h, rad){
+    const N = w*h;
+    const tmp = new Uint8ClampedArray(N);
+    const win = 2*rad + 1;
+
+    for(let y=0; y<h; y++){
+      let sum = 0;
+      const row = y*w;
+      for(let k=-rad; k<=rad; k++){
+        const x = clampInt(k, 0, w-1);
+        sum += arr[row + x];
+      }
+      for(let x=0; x<w; x++){
+        tmp[row + x] = (sum / win + 0.5) | 0;
+        const xOut = clampInt(x-rad, 0, w-1);
+        const xIn  = clampInt(x+rad+1, 0, w-1);
+        sum += arr[row + xIn] - arr[row + xOut];
+      }
+    }
+
+    for(let x=0; x<w; x++){
+      let sum = 0;
+      for(let k=-rad; k<=rad; k++){
+        const y = clampInt(k, 0, h-1);
+        sum += tmp[y*w + x];
+      }
+      for(let y=0; y<h; y++){
+        arr[y*w + x] = (sum / win + 0.5) | 0;
+        const yOut = clampInt(y-rad, 0, h-1);
+        const yIn  = clampInt(y+rad+1, 0, h-1);
+        sum += tmp[yIn*w + x] - tmp[yOut*w + x];
+      }
+    }
+  }
+
+  // ========= Render =========
+  function redrawView(){
+    if(!state.ready) return;
+    const src = (state.view === 'masked') ? state.masked8 : state.adjusted8;
+    drawGrayscaleToCanvas(ctxView, canView, src, state.w, state.h);
+    viewInfo.textContent = `view: ${state.view === 'masked' ? 'ocean-masked' : 'adjusted'}`;
+  }
+
+  function drawGrayscaleToCanvas(ctx, canvas, src8, w, h){
+    if(canvas.width !== w) canvas.width = w;
+    if(canvas.height !== h) canvas.height = h;
+
+    const img = ctx.createImageData(w,h);
+    const d = img.data;
+    for(let i=0;i<w*h;i++){
+      const v = src8[i];
+      const p = i*4;
+      d[p]=d[p+1]=d[p+2]=v;
+      d[p+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  // ========= View toggles =========
+  btnViewAdjusted.addEventListener('click', () => {
+    state.view = 'adjusted';
+    btnViewAdjusted.classList.add('active');
+    btnViewMasked.classList.remove('active');
+    redrawView();
+  });
+  btnViewMasked.addEventListener('click', () => {
+    state.view = 'masked';
+    btnViewMasked.classList.add('active');
+    btnViewAdjusted.classList.remove('active');
+    redrawView();
+  });
+
+  // ========= Inputs: update labels immediately, recompute debounced =========
+  const allControls = [elSea, elBright, elContrast, elGamma, elRemapMin, elRemapMax, elSmooth];
+  for(const el of allControls){
+    el.addEventListener('input', () => {
+      updateBadges();    // instant feedback
+      if(!state.ready) return;
+      scheduleRecompute(); // everything debounced
+    });
+  }
+
+  // ========= Buttons =========
+  btnReset.addEventListener('click', () => {
+    resetUIToDefaults(true);
+  });
+
+  btnDownloadAdj.addEventListener('click', () => {
+    if(!state.ready) return;
+    // Ensure we export current computed buffers (if user is mid-drag, this exports last debounced state)
+    recomputeAllNow();
+    drawGrayscaleToCanvas(ctxExport, canExport, state.adjusted8, state.w, state.h);
+    downloadCanvasPNG(canExport, "heightmap_grayscale_adjusted.png");
+  });
+
+  btnDownloadMasked.addEventListener('click', () => {
+    if(!state.ready) return;
+    recomputeAllNow();
+    drawGrayscaleToCanvas(ctxExport, canExport, state.masked8, state.w, state.h);
+    downloadCanvasPNG(canExport, "heightmap_grayscale_oceanMasked.png");
+  });
+
+  function downloadCanvasPNG(canvas, filename){
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  // ========= UI helpers =========
+  function updateBadges(){
+    seaVal.textContent = String(elSea.value);
+    brightVal.textContent = String(elBright.value);
+    contrastVal.textContent = ((+elContrast.value)/100).toFixed(2);
+    gammaVal.textContent = ((+elGamma.value)/100).toFixed(2);
+    remapMinVal.textContent = String(elRemapMin.value);
+    remapMaxVal.textContent = String(elRemapMax.value);
+    smoothVal.textContent = String(elSmooth.value);
+
+    seaInfo.textContent = `sea: ${elSea.value}`;
+    modeInfo.textContent = `mode: ${state.lastMode}`;
+  }
+
+  function updateStats(){
+    const N = state.w*state.h;
+    const src = state.adjusted8;
+    let mn=255, mx=0, sum=0;
+    for(let i=0;i<N;i++){
+      const v = src[i];
+      if(v<mn) mn=v;
+      if(v>mx) mx=v;
+      sum += v;
+    }
+    const mean = sum / Math.max(1,N);
+    statsEl.textContent =
+      `Adjusted stats — min ${mn} • max ${mx} • mean ${mean.toFixed(1)} • sea cutoff < ${elSea.value} clamps in Ocean-masked view`;
+  }
+
+  function resetUIToDefaults(redraw=true){
+    elSea.value = defaults.seaLevel;
+    elBright.value = defaults.bright;
+    elContrast.value = defaults.contrast;
+    elGamma.value = defaults.gamma;
+    elRemapMin.value = defaults.remapMin;
+    elRemapMax.value = defaults.remapMax;
+    elSmooth.value = defaults.smooth;
+    updateBadges();
+    if(redraw && state.ready) recomputeAllNow();
+  }
+
+  // ========= Placeholder =========
+  function initPlaceholders(){
+    canView.width = 1280; canView.height = 720;
+    ctxView.fillStyle = "rgba(255,255,255,.18)";
+    ctxView.fillRect(0,0,canView.width,canView.height);
+    ctxView.fillStyle = "#6b5a46";
+    ctxView.font = "20px Georgia, serif";
+    ctxView.fillText("Load a gradient or grayscale image to convert to a grayscale heightmap", 24, 44);
+    ctxView.font = "14px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctxView.fillText("Sea cutoff applies to Ocean-masked view/export. All sliders are debounced.", 24, 70);
+
+    updateBadges();
+    setEnabled(false);
+  }
+  initPlaceholders();
+
+  // ========= Small utils =========
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function clampInt(v,a,b){ return v<a?a:(v>b?b:v); }
+
+})();
+</script>
+</body>
+</html>
