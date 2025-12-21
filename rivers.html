@@ -1343,7 +1343,7 @@ function snapPointNearRiver(x, y){
       if(!blob){ alert("Failed to create PNG."); return; }
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a");
-      a.href=url; a.download="ck3_rivers.png";
+      a.href=url; a.download="rivers.png";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
