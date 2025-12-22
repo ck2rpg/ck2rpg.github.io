@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Heightmap ➜ Stipple + Coastlines</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    /* Parchment + ink theme */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+
+    --accent:#a65d37;     /* burnt sienna */
+    --accent-2:#2f5f73;   /* slate teal (optional) */
+
+    --border:#c4b496;
+
+    --shadow:0 10px 30px rgba(34,26,18,.20);
+    --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+
+    --radius:14px;
+    --radius-lg:18px;
+    --radius-sm:12px;
+
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+
+  body{
+    margin:0;
+    background:#2a241e; /* dark wood surround */
+    color:var(--ink);
+    font-family:var(--font-serif);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  /* --- Header parchment strip --- */
+  header{
+    padding: 14px 18px 10px;
+    background:
+      radial-gradient(1200px 260px at 12% 0%, rgba(255,255,255,.60), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    border-bottom:1px solid rgba(196,180,150,.9);
+    box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 10px 20px rgba(0,0,0,.16);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+  }
+
+  header h1{
+    font-size:16px;
+    margin:0;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink);
+    font-family:var(--font-sans);
+    font-weight:800;
+  }
+
+  header h1 span{
+    color:var(--accent);
+    text-shadow: 0 1px 0 rgba(255,255,255,.4);
+  }
+
+  header p{
+    margin:4px 0 0;
+    font-size:12px;
+    color:var(--ink-muted);
+    font-family:var(--font-sans);
+  }
+
+  .status{
+    font-size:12px;
+    color:var(--ink-muted);
+    font-family:var(--font-sans);
+  }
+  .status strong{
+    color:var(--accent);
+    font-weight:800;
+  }
+
+  /* --- Layout --- */
+  .layout{
+    flex:1;
+    display:grid;
+    grid-template-columns: minmax(270px, 340px) minmax(0, 1fr);
+    min-height:0;
+  }
+
+  /* --- Sidebar parchment --- */
+  .sidebar{
+    border-right:1px solid rgba(196,180,150,.9);
+    padding:14px 14px 18px;
+    overflow:auto;
+    background:
+      radial-gradient(900px 700px at 20% 0%, rgba(255,255,255,.70), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    box-shadow: 2px 0 18px rgba(0,0,0,.18);
+  }
+
+  .panel-title{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.10em;
+    color:rgba(60,47,33,.85);
+    margin:2px 2px 10px;
+    font-family:var(--font-sans);
+    font-weight:900;
+  }
+
+  /* --- Cards (parchment panels) --- */
+  .card{
+    background:
+      radial-gradient(900px 260px at 15% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.18));
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    border:1px solid rgba(196,180,150,.95);
+    margin-bottom:12px;
+    box-shadow: var(--shadow-soft);
+    position:relative;
+  }
+  .card:last-of-type{ margin-bottom:0; }
+  .card::before{
+    content:"";
+    position:absolute; inset:8px;
+    border:1px dashed rgba(107,90,70,.22);
+    border-radius: calc(var(--radius) - 6px);
+    pointer-events:none;
+  }
+
+  .field{ margin-bottom:10px; }
+  .field:last-child{ margin-bottom:0; }
+
+  .label-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:11px;
+    color:var(--ink-muted);
+    margin-bottom:6px;
+    font-family:var(--font-sans);
+  }
+  .label-row span.value{
+    font-variant-numeric: tabular-nums;
+    font-family:var(--font-mono);
+    color:rgba(60,47,33,.85);
+  }
+
+  input[type="file"]{
+    width:100%;
+    font-size:12px;
+    color:var(--ink);
+    font-family:var(--font-sans);
+    background: rgba(255,255,255,.55);
+    border:1px solid rgba(196,180,150,.95);
+    border-radius: var(--radius-sm);
+    padding:10px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.55) inset;
+  }
+
+  .slider{ width:100%; }
+  .slider input[type="range"]{ width:100%; }
+
+  /* --- Range sliders (parchment knob) --- */
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(255,255,255,.25));
+    border:1px solid rgba(196,180,150,.95);
+    box-shadow: 0 1px 0 rgba(255,255,255,.5) inset;
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:18px; height:18px;
+    border-radius:999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,255,255,.15) 55%),
+      linear-gradient(180deg, #c58a4b, #8d4c24);
+    border:1px solid rgba(60,47,33,.45);
+    box-shadow: 0 6px 10px rgba(0,0,0,.18);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px;
+    border-radius:999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,255,255,.15) 55%),
+      linear-gradient(180deg, #c58a4b, #8d4c24);
+    border:1px solid rgba(60,47,33,.45);
+    box-shadow: 0 6px 10px rgba(0,0,0,.18);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-track{
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(255,255,255,.25));
+    border:1px solid rgba(196,180,150,.95);
+  }
+
+  /* --- Button (wax seal feel) --- */
+  button{
+    appearance:none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-family: var(--font-sans);
+
+    background:
+      radial-gradient(120% 140% at 25% 0%, rgba(255,255,255,.28), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, #c87443, #8a3f24);
+    color:#fff;
+    border:1px solid rgba(118,54,24,.55);
+    box-shadow: var(--shadow-soft);
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  button:hover{ filter:brightness(1.02); transform:translateY(-1px); }
+  button:active{ transform:translateY(0px); filter:brightness(.99); }
+  button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+  button span.dot{
+    width:8px; height:8px;
+    border-radius:999px;
+    background: rgba(255,255,255,.9);
+    box-shadow: 0 0 0 2px rgba(0,0,0,.12) inset;
+  }
+
+  .hint{
+    font-size:11px;
+    color:var(--ink-muted);
+    margin-top:8px;
+    line-height:1.4;
+    font-family:var(--font-sans);
+  }
+  .hint strong{ color:var(--ink); }
+
+  .pill-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:10px;
+  }
+  .pill{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1px solid rgba(196,180,150,.95);
+    color:rgba(60,47,33,.85);
+    background: rgba(255,255,255,.40);
+    font-family:var(--font-sans);
+  }
+
+  /* --- Main workspace --- */
+  .main{
+    padding: 14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    min-width:0;
+    background:#1f1b16; /* table/desk feel */
+  }
+
+  .canvas-wrap{
+    flex:1;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(1200px 700px at 10% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.08));
+    border:1px solid rgba(255,255,255,.10);
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    box-shadow: 0 12px 30px rgba(0,0,0,.28);
+  }
+
+  .canvas-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:11px;
+    color:rgba(231,224,210,.90);
+    margin-bottom:8px;
+    font-family:var(--font-sans);
+  }
+
+  .canvas-header span.badge{
+    border-radius:999px;
+    border:1px solid rgba(231,224,210,.35);
+    padding:2px 8px;
+    font-variant-numeric: tabular-nums;
+    background: rgba(0,0,0,.18);
+    color: rgba(255,255,255,.92);
+    font-family: var(--font-mono);
+  }
+
+  .canvas-container{
+    flex:1;
+    border-radius: 14px;
+    background:
+      radial-gradient(900px 600px at 10% -10%, rgba(255,255,255,.08), rgba(0,0,0,.55));
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  canvas{
+    max-width:100%;
+    max-height:100%;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    background:#f9f5ea;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  }
+
+  /* Sidebar/main scrollbars (optional polish) */
+  .sidebar::-webkit-scrollbar, .main::-webkit-scrollbar{ width:12px; height:12px; }
+  .sidebar::-webkit-scrollbar-thumb, .main::-webkit-scrollbar-thumb{
+    background: rgba(60,47,33,.25);
+    border:3px solid rgba(244,233,213,.55);
+    border-radius:999px;
+  }
+
+  @media (max-width: 780px){
+    .layout{
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto;
+    }
+    .sidebar{
+      border-right:0;
+      border-bottom:1px solid rgba(196,180,150,.9);
+      box-shadow:none;
+    }
+    .main{ padding:12px; }
+  }
+</style>
+
+</head>
+<body>
+<header>
+  <div>
+    <h1><span>Stipple Maps</h1>
+    <p>Greyscale heightmap ➜ dot-density relief + coastlines</p>
+  </div>
+  <div class="status">
+    <div><strong>Sea level</strong> index: 19 (0 m) · 255 ≈ 8550 m</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="panel-title">Input & Controls</div>
+    <div class="card">
+      <div class="field">
+        <div class="label-row">
+          <span>Heightmap (greyscale)</span>
+        </div>
+        <input id="file-input" type="file" accept="image/*">
+        <div class="hint">
+          <strong>Convention:</strong> &lt; 19 = ocean, 19–255 = land (0–8550 m).
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <div class="label-row">
+          <span>Dot density</span>
+          <span class="value" id="density-label">0.55</span>
+        </div>
+        <div class="slider">
+          <input id="density" type="range" min="0.15" max="1.0" step="0.05" value="0.55">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <span>Dot size</span>
+          <span class="value" id="size-label">0.6 px</span>
+        </div>
+        <div class="slider">
+          <input id="dot-size" type="range" min="0.6" max="2.8" step="0.1" value="0.6">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <span>Sampling step</span>
+          <span class="value" id="step-label">1 px</span>
+        </div>
+        <div class="slider">
+          <input id="step" type="range" min="1" max="6" step="1" value="1">
+        </div>
+        <div class="hint">
+          Lower step = more precise but slower on 4k–8k maps.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button id="download-btn" disabled>
+        <span class="dot"></span> Download PNG
+      </button>
+      <div class="hint" id="status-text">
+        Load a heightmap to generate the stipple map + coastlines.
+      </div>
+      <div class="pill-row">
+        <div class="pill">Ocean: &lt; 19 → blank</div>
+        <div class="pill">Land: elevation-based stipple</div>
+        <div class="pill">Coastlines: land–sea boundary</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="canvas-wrap">
+      <div class="canvas-header">
+        <span>Stipple Output</span>
+        <span class="badge" id="dim-label">—</span>
+      </div>
+      <div class="canvas-container">
+        <canvas id="stipple-canvas"></canvas>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function() {
+  const SEA_LEVEL = 19;      // Index below which is ocean
+  const MAX_INDEX = 255;     // 255 maps to ~8550 m
+  const MAX_ALT_M = 8550;    // for info / scaling if needed
+
+  const fileInput    = document.getElementById('file-input');
+  const densityInput = document.getElementById('density');
+  const sizeInput    = document.getElementById('dot-size');
+  const stepInput    = document.getElementById('step');
+
+  const densityLabel = document.getElementById('density-label');
+  const sizeLabel    = document.getElementById('size-label');
+  const stepLabel    = document.getElementById('step-label');
+
+  const statusText   = document.getElementById('status-text');
+  const dimLabel     = document.getElementById('dim-label');
+  const downloadBtn  = document.getElementById('download-btn');
+
+  const canvas       = document.getElementById('stipple-canvas');
+  const ctx          = canvas.getContext('2d');
+
+  // Offscreen canvas for reading source pixels
+  const srcCanvas = document.createElement('canvas');
+  const srcCtx    = srcCanvas.getContext('2d');
+
+  let currentWidth  = 0;
+  let currentHeight = 0;
+  let hasImage      = false;
+
+  function updateLabels() {
+    densityLabel.textContent = Number(densityInput.value).toFixed(2);
+    sizeLabel.textContent    = Number(sizeInput.value).toFixed(1) + ' px';
+    stepLabel.textContent    = stepInput.value + ' px';
+  }
+
+  updateLabels();
+
+  densityInput.addEventListener('input', () => {
+    updateLabels();
+    if (hasImage) generateStipple();
+  });
+  sizeInput.addEventListener('input', () => {
+    updateLabels();
+    if (hasImage) generateStipple();
+  });
+  stepInput.addEventListener('input', () => {
+    updateLabels();
+    if (hasImage) generateStipple();
+  });
+
+  fileInput.addEventListener('change', handleFile);
+
+  function handleFile(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    img.onload = () => {
+      currentWidth  = img.width;
+      currentHeight = img.height;
+
+      srcCanvas.width  = currentWidth;
+      srcCanvas.height = currentHeight;
+      srcCtx.clearRect(0, 0, currentWidth, currentHeight);
+      srcCtx.drawImage(img, 0, 0);
+
+      canvas.width  = currentWidth;
+      canvas.height = currentHeight;
+
+      dimLabel.textContent = currentWidth + ' × ' + currentHeight;
+
+      hasImage = true;
+      generateStipple();
+    };
+    img.onerror = () => {
+      statusText.textContent = 'Could not load image. Please try another file.';
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
+  // --- helper: average greyscale ---
+  function greyAt(S, W, H, x, y) {
+    if (x < 0 || x >= W || y < 0 || y >= H) return 0;
+    const idx = (y * W + x) * 4;
+    return (S[idx] + S[idx+1] + S[idx+2]) / 3;
+  }
+
+  // --- helper: tiny deterministic 2D hash [0,1) ---
+  function hash2D(x, y) {
+    // Bit-mix: keep it cheap but stable
+    let n = x * 374761393 + y * 668265263;
+    n = (n ^ (n >> 13)) * 1274126177;
+    n = n ^ (n >> 16);
+    return (n >>> 0) / 4294967295; // 0..1
+  }
+
+  // --- helper: draw broken waves just offshore (unchanged) ---
+  function drawBrokenWaves(ctx, coastPixels, S, W, H) {
+    ctx.save();
+    ctx.strokeStyle = '#0b1120';
+    ctx.lineWidth   = 0.7;
+    ctx.lineCap     = 'round';
+
+    const n = coastPixels.length;
+    if (!n) { ctx.restore(); return; }
+
+    for (let i = 0; i < n; i++) {
+      // Skip most points so it feels broken, not continuous
+      if (Math.random() > 0.38) continue;
+
+      const { x, y } = coastPixels[i];
+
+      // Estimate outward (toward ocean) direction by averaging ocean neighbors
+      let sumDx = 0, sumDy = 0, count = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx <= 0 || nx >= W-1 || ny <= 0 || ny >= H-1) continue;
+
+          const ngrey = greyAt(S, W, H, nx, ny);
+          const nIsLand = ngrey >= SEA_LEVEL;
+          if (!nIsLand) {
+            sumDx += dx;
+            sumDy += dy;
+            count++;
+          }
+        }
+      }
+      if (!count) continue;
+
+      let dx = sumDx / count;
+      let dy = sumDy / count;
+      const len = Math.hypot(dx, dy);
+      if (!len) continue;
+      dx /= len; dy /= len; // outward unit vector into ocean
+
+      // Wave parameters
+      const radius   = 3 + Math.random() * 5;          // 3–8 px
+      const offset   = 2 + Math.random() * 6;          // distance from shore
+      const cx       = x + dx * (radius + offset);
+      const cy       = y + dy * (radius + offset);
+
+      // Make sure center is still in ocean area
+      const gCenter  = greyAt(S, W, H, Math.round(cx), Math.round(cy));
+      if (gCenter >= SEA_LEVEL) continue;
+
+      const baseAngle = Math.atan2(dy, dx) + Math.PI / 2; // along-coast
+      const spread    = (Math.PI / 2) * (0.4 + Math.random() * 0.6); // 0.2π–0.8π
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, baseAngle - spread * 0.5, baseAngle + spread * 0.5);
+      ctx.stroke();
+
+      // Occasionally add a second tiny fragment for extra "broken" feel
+      if (Math.random() < 0.35) {
+        const r2 = radius * (0.6 + Math.random() * 0.4);
+        const off2 = offset + radius * (0.5 + Math.random() * 0.5);
+        const cx2 = x + dx * (r2 + off2);
+        const cy2 = y + dy * (r2 + off2);
+        const g2  = greyAt(S, W, H, Math.round(cx2), Math.round(cy2));
+        if (g2 < SEA_LEVEL) {
+          const jitter = (Math.random() - 0.5) * (Math.PI / 6);
+          ctx.beginPath();
+          ctx.arc(cx2, cy2, r2, baseAngle - spread * 0.3 + jitter,
+                               baseAngle + spread * 0.3 + jitter);
+          ctx.stroke();
+        }
+      }
+    }
+
+    ctx.restore();
+  }
+
+  function generateStipple() {
+    if (!hasImage || !currentWidth || !currentHeight) return;
+
+    const W = currentWidth;
+    const H = currentHeight;
+
+    const imgData = srcCtx.getImageData(0, 0, W, H);
+    const S = imgData.data;
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    // Parchment
+    ctx.fillStyle = '#f5f0e3';
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtle grain
+    const grainAlpha = 0.06;
+    const grainDensity = 0.002;
+    const totalPixels = W * H;
+    const grainDots = Math.floor(totalPixels * grainDensity);
+    ctx.fillStyle = 'rgba(0,0,0,' + grainAlpha + ')';
+    for (let i = 0; i < grainDots; i++) {
+      const gx = Math.random() * W;
+      const gy = Math.random() * H;
+      const r  = Math.random() * 0.5;
+      ctx.beginPath();
+      ctx.arc(gx, gy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Stipple
+    const density   = parseFloat(densityInput.value);
+    const baseSize  = parseFloat(sizeInput.value);
+    const step      = parseInt(stepInput.value, 10) || 3;
+    const elevGamma = 1.35;
+
+    ctx.fillStyle = '#111827';
+    ctx.lineWidth = 0;
+
+    let landDots = 0;
+    let oceanSamples = 0;
+    let landSamples  = 0;
+
+    const maxValSpan = MAX_INDEX - SEA_LEVEL || 1;
+
+    for (let y = 0; y < H; y += step) {
+      for (let x = 0; x < W; x += step) {
+        const grey = greyAt(S, W, H, x, y);
+
+        if (grey < SEA_LEVEL) {
+          oceanSamples++;
+          continue;
+        }
+
+        landSamples++;
+
+        const elevNorm = Math.min(Math.max((grey - SEA_LEVEL) / maxValSpan, 0), 1);
+        const p = density * Math.pow(elevNorm, elevGamma);
+
+        if (Math.random() < p) {
+          const jitterX = (Math.random() - 0.5) * step;
+          const jitterY = (Math.random() - 0.5) * step;
+          const cx = x + jitterX;
+          const cy = y + jitterY;
+          if (cx < 0 || cx >= W || cy < 0 || cy >= H) continue;
+
+          const rBase = baseSize;
+          const rVar  = 0.6 * elevNorm;
+          const radius = Math.max(0.2, rBase + rVar * (Math.random() * 0.7 + 0.3));
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+          landDots++;
+        }
+      }
+    }
+
+    // --- Coastline overlay with ink-like varying thickness ---
+    // We build a list of *land-side* coastline pixels and assign each
+    // an "ink radius" based on exposure to ocean, local drop, and elevation.
+    const coastPixels = [];
+    const clamp01 = v => v < 0 ? 0 : (v > 1 ? 1 : v);
+
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const grey = greyAt(S, W, H, x, y);
+        const isLand = grey >= SEA_LEVEL;
+        if (!isLand) continue;
+
+        let oceanCount = 0;
+        let maxDrop    = 0;
+        let isCoast    = false;
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = x + dx;
+            const ny = y + dy;
+            const ngrey   = greyAt(S, W, H, nx, ny);
+            const nIsLand = ngrey >= SEA_LEVEL;
+
+            if (!nIsLand) {
+              oceanCount++;
+              const drop = grey - ngrey;
+              if (drop > maxDrop) maxDrop = drop;
+            }
+            // land pixel with at least one ocean neighbor => coastline
+            if (!nIsLand) {
+              isCoast = true;
+            }
+          }
+        }
+
+        if (!isCoast) continue;
+
+        // Normalize factors to [0,1]
+        const elevNorm   = clamp01((grey - SEA_LEVEL) / maxValSpan);
+        const exposure   = clamp01(oceanCount / 8);      // how sea-exposed this pixel is
+        const slopeFactor = clamp01(maxDrop / 25);       // 25 grey levels ≈ strong drop
+
+        // Low-frequency-ish variation via hash
+        const h      = hash2D(x, y);
+        const noise  = (h - 0.5) * 0.6;                  // [-0.3..0.3]
+
+        // Base ink radius in pixels (before clamping)
+        let radius = 0.7
+                   + 1.2 * exposure      // bolder on headlands / exposed coasts
+                   + 0.8 * elevNorm      // slightly darker where land is high right at the edge
+                   + 0.7 * slopeFactor   // steep coastal cliffs get more ink
+                   + noise;
+
+        radius *= 0.5; // keep within a compact range
+
+        // Hard clamp so it never explodes into a blob
+        radius = Math.max(0.4, Math.min(radius, 2.6));
+
+        // Slight positional wobble matching the same hash so strokes feel hand-drawn
+        const jitterAngle = h * Math.PI * 2;
+        const jitterMag   = 0.15 + 0.25 * exposure; // more exposed => more wobble
+        const jx = Math.cos(jitterAngle) * jitterMag;
+        const jy = Math.sin(jitterAngle) * jitterMag;
+
+        coastPixels.push({ x: x + jx, y: y + jy, r: radius });
+      }
+    }
+
+    // Render the ink coastline as overlapping discs
+    ctx.fillStyle = '#020617'; // deep ink
+    for (let i = 0; i < coastPixels.length; i++) {
+      const c = coastPixels[i];
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // --- Broken waves just outside the coast (reuses our coastPixels) ---
+    drawBrokenWaves(ctx, coastPixels, S, W, H);
+
+    ctx.restore();
+
+    statusText.textContent = `Stipple generated: ${landDots.toLocaleString()} land dots · ` +
+                             `${landSamples.toLocaleString()} land samples · ` +
+                             `${oceanSamples.toLocaleString()} ocean samples · ` +
+                             `coastlines + broken waves from sea level 19`;
+    downloadBtn.disabled = false;
+  }
+
+  downloadBtn.addEventListener('click', function() {
+    if (!hasImage) return;
+    canvas.toBlob(function(blob) {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'stipple-coastlines-waves.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+})();
+</script>
+</body>
+</html>
