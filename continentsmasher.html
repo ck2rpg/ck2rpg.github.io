@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Parchment Continent Smasher — Layered + Wide Collision</title>
+<style>
+  :root{
+    --parchment:#f4e9d5; --parchment-2:#eadcc3; --parchment-3:#dcccad;
+    --ink:#3c2f21; --ink-2:#6b5a46; --accent:#a65d37; --accent-2:#2f5f73;
+    --border:#c4b496; --shadow:0 10px 28px rgba(34,26,18,.18);
+    --shadow-soft:0 6px 16px rgba(34,26,18,.12);
+    --radius:14px; --radius-sm:12px;
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --wood:#2a241e; --wood-2:#201b16; --panelW: 370px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: radial-gradient(1200px 800px at 30% -10%, #3a332b 0, var(--wood) 45%, var(--wood-2) 100%);
+    color:var(--ink);
+    overflow:hidden;
+    font-family:var(--font-serif);
+  }
+  .app{height:100%; display:grid; grid-template-columns: var(--panelW) 1fr;}
+  .panel{
+    height:100%; padding:14px;
+    background:
+      radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, var(--parchment) 0%, var(--parchment-2) 100%);
+    border-right:1px solid rgba(60,47,33,.18);
+    box-shadow: var(--shadow);
+    position:relative;
+  }
+  .panel:before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(900px 700px at 10% 15%, rgba(0,0,0,.06) 0, rgba(0,0,0,0) 60%),
+      radial-gradient(1000px 700px at 80% 40%, rgba(0,0,0,.05) 0, rgba(0,0,0,0) 55%),
+      repeating-linear-gradient(12deg, rgba(60,47,33,.03) 0 2px, rgba(60,47,33,0) 2px 10px);
+    mix-blend-mode:multiply; opacity:.55;
+  }
+  .panelInner{position:relative; height:100%; display:flex; flex-direction:column; gap:12px;}
+  .title{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    padding:10px 10px 8px;
+    border:1px solid rgba(60,47,33,.18);
+    border-radius:var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,.55) 0, rgba(255,255,255,.22) 100%);
+    box-shadow: var(--shadow-soft);
+  }
+  .title h1{margin:0; font-size:16px; letter-spacing:.2px;}
+  .title .sub{margin-top:4px; font-family:var(--font-sans); color:var(--ink-2); font-size:12px; line-height:1.25;}
+  .badge{
+    font-family:var(--font-mono); font-size:11px; color:rgba(60,47,33,.85);
+    border:1px dashed rgba(60,47,33,.25);
+    padding:6px 8px; border-radius:999px; background:rgba(255,255,255,.35);
+    white-space:nowrap; height:fit-content;
+  }
+  .card{
+    border:1px solid rgba(60,47,33,.18);
+    border-radius:var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,.60) 0, rgba(255,255,255,.25) 100%);
+    box-shadow: var(--shadow-soft);
+    padding:10px;
+  }
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  label.small{font-family:var(--font-sans); font-size:12px; color:var(--ink-2);}
+  input[type="number"], input[type="range"]{accent-color:var(--accent);}
+  .num{
+    width:112px; padding:8px 10px; border-radius:12px;
+    border:1px solid rgba(60,47,33,.22);
+    background: rgba(255,255,255,.55);
+    font-family:var(--font-mono); font-size:12px; color:var(--ink);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    outline:none;
+  }
+  .num:focus{border-color: rgba(166,93,55,.55); box-shadow:0 0 0 3px rgba(166,93,55,.18), inset 0 1px 0 rgba(255,255,255,.6);}
+  .btn{
+    cursor:pointer; user-select:none;
+    border:1px solid rgba(60,47,33,.24);
+    background:
+      radial-gradient(700px 260px at 10% 0%, rgba(255,255,255,.85) 0, rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, rgba(255,255,255,.65) 0, rgba(255,255,255,.25) 100%);
+    color:var(--ink);
+    padding:8px 10px;
+    border-radius:12px;
+    font-family:var(--font-sans);
+    font-size:12px;
+    box-shadow: var(--shadow-soft);
+    transition: transform .06s ease, border-color .12s ease, filter .12s ease;
+  }
+  .btn:hover{filter:brightness(1.02); border-color: rgba(166,93,55,.45);}
+  .btn:active{transform: translateY(1px);}
+  .btn.danger{border-color: rgba(181,75,60,.35);}
+  .divider{height:1px; background: rgba(60,47,33,.16); margin: 6px 0;}
+  .hint{font-family:var(--font-sans); font-size:12px; color:var(--ink-2); line-height:1.35;}
+
+  .libHeader{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .libHeader .k{font-family:var(--font-sans); font-size:12px; color:var(--ink-2);}
+  .libList{
+    display:flex; flex-direction:column; gap:8px;
+    overflow:auto; padding-right:4px; max-height: 34vh;
+  }
+  .item{
+    display:grid; grid-template-columns: 62px 1fr; gap:10px; align-items:center;
+    border:1px solid rgba(60,47,33,.18);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,.46);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    padding:8px;
+    cursor: grab;
+    user-select:none;
+  }
+  .item:active{cursor:grabbing;}
+  .thumb{
+    width:62px; height:46px; border-radius:10px;
+    border:1px solid rgba(60,47,33,.22);
+    background:#111; overflow:hidden;
+  }
+  .thumb canvas{width:100%; height:100%; display:block; image-rendering:pixelated;}
+  .meta .name{
+    font-family:var(--font-sans); font-size:12px; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .meta .info{margin-top:4px; font-family:var(--font-mono); font-size:11px; color:rgba(60,47,33,.82);}
+
+  .pill{
+    font-family:var(--font-mono);
+    font-size:10px;
+    padding:3px 7px;
+    border-radius:999px;
+    border:1px dashed rgba(60,47,33,.25);
+    background: rgba(255,255,255,.35);
+    white-space:nowrap;
+  }
+
+  .mapWrap{position:relative; height:100%; overflow:hidden;}
+  canvas{image-rendering:pixelated;}
+  .mapCanvas{position:absolute; inset:0; width:100%; height:100%; display:block; background:#000;}
+  .hud{
+    position:absolute; top:14px; left:14px;
+    display:flex; gap:10px; align-items:flex-start;
+    pointer-events:none;
+  }
+  .chip{
+    pointer-events:none;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:rgba(255,255,255,.92);
+    background: rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:7px 10px;
+    backdrop-filter: blur(6px);
+  }
+  .chip strong{font-weight:700;}
+  .dropTip{
+    position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);
+    font-family:var(--font-sans); font-size:13px; color: rgba(255,255,255,.78);
+    background: rgba(0,0,0,.35);
+    border:1px dashed rgba(255,255,255,.22);
+    border-radius: 16px;
+    padding: 12px 14px;
+    backdrop-filter: blur(6px);
+    text-align:center;
+    max-width: 560px;
+    line-height:1.35;
+    pointer-events:none;
+  }
+  .selBox{
+    position:absolute;
+    border:2px solid rgba(255,255,255,.85);
+    border-radius:10px;
+    box-shadow: 0 0 0 3px rgba(0,0,0,.35);
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="panelInner">
+      <div class="title">
+        <div>
+          <h1>Continent Smasher (Wide Collision)</h1>
+          <div class="sub">Layers are movable. Collisions create a broad orogenic belt + optional foreland basin.</div>
+        </div>
+        <div class="badge">Ocean &lt; 19 • Land ≥ 19</div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; width:100%;">
+          <div class="row">
+            <label class="small">Map W</label><input id="mapW" class="num" type="number" min="64" step="1" value="4096" />
+            <label class="small">Map H</label><input id="mapH" class="num" type="number" min="64" step="1" value="2048" />
+            <button id="createMap" class="btn">Create / Reset</button>
+          </div>
+          <button id="exportPNG" class="btn">Export PNG</button>
+        </div>
+        <div class="divider"></div>
+        <div class="hint">
+          <b>New collision model:</b> overlap defines a <i>suture</i>; uplift spreads outward as a belt. Foreland subsidence can form a basin ring.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="gap:12px;">
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Collision intensity</b> <span id="upliftLabel" class="pill">0.75</span></label>
+            <input id="uplift" type="range" min="0" max="1.5" step="0.01" value="0.75" style="width:100%;" />
+          </div>
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Ridge core</b> <span id="ridgeLabel" class="pill">1.10</span></label>
+            <input id="ridge" type="range" min="0" max="2.5" step="0.01" value="1.10" style="width:100%;" />
+          </div>
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Edge blend</b> <span id="blendLabel" class="pill">0.30</span></label>
+            <input id="blend" type="range" min="0" max="1" step="0.01" value="0.30" style="width:100%;" />
+          </div>
+
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Belt width (px)</b> <span id="beltWLabel" class="pill">160</span></label>
+            <input id="beltW" type="range" min="20" max="600" step="1" value="160" style="width:100%;" />
+          </div>
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Belt height</b> <span id="beltHLabel" class="pill">1.00</span></label>
+            <input id="beltH" type="range" min="0" max="2.5" step="0.01" value="1.00" style="width:100%;" />
+          </div>
+
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Foreland depth</b> <span id="basinDLabel" class="pill">0.55</span></label>
+            <input id="basinD" type="range" min="0" max="1.5" step="0.01" value="0.55" style="width:100%;" />
+          </div>
+          <div style="flex:1 1 100%;">
+            <label class="small"><b>Foreland distance</b> <span id="basinRLabel" class="pill">240</span></label>
+            <input id="basinR" type="range" min="0" max="900" step="1" value="240" style="width:100%;" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="libHeader">
+          <div class="k"><b>Heightmap Library</b> (drag to add)</div>
+          <div class="row" style="gap:8px;">
+            <button id="uploadBtn" class="btn">Upload</button>
+            <button id="clearLib" class="btn danger">Clear</button>
+          </div>
+        </div>
+        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" multiple style="display:none" />
+        <div id="libList" class="libList"></div>
+        <div class="hint" style="margin-top:6px;">
+          Click a placed continent to select (land pixels only), then drag. Hold <b>Shift</b> for faster motion.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <button id="deleteLayer" class="btn danger">Delete Selected</button>
+          <button id="clearLayers" class="btn danger">Clear Layers</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="mapWrap">
+    <canvas id="view" class="mapCanvas"></canvas>
+    <div class="hud">
+      <div id="hudInfo" class="chip">—</div>
+      <div id="hudSel" class="chip" style="display:none;">Selected: <strong id="selName"></strong></div>
+    </div>
+    <div id="dropTip" class="dropTip">
+      Drop a heightmap here.<br/>Then click a continent to select and move it into collisions.
+    </div>
+    <div id="selBox" class="selBox" style="display:none;"></div>
+  </main>
+</div>
+
+<script>
+(() => {
+  // ===== Utilities =====
+  const clamp = (v,a,b)=> v<a?a : (v>b?b:v);
+  const lerp  = (a,b,t)=> a + (b-a)*t;
+  const smoothstep = (a,b,x)=>{
+    const t = clamp((x-a)/(b-a),0,1);
+    return t*t*(3-2*t);
+  };
+  function hash2(x,y,seed=1337){
+    let n = (x*374761393 + y*668265263 + seed*1442695041) | 0;
+    n ^= (n << 13); n ^= (n >>> 17); n ^= (n << 5);
+    return ((n>>>0) / 4294967295);
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Fast-ish 2-pass chamfer distance transform:
+  // input: seedMask[u8]=1 for "distance sources"
+  // output: dist[u16] (approx px distance)
+  function chamferDistance(seedMask, w, h){
+    const INF = 0x3fff;
+    const dist = new Uint16Array(w*h);
+    for(let i=0;i<dist.length;i++) dist[i] = seedMask[i] ? 0 : INF;
+
+    // weights ~ (1, sqrt(2), sqrt(5)) approximations
+    const w1=3, w2=4, w3=7; // scaled distances (later /3)
+    // forward pass
+    for(let y=0;y<h;y++){
+      const row=y*w;
+      for(let x=0;x<w;x++){
+        const i=row+x;
+        let d=dist[i];
+        if(d===0) continue;
+        let best=d;
+        if(x>0) best = Math.min(best, dist[i-1] + w1);
+        if(y>0) best = Math.min(best, dist[i-w] + w1);
+        if(x>0 && y>0) best = Math.min(best, dist[i-w-1] + w2);
+        if(x+1<w && y>0) best = Math.min(best, dist[i-w+1] + w2);
+        if(x>1 && y>0) best = Math.min(best, dist[i-w-2] + w3);
+        if(x+2<w && y>0) best = Math.min(best, dist[i-w+2] + w3);
+        dist[i]=best;
+      }
+    }
+    // backward pass
+    for(let y=h-1;y>=0;y--){
+      const row=y*w;
+      for(let x=w-1;x>=0;x--){
+        const i=row+x;
+        let d=dist[i];
+        if(d===0) continue;
+        let best=d;
+        if(x+1<w) best = Math.min(best, dist[i+1] + w1);
+        if(y+1<h) best = Math.min(best, dist[i+w] + w1);
+        if(x+1<w && y+1<h) best = Math.min(best, dist[i+w+1] + w2);
+        if(x>0 && y+1<h) best = Math.min(best, dist[i+w-1] + w2);
+        if(x+2<w && y+1<h) best = Math.min(best, dist[i+w+2] + w3);
+        if(x>1 && y+1<h) best = Math.min(best, dist[i+w-2] + w3);
+        dist[i]=best;
+      }
+    }
+    // scale back to px-ish
+    for(let i=0;i<dist.length;i++){
+      dist[i] = Math.min(0x3fff, (dist[i] / 3) | 0);
+    }
+    return dist;
+  }
+
+  // ===== DOM =====
+  const view = document.getElementById('view');
+  const ctxV = view.getContext('2d', { willReadFrequently:true });
+
+  const mapWEl = document.getElementById('mapW');
+  const mapHEl = document.getElementById('mapH');
+  const createMapBtn = document.getElementById('createMap');
+  const exportBtn = document.getElementById('exportPNG');
+
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('fileInput');
+  const clearLibBtn = document.getElementById('clearLib');
+  const libList = document.getElementById('libList');
+
+  const uplift = document.getElementById('uplift');
+  const ridge  = document.getElementById('ridge');
+  const blend  = document.getElementById('blend');
+  const beltW  = document.getElementById('beltW');
+  const beltH  = document.getElementById('beltH');
+  const basinD = document.getElementById('basinD');
+  const basinR = document.getElementById('basinR');
+
+  const upliftLabel = document.getElementById('upliftLabel');
+  const ridgeLabel  = document.getElementById('ridgeLabel');
+  const blendLabel  = document.getElementById('blendLabel');
+  const beltWLabel  = document.getElementById('beltWLabel');
+  const beltHLabel  = document.getElementById('beltHLabel');
+  const basinDLabel = document.getElementById('basinDLabel');
+  const basinRLabel = document.getElementById('basinRLabel');
+
+  const deleteLayerBtn = document.getElementById('deleteLayer');
+  const clearLayersBtn = document.getElementById('clearLayers');
+
+  const hudInfo = document.getElementById('hudInfo');
+  const hudSel  = document.getElementById('hudSel');
+  const selNameEl = document.getElementById('selName');
+  const selBox = document.getElementById('selBox');
+  const dropTip = document.getElementById('dropTip');
+
+  function syncLabels(){
+    upliftLabel.textContent = (+uplift.value).toFixed(2);
+    ridgeLabel.textContent  = (+ridge.value).toFixed(2);
+    blendLabel.textContent  = (+blend.value).toFixed(2);
+    beltWLabel.textContent  = String(+beltW.value|0);
+    beltHLabel.textContent  = (+beltH.value).toFixed(2);
+    basinDLabel.textContent = (+basinD.value).toFixed(2);
+    basinRLabel.textContent = String(+basinR.value|0);
+  }
+  for(const el of [uplift,ridge,blend,beltW,beltH,basinD,basinR]){
+    el.addEventListener('input', () => { syncLabels(); rerender(); });
+  }
+  syncLabels();
+
+  // ===== Map backing store =====
+  let MW = 4096, MH = 2048;
+  let mapImg = null;
+  let mapU8  = null;
+  let viewScale = 1, viewOffX = 0, viewOffY = 0;
+
+  function resizeViewCanvas(){
+    const rect = view.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    view.width  = Math.max(1, Math.floor(rect.width  * dpr));
+    view.height = Math.max(1, Math.floor(rect.height * dpr));
+    ctxV.setTransform(1,0,0,1,0,0);
+  }
+  function computeFit(){
+    const vw = view.width, vh = view.height;
+    const sx = vw / MW, sy = vh / MH;
+    viewScale = Math.min(sx, sy);
+    const drawW = MW * viewScale;
+    const drawH = MH * viewScale;
+    viewOffX = (vw - drawW) * 0.5;
+    viewOffY = (vh - drawH) * 0.5;
+  }
+  function viewToMap(px,py){
+    return { x: (px - viewOffX) / viewScale, y: (py - viewOffY) / viewScale };
+  }
+  function mapToView(mx,my){
+    return { x: mx*viewScale + viewOffX, y: my*viewScale + viewOffY };
+  }
+
+  function createMap(w,h){
+    MW = clamp((w|0)||4096, 64, 16384);
+    MH = clamp((h|0)||2048, 64, 16384);
+
+    resizeViewCanvas();
+
+    mapImg = new ImageData(MW, MH);
+    mapU8 = mapImg.data;
+    for(let i=0;i<mapU8.length;i+=4){
+      mapU8[i]=mapU8[i+1]=mapU8[i+2]=0; mapU8[i+3]=255;
+    }
+    layers.length = 0;
+    selectedLayerId = null;
+    updateSelectionUI();
+    rerender();
+    dropTip.style.display = 'block';
+  }
+
+  // ===== Library =====
+  const library = [];
+  let nextLibId = 1;
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const files = [...(e.target.files||[])];
+    e.target.value = "";
+    for(const f of files){
+      try{
+        const item = await loadHeightmapFile(f);
+        library.push(item);
+        addLibraryRow(item);
+      }catch(err){
+        console.error(err);
+        alert(`Failed to load ${f.name}`);
+      }
+    }
+  });
+  clearLibBtn.addEventListener('click', () => { library.length=0; libList.innerHTML=""; });
+
+  async function loadHeightmapFile(file){
+    const bmp = await createImageBitmap(file);
+    const w = bmp.width|0, h = bmp.height|0;
+
+    const c = document.createElement('canvas');
+    c.width=w; c.height=h;
+    const cctx = c.getContext('2d', { willReadFrequently:true });
+    cctx.imageSmoothingEnabled=false;
+    cctx.drawImage(bmp,0,0);
+
+    const img = cctx.getImageData(0,0,w,h);
+    const d = img.data;
+
+    for(let i=0;i<d.length;i+=4){
+      if(d[i+3]===0){ d[i]=d[i+1]=d[i+2]=0; d[i+3]=255; }
+      else d[i+3]=255;
+      const r=d[i], g=d[i+1], b=d[i+2];
+      const lum = (0.2126*r + 0.7152*g + 0.0722*b) | 0;
+      d[i]=d[i+1]=d[i+2]=lum;
+    }
+
+    const srcCanvas = document.createElement('canvas');
+    srcCanvas.width=w; srcCanvas.height=h;
+    srcCanvas.getContext('2d').putImageData(img,0,0);
+
+    const thumb = document.createElement('canvas');
+    thumb.width=62; thumb.height=46;
+    const tctx = thumb.getContext('2d');
+    tctx.imageSmoothingEnabled=false;
+    tctx.drawImage(srcCanvas,0,0,w,h,0,0,thumb.width,thumb.height);
+
+    return { id: nextLibId++, name:file.name, w,h, srcCanvas, srcImg:img, thumbCanvas:thumb };
+  }
+
+  function addLibraryRow(item){
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.draggable = true;
+    row.dataset.id = String(item.id);
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className='thumb';
+    thumbWrap.appendChild(item.thumbCanvas);
+
+    const meta = document.createElement('div');
+    meta.className='meta';
+    meta.innerHTML = `
+      <div class="name"><span>${escapeHtml(item.name)}</span><span class="pill">drag</span></div>
+      <div class="info">${item.w}×${item.h}</div>
+    `;
+
+    row.appendChild(thumbWrap);
+    row.appendChild(meta);
+
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', String(item.id));
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+
+    libList.appendChild(row);
+  }
+
+  // ===== Layers =====
+  const layers = []; // {id,name,w,h,srcImgData,x,y}
+  let nextLayerId = 1;
+  let selectedLayerId = null;
+
+  function addLayerFromLib(libItem, x, y){
+    layers.push({
+      id: nextLayerId++,
+      name: libItem.name,
+      w: libItem.w,
+      h: libItem.h,
+      srcImgData: libItem.srcImg,
+      x: x|0,
+      y: y|0
+    });
+    selectedLayerId = layers[layers.length-1].id;
+    updateSelectionUI();
+    rerender();
+  }
+  function getSelectedLayer(){
+    if(!selectedLayerId) return null;
+    return layers.find(l => l.id === selectedLayerId) || null;
+  }
+  function updateSelectionUI(){
+    const sel = getSelectedLayer();
+    if(sel){
+      hudSel.style.display = '';
+      selNameEl.textContent = sel.name;
+      selBox.style.display = '';
+    }else{
+      hudSel.style.display = 'none';
+      selBox.style.display = 'none';
+    }
+  }
+
+  deleteLayerBtn.addEventListener('click', () => {
+    const idx = layers.findIndex(l => l.id === selectedLayerId);
+    if(idx >= 0){
+      layers.splice(idx,1);
+      selectedLayerId = layers.length ? layers[layers.length-1].id : null;
+      updateSelectionUI();
+      rerender();
+    }
+  });
+  clearLayersBtn.addEventListener('click', () => {
+    layers.length = 0;
+    selectedLayerId = null;
+    updateSelectionUI();
+    rerender();
+    dropTip.style.display = 'block';
+  });
+
+  // ===== Drop to add =====
+  view.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
+  view.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if(!mapImg) return;
+
+    const libId = +e.dataTransfer.getData('text/plain');
+    const item = library.find(x => x.id === libId);
+    if(!item) return;
+
+    const rect = view.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top)  * dpr;
+
+    computeFit();
+    const m = viewToMap(px,py);
+
+    const x = Math.round(m.x - item.w/2);
+    const y = Math.round(m.y - item.h/2);
+
+    addLayerFromLib(item, x, y);
+    dropTip.style.display = 'none';
+  });
+
+  // ===== Rendering =====
+  function rerender(){
+    if(!mapImg) return;
+
+    // clear black
+    for(let i=0;i<mapU8.length;i+=4){
+      mapU8[i]=mapU8[i+1]=mapU8[i+2]=0; mapU8[i+3]=255;
+    }
+
+    // composite in order
+    for(const layer of layers){
+      stampWideCollision(layer);
+    }
+
+    renderToView();
+    updateHud();
+    updateSelBox();
+  }
+
+  // Wide collision stamping:
+  // - first do base stamp + overlap mark
+  // - then compute suture boundary mask and distance transform
+  // - apply broad belt uplift + foreland subsidence
+  function stampWideCollision(layer){
+    const U  = +uplift.value;  // collision intensity
+    const Rc = +ridge.value;   // ridge core multiplier
+    const B  = +blend.value;   // seam blend
+    const BW = (+beltW.value)|0; // px
+    const BH = +beltH.value;     // belt height multiplier
+    const BD = +basinD.value;    // foreland depth multiplier
+    const BR = (+basinR.value)|0; // foreland distance px (center of basin)
+
+    const sw = layer.w, sh = layer.h;
+    const sD = layer.srcImgData.data;
+    const dstX = layer.x|0, dstY = layer.y|0;
+
+    // base overlap bbox
+    const bx0 = clamp(dstX, 0, MW);
+    const by0 = clamp(dstY, 0, MH);
+    const bx1 = clamp(dstX + sw, 0, MW);
+    const by1 = clamp(dstY + sh, 0, MH);
+    if(bx1<=bx0 || by1<=by0) return;
+
+    // expanded region to allow belt spreading outward
+    const pad = Math.max(8, BW + BR + 16);
+    const x0 = clamp(bx0 - pad, 0, MW);
+    const y0 = clamp(by0 - pad, 0, MH);
+    const x1 = clamp(bx1 + pad, 0, MW);
+    const y1 = clamp(by1 + pad, 0, MH);
+    const w = (x1-x0)|0, h = (y1-y0)|0;
+
+    // Masks over expanded region
+    const overlap = new Uint8Array(w*h);   // where src land AND current map land (collision zone)
+    const srcLand = new Uint8Array(w*h);   // src land footprint in this region (for blending)
+    const seed = (layer.id*97 + (dstX*7) + (dstY*13))|0;
+
+    // Pass A: base stamp (land onto ocean) + detect overlap
+    for(let yy=0; yy<h; yy++){
+      const my = y0 + yy;
+      let dstRow = (my*MW + x0) * 4;
+
+      for(let xx=0; xx<w; xx++){
+        const mx = x0 + xx;
+
+        // sample src pixel if inside src bounds
+        const sx = mx - dstX;
+        const sy = my - dstY;
+
+        let s = 0;
+        if(sx>=0 && sy>=0 && sx<sw && sy<sh){
+          s = sD[( (sy|0)*sw + (sx|0) )*4]; // grayscale
+        }
+
+        if(s >= 19){
+          srcLand[yy*w + xx] = 1;
+          const d = mapU8[dstRow];
+
+          if(d < 19){
+            // stamp onto ocean
+            if(B > 0){
+              const t = smoothstep(19, 40, s);
+              const v = lerp(d, s, clamp(t*(0.65 + 0.35*B), 0, 1));
+              const nv = v|0;
+              mapU8[dstRow]=mapU8[dstRow+1]=mapU8[dstRow+2]=nv;
+            }else{
+              mapU8[dstRow]=mapU8[dstRow+1]=mapU8[dstRow+2]=s;
+            }
+          }else{
+            // overlap => mark (collision)
+            overlap[yy*w + xx] = 1;
+
+            // modest immediate thickening so overlap doesn't look flat even before belt
+            const a = d - 19;
+            const b = s - 19;
+            const od = Math.min(a,b) / 236;
+            const n = (hash2(mx, my, seed) - 0.5);
+            const immediate = (od*od) * (U * 55) + n*(6+10*U)*od;
+            const base = Math.max(d,s);
+            const nv = clamp(base + immediate, 0, 255) | 0;
+            mapU8[dstRow]=mapU8[dstRow+1]=mapU8[dstRow+2]=nv;
+          }
+        }
+
+        dstRow += 4;
+      }
+    }
+
+    // If there is no overlap, we're done (just stamping)
+    let anyOverlap = false;
+    for(let i=0;i<overlap.length;i++){ if(overlap[i]){ anyOverlap=true; break; } }
+    if(!anyOverlap) return;
+
+    // Build suture mask: boundary of overlap (overlap pixel with any non-overlap neighbor)
+    const suture = new Uint8Array(w*h);
+    for(let yy=1; yy<h-1; yy++){
+      const row=yy*w;
+      for(let xx=1; xx<w-1; xx++){
+        const i=row+xx;
+        if(!overlap[i]) continue;
+        const nb =
+          (overlap[i-1] & overlap[i+1] & overlap[i-w] & overlap[i+w] &
+           overlap[i-w-1] & overlap[i-w+1] & overlap[i+w-1] & overlap[i+w+1]);
+        if(!nb) suture[i] = 1;
+      }
+    }
+
+    // Distance to suture
+    const dist = chamferDistance(suture, w, h);
+
+    // Pass B: apply wide belt uplift + ridge core + optional foreland basin
+    // - Belt uplift: Gaussian-ish falloff from suture within BW
+    // - Ridge core: big boost very near suture
+    // - Basin: negative ring around BR (distance from suture), width ~ 0.6*BW
+    const beltSigma = Math.max(10, BW * 0.55);
+    const basinSigma = Math.max(12, BW * 0.65);
+
+    for(let yy=0; yy<h; yy++){
+      const my = y0 + yy;
+      let dstRow = (my*MW + x0) * 4;
+      for(let xx=0; xx<w; xx++){
+        const i = yy*w + xx;
+        const d0 = mapU8[dstRow];
+
+        // only shape land (>=19) and near the collision belt
+        const dv = dist[i];
+        if(d0 >= 19 && dv <= (BW + BR + 20)){
+          // Belt uplift (broad)
+          // falloff ~ exp(-(d^2)/(2*sigma^2))
+          const t = dv / beltSigma;
+          const gauss = Math.exp(-0.5 * t * t); // 1 at suture, decays outward
+          let add = gauss * (U * BH * 85);
+
+          // Ridge core (narrow, dramatic)
+          const core = Math.exp(-0.5 * (dv / Math.max(6, BW*0.09))**2);
+          const n = (hash2((x0+xx), my, seed+777) - 0.5);
+          add += core * (Rc * U * 110) + n * core * (18 + 30*U);
+
+          // Foreland basin (downwarp ring)
+          if(BD > 0 && BR > 0){
+            const u = (dv - BR) / basinSigma;
+            const ring = Math.exp(-0.5 * u * u); // peak at BR
+            add -= ring * (BD * U * 55);
+          }
+
+          const nv = clamp(d0 + add, 0, 255) | 0;
+          mapU8[dstRow]=mapU8[dstRow+1]=mapU8[dstRow+2]=nv;
+        }
+
+        dstRow += 4;
+      }
+    }
+
+    // Pass C: seam blending (only where src had land) to reduce cut edges
+    if(B > 0){
+      const passes = 1 + (B > 0.66 ? 1 : 0);
+      const tmp = new Uint8ClampedArray(w*h);
+
+      for(let p=0;p<passes;p++){
+        for(let yy=0; yy<h; yy++){
+          const my = y0 + yy;
+          let di = (my*MW + x0) * 4;
+          let ti = yy*w;
+          for(let xx=0; xx<w; xx++){
+            tmp[ti++] = mapU8[di];
+            di += 4;
+          }
+        }
+
+        const k = 0.12 + 0.22*B;
+        for(let yy=1; yy<h-1; yy++){
+          const my = y0 + yy;
+          for(let xx=1; xx<w-1; xx++){
+            const i = yy*w + xx;
+            if(!srcLand[i]) continue;
+
+            const avg =
+              (tmp[i] + tmp[i-1] + tmp[i+1] + tmp[i-w] + tmp[i+w] +
+               tmp[i-w-1] + tmp[i-w+1] + tmp[i+w-1] + tmp[i+w+1]) / 9;
+
+            const di = (my*MW + (x0+xx)) * 4;
+            const d = mapU8[di];
+            const nv = lerp(d, avg, k) | 0;
+            mapU8[di]=mapU8[di+1]=mapU8[di+2]=nv;
+          }
+        }
+      }
+    }
+  }
+
+  function renderToView(){
+    computeFit();
+    if(!renderToView.tmp){
+      renderToView.tmp = document.createElement('canvas');
+      renderToView.tctx = renderToView.tmp.getContext('2d', { willReadFrequently:true });
+    }
+    const tmp = renderToView.tmp, tctx = renderToView.tctx;
+    if(tmp.width !== MW || tmp.height !== MH){
+      tmp.width = MW; tmp.height = MH;
+    }
+    tctx.putImageData(mapImg, 0, 0);
+
+    ctxV.clearRect(0,0,view.width,view.height);
+    ctxV.imageSmoothingEnabled = false;
+    ctxV.drawImage(tmp, 0,0,MW,MH, viewOffX, viewOffY, MW*viewScale, MH*viewScale);
+  }
+
+  function updateHud(extra=""){
+    hudInfo.textContent = `${MW}×${MH} • layers:${layers.length} • ocean<19 land≥19${extra?(" • "+extra):""}`;
+  }
+
+  function updateSelBox(){
+    const sel = getSelectedLayer();
+    if(!sel || !mapImg){ selBox.style.display = 'none'; return; }
+    computeFit();
+
+    const x0 = clamp(sel.x, 0, MW), y0 = clamp(sel.y, 0, MH);
+    const x1 = clamp(sel.x + sel.w, 0, MW), y1 = clamp(sel.y + sel.h, 0, MH);
+    if(x1<=x0 || y1<=y0){ selBox.style.display = 'none'; return; }
+
+    const p0 = mapToView(x0,y0), p1 = mapToView(x1,y1);
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    selBox.style.left = (p0.x/dpr) + "px";
+    selBox.style.top  = (p0.y/dpr) + "px";
+    selBox.style.width  = ((p1.x-p0.x)/dpr) + "px";
+    selBox.style.height = ((p1.y-p0.y)/dpr) + "px";
+    selBox.style.display = '';
+  }
+
+  // ===== Picking / Moving =====
+  function pickLayerAt(mapX, mapY){
+    for(let i=layers.length-1;i>=0;i--){
+      const L = layers[i];
+      const lx = mapX - L.x, ly = mapY - L.y;
+      if(lx<0 || ly<0 || lx>=L.w || ly>=L.h) continue;
+      const v = L.srcImgData.data[((ly|0)*L.w + (lx|0))*4];
+      if(v >= 19) return L;
+    }
+    return null;
+  }
+
+  let dragging = false;
+  let dragStart = { mx:0, my:0, x:0, y:0 };
+  let dragMoved = false;
+
+  view.addEventListener('mousedown', (e) => {
+    if(!mapImg) return;
+    const rect = view.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top)  * dpr;
+    computeFit();
+    const m = viewToMap(px,py);
+    if(m.x<0 || m.y<0 || m.x>=MW || m.y>=MH) return;
+
+    const picked = pickLayerAt(m.x|0, m.y|0);
+    if(picked){
+      selectedLayerId = picked.id;
+      updateSelectionUI();
+      updateSelBox();
+      dragging = true;
+      dragMoved = false;
+      dragStart.mx = m.x; dragStart.my = m.y;
+      dragStart.x = picked.x; dragStart.y = picked.y;
+    }else{
+      selectedLayerId = null;
+      updateSelectionUI();
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if(!dragging) return;
+    const sel = getSelectedLayer();
+    if(!sel) return;
+
+    const rect = view.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top)  * dpr;
+    computeFit();
+    const m = viewToMap(px,py);
+
+    const dx = (m.x - dragStart.mx);
+    const dy = (m.y - dragStart.my);
+    const speed = e.shiftKey ? 2.5 : 1.0;
+
+    sel.x = Math.round(dragStart.x + dx*speed);
+    sel.y = Math.round(dragStart.y + dy*speed);
+    dragMoved = true;
+
+    rerender();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if(!dragging) return;
+    dragging = false;
+    if(dragMoved){
+      dropTip.style.display = layers.length ? 'none' : 'block';
+    }
+  });
+
+  view.addEventListener('mousemove', () => updateSelBox());
+
+  // ===== Export =====
+  exportBtn.addEventListener('click', () => {
+    if(!mapImg) return;
+    const c = document.createElement('canvas');
+    c.width = MW; c.height = MH;
+    c.getContext('2d').putImageData(mapImg,0,0);
+    c.toBlob((blob)=>{
+      if(!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `wide_collision_${MW}x${MH}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    }, 'image/png');
+  });
+
+  // ===== Create / reset =====
+  createMapBtn.addEventListener('click', () => createMap(+mapWEl.value, +mapHEl.value));
+
+  // ===== Resize =====
+  window.addEventListener('resize', () => {
+    resizeViewCanvas();
+    renderToView();
+    updateSelBox();
+  });
+
+  // ===== Boot =====
+  resizeViewCanvas();
+  createMap(+mapWEl.value, +mapHEl.value);
+})();
+</script>
+</body>
+</html>
