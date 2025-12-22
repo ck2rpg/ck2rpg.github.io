@@ -209,6 +209,25 @@ canvas{
   image-rendering:pixelated;
 }
 
+.btn{
+  width:100%;
+  padding:10px 12px;
+  border-radius:var(--radius-sm);
+  border:1px solid rgba(60,47,33,.25);
+  background:linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+  color:var(--ink);
+  font-weight:900;
+  letter-spacing:.15px;
+  cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 2px 10px rgba(34,26,18,.10);
+}
+.btn:hover{ filter:brightness(.98); }
+.btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  filter:saturate(.9);
+}
+
 /* Responsive: collapse sidebar to top on small screens */
 @media (max-width: 860px){
   body{ overflow:auto; }
@@ -235,8 +254,8 @@ const p=e("select",{className:"select"});
 const l=e("input",{className:"range",type:"range",min:-180,max:180,value:0,step:1});
 const L=e("span",{className:"chip",textContent:"Lon: 0°"});
 
-const q=e("input",{className:"range",type:"range",min:.2,max:1,step:.05,value:.6});
-const Q=e("span",{className:"chip",textContent:"Quality: 0.60x"});
+const q=e("input",{className:"range",type:"range",min:.2,max:1,step:.05,value:1});
+const Q=e("span",{className:"chip",textContent:"Quality: 1x"});
 
 const rc=e("input",{type:"checkbox"});
 const RC=e("label",{className:"chip inline",textContent:"Keep colors"});
@@ -245,11 +264,13 @@ RC.prepend(rc);
 const rs=e("input",{type:"checkbox"});
 const RS=e("label",{className:"chip inline",textContent:"Keep source size"});
 RS.prepend(rs);
+const dl=e("button",{className:"btn",textContent:"Download (source size)",disabled:true});
 
 const c=e("canvas");
 const x=c.getContext("2d",{willReadFrequently:!0});
 const y=e("canvas");
 const k=y.getContext("2d",{willReadFrequently:!0});
+
 
 /* Assemble DOM */
 d.head.appendChild(s);
@@ -267,15 +288,31 @@ u.append(
   e("div",{className:"hr"}),
   e("label",{textContent:"2) Projection"}),
   p,
-  e("div",{className:"row"},[
-    e("label",{textContent:"Center lon"}),
-    L
-  ]),
+e("div",{className:"row"},[
+  e("label",{textContent:"Center lon"}),
+  L
+]),
+e("div",{className:"row"},[RC, RS]),
+dl,
+l,
+e("div",{
+  className:"help",
+  textContent:
+    "The toggle below rotates the map horizontally by shifting the central meridian. "
+  + "Useful for re-centering continents or aligning features without changing the projection."
+}),
   l,
   e("div",{className:"row"},[
     e("label",{textContent:"Quality"}),
     Q
   ]),
+  q,
+  e("div",{
+    className:"help",
+    textContent:
+      "Controls render resolution relative to the viewport. "
+    + "Higher values produce sharper results at the cost of performance."
+  }),
   q,
   e("div",{className:"row"},[RC, RS])
 );
@@ -287,6 +324,84 @@ const H=window.HeightmapProjection={
   imgW:0,imgH:0,srcData:null,λ0:0,projections:{},render:()=>{},fit:()=>{},
   keepColor:!1,keepSize:!1
 };
+
+function renderToCanvas(dstCanvas, dstCtx, outW, outH){
+  if(!H.srcData || !H.imgW || !H.imgH) return false;
+
+  dstCanvas.width = outW;
+  dstCanvas.height = outH;
+
+  const out = dstCtx.createImageData(outW, outH);
+  const P2 = out.data;
+
+  const pr = p.value;
+  const lc = dr(H.λ0);
+  const proj = H.projections[pr];
+
+  let i = 0;
+  for(let y0=0;y0<outH;y0++){
+    const ny = (y0 + .5)/outH;
+    for(let x0=0;x0<outW;x0++, i+=4){
+      const nx = (x0 + .5)/outW;
+      const m = proj(nx, ny, lc);
+
+      if(!m || isNaN(m.λ) || isNaN(m.φ)){
+        P2[i]=P2[i+1]=P2[i+2]=240; P2[i+3]=255;
+        continue;
+      }
+
+      const u0 = ((wp(m.λ)+Math.PI)/(2*Math.PI))*H.imgW;
+      const v0 = ((Math.PI/2-m.φ)/Math.PI)*H.imgH;
+
+      if(H.keepColor){
+        const t = sampRGB(u0, v0);
+        P2[i]=t[0]|0; P2[i+1]=t[1]|0; P2[i+2]=t[2]|0;
+      }else{
+        const g = samp(u0, v0)|0;
+        P2[i]=P2[i+1]=P2[i+2]=g;
+      }
+      P2[i+3]=255;
+    }
+  }
+
+  dstCtx.putImageData(out, 0, 0);
+  return true;
+}
+
+function downloadCanvasPNG(canvas, filename){
+  canvas.toBlob((blob)=>{
+    if(!blob) return;
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }, "image/png");
+}
+
+dl.addEventListener("click", ()=>{
+  if(!H.srcData || !H.imgW || !H.imgH) return;
+
+  // Offscreen export canvas at source size
+  const outC = document.createElement("canvas");
+  const outX = outC.getContext("2d", { willReadFrequently: true });
+
+  // Render at EXACT imported size
+  const ok = renderToCanvas(outC, outX, H.imgW, H.imgH);
+  if(!ok) return;
+
+  // Helpful filename
+  const projName = (p.value || "projection").replace(/[^\w\-]+/g,"_");
+  const lon = (Math.round(H.λ0)||0);
+  const filename = `projection_${projName}_lon${lon}_${H.imgW}x${H.imgH}.png`;
+
+  downloadCanvasPNG(outC, filename);
+});
+
+
 
 const cl=(x,a,b)=>x<a?a:x>b?b:x,
       wp=λ=>((λ+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI,
@@ -399,6 +514,7 @@ f.addEventListener("change",ev=>{
       y.width=H.imgW;y.height=H.imgH;
       k.drawImage(im,0,0);
       H.srcData=k.getImageData(0,0,H.imgW,H.imgH).data;
+      dl.disabled = false;
       H.fit();
     };
     im.src=e2.target.result;
@@ -490,6 +606,8 @@ A("Rippled Equal-Area (bizarre)",(nx,ny,lc)=>{const φ=cl((.5-ny)*Math.PI,-Math.
 // Twisted Ribbon
 A("Twisted Ribbon (bizarre)",(nx,ny,lc)=>{const λb=wp(lc+(nx-.5)*2*Math.PI),φb=cl((.5-ny)*Math.PI,-Math.PI/2,Math.PI/2),φ=cl(φb+.25*Math.sin(3*λb),-Math.PI/2,Math.PI/2),λ=wp(λb+.12*Math.sin(5*φb));return{λ,φ}});
 if(S&&!S.value)S.value="Slinky Vortex (bizarre)";H.render()})();
+
+
 </script>
 
 </body>
