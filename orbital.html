@@ -1,0 +1,1632 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Köppen → Orbital “Blender-Mode” Earth Renderer (Single File)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    /* Parchment + ink */
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --accent:#a65d37;
+    --accent-2:#2f5f73;
+    --border:#c4b496;
+
+    --shadow:0 10px 30px rgba(34,26,18,.20);
+    --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+
+    --radius:14px;
+    --radius-sm:12px;
+
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+
+    --good:#2f9e5f;
+    --warn:#b07a10;
+    --bad:#b54b3c;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:#2a241e;
+    color:var(--ink);
+    font:14px/1.35 var(--font-serif);
+    overflow:hidden;
+
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "header header" "sidebar main";
+  }
+
+  header{
+    grid-area:header;
+    padding:12px 16px;
+    background:
+      radial-gradient(1200px 220px at 10% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    border-bottom:1px solid rgba(196,180,150,.85);
+    box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 6px 18px rgba(0,0,0,.18);
+    display:flex; align-items:center; gap:14px;
+  }
+  header h1{ font-size:16px; font-weight:900; margin:0; letter-spacing:.2px; }
+  header .hint{ color:var(--ink-muted); font-size:12px; font-family:var(--font-sans); }
+
+  aside{
+    grid-area:sidebar;
+    padding:14px;
+    overflow:auto;
+    background:
+      radial-gradient(900px 600px at 20% 0%, rgba(255,255,255,.70), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    border-right:1px solid rgba(196,180,150,.9);
+    box-shadow: 2px 0 18px rgba(0,0,0,.18);
+  }
+
+  main{ grid-area:main; position:relative; background:#0b0f14; }
+
+  .panel{
+    background:
+      radial-gradient(900px 260px at 15% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.18));
+    border:1px solid rgba(196,180,150,.95);
+    border-radius:var(--radius);
+    padding:12px;
+    margin-bottom:12px;
+    box-shadow: var(--shadow-soft);
+    position:relative;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; inset:8px;
+    border:1px dashed rgba(107,90,70,.25);
+    border-radius: calc(var(--radius) - 6px);
+    pointer-events:none;
+  }
+  .panel h2{
+    margin:0 0 10px 0;
+    font-size:13px;
+    letter-spacing:.25px;
+    color:var(--ink);
+    font-weight:900;
+    text-transform:uppercase;
+    font-family:var(--font-sans);
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:8px 0 6px;
+    font-family:var(--font-sans);
+  }
+
+  input[type="file"]{
+    width:100%;
+    background: rgba(255,255,255,.55);
+    border:1px solid rgba(196,180,150,.95);
+    border-radius:var(--radius-sm);
+    padding:10px;
+    color:var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,.55) inset;
+    font-family:var(--font-sans);
+  }
+
+  .row{display:flex; align-items:center; gap:8px}
+  .row > *{flex:1}
+  .grid{display:grid; grid-template-columns: 1fr 88px; gap:8px}
+  .small{ font-size:11px; color:var(--ink-muted); font-family:var(--font-sans); }
+  .mono{ font-family:var(--font-mono); font-size:11px; }
+
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(255,255,255,.25));
+    border:1px solid rgba(196,180,150,.95);
+    box-shadow: 0 1px 0 rgba(255,255,255,.5) inset;
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:18px; height:18px;
+    border-radius:999px;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,255,255,.15) 55%),
+                linear-gradient(180deg, #c58a4b, #8d4c24);
+    border:1px solid rgba(60,47,33,.45);
+    box-shadow: 0 6px 10px rgba(0,0,0,.18);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:18px; height:18px;
+    border-radius:999px;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,255,255,.15) 55%),
+                linear-gradient(180deg, #c58a4b, #8d4c24);
+    border:1px solid rgba(60,47,33,.45);
+    box-shadow: 0 6px 10px rgba(0,0,0,.18);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-track{
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(255,255,255,.25));
+    border:1px solid rgba(196,180,150,.95);
+  }
+
+  .btn{
+    appearance:none;
+    border:1px solid rgba(60,47,33,.35);
+    background:
+      radial-gradient(120% 120% at 20% 0%, rgba(255,255,255,.65), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, #f7ecd8, #e8dbc3);
+    color:var(--ink);
+    padding:10px 12px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    font-weight:900;
+    letter-spacing:.2px;
+    font-family:var(--font-sans);
+    box-shadow: var(--shadow-soft);
+  }
+  .btn:hover{ filter:brightness(1.02); transform:translateY(-1px); }
+  .btn:active{ transform:translateY(0px); filter:brightness(.99); }
+  .btn:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+  .btn.accent{
+    border-color: rgba(118,54,24,.55);
+    background:
+      radial-gradient(120% 140% at 25% 0%, rgba(255,255,255,.28), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, #c87443, #8a3f24);
+    color:#fff;
+    text-shadow: 0 1px 0 rgba(0,0,0,.25);
+  }
+
+  .progress{
+    height:10px;
+    background: rgba(255,255,255,.40);
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid rgba(196,180,150,.95);
+    box-shadow: 0 1px 0 rgba(255,255,255,.55) inset;
+    margin-top:8px;
+  }
+  .bar{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, #8a3f24, #c87443, #e1b07a);
+    transition:width .15s;
+  }
+
+  .badge{
+    display:inline-block;
+    padding:2px 8px;
+    border:1px solid rgba(196,180,150,.7);
+    border-radius:999px;
+    color:rgba(255,255,255,.92);
+    background: rgba(0,0,0,.18);
+    font-size:11px;
+    font-family:var(--font-sans);
+  }
+
+  .stage{
+    position:absolute; inset:0;
+    display:grid;
+    grid-template-rows:auto 1fr;
+    gap:8px;
+    padding:12px;
+    overflow:auto;
+  }
+  .canwrap{
+    background:
+      radial-gradient(1200px 700px at 10% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 55%),
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:var(--radius);
+    padding:10px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.30);
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:10px;
+  }
+
+  .row2{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .kv{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:rgba(231,224,210,.88);
+    font-family:var(--font-sans);
+  }
+
+  canvas{
+    width:100%;
+    height:auto;
+    display:block;
+    background:#000;
+    border-radius:12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  }
+
+  .legend{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+    font-size:11px;
+    color:var(--ink-muted);
+    font-family:var(--font-sans);
+  }
+  .chip{display:flex; align-items:center; gap:6px}
+  .swatch{
+    width:14px; height:14px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,.25);
+    box-shadow: 0 1px 0 rgba(255,255,255,.4) inset;
+  }
+
+  aside::-webkit-scrollbar, .stage::-webkit-scrollbar{ width:12px; height:12px; }
+  aside::-webkit-scrollbar-thumb, .stage::-webkit-scrollbar-thumb{
+    background: rgba(60,47,33,.25);
+    border:3px solid rgba(244,233,213,.55);
+    border-radius:999px;
+  }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Orbital Satellite Renderer (Blender Look)</h1>
+  <div class="hint">Sphere render + atmosphere + sun glint + procedural clouds + HDR tonemap + bloom.</div>
+</header>
+
+<aside>
+  <div class="panel">
+    <h2>Inputs</h2>
+    <label>Heightmap (8-bit grayscale PNG/JPG)</label>
+    <input id="heightFile" type="file" accept="image/*" />
+    <label>Köppen Map (colored with provided palette)</label>
+    <input id="koppenFile" type="file" accept="image/*" />
+    <div class="row" style="margin-top:10px">
+      <button id="fitBtn" class="btn">Fit canvases</button>
+      <button id="renderBtn" class="btn accent" disabled>Build Textures</button>
+    </div>
+    <div class="progress"><div id="prog" class="bar"></div></div>
+    <div class="row" style="margin-top:8px">
+      <span class="small">Textures</span>
+      <span id="meta" class="badge">—</span>
+    </div>
+    <div class="small mono" style="margin-top:8px">
+      Tip: Build Textures once, then adjust orbit settings in real-time.
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Terrain → Materials</h2>
+    <div class="grid">
+      <label>Sea level <span id="seaLbl" class="small"></span></label>
+      <input id="sea" type="range" min="0" max="255" value="18" />
+
+      <label>Relief strength <span id="relLbl" class="small"></span></label>
+      <input id="relief" type="range" min="0" max="300" value="120" />
+
+      <label>Vegetation (%) <span id="vegLbl" class="small"></span></label>
+      <input id="veg" type="range" min="0" max="150" value="105" />
+
+      <label>Rock on steep (%) <span id="rockLbl" class="small"></span></label>
+      <input id="rockiness" type="range" min="0" max="100" value="55" />
+
+      <label>Snowline boost (%) <span id="snowLbl" class="small"></span></label>
+      <input id="snow" type="range" min="0" max="100" value="12" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Orbit & Sun</h2>
+    <div class="grid">
+      <label>FOV ° <span id="fovLbl" class="small"></span></label>
+      <input id="fov" type="range" min="20" max="90" value="52" />
+
+      <label>Camera distance <span id="camLbl" class="small"></span></label>
+      <input id="camDist" type="range" min="130" max="420" value="220" />
+
+      <label>Tilt ° <span id="tiltLbl" class="small"></span></label>
+      <input id="tilt" type="range" min="-70" max="70" value="-18" />
+
+      <label>Yaw ° <span id="yawLbl" class="small"></span></label>
+      <input id="yaw" type="range" min="-180" max="180" value="20" />
+
+      <label>Sun azimuth ° <span id="aziLbl" class="small"></span></label>
+      <input id="azimuth" type="range" min="0" max="359" value="300" />
+
+      <label>Sun altitude ° <span id="altLbl" class="small"></span></label>
+      <input id="altitude" type="range" min="1" max="89" value="30" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Atmosphere & Clouds</h2>
+    <div class="grid">
+      <label>Atmosphere (%) <span id="atmLbl" class="small"></span></label>
+      <input id="atmo" type="range" min="0" max="200" value="120" />
+
+      <label>Haze (%) <span id="hazeLbl" class="small"></span></label>
+      <input id="haze" type="range" min="0" max="140" value="26" />
+
+      <label>Cloud amount (%) <span id="cldLbl" class="small"></span></label>
+      <input id="clouds" type="range" min="0" max="200" value="115" />
+
+      <label>Cloud shadow (%) <span id="cshLbl" class="small"></span></label>
+      <input id="cloudShadow" type="range" min="0" max="200" value="90" />
+
+      <label>Cloud speed <span id="spdLbl" class="small"></span></label>
+      <input id="cloudSpeed" type="range" min="0" max="200" value="70" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>HDR Look</h2>
+    <div class="grid">
+      <label>Exposure <span id="expLbl" class="small"></span></label>
+      <input id="exposure" type="range" min="-200" max="200" value="18" />
+
+      <label>Bloom (%) <span id="bloomLbl" class="small"></span></label>
+      <input id="bloom" type="range" min="0" max="250" value="110" />
+
+      <label>Bloom threshold <span id="thrLbl" class="small"></span></label>
+      <input id="bloomThr" type="range" min="0" max="200" value="85" />
+
+      <label>Water specular (%) <span id="wsLbl" class="small"></span></label>
+      <input id="waterSpec" type="range" min="0" max="250" value="160" />
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button id="toggleAnim" class="btn">Pause</button>
+      <button id="dlBtn" class="btn accent" disabled>Download PNG</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label style="margin:0; display:flex; align-items:center; gap:8px; font-size:12px; font-family:var(--font-sans); color:var(--ink-muted);">
+        <input id="stars" type="checkbox" checked style="width:auto; height:auto; transform:translateY(1px);" />
+        Stars background
+      </label>
+      <label style="margin:0; display:flex; align-items:center; gap:8px; font-size:12px; font-family:var(--font-sans); color:var(--ink-muted);">
+        <input id="hiRes" type="checkbox" style="width:auto; height:auto; transform:translateY(1px);" />
+        Hi-res render (slower)
+      </label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Palette Legend</h2>
+    <div id="legend" class="legend"></div>
+  </div>
+</aside>
+
+<main>
+  <div class="stage">
+    <div class="canwrap">
+      <div class="row2">
+        <div>
+          <div class="kv"><span>Heightmap</span><span id="hMeta" class="small">—</span></div>
+          <canvas id="hCanvas"></canvas>
+        </div>
+        <div>
+          <div class="kv"><span>Köppen</span><span id="kMeta" class="small">—</span></div>
+          <canvas id="kCanvas"></canvas>
+        </div>
+      </div>
+      <div>
+        <div class="kv" style="margin:8px 0 6px">
+          <span>Orbit View (WebGL)</span>
+          <span id="oMeta" class="small">—</span>
+        </div>
+        <canvas id="oCanvas"></canvas>
+      </div>
+      <div class="small mono" id="glInfo" style="opacity:.9"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  // ---------- Köppen palette ----------
+  const PALETTE = {
+    Af:[60,0,251], Am:[47,102,251], Aw:[69,151,251], As:[70,190,40],
+    BWh:[253,15,0], BWk:[254,146,143], BSh:[243,160,0], BSk:[250,217,93],
+    Csa:[246,255,9], Csb:[200,203,7], Csc:[255,205,160],
+    Cfa:[189,255,75], Cfb:[77,255,53], Cfc:[14,197,6],
+    Cwa:[137,255,147], Cwb:[81,198,96], Cwc:[33,146,48],
+    Dfa:[0,250,253], Dfb:[68,194,249], Dfc:[0,123,124], Dfd:[2,68,90],
+    Dsa:[255,0,249], Dsb:[202,0,193], Dsc:[150,39,145], Dsd:[140,86,141],
+    Dwa:[164,167,255], Dwb:[80,110,223], Dwc:[76,71,176], Dwd:[53,0,135],
+    ET:[169,172,168], EF:[98,99,97]
+  };
+  const rgb2code = new Map(Object.entries(PALETTE).map(([k,v]) => [v.join(','), k]));
+
+  // ---------- DOM ----------
+  const $ = s => document.querySelector(s);
+  const heightFile = $('#heightFile'), koppenFile = $('#koppenFile');
+  const fitBtn = $('#fitBtn'), renderBtn = $('#renderBtn'), dlBtn = $('#dlBtn');
+  const prog = $('#prog'), meta = $('#meta'), legend = $('#legend');
+
+  const hCanvas = $('#hCanvas'), kCanvas = $('#kCanvas'), oCanvas = $('#oCanvas');
+  const hCtx = hCanvas.getContext('2d', { willReadFrequently:true });
+  const kCtx = kCanvas.getContext('2d', { willReadFrequently:true });
+
+  const hMeta = $('#hMeta'), kMeta = $('#kMeta'), oMeta = $('#oMeta');
+  const glInfo = $('#glInfo');
+
+  // Terrain/material inputs
+  const sea=$('#sea'), relief=$('#relief'), veg=$('#veg'), rockiness=$('#rockiness'), snow=$('#snow');
+  // Orbit/sun
+  const fov=$('#fov'), camDist=$('#camDist'), tilt=$('#tilt'), yaw=$('#yaw'), azimuth=$('#azimuth'), altitude=$('#altitude');
+  // Atmos/clouds
+  const atmo=$('#atmo'), haze=$('#haze'), clouds=$('#clouds'), cloudShadow=$('#cloudShadow'), cloudSpeed=$('#cloudSpeed');
+  // HDR
+  const exposure=$('#exposure'), bloom=$('#bloom'), bloomThr=$('#bloomThr'), waterSpec=$('#waterSpec');
+  // toggles
+  const toggleAnim=$('#toggleAnim'), stars=$('#stars'), hiRes=$('#hiRes');
+
+  // labels
+  const seaLbl=$('#seaLbl'), relLbl=$('#relLbl'), vegLbl=$('#vegLbl'), rockLbl=$('#rockLbl'), snowLbl=$('#snowLbl');
+  const fovLbl=$('#fovLbl'), camLbl=$('#camLbl'), tiltLbl=$('#tiltLbl'), yawLbl=$('#yawLbl'), aziLbl=$('#aziLbl'), altLbl=$('#altLbl');
+  const atmLbl=$('#atmLbl'), hazeLbl=$('#hazeLbl'), cldLbl=$('#cldLbl'), cshLbl=$('#cshLbl'), spdLbl=$('#spdLbl');
+  const expLbl=$('#expLbl'), bloomLbl=$('#bloomLbl'), thrLbl=$('#thrLbl'), wsLbl=$('#wsLbl');
+
+  function syncLabels(){
+    seaLbl.textContent = sea.value;
+    relLbl.textContent = relief.value;
+    vegLbl.textContent = veg.value + '%';
+    rockLbl.textContent = rockiness.value + '%';
+    snowLbl.textContent = snow.value + '%';
+
+    fovLbl.textContent = fov.value;
+    camLbl.textContent = (camDist.value/100).toFixed(2);
+    tiltLbl.textContent = tilt.value;
+    yawLbl.textContent = yaw.value;
+    aziLbl.textContent = azimuth.value;
+    altLbl.textContent = altitude.value;
+
+    atmLbl.textContent = atmo.value + '%';
+    hazeLbl.textContent = haze.value + '%';
+    cldLbl.textContent = clouds.value + '%';
+    cshLbl.textContent = cloudShadow.value + '%';
+    spdLbl.textContent = cloudSpeed.value + '%';
+
+    expLbl.textContent = (exposure.value/100).toFixed(2);
+    bloomLbl.textContent = bloom.value + '%';
+    thrLbl.textContent = (bloomThr.value/100).toFixed(2);
+    wsLbl.textContent = waterSpec.value + '%';
+  }
+  [
+    sea,relief,veg,rockiness,snow,
+    fov,camDist,tilt,yaw,azimuth,altitude,
+    atmo,haze,clouds,cloudShadow,cloudSpeed,
+    exposure,bloom,bloomThr,waterSpec
+  ].forEach(el => el.addEventListener('input', syncLabels));
+  syncLabels();
+
+  // ---------- Load images ----------
+  let H=null, K=null; // ImageData
+  function loadImageToCanvas(file, canvas, cb){
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently:true });
+      ctx.drawImage(img, 0, 0);
+      cb(ctx.getImageData(0,0,canvas.width,canvas.height));
+    };
+    img.onerror = () => alert('Failed to load image: ' + file.name);
+    img.src = URL.createObjectURL(file);
+  }
+
+  heightFile.addEventListener('change', e=>{
+    const f=e.target.files?.[0]; if(!f) return;
+    loadImageToCanvas(f, hCanvas, id => { H=id; hMeta.textContent=`${id.width}×${id.height}`; updateMeta(); maybeEnable(); });
+  });
+  koppenFile.addEventListener('change', e=>{
+    const f=e.target.files?.[0]; if(!f) return;
+    loadImageToCanvas(f, kCanvas, id => { K=id; kMeta.textContent=`${id.width}×${id.height}`; updateMeta(); buildLegend(); maybeEnable(); });
+  });
+
+  function maybeEnable(){ renderBtn.disabled = !(H && K && H.width===K.width && H.height===K.height); }
+  function updateMeta(){ meta.textContent = (H && K && H.width===K.width) ? `${H.width}×${H.height}` : '—'; }
+
+  fitBtn.addEventListener('click', ()=>{
+    if(!(H && K)){ alert('Load both images first.'); return; }
+    const w = Math.max(H.width, K.width), h = Math.max(H.height, K.height);
+    [hCanvas,kCanvas].forEach(c => { c.width=w; c.height=h; });
+    hCtx.putImageData(H,0,0);
+    kCtx.putImageData(K,0,0);
+  });
+
+  function buildLegend(){
+    legend.innerHTML='';
+    for(const [code,rgb] of Object.entries(PALETTE)){
+      const div=document.createElement('div'); div.className='chip';
+      const sw=document.createElement('span'); sw.className='swatch'; sw.style.background=`rgb(${rgb.join(',')})`;
+      const sp=document.createElement('span'); sp.textContent=code;
+      div.appendChild(sw); div.appendChild(sp);
+      legend.appendChild(div);
+    }
+  }
+
+  // ---------- Material model helpers (CPU builds textures) ----------
+  const clamp = (v,a,b)=>v<a?a:(v>b?b:v);
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const idx4 = (x,y,w)=>((y*w+x)<<2);
+
+  function rgbToKoppen(r,g,b, tolVal){
+    const key = `${r},${g},${b}`;
+    const exact = rgb2code.get(key);
+    if(exact) return exact;
+    let best=null, bestd=1e9;
+    for(const [code, arr] of Object.entries(PALETTE)){
+      const d = Math.abs(r-arr[0]) + Math.abs(g-arr[1]) + Math.abs(b-arr[2]);
+      if(d<bestd){ bestd=d; best=code; }
+    }
+    return (bestd <= tolVal*3) ? best : 'Cfb';
+  }
+
+  function koppenBaseColor(code){
+    const g=code[0], sub=code[1]||'';
+    if(g==='A'){
+      const sav = (code==='Aw'||code==='As');
+      return sav ? [86,132,58] : [44,92,42];
+    }
+    if(g==='B'){
+      if(sub==='W') return [198,176,120];
+      return [172,160,112];
+    }
+    if(g==='C'){
+      if(sub==='s') return [154,144,92];
+      if(sub==='w') return [112,144,94];
+      return [98,140,92];
+    }
+    if(g==='D') return [92,128,92];
+    if(code==='ET') return [206,210,206];
+    if(code==='EF') return [236,240,245];
+    return [128,128,128];
+  }
+  function biomeParams(code){
+    const g=code[0];
+    if(g==='A') return { veg:1.0, dryness:0.12, baseMoist:0.72 };
+    if(g==='B'){
+      return (/BW/.test(code))
+        ? { veg:0.08, dryness:1.0, baseMoist:0.16 }
+        : { veg:0.22, dryness:0.72, baseMoist:0.26 };
+    }
+    if(g==='C') return { veg:0.70, dryness:0.40, baseMoist:0.50 };
+    if(g==='D') return { veg:0.60, dryness:0.46, baseMoist:0.44 };
+    return { veg:0.12, dryness:0.82, baseMoist:0.26 };
+  }
+
+  // Sobel slope (cheap) -> slope[0..1]
+  function sobelSlope(height8, x,y,w,h){
+    const g = (xx,yy)=>{
+      xx = xx<0?0:(xx>=w?w-1:xx);
+      yy = yy<0?0:(yy>=h?h-1:yy);
+      return height8[yy*w+xx];
+    };
+    const tl=g(x-1,y-1), t=g(x,y-1), tr=g(x+1,y-1);
+    const l =g(x-1,y  ), c=g(x,y  ), r =g(x+1,y  );
+    const bl=g(x-1,y+1), b=g(x,y+1), br=g(x+1,y+1);
+    const dx = (tr + 2*r + br) - (tl + 2*l + bl);
+    const dy = (bl + 2*b + br) - (tl + 2*t + tr);
+    return Math.min(1, Math.hypot(dx,dy) / 920);
+  }
+
+  // Simple value noise for CPU texture variation (fast)
+  function vh(x,y){
+    let n = (x*374761393 + y*668265263)>>>0;
+    n = (n ^ (n >>> 13)) * 1274126177 >>> 0;
+    return ((n ^ (n>>>16)) & 0x7fffffff) / 0x7fffffff;
+  }
+  function vnoise(x,y,scale=128){
+    const xf=x/scale, yf=y/scale;
+    const x0=Math.floor(xf), y0=Math.floor(yf);
+    const x1=x0+1, y1=y0+1;
+    const sx=xf-x0, sy=yf-y0;
+    const n00=vh(x0,y0), n10=vh(x1,y0), n01=vh(x0,y1), n11=vh(x1,y1);
+    const ix0=n00*(1-sx)+n10*sx;
+    const ix1=n01*(1-sx)+n11*sx;
+    return ix0*(1-sy)+ix1*sy;
+  }
+  function fbm(x,y, base=220, oct=4){
+    let amp=1, freq=1, sum=0, norm=0;
+    for(let i=0;i<oct;i++){
+      sum += amp * vnoise(x*freq, y*freq, base);
+      norm += amp;
+      amp *= 0.5;
+      freq *= 2.0;
+    }
+    return sum/(norm||1);
+  }
+
+  // ---------- WebGL2 orbit renderer ----------
+  let gl=null;
+  let progScene=null, progDown=null, progComposite=null;
+  let vao=null;
+
+  let texAlbedo=null, texHeight=null, texRough=null, texMask=null;
+  let texScene=null, texBloom=null;
+  let fboScene=null, fboBloom=null;
+
+  let texW=0, texH=0;
+  let built=false;
+
+  function glErr(msg){
+    console.warn(msg);
+    glInfo.textContent = msg;
+  }
+
+  function createShader(gl, type, src){
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+      const log = gl.getShaderInfoLog(sh) || '(no log)';
+      console.error(log);
+      gl.deleteShader(sh);
+      throw new Error(log);
+    }
+    return sh;
+  }
+  function createProgram(gl, vsSrc, fsSrc){
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsSrc);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+    const p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
+      const log = gl.getProgramInfoLog(p) || '(no log)';
+      console.error(log);
+      gl.deleteProgram(p);
+      throw new Error(log);
+    }
+    return p;
+  }
+
+  const VS_FULLSCREEN = `#version 300 es
+    precision highp float;
+    out vec2 vUV;
+    void main(){
+      // full screen triangle (no VAO attrs needed)
+      vec2 p = vec2((gl_VertexID==1)?3.0:-1.0, (gl_VertexID==2)?3.0:-1.0);
+      vUV = 0.5*(p+1.0);
+      gl_Position = vec4(p,0.0,1.0);
+    }`;
+
+  // Scene shader: ray-sphere + PBR-lite + atmosphere + clouds
+  const FS_SCENE = `#version 300 es
+    precision highp float;
+    in vec2 vUV;
+    out vec4 outColor;
+
+    uniform sampler2D uAlbedo; // sRGB-ish in [0..1] (we treat as already in display-ish, but shade in linear-ish)
+    uniform sampler2D uHeight; // R8 height [0..1]
+    uniform sampler2D uRough;  // R8 roughness [0..1]
+    uniform sampler2D uMask;   // R8 mask: 1 water, 0 land (and can encode extras if desired)
+
+    uniform vec2  uTexSize;
+
+    uniform vec2  uResolution;
+    uniform float uTime;
+
+    uniform float uFovTan;
+    uniform float uCamDist;
+    uniform float uTilt;
+    uniform float uYaw;
+
+    uniform vec3  uSunDir;   // world dir (unit)
+    uniform float uAtmo;     // 0..2
+    uniform float uHaze;     // 0..1.4
+    uniform float uCloudAmt; // 0..2
+    uniform float uCloudSh;  // 0..2
+    uniform float uCloudSp;  // 0..2
+    uniform float uExposure; // EV-ish
+    uniform float uWaterSpec;// 0..2.5
+    uniform float uRelief;   // affects normal from height
+
+    uniform int   uStars;
+
+    const float PI = 3.141592653589793;
+
+    // --- hash/noise for clouds & stars ---
+    float hash12(vec2 p){
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+    float noise(vec2 p){
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      float a = hash12(i);
+      float b = hash12(i+vec2(1,0));
+      float c = hash12(i+vec2(0,1));
+      float d = hash12(i+vec2(1,1));
+      vec2 u = f*f*(3.0-2.0*f);
+      return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+    }
+    float fbm(vec2 p){
+      float s=0.0, a=0.5;
+      mat2 m = mat2(1.6,1.2,-1.2,1.6);
+      for(int i=0;i<5;i++){
+        s += a*noise(p);
+        p = m*p;
+        a *= 0.5;
+      }
+      return s;
+    }
+    vec2 warp(vec2 p){
+      float n1 = fbm(p*0.9 + vec2(12.3, 7.1));
+      float n2 = fbm(p*0.9 + vec2(-3.7, 19.2));
+      return p + (vec2(n1,n2)-0.5)*0.35;
+    }
+
+    // UV from world normal
+    vec2 sphereUV(vec3 n){
+      float lon = atan(n.z, n.x);
+      float lat = asin(clamp(n.y, -1.0, 1.0));
+      return vec2(lon/(2.0*PI)+0.5, 0.5 - lat/PI);
+    }
+
+    // Height-based normal from height texture (finite differences in UV)
+    vec3 normalFromHeight(vec2 uv, float relief){
+      vec2 texel = 1.0 / uTexSize;
+      float hC = texture(uHeight, uv).r;
+      float hX = texture(uHeight, uv + vec2(texel.x,0.0)).r;
+      float hY = texture(uHeight, uv + vec2(0.0,texel.y)).r;
+      float dx = (hX - hC);
+      float dy = (hY - hC);
+      float s = (relief/255.0) * 10.0 + 0.7; // tune
+      vec3 n = normalize(vec3(-dx*s, -dy*s, 1.0));
+      return n;
+    }
+
+    // Rotate vector by yaw (Y axis) and tilt (X axis)
+    vec3 rotYawTilt(vec3 v, float yaw, float tilt){
+      // yaw around Y
+      float cy=cos(yaw), sy=sin(yaw);
+      vec3 vy = vec3(cy*v.x + sy*v.z, v.y, -sy*v.x + cy*v.z);
+      // tilt around X
+      float cx=cos(tilt), sx=sin(tilt);
+      return vec3(vy.x, cx*vy.y - sx*vy.z, sx*vy.y + cx*vy.z);
+    }
+
+    // Ray-sphere intersection. returns tNear, tFar (or -1 if miss)
+    vec2 raySphere(vec3 ro, vec3 rd, float r){
+      float b = dot(ro, rd);
+      float c = dot(ro, ro) - r*r;
+      float h = b*b - c;
+      if(h < 0.0) return vec2(-1.0);
+      h = sqrt(h);
+      return vec2(-b - h, -b + h);
+    }
+
+    // Schlick Fresnel
+    float fresnelSchlick(float F0, float cosTheta){
+      float t = pow(1.0 - clamp(cosTheta, 0.0, 1.0), 5.0);
+      return F0 + (1.0 - F0)*t;
+    }
+
+    // GGX helpers (cheap)
+    float D_GGX(float NoH, float a){
+      float a2 = a*a;
+      float d = (NoH*NoH)*(a2-1.0)+1.0;
+      return a2 / max(1e-6, (PI*d*d));
+    }
+    float G_Smith(float NoV, float NoL, float a){
+      float k = (a+1.0);
+      k = (k*k) / 8.0;
+      float gv = NoV / (NoV*(1.0-k)+k);
+      float gl = NoL / (NoL*(1.0-k)+k);
+      return gv*gl;
+    }
+
+    // ACES-ish tone map
+    float tonemapACES(float x){
+      float a=2.51, b=0.03, c=2.43, d=0.59, e=0.14;
+      return clamp((x*(a*x+b)) / (x*(c*x+d)+e), 0.0, 1.0);
+    }
+
+    void main(){
+      vec2 ndc = vUV*2.0 - 1.0;
+      float aspect = uResolution.x / max(1.0, uResolution.y);
+
+      // Camera: position on +Z, looking at origin, rotated by yaw/tilt
+      vec3 basePos = vec3(0.0, 0.0, uCamDist);
+      vec3 camPos  = rotYawTilt(basePos, uYaw, uTilt);
+
+      // Camera basis (look-at origin)
+      vec3 forward = normalize(-camPos);
+      vec3 right   = normalize(cross(vec3(0.0,1.0,0.0), forward));
+      vec3 up      = normalize(cross(forward, right));
+
+      vec3 rd = normalize(forward + ndc.x*aspect*uFovTan*right + ndc.y*uFovTan*up);
+      vec3 ro = camPos;
+
+      // Intersect surface and clouds
+      float R = 1.0;
+      float Rc = 1.012; // cloud shell
+      vec2 tSurf = raySphere(ro, rd, R);
+      vec2 tCloud= raySphere(ro, rd, Rc);
+
+      bool hitSurf  = (tSurf.x > 0.0);
+      bool hitCloud = (tCloud.x > 0.0);
+
+      // background
+      vec3 col = vec3(0.0);
+      if(!hitSurf && !hitCloud){
+        if(uStars==1){
+          // star field based on direction
+          vec3 d = rd;
+          float lon = atan(d.z, d.x);
+          float lat = asin(clamp(d.y, -1.0, 1.0));
+          vec2 sp = vec2(lon/PI, lat/PI) * 120.0;
+          float h = hash12(floor(sp));
+          float p = hash12(floor(sp*1.7+13.0));
+          float star = step(0.9975, h) * (0.6 + 0.4*p);
+          // a few bigger stars
+          star += step(0.9993, p) * 1.2;
+          col = vec3(star);
+          col *= vec3(0.9,0.95,1.0);
+        }
+        outColor = vec4(col,1.0);
+        return;
+      }
+
+      // determine order: clouds first if nearer
+      float tC = hitCloud ? tCloud.x : 1e9;
+      float tS = hitSurf  ? tSurf.x  : 1e9;
+
+      // Sky/atmos color constants
+      vec3 SKY = vec3(0.62, 0.72, 0.82);
+      vec3 MIE = vec3(0.95, 0.85, 0.75);
+
+      vec3 sunDir = normalize(uSunDir);
+
+      // ---- Surface shading (if hit) ----
+      vec3 surfCol = vec3(0.0);
+      float surfAlpha = 0.0;
+
+      if(hitSurf){
+        vec3 p = ro + rd*tS;
+        vec3 n = normalize(p);
+
+        // sample textures
+        vec2 uv = sphereUV(n);
+        vec3 albedo = texture(uAlbedo, uv).rgb;
+        float h = texture(uHeight, uv).r;
+        float rough = clamp(texture(uRough, uv).r, 0.02, 1.0);
+        float water = texture(uMask, uv).r; // 1 water
+
+        // detail normal from heightmap in tangent space then rotate to world-ish:
+        // Build tangent basis from sphere normal
+        vec3 t = normalize(vec3(-n.z, 0.0, n.x));
+        vec3 b = normalize(cross(n, t));
+        vec3 nh = normalFromHeight(uv, uRelief);
+        // nh is in "texture space": x->u, y->v, z->up; map into world tangent basis
+        vec3 N = normalize(nh.x*t + nh.y*b + nh.z*n);
+
+        // Lighting
+        vec3 V = normalize(-rd);
+        vec3 L = sunDir;
+        vec3 H = normalize(V+L);
+
+        float NoL = clamp(dot(N,L), 0.0, 1.0);
+        float NoV = clamp(dot(N,V), 0.0, 1.0);
+        float NoH = clamp(dot(N,H), 0.0, 1.0);
+
+        // wrap diffuse (soft like renders)
+        float wrap = 0.30;
+        float diff = clamp((NoL + wrap)/(1.0+wrap), 0.0, 1.0);
+
+        // Water vs land material tweaks
+        float F0 = mix(0.04, 0.02, water); // water lower F0 but stronger spec usage
+        float specBoost = mix(1.0, uWaterSpec, water);
+        float a = max(0.02, rough*rough);
+
+        float D = D_GGX(NoH, a);
+        float G = G_Smith(NoV, NoL, a);
+        float F = fresnelSchlick(F0, NoV);
+        float spec = (D*G*F) / max(1e-6, 4.0*NoV*max(0.001,NoL));
+        spec *= specBoost;
+
+        // ambient
+        float amb = 0.12;
+
+        // simple shadowing feel near terminator (helps “space photo”)
+        float termin = smoothstep(0.0, 0.08, NoL);
+        diff *= termin;
+        spec *= termin;
+
+        // base shading in linear-ish
+        vec3 base = albedo * (amb + diff);
+
+        // spec color slightly sky-tinted
+        vec3 specCol = mix(vec3(0.85,0.90,0.98), vec3(0.95,0.98,1.0), water);
+        base += spec * specCol;
+
+        // Atmosphere / aerial perspective on surface
+        float rim = pow(1.0 - NoV, 3.0);
+        float airMass = 1.0 / (NoV + 0.06);
+        float hazeAmt = clamp(uHaze, 0.0, 1.4);
+
+        float at = clamp(uAtmo, 0.0, 2.0);
+        float aerial = clamp((airMass-1.0)*0.22*at + rim*0.65*at + hazeAmt*0.18, 0.0, 0.92);
+
+        // forward Mie near sun
+        float mie = pow(max(dot(V,L), 0.0), 24.0) * rim * (0.25 + 0.75*at);
+        vec3 scatter = SKY * (rim*0.75*at) + MIE * mie;
+
+        // mix toward sky and add scatter
+        base = mix(base, SKY, aerial);
+        base += scatter * 0.14;
+
+        surfCol = base;
+        surfAlpha = 1.0;
+      }
+
+      // ---- Clouds shading (if hit) ----
+      vec3 cloudCol = vec3(0.0);
+      float cloudAlpha = 0.0;
+
+      if(hitCloud){
+        vec3 pc = ro + rd*tC;
+        vec3 nc = normalize(pc);
+        vec2 uvC = sphereUV(nc);
+
+        // Procedural cloud density
+        float sp = clamp(uCloudSp, 0.0, 2.0);
+        float t = uTime * (0.02 + 0.08*sp);
+
+        vec2 p = uvC * vec2(4.0, 2.0) * 3.0;
+        // reduce distortion at poles
+        float pole = smoothstep(0.7, 1.0, abs(nc.y));
+        p.x *= mix(1.0, 0.55, pole);
+
+        p += vec2(t*0.7, t*0.25);
+        p = warp(p);
+
+        float d = fbm(p*1.0);
+        float d2 = fbm(p*2.2 + 13.7);
+
+        // structure: big sheets + details
+        float density = clamp((d*0.75 + d2*0.35) - 0.55, 0.0, 1.0);
+
+        // latitude band preference: more clouds mid-lat
+        float lat = abs(nc.y);
+        float band = smoothstep(0.0, 0.55, 1.0-lat) * smoothstep(1.0, 0.65, lat);
+        density *= mix(0.55, 1.0, band);
+
+        float amt = clamp(uCloudAmt, 0.0, 2.0);
+        density *= amt;
+
+        // soften edges
+        density = smoothstep(0.10, 0.75, density);
+
+        // Lighting
+        vec3 V = normalize(-rd);
+        vec3 L = sunDir;
+        float NoL = clamp(dot(nc, L), 0.0, 1.0);
+        float NoV = clamp(dot(nc, V), 0.0, 1.0);
+
+        // forward scattering for clouds (bright near sun)
+        float forward = pow(max(dot(V,L),0.0), 5.0);
+        float rim = pow(1.0 - NoV, 2.5);
+
+        float bright = 0.55 + 0.75*NoL + 0.55*forward + 0.25*rim;
+        vec3 white = vec3(0.98, 0.98, 0.99);
+        vec3 warm  = vec3(1.00, 0.92, 0.82);
+        vec3 cCol = mix(white, warm, forward*0.35) * bright;
+
+        // atmospheric tint at limb
+        float at = clamp(uAtmo, 0.0, 2.0);
+        cCol = mix(cCol, SKY, rim*0.35*at);
+
+        cloudAlpha = clamp(density * 0.75, 0.0, 0.88);
+        cloudCol = cCol;
+      }
+
+      // ---- Composite clouds over surface ----
+      // We want clouds visible even when surface behind is missing (limb).
+      // If both exist, blend.
+      if(hitSurf && hitCloud && tC < tS){
+        // clouds in front
+        col = mix(surfCol, cloudCol, cloudAlpha);
+      }else if(hitSurf && hitCloud){
+        // clouds behind surface (rare in this shell model), ignore
+        col = surfCol;
+      }else if(hitSurf){
+        col = surfCol;
+      }else{
+        col = cloudCol;
+      }
+
+      // ---- Cloud shadow on surface (cheap) ----
+      if(hitSurf){
+        vec3 p = ro + rd*tS;
+        vec3 n = normalize(p);
+        vec2 uv = sphereUV(n);
+
+        // shadow sample: offset UV in sun direction projected to tangent plane
+        // approximate: move along longitude/latitude by sun direction components in tangent basis
+        vec3 t = normalize(vec3(-n.z, 0.0, n.x));
+        vec3 b = normalize(cross(n, t));
+        vec3 L = sunDir;
+
+        float lt = dot(L, t);
+        float lb = dot(L, b);
+
+        float shK = clamp(uCloudSh, 0.0, 2.0);
+
+        // multi-tap blurred shadow
+        float sh = 0.0;
+        vec2 base = uv + vec2(lt, -lb) * 0.0025; // main offset
+        vec2 stepv = vec2(lt, -lb) * 0.0012;
+
+        // same cloud function but faster: sample a pre-baked-ish fbm
+        // (we reuse a small portion of cloud fbm)
+        float sp = clamp(uCloudSp, 0.0, 2.0);
+        float tt = uTime * (0.02 + 0.08*sp);
+
+        for(int i=0;i<5;i++){
+          float fi = float(i)-2.0;
+          vec2 uvS = base + stepv*fi;
+          vec2 pS = uvS * vec2(4.0,2.0) * 3.0;
+          float pole = smoothstep(0.7, 1.0, abs(n.y));
+          pS.x *= mix(1.0, 0.55, pole);
+          pS += vec2(tt*0.7, tt*0.25);
+          pS = warp(pS);
+          float dd = fbm(pS*1.0);
+          float dd2 = fbm(pS*2.2 + 13.7);
+          float dens = clamp((dd*0.75 + dd2*0.35) - 0.55, 0.0, 1.0);
+          dens = smoothstep(0.10, 0.75, dens) * clamp(uCloudAmt, 0.0, 2.0);
+          sh += dens;
+        }
+        sh /= 5.0;
+
+        float shadow = clamp(1.0 - sh*0.33*shK, 0.65, 1.0);
+        col *= shadow;
+      }
+
+      // ---- Atmosphere limb glow (independent of surface) ----
+      // If you hit surface, add a thin rim on top, like orbital photos.
+      if(hitSurf){
+        vec3 p = ro + rd*tS;
+        vec3 n = normalize(p);
+        float NoV = clamp(dot(n, normalize(-rd)), 0.0, 1.0);
+        float rim = pow(1.0 - NoV, 4.0);
+        float at = clamp(uAtmo, 0.0, 2.0);
+        vec3 limb = SKY * rim * (0.55 + 0.45*at) + MIE * rim * pow(max(dot(normalize(-rd), sunDir),0.0), 10.0) * 0.35;
+        col += limb * 0.35 * at;
+      }
+
+      // Exposure (EV)
+      float expo = pow(2.0, uExposure);
+      col *= expo;
+
+      // ACES tonemap
+      col = vec3(tonemapACES(col.r), tonemapACES(col.g), tonemapACES(col.b));
+
+      // tiny dither
+      float d = (hash12(gl_FragCoord.xy) - 0.5) * (1.0/255.0);
+      col = clamp(col + d, 0.0, 1.0);
+
+      outColor = vec4(col, 1.0);
+    }`;
+
+  // Downsample+threshold for bloom
+  const FS_DOWNSAMPLE = `#version 300 es
+    precision highp float;
+    in vec2 vUV;
+    out vec4 outColor;
+    uniform sampler2D uScene;
+    uniform vec2 uInvRes;
+    uniform float uThr;      // 0..2
+    void main(){
+      // 4-tap box
+      vec3 c = vec3(0.0);
+      c += texture(uScene, vUV + vec2(-0.5, -0.5)*uInvRes).rgb;
+      c += texture(uScene, vUV + vec2( 0.5, -0.5)*uInvRes).rgb;
+      c += texture(uScene, vUV + vec2(-0.5,  0.5)*uInvRes).rgb;
+      c += texture(uScene, vUV + vec2( 0.5,  0.5)*uInvRes).rgb;
+      c *= 0.25;
+
+      // threshold (soft knee)
+      float l = max(c.r, max(c.g, c.b));
+      float knee = 0.5;
+      float t = max(0.0, l - uThr);
+      t = t / (knee + t);
+      outColor = vec4(c * t, 1.0);
+    }`;
+
+  // Composite scene + blurred bloom (9-tap) — cheap but effective
+  const FS_COMPOSITE = `#version 300 es
+    precision highp float;
+    in vec2 vUV;
+    out vec4 outColor;
+    uniform sampler2D uScene;
+    uniform sampler2D uBloom;
+    uniform vec2 uInvBloomRes;
+    uniform float uBloomK; // 0..2.5
+
+    void main(){
+      vec3 s = texture(uScene, vUV).rgb;
+
+      // 9-tap gaussian-ish blur on bloom
+      vec3 b = vec3(0.0);
+      vec2 t = uInvBloomRes;
+      b += texture(uBloom, vUV + vec2(-2.0, 0.0)*t).rgb * 0.08;
+      b += texture(uBloom, vUV + vec2(-1.0, 0.0)*t).rgb * 0.17;
+      b += texture(uBloom, vUV).rgb                     * 0.50;
+      b += texture(uBloom, vUV + vec2( 1.0, 0.0)*t).rgb * 0.17;
+      b += texture(uBloom, vUV + vec2( 2.0, 0.0)*t).rgb * 0.08;
+
+      // vertical blur pass folded in (extra taps)
+      b += texture(uBloom, vUV + vec2(0.0,-2.0)*t).rgb * 0.08;
+      b += texture(uBloom, vUV + vec2(0.0,-1.0)*t).rgb * 0.17;
+      b += texture(uBloom, vUV + vec2(0.0, 1.0)*t).rgb * 0.17;
+      b += texture(uBloom, vUV + vec2(0.0, 2.0)*t).rgb * 0.08;
+
+      vec3 col = s + b*uBloomK;
+      outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    }`;
+
+  function initGL(){
+    gl = oCanvas.getContext('webgl2', { antialias:true, premultipliedAlpha:false, preserveDrawingBuffer:true });
+    if(!gl){
+      alert('WebGL2 not available in this browser.');
+      return false;
+    }
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    const ren = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    glInfo.textContent = `WebGL2: ${ren}`;
+
+    progScene = createProgram(gl, VS_FULLSCREEN, FS_SCENE);
+    progDown  = createProgram(gl, VS_FULLSCREEN, FS_DOWNSAMPLE);
+    progComposite = createProgram(gl, VS_FULLSCREEN, FS_COMPOSITE);
+
+    vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+
+    return true;
+  }
+
+  function createTex(w,h, internal, format, type){
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, format, type, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return t;
+  }
+
+  function ensureFBOs(){
+    const w = oCanvas.width|0, h = oCanvas.height|0;
+    // scene full-res
+    if(!texScene){ texScene = createTex(w,h, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE); }
+    else{
+      gl.bindTexture(gl.TEXTURE_2D, texScene);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+    if(!fboScene) fboScene = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboScene);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texScene, 0);
+
+    // bloom half-res
+    const bw = Math.max(1, (w/2)|0), bh = Math.max(1, (h/2)|0);
+    if(!texBloom){ texBloom = createTex(bw,bh, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE); }
+    else{
+      gl.bindTexture(gl.TEXTURE_2D, texBloom);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,bw,bh,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+    if(!fboBloom) fboBloom = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboBloom);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texBloom, 0);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  function uploadTextureRGBA(tex, w,h, data){
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  function uploadTextureR8(tex, w,h, data){
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, data);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
+  // ---------- Build textures from height+koppen ----------
+  // Produces:
+  //  - albedo RGBA8
+  //  - height R8
+  //  - roughness R8
+  //  - waterMask R8 (1 water, 0 land)
+  async function buildTextures(){
+    if(!gl && !initGL()) return;
+    if(!(H && K)) return;
+    if(H.width!==K.width || H.height!==K.height){
+      alert('Images must be same size.'); return;
+    }
+
+    const w = H.width|0, h = H.height|0;
+    texW=w; texH=h;
+
+    // Hi-res toggle affects output canvas resolution (not textures)
+    resizeOutputCanvas();
+
+    // allocate textures if needed
+    if(!texAlbedo) texAlbedo = createTex(w,h, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE);
+    if(!texHeight) texHeight = createTex(w,h, gl.R8, gl.RED, gl.UNSIGNED_BYTE);
+    if(!texRough)  texRough  = createTex(w,h, gl.R8, gl.RED, gl.UNSIGNED_BYTE);
+    if(!texMask)   texMask   = createTex(w,h, gl.R8, gl.RED, gl.UNSIGNED_BYTE);
+
+    // CPU buffers
+    const albedo = new Uint8Array(w*h*4);
+    const height8= new Uint8Array(w*h);
+    const rough8 = new Uint8Array(w*h);
+    const mask8  = new Uint8Array(w*h);
+
+    const Hdata = H.data, Kdata = K.data;
+    const seaLevel = +sea.value|0;
+    const tolVal = 2; // keep tolerant; your input palette is exact but allow minor compression
+    const vegK = (+veg.value)/100;
+    const rockK = (+rockiness.value)/100;
+    const snowBoost = (+snow.value)/100;
+
+    // pack height first
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        height8[y*w+x] = Hdata[idx4(x,y,w)];
+      }
+    }
+
+    // progress
+    prog.style.width='0%';
+    let rowsDone=0;
+
+    for(let y=0;y<h;y++){
+      const lat = 1 - (y/(h-1));
+      const temp = 1 - Math.abs(lat*2 - 1);
+
+      for(let x=0;x<w;x++){
+        const i4 = idx4(x,y,w);
+        const hr = height8[y*w+x];
+        const isWater = (hr <= seaLevel);
+
+        const kr = Kdata[i4], kg=Kdata[i4+1], kb=Kdata[i4+2];
+        const code = rgbToKoppen(kr,kg,kb,tolVal);
+
+        // slope proxy for rock
+        const slope = sobelSlope(height8, x,y,w,h);
+
+        // macro/micro noise for natural variation
+        const nMacro = fbm(x,y, 280, 4);
+        const nMicro = fbm(x+1111,y-777, 60, 4);
+
+        // base albedo from Köppen
+        let base = koppenBaseColor(code);
+        let r=base[0], g=base[1], b=base[2];
+
+        // moisture-ish (simplified) for greener patches
+        const bp = biomeParams(code);
+        let moist = bp.baseMoist;
+        moist += (nMacro-0.5)*0.22;
+        moist = clamp(moist, 0, 1);
+
+        // rock exposure
+        const rockT = clamp((slope*2.0 + (nMicro-0.5)*0.6) * rockK, 0, 0.95);
+        const rockCol = [168,156,132];
+        r = lerp(r, rockCol[0], rockT);
+        g = lerp(g, rockCol[1], rockT);
+        b = lerp(b, rockCol[2], rockT);
+
+        // vegetation tint
+        const canopy = clamp((moist*1.15 - 0.22) - slope*0.75 + (nMicro-0.5)*0.18, 0, 1) * clamp(bp.veg*vegK, 0, 1.5);
+        const leaf = [
+          lerp(74, 38, moist),
+          lerp(110, 72, moist),
+          lerp(70, 40, moist)
+        ];
+        const canopyMix = clamp(canopy*0.55, 0, 0.78);
+        r = lerp(r, leaf[0], canopyMix);
+        g = lerp(g, leaf[1], canopyMix);
+        b = lerp(b, leaf[2], canopyMix);
+
+        // snow
+        const elev = hr/255;
+        const northness = clamp((0.5 - (y/(h-1))) * 1.0 + 0.5, 0, 1);
+        const cold = clamp((0.55 - temp)*2.0, 0, 1);
+        const snowline = 0.70 - cold*0.20 - northness*0.06 - snowBoost*0.18;
+        let snowT = 0;
+        if(code==='EF') snowT = 0.92;
+        else if(code==='ET') snowT = Math.max(0.45, cold*0.65);
+        else if(elev>snowline) snowT = clamp((elev - snowline)/0.22, 0, 1);
+
+        if(snowT>0){
+          r = lerp(r, 238, snowT*0.9);
+          g = lerp(g, 242, snowT*0.9);
+          b = lerp(b, 246, snowT*0.9);
+        }
+
+        // texture variation
+        const tex = (nMicro-0.5)*22 + (nMacro-0.5)*10;
+        r = clamp(r + tex*(1 - canopyMix*0.7), 0, 255);
+        g = clamp(g + tex*(1 - canopyMix*0.7), 0, 255);
+        b = clamp(b + tex*(1 - canopyMix*0.7), 0, 255);
+
+        // roughness map (0 smooth -> 1 rough)
+        let rough = 0.75;
+        rough = lerp(rough, 0.95, canopyMix);
+        rough = lerp(rough, 0.62, rockT*0.9);
+        rough = lerp(rough, 0.30, snowT*0.8);
+        rough = clamp(rough, 0.05, 1.0);
+
+        // water override (we still shade in shader, but give a base)
+        if(isWater){
+          // water albedo is mostly handled in shader (depth/spec/foam),
+          // but give a dark base so it looks sane if shader chooses it.
+          r = 16; g = 48; b = 78;
+          rough = 0.08 + clamp((seaLevel-hr)/max(1,seaLevel),0,1)*0.10;
+        }
+
+        albedo[i4  ] = r|0;
+        albedo[i4+1] = g|0;
+        albedo[i4+2] = b|0;
+        albedo[i4+3] = 255;
+
+        rough8[y*w+x] = (rough*255)|0;
+        mask8[y*w+x]  = isWater ? 255 : 0;
+      }
+
+      rowsDone++;
+      if((rowsDone & 31)===0){
+        prog.style.width = ((rowsDone/h)*100).toFixed(0) + '%';
+        await new Promise(r=>setTimeout(r,0));
+      }
+    }
+
+    // upload
+    uploadTextureRGBA(texAlbedo, w,h, albedo);
+    uploadTextureR8(texHeight, w,h, height8);
+    uploadTextureR8(texRough,  w,h, rough8);
+    uploadTextureR8(texMask,   w,h, mask8);
+
+    prog.style.width='100%';
+    meta.textContent = `${w}×${h}`;
+    built = true;
+    dlBtn.disabled = false;
+
+    ensureFBOs();
+  }
+
+  function max(a,b){ return a>b?a:b; }
+
+  // ---------- Rendering loop ----------
+  let running = true;
+  toggleAnim.addEventListener('click', ()=>{
+    running = !running;
+    toggleAnim.textContent = running ? 'Pause' : 'Resume';
+  });
+
+  function resizeOutputCanvas(){
+    // Fit canvas to available space while keeping pixel density sane
+    const rect = oCanvas.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    const scale = hiRes.checked ? 1.8 : 1.0;
+    const w = Math.max(320, Math.floor(rect.width  * dpr * scale));
+    const h = Math.max(200, Math.floor(rect.height * dpr * scale));
+
+    if(oCanvas.width !== w || oCanvas.height !== h){
+      oCanvas.width = w;
+      oCanvas.height = h;
+      oMeta.textContent = `${w}×${h}`;
+      if(gl){
+        ensureFBOs();
+      }
+    }
+  }
+
+  window.addEventListener('resize', ()=>{ resizeOutputCanvas(); });
+
+  hiRes.addEventListener('change', ()=>{
+    resizeOutputCanvas();
+  });
+
+  function setUniformsScene(timeSec){
+    gl.useProgram(progScene);
+
+    const w = oCanvas.width, h = oCanvas.height;
+
+    const fovDeg = +fov.value;
+    const fovTan = Math.tan((fovDeg*Math.PI/180)*0.5);
+
+    const camD = (+camDist.value)/100; // slider 130..420 => 1.30..4.20
+    const tlt  = (+tilt.value) * Math.PI/180;
+    const yw   = (+yaw.value) * Math.PI/180;
+
+    const azi = (+azimuth.value) * Math.PI/180;
+    const alt = (+altitude.value) * Math.PI/180;
+    const sunDir = [
+      Math.cos(alt)*Math.cos(azi),
+      Math.sin(alt),
+      Math.cos(alt)*Math.sin(azi)
+    ];
+
+    const at = (+atmo.value)/100;
+    const hz = (+haze.value)/100;
+    const cl = (+clouds.value)/100;
+    const csh= (+cloudShadow.value)/100;
+    const csp= (+cloudSpeed.value)/100;
+
+    const exp = (+exposure.value)/100;
+    const ws  = (+waterSpec.value)/100;
+    const rel = (+relief.value);
+
+    gl.uniform2f(gl.getUniformLocation(progScene, 'uResolution'), w, h);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uTime'), timeSec);
+
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uFovTan'), fovTan);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uCamDist'), camD);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uTilt'), tlt);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uYaw'), yw);
+
+    gl.uniform3f(gl.getUniformLocation(progScene, 'uSunDir'), sunDir[0], sunDir[1], sunDir[2]);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uAtmo'), at);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uHaze'), hz);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uCloudAmt'), cl);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uCloudSh'), csh);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uCloudSp'), csp);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uExposure'), exp);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uWaterSpec'), ws);
+    gl.uniform1f(gl.getUniformLocation(progScene, 'uRelief'), rel);
+    gl.uniform1i(gl.getUniformLocation(progScene, 'uStars'), stars.checked ? 1 : 0);
+
+    gl.uniform2f(gl.getUniformLocation(progScene, 'uTexSize'), texW, texH);
+
+    // bind textures
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texAlbedo);
+    gl.uniform1i(gl.getUniformLocation(progScene, 'uAlbedo'), 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texHeight);
+    gl.uniform1i(gl.getUniformLocation(progScene, 'uHeight'), 1);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, texRough);
+    gl.uniform1i(gl.getUniformLocation(progScene, 'uRough'), 2);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texMask);
+    gl.uniform1i(gl.getUniformLocation(progScene, 'uMask'), 3);
+  }
+
+  function passDownsample(){
+    gl.useProgram(progDown);
+
+    // bloom texture size
+    const bw = Math.max(1, (oCanvas.width/2)|0);
+    const bh = Math.max(1, (oCanvas.height/2)|0);
+
+    gl.uniform2f(gl.getUniformLocation(progDown, 'uInvRes'), 1.0/oCanvas.width, 1.0/oCanvas.height);
+
+    const thr = (+bloomThr.value)/100;
+    gl.uniform1f(gl.getUniformLocation(progDown, 'uThr'), thr);
+
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texScene);
+    gl.uniform1i(gl.getUniformLocation(progDown, 'uScene'), 0);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboBloom);
+    gl.viewport(0,0,bw,bh);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  function passComposite(){
+    gl.useProgram(progComposite);
+
+    const bw = Math.max(1, (oCanvas.width/2)|0);
+    const bh = Math.max(1, (oCanvas.height/2)|0);
+
+    gl.uniform2f(gl.getUniformLocation(progComposite, 'uInvBloomRes'), 1.0/bw, 1.0/bh);
+
+    const bk = (+bloom.value)/100;
+    gl.uniform1f(gl.getUniformLocation(progComposite, 'uBloomK'), bk);
+
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texScene);
+    gl.uniform1i(gl.getUniformLocation(progComposite, 'uScene'), 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texBloom);
+    gl.uniform1i(gl.getUniformLocation(progComposite, 'uBloom'), 1);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0,0,oCanvas.width,oCanvas.height);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  function renderFrame(tms){
+    requestAnimationFrame(renderFrame);
+    if(!gl || !built) return;
+
+    resizeOutputCanvas();
+
+    const timeSec = (running ? tms : lastTms) * 0.001;
+    if(!running) return; // stay frozen
+    lastTms = tms;
+
+    ensureFBOs();
+
+    // Pass 1: scene to fboScene
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fboScene);
+    gl.viewport(0,0,oCanvas.width,oCanvas.height);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+
+    setUniformsScene(timeSec);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // Pass 2: downsample threshold to bloom
+    passDownsample();
+
+    // Pass 3: composite to screen
+    passComposite();
+  }
+
+  let lastTms = 0;
+
+  // ---------- Button wiring ----------
+  renderBtn.addEventListener('click', async ()=>{
+    renderBtn.disabled = true;
+    try{
+      await buildTextures();
+    }catch(err){
+      console.error(err);
+      alert('Build failed. Check console for details.');
+    }finally{
+      renderBtn.disabled = false;
+    }
+  });
+
+  dlBtn.addEventListener('click', ()=>{
+    // Ensure final composite on screen is present
+    const a=document.createElement('a');
+    a.download='orbital_blender_satellite.png';
+    a.href=oCanvas.toDataURL('image/png');
+    a.click();
+  });
+
+  // Rebuild textures if core terrain/material controls change (debounced)
+  let rebuildTimer=null;
+  function scheduleRebuild(){
+    if(!H || !K) return;
+    clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(()=>{
+      // only rebuild if textures were built once; avoids spamming while loading
+      if(built) buildTextures();
+    }, 220);
+  }
+  [sea, relief, veg, rockiness, snow].forEach(el => el.addEventListener('input', scheduleRebuild));
+
+  // Need WebGL initialized early so resize has FBOs later
+  initGL();
+  resizeOutputCanvas();
+  requestAnimationFrame(renderFrame);
+
+})();
+</script>
+</body>
+</html>
