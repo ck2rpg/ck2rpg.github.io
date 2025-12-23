@@ -45,7 +45,6 @@
 
       const nameListLines = [];
       const locLines = [];
-      locLines.push(`${daBom}`)
       const seenLocKeys = new Set();
 
       locLines.push(`${daBom}l_english:`);
