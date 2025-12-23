@@ -1548,7 +1548,7 @@ function paintSegment(x0, y0, x1, y1) {
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const maxDim = 8192;
+      const maxDim = 9216;
       let w = img.naturalWidth;
       let h = img.naturalHeight;
       if (w > maxDim || h > maxDim) {
