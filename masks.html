@@ -1342,6 +1342,48 @@ function drawTerrainMap() {
 /**
  * MASK EXPORT (full size) - blob-based (more reliable than huge dataURL)
  */
+
+ /*
+desert_rocky_mask.png
+drylands_01_cracked_mask.png
+drylands_01_grassy_mask.png
+gen_central_base_mask.png
+gen_desert_mountain_transition_mask.png
+gen_drylands_base_mask.png
+gen_drylands_lowlands_02_mask.png
+gen_drylands_lowlands_03_mask.png
+gen_drylands_lowlands_mask.png
+gen_drylands_mountain_transition_mask.png
+gen_mediterranean_base_mask.png
+gen_mediterranean_lowlands_02_mask.png
+gen_mediterranean_lowlands_03_mask.png
+gen_mediterranean_lowlands_mask.png
+gen_mediterranean_mountain_transition_mask.png
+gen_northern_base_mask.png
+gen_northern_lowlands_02_mask.png
+gen_northern_lowlands_03_mask.png
+gen_northern_lowlands_mask.png
+gen_northern_mountain_transition_mask.png
+gen_steppe_lowlands_02_mask.png
+gen_steppe_lowlands_03_mask.png
+gen_steppe_mountain_transition_mask.png
+hills_01_rocks_mask.png
+hills_01_rocks_medi_mask.png
+hills_01_rocks_small_mask.png
+medi_dry_mud_mask.png
+medi_grass_01_mask.png
+medi_lumpy_grass_mask.png
+medi_noisy_grass_mask.png
+mountain_02_desert_mask_old.png
+northern_plains_01_mask.png
+plains_01_dry_mask.png
+plains_01_dry_mud_mask.png
+plains_01_rough_mask.png
+steppe_bushes_mask.png
+summer_grass_mask.png
+
+ */
+
 async function downloadAllMasks() {
   if (!maskBuffers || !maskBuffers.length) {
     alert("No mask data. Generate the map first.");
@@ -1363,7 +1405,49 @@ async function downloadAllMasks() {
   const link = document.createElement('a');
   document.body.appendChild(link);
 
+  // --- ADD: names from your comment list (WITHOUT .png, and WITHOUT _mask.png) ---
+  const EXTRA_BLACK_MASKS = [
+    "desert_rocky",
+    "drylands_01_cracked",
+    "drylands_01_grassy",
+    "gen_central_base",
+    "gen_desert_mountain_transition",
+    "gen_drylands_base",
+    "gen_drylands_lowlands_02",
+    "gen_drylands_lowlands_03",
+    "gen_drylands_lowlands",
+    "gen_drylands_mountain_transition",
+    "gen_mediterranean_base",
+    "gen_mediterranean_lowlands_02",
+    "gen_mediterranean_lowlands_03",
+    "gen_mediterranean_lowlands",
+    "gen_mediterranean_mountain_transition",
+    "gen_northern_base",
+    "gen_northern_lowlands_02",
+    "gen_northern_lowlands_03",
+    "gen_northern_lowlands",
+    "gen_northern_mountain_transition",
+    "gen_steppe_lowlands_02",
+    "gen_steppe_lowlands_03",
+    "gen_steppe_mountain_transition",
+    "hills_01_rocks",
+    "hills_01_rocks_medi",
+    "hills_01_rocks_small",
+    "medi_dry_mud",
+    "medi_grass_01",
+    "medi_lumpy_grass",
+    "medi_noisy_grass",
+    "mountain_02_desert_mask_old", // note: original has _mask_old already
+    "northern_plains_01",
+    "plains_01_dry",
+    "plains_01_dry_mud",
+    "plains_01_rough",
+    "steppe_bushes",
+    "summer_grass",
+  ];
+
   try {
+    // --- EXISTING: download generated masks ---
     for (let m = 0; m < TEXTURE_MASKS.length; m++) {
       const maskInfo = TEXTURE_MASKS[m];
       const buf = maskBuffers[m];
@@ -1395,6 +1479,36 @@ async function downloadAllMasks() {
       setTimeout(() => URL.revokeObjectURL(url), 2000);
       await new Promise(r => setTimeout(r, 80));
     }
+
+    // --- ADD: download extra solid-black masks ---
+    // One ImageData reused for speed
+    const blackImg = maskCtx.createImageData(width, height);
+    const bd = blackImg.data;
+    for (let i = 0; i < bd.length; i += 4) {
+      bd[i] = 0;       // R
+      bd[i + 1] = 0;   // G
+      bd[i + 2] = 0;   // B
+      bd[i + 3] = 255; // A
+    }
+
+    for (let i = 0; i < EXTRA_BLACK_MASKS.length; i++) {
+      const name = EXTRA_BLACK_MASKS[i];
+
+      statusDiv.innerText = `Extra black mask ${i + 1}/${EXTRA_BLACK_MASKS.length}: ${name}...`;
+
+      maskCtx.putImageData(blackImg, 0, 0);
+      await new Promise(r => requestAnimationFrame(r));
+
+      const blob = await canvasToBlob(maskCanvas, 'image/png');
+      const url = URL.createObjectURL(blob);
+
+      link.href = url;
+      link.download = `${name}_mask.png`;
+      link.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      await new Promise(r => setTimeout(r, 80));
+    }
   } finally {
     document.body.removeChild(link);
     statusDiv.innerText = "All mask downloads triggered.";
@@ -1404,6 +1518,7 @@ async function downloadAllMasks() {
     downloadTreeMasksBtn.disabled = false;
   }
 }
+
 
 downloadMasksBtn.addEventListener('click', downloadAllMasks);
 terrainBtn.addEventListener('click', drawTerrainMap);
