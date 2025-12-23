@@ -402,7 +402,6 @@ const TEXTURE_MASKS = [
   { name: "mountain_02_d_snow", color: "#F5F7FA", minimumElevation: 190, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','H'], terrain: "mountains" },
   { name: "mountain_02_d_valleys", color: "#50443A", minimumElevation: 1000, maximumElevation: 1001, possibleClimates: ['Cfa','Cfb','Dfa','Dfb','H'], terrain: "mountains" },
   { name: "mountain_02_desert_c", color: "#B38E63", minimumElevation: 110, maximumElevation: 240, possibleClimates: ['BWh','BWk','BSh','BSk','H'], terrain: "desert_mountains" },
-  { name: "mountain_02_desert_mask_old", color: "#C49A6A", minimumElevation: 100, maximumElevation: 230, possibleClimates: ['BWh','BWk','BSh','BSk'], terrain: "desert_mountains" },
   { name: "mountain_02_snow", color: "#FFFFFF", minimumElevation: 185, maximumElevation: 255, possibleClimates: ['Dfc','Dfd','Dwc','Dwd','ET','EF','H'], terrain: "mountains" },
   { name: "mountain_03", color: "#70665E", minimumElevation: 120, maximumElevation: 240, possibleClimates: ['Cfb','Cfc','Dfb','Dfc','H'], terrain: "mountains" },
 
@@ -1501,9 +1500,12 @@ async function downloadAllMasks() {
 
       const blob = await canvasToBlob(maskCanvas, 'image/png');
       const url = URL.createObjectURL(blob);
-
+      if (name === "mountain_02_desert_mask_old") {
+        link.download = `${name}.png`;
+      } else {
+        link.download = `${name}_mask.png`;
+      }
       link.href = url;
-      link.download = `${name}_mask.png`;
       link.click();
 
       setTimeout(() => URL.revokeObjectURL(url), 2000);
