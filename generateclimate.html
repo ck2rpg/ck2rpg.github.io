@@ -1,12 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
- <meta charset="utf-8">
- <title>Köppen Generator — Latitude + Elevation (Heightmap Upload)</title>
- <meta name="viewport" content="width=device-width,initial-scale=1">
- <style>
+<meta charset="utf-8">
+<title>Köppen Generator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
 :root{
-  /* Continent-maker parchment + ink */
   --parchment-bg:#f4e9d5;
   --parchment-dark:#e8dbc3;
   --ink:#3c2f21;
@@ -16,25 +15,19 @@
   --shadow:0 4px 20px rgba(0,0,0,.15);
   --font-serif:"Georgia","Times New Roman",serif;
   --font-mono:"Courier New",Courier,monospace;
-
-  /* semantic */
   --danger:#b54b3c;
 }
-
 *{box-sizing:border-box}
 html,body{height:100%}
-
 body{
   margin:0;
-  background:#2a241e; /* dark wood surround */
+  background:#2a241e;
   color:var(--ink);
   font-family:var(--font-serif);
   display:flex;
   flex-direction:column;
   overflow:hidden;
 }
-
-/* Parchment header strip */
 header{
   padding:18px 20px;
   border-bottom:1px double var(--ink);
@@ -44,10 +37,8 @@ header{
   gap:12px;
   background:var(--parchment-bg);
   box-shadow:0 4px 18px rgba(0,0,0,.25);
-  backdrop-filter:none;
   background-image:radial-gradient(circle at 50% 50%, rgba(255,255,255,.20) 0%, transparent 100%);
 }
-
 header h1{
   margin:0;
   font-size:1.05rem;
@@ -58,23 +49,10 @@ header h1{
   display:inline-block;
   padding-bottom:4px;
 }
-
-header .sub{
-  font-size:.75rem;
-  color:var(--ink-muted);
-  font-style:italic;
-}
-
-/* Layout */
-main{
-  flex:1;
-  display:flex;
-  min-height:0;
-}
-
-/* Sidebar -> parchment panel */
+header .sub{font-size:.75rem;color:var(--ink-muted);font-style:italic;}
+main{flex:1;display:flex;min-height:0;}
 #sidebar{
-  width:340px;
+  width:360px;
   max-width:100%;
   border-right:2px solid var(--ink);
   padding:16px;
@@ -86,17 +64,7 @@ main{
   background-image:radial-gradient(circle at 50% 50%, rgba(255,255,255,.20) 0%, transparent 100%);
   overflow:auto;
 }
-
-/* Right side -> dark stage */
-#canvas-wrap{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-  background:#1a1612;
-}
-
-/* Canvas bar -> subtle parchment-ish strip */
+#canvas-wrap{flex:1;display:flex;flex-direction:column;min-width:0;background:#1a1612;}
 #canvas-bar{
   padding:10px 12px;
   font-size:.75rem;
@@ -107,19 +75,8 @@ main{
   justify-content:space-between;
   gap:8px;
   background:rgba(244,233,213,.55);
-  backdrop-filter:none;
 }
-
-/* Canvas itself -> continent-maker full-height behavior */
-#canvas{
-  flex:1;
-  max-width:100%;
-  display:block;
-  background:#fff;
-  image-rendering:pixelated;
-}
-
-/* Section labels */
+#canvas{flex:1;max-width:100%;display:block;background:#fff;image-rendering:pixelated;}
 .section-label{
   font-size:.75rem;
   text-transform:uppercase;
@@ -129,8 +86,6 @@ main{
   border-bottom:1px solid var(--border);
   padding-bottom:6px;
 }
-
-/* Cards -> plugin-card parchment blocks */
 .card{
   border-radius:2px;
   border:1px solid var(--ink-muted);
@@ -138,49 +93,14 @@ main{
   padding:12px 12px 12px;
   box-shadow:2px 2px 5px rgba(0,0,0,.06);
 }
-
-.card h2{
-  margin:0 0 6px;
-  font-size:.9rem;
-  font-weight:700;
-  color:var(--ink);
-}
-
-.card p{
-  margin:2px 0;
-  font-size:.78rem;
-  color:var(--ink-muted);
-  font-style:italic;
-}
-
-/* Fields */
-.field{
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.field label{
-  font-size:.78rem;
-  color:var(--ink);
-}
-
-.field-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-input[type="file"]{
-  font-size:.78rem;
-  color:var(--ink-muted);
-}
-
-/* Inputs -> continent maker style */
-input[type="number"]{
-  width:88px;
+.card h2{margin:0 0 6px;font-size:.9rem;font-weight:700;color:var(--ink);}
+.card p{margin:2px 0;font-size:.78rem;color:var(--ink-muted);font-style:italic;}
+.field{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:.78rem;color:var(--ink);}
+.field-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+input[type="file"]{font-size:.78rem;color:var(--ink-muted);}
+input[type="number"], select{
+  width:130px;
   padding:8px;
   font-size:13px;
   border-radius:2px;
@@ -189,16 +109,9 @@ input[type="number"]{
   color:var(--ink);
   font-family:var(--font-mono);
 }
-input[type="number"]:focus{
-  outline:2px solid var(--accent);
-  background:#fff;
-}
-
-input[type="checkbox"]{
-  accent-color:var(--accent);
-}
-
-/* Buttons -> continent-maker buttons */
+select{width:auto;min-width:160px;font-family:var(--font-serif);font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+input[type="number"]:focus, select:focus{outline:2px solid var(--accent);background:#fff;}
+input[type="checkbox"]{accent-color:var(--accent);}
 button{
   border-radius:2px;
   border:1px solid var(--ink);
@@ -218,356 +131,692 @@ button{
   box-shadow:2px 2px 0 var(--ink);
   transition:background .1s, transform .1s, box-shadow .1s;
 }
-
 button:hover{ background:#dfcfaf; }
-button:active{
-  transform:translate(1px,1px);
-  box-shadow:1px 1px 0 var(--ink);
-}
-
-button.primary{
-  background:var(--accent);
-  color:#fff;
-  border-color:var(--ink);
-}
-
-button:disabled{
-  opacity:.45;
-  cursor:default;
-  box-shadow:none;
-  transform:none;
-}
-
-/* Pills -> small parchment tags */
+button:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+button.primary{background:var(--accent);color:#fff;border-color:var(--ink);}
+button:disabled{opacity:.45;cursor:default;box-shadow:none;transform:none;}
 .pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  padding:2px 8px;
-  font-size:11px;
-  color:var(--ink-muted);
-  background:rgba(255,255,255,.35);
+  display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid var(--border);
+  padding:2px 8px;font-size:11px;color:var(--ink-muted);background:rgba(255,255,255,.35);
 }
-
-.pill-dot{
-  width:6px;
-  height:6px;
-  border-radius:999px;
-  background:var(--accent);
-}
-
-#status{
-  font-size:11px;
-  color:var(--ink-muted);
-  font-style:italic;
-}
-
-/* Legend -> parchment tiles */
-#legend{
-  margin-top:8px;
-  display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
-  gap:6px;
-  max-height:200px;
-  overflow:auto;
-  padding-right:2px;
-}
-
-.legend-item{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 8px;
-  border-radius:2px;
-  background:rgba(255,255,255,.35);
-  border:1px solid var(--border);
-}
-
-.swatch{
-  width:16px;
-  height:12px;
-  border-radius:2px;
-  border:1px solid rgba(0,0,0,.25);
-}
-
-.legend-code{
+.pill-dot{width:6px;height:6px;border-radius:999px;background:var(--accent);}
+#status{font-size:11px;color:var(--ink-muted);font-style:italic;}
+#legend{margin-top:8px;display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:6px;max-height:200px;overflow:auto;padding-right:2px;}
+.legend-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:2px;background:rgba(255,255,255,.35);border:1px solid var(--border);}
+.swatch{width:16px;height:12px;border-radius:2px;border:1px solid rgba(0,0,0,.25);}
+.legend-code{font-size:12px;font-family:var(--font-mono);color:var(--ink);}
+.legend-name{font-size:11px;color:var(--ink-muted);font-style:italic;}
+#metrics{font-size:12px;color:var(--ink-muted);margin-top:6px;line-height:1.4;white-space:pre-line;font-style:italic;}
+details summary{
+  cursor:pointer;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
   font-size:12px;
-  font-family:var(--font-mono);
   color:var(--ink);
+  user-select:none;
 }
+details{border:1px dashed rgba(60,47,33,.35);padding:8px;border-radius:2px;background:rgba(255,255,255,.15);}
+details[open]{background:rgba(255,255,255,.25);}
 
-.legend-name{
-  font-size:11px;
-  color:var(--ink-muted);
-  font-style:italic;
+input[type="range"]{
+  -webkit-appearance:none;appearance:none;width:100%;height:16px;background:transparent;margin:6px 0 2px;
 }
-
-/* Metrics text */
-#metrics{
-  font-size:12px;
-  color:var(--ink-muted);
-  margin-top:6px;
-  line-height:1.4;
-  white-space:pre-line;
-  font-style:italic;
+input[type="range"]::-webkit-slider-runnable-track{
+  height:8px;border-radius:999px;border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);box-shadow:inset 0 1px 2px rgba(0,0,0,.10);
 }
-
- </style>
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:2px;border:1px solid var(--ink);
+  background:var(--parchment-dark);box-shadow:2px 2px 0 var(--ink);margin-top:-6px;
+}
+input[type="range"]:active::-webkit-slider-thumb{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+input[type="range"]::-moz-range-track{
+  height:8px;border-radius:999px;border:1px solid var(--ink-muted);
+  background:rgba(255,255,255,.35);box-shadow:inset 0 1px 2px rgba(0,0,0,.10);
+}
+input[type="range"]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:2px;border:1px solid var(--ink);
+  background:var(--parchment-dark);box-shadow:2px 2px 0 var(--ink);
+}
+</style>
 </head>
 
 <body>
- <header>
+<header>
   <div>
-   <h1>KÖPPEN CLIMATE GENERATOR</h1>
-   <div class="sub">Latitude base → distance/currents → elevation lapse → render</div>
+    <h1>KÖPPEN CLIMATE GENERATOR</h1>
+    <div class="sub">8K-fast: low-res climate physics (2D winds + advection) → upsample → render</div>
   </div>
-  <div class="pill">
-   <span class="pill-dot"></span>
-   <span id="status">Awaiting heightmap…</span>
-  </div>
- </header>
- <main>
+  <div class="pill"><span class="pill-dot"></span><span id="status">Awaiting heightmap…</span></div>
+</header>
+
+<main>
   <aside id="sidebar">
-   <div class="section-label">Input</div>
-   <div class="card">
-    <h2>Heightmap Upload</h2>
-    <p>Use a greyscale PNG. Land should be higher values, oceans lower. By default, greyscale &lt; 19 = ocean.</p>
+    <div class="section-label">Input</div>
 
-    <div class="field">
-     <label for="file">Heightmap (PNG, JPG):</label>
-     <input id="file" type="file" accept="image/png,image/jpeg,image/webp">
-    </div>
+    <div class="card">
+      <h2>Heightmap Upload</h2>
+      <p>Greyscale image. Ocean is below sea threshold. Model runs on a low-res grid for speed.</p>
 
-    <div class="field">
-     <label for="sea">Sea level threshold (0–255):</label>
-     <div class="field-row">
-      <input id="sea" type="number" min="0" max="255" value="19">
-      <span style="font-size:10px;color:var(--muted)">Below this is ocean (ignored for land climate).</span>
-     </div>
-    </div>
+      <div class="field">
+        <label for="file">Heightmap (PNG, JPG):</label>
+        <input id="file" type="file" accept="image/png,image/jpeg,image/webp">
+      </div>
 
-    <!-- ADDED: Latitude band controls -->
-    <div class="field">
-      <label>Latitude band (degrees):</label>
-      <div class="field-row">
-        <div>
-          <div style="font-size:10px;color:var(--muted)">Top</div>
-          <input id="latTop" type="number" min="-90" max="90" value="90" step="0.1">
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--muted)">Bottom</div>
-          <input id="latBottom" type="number" min="-90" max="90" value="-90" step="0.1">
+      <div class="field">
+        <label for="sea">Sea level threshold (0–255):</label>
+        <div class="field-row">
+          <input id="sea" type="number" min="0" max="255" value="19">
+          <span style="font-size:10px;color:var(--ink-muted)">Below = ocean.</span>
         </div>
       </div>
-      <div style="font-size:10px;color:var(--muted)">
-        Example: Top=45, Bottom=23 generates a mid-latitude Northern Hemisphere slice. Top=90, Bottom=-90 reproduces full globe.
+
+      <div class="field">
+        <label>Latitude band (degrees):</label>
+        <div class="field-row">
+          <div>
+            <div style="font-size:10px;color:var(--ink-muted)">Top</div>
+            <input id="latTop" type="number" min="-90" max="90" value="90" step="0.1">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--ink-muted)">Bottom</div>
+            <input id="latBottom" type="number" min="-90" max="90" value="-90" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="computeScale">Compute Resolution (speed):</label>
+        <div class="field-row">
+            <select id="computeScale">
+              <option value="8">Eighth (very fast, blockier)</option>
+                <option value="4" selected>Quarter (recommended for 8K)</option>
+                <option value="2">Half (better detail, slower)</option>
+                <option value="1">Full (very slow, memory heavy)</option>
+            </select>
+          <span style="font-size:10px;color:var(--ink-muted)">Physics grid = W/scale × H/scale</span>
+        </div>
       </div>
     </div>
-   </div>
 
-   <div class="section-label">Plugins</div>
-   <div class="card">
-    <h2>Pipeline Order</h2>
-    <p>Plugins are run top-to-bottom; checkboxes are generated automatically from the registry.</p>
-    <div id="plugin-list"></div>
-    <div class="field" style="margin-top:10px;">
-     <label>Temperature model (°C):</label>
-     <div style="font-size:10px;color:var(--muted);">
-      <strong>Equator:</strong> 27°C &nbsp;&nbsp; <strong>Poles:</strong> −15°C &nbsp;&nbsp;
-      <strong>Lapse:</strong> −6.5°C/km
-     </div>
-    </div>
-    <div class="field" style="margin-top:10px;">
-     <button id="run" class="primary" disabled>Generate Köppen Map</button>
-    </div>
-   </div>
+    <div class="section-label">Model modes</div>
 
-   <div class="section-label">Legend</div>
-   <div class="card">
-    <h2>Köppen Classes</h2>
-    <div id="legend"></div>
-    <div id="metrics"></div>
-   </div>
+    <div class="card">
+      <h2>Structure</h2>
+
+      <div class="field">
+        <label for="precipMode">Precipitation Mode:</label>
+        <div class="field-row">
+          <select id="precipMode">
+            <option value="budget" selected>2D moisture advection (realistic)</option>
+            <option value="mult">Multipliers (fast legacy)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-row">
+          <input id="useOrography" type="checkbox" checked>
+          <span>Orographic precipitation + rain shadow</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="field-row">
+          <input id="useCurrents" type="checkbox" checked>
+          <span>Ocean currents (cheap SST proxy)</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="field-row">
+          <input id="useSeasonalITCZ" type="checkbox" checked>
+          <span>Seasonal ITCZ shift + monsoon</span>
+        </label>
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+  <div class="section-label" style="border-bottom:none;padding-bottom:0;">Moisture micro-controls</div>
+  <div style="font-size:10px;color:var(--ink-muted);line-height:1.4;margin-top:4px;">
+    Granular toggles for the 2D advection precip model. (Applies only in “2D moisture advection” mode.)
+  </div>
+</div>
+
+<div class="card" style="margin-top:10px;background:rgba(255,255,255,.18)">
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableTransport" type="checkbox" checked>
+      <span>Enable advection transport (master)</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableUpwindInit" type="checkbox" checked>
+      <span>Upwind ocean “fetch” moisture initialization</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableConvergence" type="checkbox" checked>
+      <span>Convergence boost (−div wind → more rain)</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableOroUplift" type="checkbox" checked>
+      <span>Orographic uplift boost</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableRainShadow" type="checkbox" checked>
+      <span>Rain shadow suppression</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableSSTCoupling" type="checkbox" checked>
+      <span>SST coupling (Tocean moisture + coastal modulation)</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label class="field-row">
+      <input id="mc_enableBaselineBlend" type="checkbox" checked>
+      <span>Blend with baseline (local convection/monsoon)</span>
+    </label>
+  </div>
+
+  <div class="field">
+    <label for="mc_iters">Advection iterations:</label>
+    <input id="mc_iters" type="range" min="1" max="8" step="1" value="3">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>1</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_itersLabel">3</span></span>
+      <span>8</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mc_landDecayFactor">Land moisture decay factor:</label>
+    <input id="mc_landDecayFactor" type="range" min="0.10" max="1.20" step="0.01" value="0.55">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>0.10</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_landDecayFactorLabel">0.55</span></span>
+      <span>1.20</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mc_convStrength">Convergence strength:</label>
+    <input id="mc_convStrength" type="range" min="0" max="3" step="0.05" value="1.35">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>0</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_convStrengthLabel">1.35</span></span>
+      <span>3</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mc_orogStrength">Orographic strength:</label>
+    <input id="mc_orogStrength" type="range" min="0" max="3" step="0.05" value="1.65">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>0</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_orogStrengthLabel">1.65</span></span>
+      <span>3</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mc_shadowStrength">Rain shadow strength:</label>
+    <input id="mc_shadowStrength" type="range" min="0" max="1.5" step="0.05" value="0.65">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>0</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_shadowStrengthLabel">0.65</span></span>
+      <span>1.5</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="mc_moistureFloor">Moisture floor:</label>
+    <input id="mc_moistureFloor" type="range" min="0" max="0.10" step="0.005" value="0.02">
+    <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+      <span>0</span>
+      <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="mc_moistureFloorLabel">0.02</span></span>
+      <span>0.10</span>
+    </div>
+  </div>
+</div>
+
+    </div>
+
+    <details open>
+      <summary>7 exposed controls</summary>
+
+      <div class="card" style="margin-top:10px;">
+        <h2>Scale & Dynamics</h2>
+        <p>Calibrate unknown heightmap scale + geography strength.</p>
+
+        <!-- 0: elevation influence -->
+        <div class="field">
+          <label for="elevInfluence">Elevation Influence (lapse strength):</label>
+          <input id="elevInfluence" type="range" min="0" max="200" value="100" step="1">
+          <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+            <span>0%</span>
+            <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="elevInfluenceLabel">100%</span></span>
+            <span>200%</span>
+          </div>
+        </div>
+
+        <!-- (1) -->
+        <div class="field">
+          <label for="maxElevMeters">Max Land Elevation (m):</label>
+          <div class="field-row">
+            <input id="maxElevMeters" type="number" min="500" max="20000" step="50" value="8550">
+            <span style="font-size:10px;color:var(--ink-muted)">Gray→meters mapping.</span>
+          </div>
+        </div>
+
+        <!-- (2) -->
+        <div class="field">
+          <label for="highlandThresholdMeters">Highland Threshold for “H” (m):</label>
+          <div class="field-row">
+            <input id="highlandThresholdMeters" type="number" min="0" max="9000" step="50" value="2500">
+            <span style="font-size:10px;color:var(--ink-muted)">Above→H (non E/B).</span>
+          </div>
+        </div>
+
+        <!-- (3) -->
+        <div class="field">
+          <label for="interiorScaleKm">Interior Scale (km):</label>
+          <div class="field-row">
+            <input id="interiorScaleKm" type="number" min="100" max="10000" step="50" value="2000">
+            <span style="font-size:10px;color:var(--ink-muted)">Maritime decay length.</span>
+          </div>
+        </div>
+
+        <!-- (4) -->
+        <div class="field">
+          <label for="hadleyWidthDeg">Hadley Cell Width (°):</label>
+          <div class="field-row">
+            <input id="hadleyWidthDeg" type="number" min="5" max="60" step="1" value="30">
+            <span style="font-size:10px;color:var(--ink-muted)">Trades vs westerlies.</span>
+          </div>
+        </div>
+
+        <!-- (5) -->
+        <div class="field">
+          <label for="monsoonStrength">Monsoon Strength:</label>
+          <input id="monsoonStrength" type="range" min="0" max="200" value="100" step="1">
+          <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+            <span>0%</span>
+            <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="monsoonLabel">100%</span></span>
+            <span>200%</span>
+          </div>
+        </div>
+
+        <!-- (6) warp -->
+        <div class="field">
+          <label class="field-row">
+            <input id="warpEnabled" type="checkbox" checked>
+            <span>Lowland Domain Warp (style)</span>
+          </label>
+        </div>
+        <div class="field">
+          <label for="warpStrength">Warp Strength:</label>
+          <input id="warpStrength" type="range" min="0" max="200" value="100" step="1">
+          <div class="field-row" style="justify-content:space-between;font-size:10px;color:var(--ink-muted)">
+            <span>0%</span>
+            <span class="pill"><span class="pill-dot" style="width:5px;height:5px"></span><span id="warpStrengthLabel">100%</span></span>
+            <span>200%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="lowlandMaxMeters">Lowland Max Elevation (m):</label>
+          <div class="field-row">
+            <input id="lowlandMaxMeters" type="number" min="0" max="6000" step="50" value="1500">
+            <span style="font-size:10px;color:var(--ink-muted)">Warp applies below.</span>
+          </div>
+        </div>
+
+        <!-- (7) smoothing -->
+        <div class="field">
+          <label for="smoothingPasses">Smoothing Passes (0–5):</label>
+          <div class="field-row">
+            <input id="smoothingPasses" type="number" min="0" max="5" step="1" value="2">
+            <span style="font-size:10px;color:var(--ink-muted)">Patch cleanup.</span>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="section-label">Run</div>
+
+    <div class="card">
+      <h2>Pipeline</h2>
+      <p>Low-res fields (2D winds + advection) → upsample classes to full res.</p>
+      <div class="field-row" style="gap:10px">
+        <button id="run" class="primary" disabled>Generate Köppen Map</button>
+        <button id="download" disabled>Download Map</button>
+        <button id="runFull" disabled title="Forces compute scale=1 (W×H). Extremely slow on large maps.">
+            Full Compute
+        </button>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <div style="font-size:10px;color:var(--ink-muted);line-height:1.4">
+          <strong>Performance:</strong> all physics on compute grid only; 4 seasons; 3 advection iterations per season; no per-cell objects.<br>
+          <strong>New realism:</strong> 2D wind field + semi-Lagrangian moisture advection + convergence + orographic uplift/rain shadow.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Legend</div>
+    <div class="card">
+      <h2>Köppen Classes</h2>
+      <div id="legend"></div>
+      <div id="metrics"></div>
+    </div>
   </aside>
 
   <section id="canvas-wrap">
-   <div id="canvas-bar">
-    <span>Output — Köppen climate colors (ocean in deep blue)</span>
-    <span id="dim-label"></span>
-   </div>
-   <canvas id="canvas"></canvas>
+    <div id="canvas-bar">
+      <span>Output — Köppen colors (ocean in deep blue)</span>
+      <span id="dim-label"></span>
+    </div>
+    <canvas id="canvas"></canvas>
   </section>
- </main>
+</main>
 
- <script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const fileInput = document.getElementById('file');
-  const seaInput = document.getElementById('sea');
-  const latTopInput = document.getElementById('latTop');       // ADDED
-  const latBottomInput = document.getElementById('latBottom'); // ADDED
-  const runBtn = document.getElementById('run');
-  const statusEl = document.getElementById('status');
-  const dimLabel = document.getElementById('dim-label');
-  const legendEl = document.getElementById('legend');
-  const metricsEl = document.getElementById('metrics');
-  const pluginListEl = document.getElementById('plugin-list');
+<script>
+/* ============================================================
+   Fast 8K Köppen Generator (2D Advection Edition)
+   ============================================================ */
 
-  // -------------------------
-  // ADDED: latitude helpers
-  // -------------------------
-  function lerp(a,b,t){ return a + (b-a)*t; }
-  // y=0 => topLat, y=H-1 => botLat
-  function latAtRow(y, H, topLat, botLat){
-    const t = (H <= 1) ? 0 : (y / (H - 1)); // 0..1
-    return lerp(topLat, botLat, t);         // can be + to -, any band
-  }
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-  // Simple "Program" with plugin registry
-  const Program = {
-   state: {
-    W: 0, H: 0,
-    sea: 19,
-    latTop: 90,        // ADDED (default full globe)
-    latBottom: -90,    // ADDED (default full globe)
-    elev: null,        // Float32Array (0–255 greyscale)
-    distToCoast: null, // Int32Array (pixel distance to ocean)
-    src: null,         // ImageData of original heightmap
-    work: null,        // ImageData for drawing
-    rowClimate: null,  // per-row climate baselines
-    koppenCodes: null, // Uint8Array of class indices (255 = ocean)
-    perCellClimate: null,
-    distWest: null,
-    distEast: null,
-   },
-   plugins: [],
-   register(p) {
-    if (typeof p.enabled === 'undefined') p.enabled = true;
-    if (!p.id) p.id = 'plugin-' + (this.plugins.length + 1);
-    this.plugins.push(p);
-   },
-   async run() {
-    const st = this.state;
-    const enabled = this.plugins.filter(p => p.enabled !== false);
-    const total = enabled.length;
-    let step = 0;
-    for (const p of enabled) {
-     step++;
-     if (p.id !== 'koppen-dist-to-coast') {
-      setStatus(`Running plugin ${step}/${total}: ${p.name}…`);
-     }
-     await p.run(st);
+const fileInput = document.getElementById('file');
+const seaInput = document.getElementById('sea');
+const latTopInput = document.getElementById('latTop');
+const latBottomInput = document.getElementById('latBottom');
+const computeScaleSel = document.getElementById('computeScale');
+
+const precipModeSel = document.getElementById('precipMode');
+const useOrographyCB = document.getElementById('useOrography');
+const useCurrentsCB = document.getElementById('useCurrents');
+const useSeasonalITCZCB = document.getElementById('useSeasonalITCZ');
+
+const elevInfluenceInput = document.getElementById('elevInfluence');
+const elevInfluenceLabel = document.getElementById('elevInfluenceLabel');
+
+const maxElevMetersInput = document.getElementById('maxElevMeters');
+const highlandThresholdMetersInput = document.getElementById('highlandThresholdMeters');
+const interiorScaleKmInput = document.getElementById('interiorScaleKm');
+const hadleyWidthDegInput = document.getElementById('hadleyWidthDeg');
+const monsoonStrengthInput = document.getElementById('monsoonStrength');
+const monsoonLabel = document.getElementById('monsoonLabel');
+const warpEnabledInput = document.getElementById('warpEnabled');
+const warpStrengthInput = document.getElementById('warpStrength');
+const warpStrengthLabel = document.getElementById('warpStrengthLabel');
+const lowlandMaxMetersInput = document.getElementById('lowlandMaxMeters');
+const smoothingPassesInput = document.getElementById('smoothingPasses');
+
+const runBtn = document.getElementById('run');
+const runFullBtn = document.getElementById('runFull');
+const dlBtn = document.getElementById('download');
+
+
+const statusEl = document.getElementById('status');
+const dimLabel = document.getElementById('dim-label');
+const legendEl = document.getElementById('legend');
+const metricsEl = document.getElementById('metrics');
+
+function setStatus(msg){ statusEl.textContent = msg; }
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function latAtRow(y, H, topLat, botLat){
+  const t = (H<=1)?0:(y/(H-1));
+  return lerp(topLat, botLat, t);
+}
+function hexToRgb(hex) {
+  const s = hex.replace('#', '');
+  const v = parseInt(s, 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+function setDimensionsLabel(){
+  const st = Program.state;
+  if(st.W && st.H){
+    dimLabel.textContent =
+      `${st.W}×${st.H}px · compute ${(st.cW|0)}×${(st.cH|0)} · sea=${st.sea} · lat ${st.latTop.toFixed(1)}→${st.latBottom.toFixed(1)}`;
+  } else dimLabel.textContent = '';
+}
+
+function wrapX(x, W){ x%=W; if(x<0)x+=W; return x; }
+function clampY(y, H){ return y<0?0:(y>=H?H-1:y); }
+
+function idx2(x,y,W){ return y*W+x; }
+
+function bilerpWrapXField(buf, W, H, x, y){
+  const x0 = Math.floor(x), y0 = Math.floor(y);
+  const fx = x - x0, fy = y - y0;
+
+  const xA = wrapX(x0, W), xB = wrapX(x0+1, W);
+  const yA = clampY(y0, H), yB = clampY(y0+1, H);
+
+  const iAA = yA*W + xA, iBA = yA*W + xB;
+  const iAB = yB*W + xA, iBB = yB*W + xB;
+
+  const vAA = buf[iAA], vBA = buf[iBA];
+  const vAB = buf[iAB], vBB = buf[iBB];
+
+  const vA = vAA + (vBA - vAA)*fx;
+  const vB = vAB + (vBB - vAB)*fx;
+  return vA + (vB - vA)*fy;
+}
+
+// Trace backward along wind to find upwind ocean.
+// Returns {hit:boolean, steps:int, ox:int, oy:int, oi:int}
+function traceUpwindOcean(st, x, y, vx, vy, maxSteps){
+  const {cW,cH,oceanMaskC} = st;
+  let fx=x+0.5, fy=y+0.5;
+  for(let s=0;s<maxSteps;s++){
+    const i = clampY(Math.floor(fy), cH)*cW + wrapX(Math.floor(fx), cW);
+    if(oceanMaskC[i]) {
+      const ox = wrapX(Math.floor(fx), cW);
+      const oy = clampY(Math.floor(fy), cH);
+      return {hit:true, steps:s, ox, oy, oi: oy*cW+ox};
     }
-    setStatus('Done. Köppen map generated.');
-   },
-   renderPluginUI() {
-    if (!pluginListEl) return;
-    pluginListEl.innerHTML = '';
-    this.plugins.forEach((p, idx) => {
-     const row = document.createElement('div');
-     row.className = 'field-row';
-     row.style.marginTop = '6px';
-
-     const cb = document.createElement('input');
-     cb.type = 'checkbox';
-     cb.checked = p.enabled !== false;
-     cb.addEventListener('change', () => {
-      p.enabled = cb.checked;
-     });
-
-     const wrap = document.createElement('div');
-     const title = document.createElement('div');
-     title.style.fontSize = '11px';
-     title.textContent = `${idx + 1}. ${p.name}`;
-     const desc = document.createElement('div');
-     desc.style.fontSize = '10px';
-     desc.style.color = 'var(--muted)';
-     desc.textContent = p.uiDesc || '';
-     wrap.appendChild(title);
-     if (p.uiDesc) wrap.appendChild(desc);
-
-     row.appendChild(cb);
-     row.appendChild(wrap);
-     pluginListEl.appendChild(row);
-    });
-   }
-  };
-
-  // ---- Koppen definitions & colors (Unchanged) ----
-  const KOPPEN_CLASSES = [
-   { code: 'Af', name: 'Equatorial rainforest', group: 'A', color: '#3c00fb' },
-   { code: 'Am', name: 'Equatorial monsoon', group: 'A', color: '#2f66fb' },
-   { code: 'Aw', name: 'Equatorial savanna (winter dry)', group: 'A', color: '#4597fb' },
-   { code: 'As', name: 'Equatorial savanna (summer dry)', group: 'A', color: '#46be28' },
-
-   { code: 'BWh', name: 'Subtropical desert (hot)', group: 'B', color: '#fd0f00' },
-   { code: 'BWk', name: 'Mid-latitude desert (cold)', group: 'B', color: '#fe928f' },
-   { code: 'BSh', name: 'Subtropical steppe (hot)', group: 'B', color: '#f3a000' },
-   { code: 'BSk', name: 'Mid-latitude steppe (cold)', group: 'B', color: '#fad95d' },
-
-   { code: 'Csa', name: 'Mediterranean hot summer', group: 'C', color: '#f6ff09' },
-   { code: 'Csb', name: 'Mediterranean warm summer', group: 'C', color: '#c8cb07' },
-   { code: 'Csc', name: 'Mediterranean cool summer', group: 'C', color: '#ffcda0' },
-
-   { code: 'Cfa', name: 'Humid subtropical (no dry season, hot)', group: 'C', color: '#bdff4b' },
-   { code: 'Cfb', name: 'Marine west coast (warm summer)', group: 'C', color: '#4dff35' },
-   { code: 'Cfc', name: 'Marine west coast (cool summer)', group: 'C', color: '#0ec506' },
-
-   { code: 'Cwa', name: 'Humid subtropical (dry winter, hot summer)', group: 'C', color: '#89ff93' },
-   { code: 'Cwb', name: 'Humid subtropical highland (warm summer)', group: 'C', color: '#51c660' },
-   { code: 'Cwc', name: 'Humid subtropical highland (cool summer)', group: 'C', color: '#219230' },
-
-   { code: 'Dfa', name: 'Humid continental hot summer', group: 'D', color: '#00fafd' },
-   { code: 'Dfb', name: 'Humid continental warm summer', group: 'D', color: '#44c2f9' },
-   { code: 'Dfc', name: 'Subarctic cool summer', group: 'D', color: '#007b7c' },
-   { code: 'Dfd', name: 'Subarctic very cold winter', group: 'D', color: '#02445a' },
-
-   { code: 'Dsa', name: 'Continental hot summer, dry summer', group: 'D', color: '#ff00f9' },
-   { code: 'Dsb', name: 'Continental warm summer, dry summer', group: 'D', color: '#ca00c1' },
-   { code: 'Dsc', name: 'Continental cool summer, dry summer', group: 'D', color: '#962791' },
-   { code: 'Dsd', name: 'Continental very cold winter, dry summer', group: 'D', color: '#8c568d' },
-
-   { code: 'Dwa', name: 'Humid continental dry winter, hot summer', group: 'D', color: '#a4a7ff' },
-   { code: 'Dwb', name: 'Humid continental dry winter, warm summer', group: 'D', color: '#506edf' },
-   { code: 'Dwc', name: 'Subarctic dry winter, cool summer', group: 'D', color: '#4c47b0' },
-   { code: 'Dwd', name: 'Subarctic dry winter, very cold winter', group: 'D', color: '#350087' },
-
-   { code: 'ET', name: 'Tundra', group: 'E', color: '#a9aca8' },
-   { code: 'EF', name: 'Ice cap', group: 'E', color: '#626361' },
-
-   { code: 'H', name: 'Complex highland', group: 'H', color: '#808080' }
-  ];
-
-  const CODE_TO_INDEX = (() => {
-   const m = {};
-   KOPPEN_CLASSES.forEach((c, i) => { m[c.code] = i; });
-   return m;
-  })();
-
-  function hexToRgb(hex) {
-   const s = hex.replace('#', '');
-   const v = parseInt(s, 16);
-   return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    // backtrace (semi-Lagrangian)
+    const ii = clampY(Math.floor(fy), cH)*cW + wrapX(Math.floor(fx), cW);
+    fx -= vx[ii];
+    fy -= vy[ii];
+    if(fy < 0 || fy >= cH) break; // fell off pole clamp
   }
+  return {hit:false, steps:maxSteps, ox:x, oy:y, oi:y*st.cW+x};
+}
 
-  // ---- Status helpers (Unchanged) ----
-  function setStatus(msg) { statusEl.textContent = msg; }
+function computeWindCurlOnOcean(st, vx, vy, curlOut){
+  const {cW,cH,oceanMaskC} = st;
+  for(let y=0;y<cH;y++){
+    const ym = clampY(y-1,cH), yp = clampY(y+1,cH);
+    const row=y*cW, rowm=ym*cW, rowp=yp*cW;
+    for(let x=0;x<cW;x++){
+      const xm = wrapX(x-1,cW), xp = wrapX(x+1,cW);
+      const i = row+x;
+      if(!oceanMaskC[i]) { curlOut[i]=0; continue; }
 
-  function setDimensionsLabel() {
-   const st = Program.state;
-   if (st.W && st.H) {
-    dimLabel.textContent = `${st.W} × ${st.H} px · Sea level = ${st.sea} · Lat ${st.latTop.toFixed(1)} → ${st.latBottom.toFixed(1)}`;
-   } else {
-    dimLabel.textContent = '';
-   }
+      // curl ≈ d(vy)/dx - d(vx)/dy
+      const dvy_dx = 0.5*(vy[row+xp] - vy[row+xm]);
+      const dvx_dy = 0.5*(vx[rowp+x] - vx[rowm+x]);
+      curlOut[i] = (dvy_dx - dvx_dy);
+    }
   }
+}
 
-  // ---- UI: Legend (Unchanged) ----
-  function buildLegend() {
-   legendEl.innerHTML = '';
-   KOPPEN_CLASSES.forEach(c => {
+function solveOceanStreamfunction(st, curl, iters=40){
+  // Solve Laplacian(psi)=curl on ocean cells, psi=0 on land (Dirichlet)
+  const {cW,cH,oceanMaskC,psiOcean} = st;
+  const N = cW*cH;
+  const psi = psiOcean;
+  const tmp = new Float32Array(N);
+  psi.fill(0);
+
+  for(let k=0;k<iters;k++){
+    tmp.set(psi);
+    for(let y=0;y<cH;y++){
+      const ym = clampY(y-1,cH), yp = clampY(y+1,cH);
+      const row=y*cW, rowm=ym*cW, rowp=yp*cW;
+      for(let x=0;x<cW;x++){
+        const i=row+x;
+        if(!oceanMaskC[i]) { psi[i]=0; continue; }
+
+        const xm = wrapX(x-1,cW), xp = wrapX(x+1,cW);
+        const L = tmp[row + xm];
+        const R = tmp[row + xp];
+        const U = tmp[rowm + x];
+        const D = tmp[rowp + x];
+
+        // Jacobi update for Poisson
+        psi[i] = 0.25*(L+R+U+D - curl[i]);
+      }
+    }
+  }
+}
+
+function streamfunctionToCurrents(st){
+  // u = dpsi/dy, v = -dpsi/dx (geostrophic-style)
+  const {cW,cH,oceanMaskC,psiOcean,uOcean,vOcean} = st;
+  for(let y=0;y<cH;y++){
+    const ym = clampY(y-1,cH), yp=clampY(y+1,cH);
+    const row=y*cW, rowm=ym*cW, rowp=yp*cW;
+    for(let x=0;x<cW;x++){
+      const i=row+x;
+      if(!oceanMaskC[i]) { uOcean[i]=0; vOcean[i]=0; continue; }
+
+      const xm=wrapX(x-1,cW), xp=wrapX(x+1,cW);
+      const dpsi_dy = 0.5*(psiOcean[rowp+x] - psiOcean[rowm+x]);
+      const dpsi_dx = 0.5*(psiOcean[row+xp] - psiOcean[row+xm]);
+
+      // scale down to “cells per step”
+      uOcean[i] = clamp(dpsi_dy * 0.65, -1.2, 1.2);
+      vOcean[i] = clamp(-dpsi_dx * 0.65, -1.2, 1.2);
+    }
+  }
+}
+
+function buildInitialOceanTemp(st){
+  const {cW,cH,oceanMaskC,Tocean} = st;
+  for(let y=0;y<cH;y++){
+    const lat = latAtRow(y, cH, st.latTop, st.latBottom);
+    const absLat = Math.abs(lat);
+    // simple lat profile: warm tropics, cold poles
+    const Tlat = lerp(28, -1, clamp(absLat/70, 0, 1));
+    for(let x=0;x<cW;x++){
+      const i=y*cW+x;
+      Tocean[i] = oceanMaskC[i] ? Tlat : 0;
+    }
+  }
+}
+
+async function advectOceanTemp(st, iters=18){
+  // very cheap semi-Lagrangian advection + relaxation to lat profile
+  const {cW,cH,oceanMaskC,uOcean,vOcean,Tocean} = st;
+  const N=cW*cH;
+  const tmp = new Float32Array(N);
+
+  for(let k=0;k<iters;k++){
+    tmp.set(Tocean);
+    for(let y=0;y<cH;y++){
+      const lat = latAtRow(y, cH, st.latTop, st.latBottom);
+      const absLat=Math.abs(lat);
+      const Tlat = lerp(28, -1, clamp(absLat/70, 0, 1));
+      for(let x=0;x<cW;x++){
+        const i=y*cW+x;
+        if(!oceanMaskC[i]) { Tocean[i]=0; continue; }
+
+        const fx = x + 0.5 - uOcean[i];
+        const fy = y + 0.5 - vOcean[i];
+        let Tadv = bilerpWrapXField(tmp, cW, cH, fx, fy);
+
+        // relax toward lat baseline to prevent weird drift
+        Tocean[i] = 0.90*Tadv + 0.10*Tlat;
+      }
+    }
+    if((k&3)===0) await new Promise(r=>setTimeout(r,0));
+  }
+}
+
+// One call to make currents + SST from wind
+async function buildOceanGyresAndSST(st, vxMean, vyMean){
+  if(!st.useCurrents) return;
+  const curl = new Float32Array(st.cN);
+  computeWindCurlOnOcean(st, vxMean, vyMean, curl);
+  solveOceanStreamfunction(st, curl, 40);
+  streamfunctionToCurrents(st);
+  buildInitialOceanTemp(st);
+  await advectOceanTemp(st, 18);
+}
+
+
+/* ---- Köppen classes ---- */
+const KOPPEN_CLASSES = [
+  { code: 'Af', name: 'Equatorial rainforest', group: 'A', color: '#3c00fb' },
+  { code: 'Am', name: 'Equatorial monsoon', group: 'A', color: '#2f66fb' },
+  { code: 'Aw', name: 'Equatorial savanna (winter dry)', group: 'A', color: '#4597fb' },
+  { code: 'As', name: 'Equatorial savanna (summer dry)', group: 'A', color: '#46be28' },
+
+  { code: 'BWh', name: 'Subtropical desert (hot)', group: 'B', color: '#fd0f00' },
+  { code: 'BWk', name: 'Mid-latitude desert (cold)', group: 'B', color: '#fe928f' },
+  { code: 'BSh', name: 'Subtropical steppe (hot)', group: 'B', color: '#f3a000' },
+  { code: 'BSk', name: 'Mid-latitude steppe (cold)', group: 'B', color: '#fad95d' },
+
+  { code: 'Csa', name: 'Mediterranean hot summer', group: 'C', color: '#f6ff09' },
+  { code: 'Csb', name: 'Mediterranean warm summer', group: 'C', color: '#c8cb07' },
+  { code: 'Csc', name: 'Mediterranean cool summer', group: 'C', color: '#ffcda0' },
+
+  { code: 'Cfa', name: 'Humid subtropical (no dry season, hot)', group: 'C', color: '#bdff4b' },
+  { code: 'Cfb', name: 'Marine west coast (warm summer)', group: 'C', color: '#4dff35' },
+  { code: 'Cfc', name: 'Marine west coast (cool summer)', group: 'C', color: '#0ec506' },
+
+  { code: 'Cwa', name: 'Humid subtropical (dry winter, hot summer)', group: 'C', color: '#89ff93' },
+  { code: 'Cwb', name: 'Humid subtropical highland (warm summer)', group: 'C', color: '#51c660' },
+  { code: 'Cwc', name: 'Humid subtropical highland (cool summer)', group: 'C', color: '#219230' },
+
+  { code: 'Dfa', name: 'Humid continental hot summer', group: 'D', color: '#00fafd' },
+  { code: 'Dfb', name: 'Humid continental warm summer', group: 'D', color: '#44c2f9' },
+  { code: 'Dfc', name: 'Subarctic cool summer', group: 'D', color: '#007b7c' },
+  { code: 'Dfd', name: 'Subarctic very cold winter', group: 'D', color: '#02445a' },
+
+  { code: 'Dsa', name: 'Continental hot summer, dry summer', group: 'D', color: '#ff00f9' },
+  { code: 'Dsb', name: 'Continental warm summer, dry summer', group: 'D', color: '#ca00c1' },
+  { code: 'Dsc', name: 'Continental cool summer, dry summer', group: 'D', color: '#962791' },
+  { code: 'Dsd', name: 'Continental very cold winter, dry summer', group: 'D', color: '#8c568d' },
+
+  { code: 'Dwa', name: 'Humid continental dry winter, hot summer', group: 'D', color: '#a4a7ff' },
+  { code: 'Dwb', name: 'Humid continental dry winter, warm summer', group: 'D', color: '#506edf' },
+  { code: 'Dwc', name: 'Subarctic dry winter, cool summer', group: 'D', color: '#4c47b0' },
+  { code: 'Dwd', name: 'Subarctic dry winter, very cold winter', group: 'D', color: '#350087' },
+
+  { code: 'ET', name: 'Tundra', group: 'E', color: '#a9aca8' },
+  { code: 'EF', name: 'Ice cap', group: 'E', color: '#626361' },
+
+  { code: 'H', name: 'Complex highland', group: 'H', color: '#808080' }
+];
+const CODE_TO_INDEX = (() => {
+  const m = {};
+  KOPPEN_CLASSES.forEach((c, i) => { m[c.code] = i; });
+  return m;
+})();
+
+function buildLegend() {
+  legendEl.innerHTML = '';
+  KOPPEN_CLASSES.forEach(c => {
     const div = document.createElement('div');
     div.className = 'legend-item';
     const sw = document.createElement('div');
@@ -585,774 +834,1443 @@ button:disabled{
     div.appendChild(sw);
     div.appendChild(textWrap);
     legendEl.appendChild(div);
-   });
+  });
+}
+buildLegend();
+
+/* ============================================================
+   Program state
+   ============================================================ */
+const Program = {
+  state: {
+    W:0,H:0,
+    sea:19,
+    latTop:90, latBottom:-90,
+
+    // compute grid
+    scale: 4,
+    cW:0,cH:0,
+    cN:0,
+    // ocean circulation
+    oceanMaskC: null,      // Uint8Array
+    psiOcean: null,        // Float32Array streamfunction
+    uOcean: null,          // Float32Array (x current, cells/step)
+    vOcean: null,          // Float32Array (y current, cells/step)
+    Tocean: null,          // Float32Array SST-like field (°C)
+    
+
+    // controls
+    elevInfluence:1.0,
+    maxElevMeters:8550,
+    highlandThresholdMeters:2500,
+    interiorScaleKm:2000,
+    hadleyWidthDeg:30,
+    monsoonStrength:1.0,
+    warpEnabled:true,
+    warpStrength:1.0,
+    lowlandMaxMeters:1500,
+    smoothingPasses:2,
+
+    precipMode: "budget",
+    useOrography: true,
+    useCurrents: true,
+    useSeasonalITCZ: true,
+
+    // derived
+    kmPerCell: 20,
+
+    // full-res elevation gray
+    elevFull: null,
+
+    // compute-grid
+    elevCGray: null,    // Uint16Array
+    elevCMeters: null,  // Float32Array
+    landMaskC: null,    // Uint8Array (1=land)
+
+    // distance to ocean (cells)
+    distToOceanC: null, // Uint16Array
+
+    // gradients (meters per cell)
+    gradX: null,        // Float32Array
+    gradY: null,        // Float32Array
+
+    // seasonal baseline climate on compute grid (4 seasons)
+    // 0=DJF,1=MAM,2=JJA,3=SON
+    Tseason: null,      // Float32Array (4*cN)
+    Pseason: null,      // Float32Array (4*cN) monthly-mm proxy
+
+    // monthly reconstructed (12 months)
+    Tm: null,           // Float32Array (12*cN)
+    Pm: null,           // Float32Array (12*cN)
+
+    // classification on compute grid
+    koppenC: null,      // Uint8Array (255 ocean)
+
+    // render buffer
+    work: null,
   }
-  buildLegend();
+};
 
-  // -------------------------
-  // ADDED: latitude band sync
-  // -------------------------
-  function syncLatBand(){
-    const st = Program.state;
-    const a = parseFloat(latTopInput.value);
-    const b = parseFloat(latBottomInput.value);
-    if (Number.isFinite(a)) st.latTop = Math.max(-90, Math.min(90, a));
-    if (Number.isFinite(b)) st.latBottom = Math.max(-90, Math.min(90, b));
-    setDimensionsLabel();
-  }
-  latTopInput.addEventListener('change', syncLatBand);
-  latBottomInput.addEventListener('change', syncLatBand);
-  syncLatBand();
+window.Program = Program;
 
-  // ---- File loading (Unchanged except label refresh) ----
-  fileInput.addEventListener('change', e => {
-   const file = e.target.files[0];
-   if (!file) return;
-   const url = URL.createObjectURL(file);
-   const img = new Image();
-   img.onload = () => {
-    const W = img.width;
-    const H = img.height;
-    canvas.width = W;
-    canvas.height = H;
-    ctx.drawImage(img, 0, 0);
-    const src = ctx.getImageData(0, 0, W, H);
-    const N = W * H;
-    const elev = new Float32Array(N);
-    const st = Program.state;
+/* ============================================================
+   UI sync
+   ============================================================ */
+function syncLatBand(){
+  const st = Program.state;
+  const a = parseFloat(latTopInput.value);
+  const b = parseFloat(latBottomInput.value);
+  if (Number.isFinite(a)) st.latTop = clamp(a,-90,90);
+  if (Number.isFinite(b)) st.latBottom = clamp(b,-90,90);
+  setDimensionsLabel();
+}
+latTopInput.addEventListener('change', syncLatBand);
+latBottomInput.addEventListener('change', syncLatBand);
 
-    st.W = W;
-    st.H = H;
-    st.sea = parseInt(seaInput.value) || 19;
-    syncLatBand(); // ADDED: keep state in sync
+function syncControls(){
+  const st = Program.state;
+  st.sea = clamp(parseInt(seaInput.value)||19,0,255);
+  st.scale = parseInt(computeScaleSel.value)||4;
 
-    st.src = src;
-    st.work = ctx.createImageData(W, H);
-    st.elev = elev;
-    st.rowClimate = null;
-    st.perCellClimate = null;
-    st.distToCoast = null;
-    st.distWest = null;
-    st.distEast = null;
-    st.koppenCodes = new Uint8Array(N);
+  st.elevInfluence = clamp((parseFloat(elevInfluenceInput.value)||100)/100,0,2);
+  elevInfluenceLabel.textContent = `${Math.round(st.elevInfluence*100)}%`;
 
+  st.maxElevMeters = Math.max(1, parseFloat(maxElevMetersInput.value)||8550);
+  st.highlandThresholdMeters = Math.max(0, parseFloat(highlandThresholdMetersInput.value)||2500);
+  st.interiorScaleKm = Math.max(1, parseFloat(interiorScaleKmInput.value)||2000);
+  st.hadleyWidthDeg = clamp(parseFloat(hadleyWidthDegInput.value)||30, 5, 60);
+
+  st.monsoonStrength = clamp((parseFloat(monsoonStrengthInput.value)||100)/100, 0, 2);
+  monsoonLabel.textContent = `${Math.round(st.monsoonStrength*100)}%`;
+
+  st.warpEnabled = !!warpEnabledInput.checked;
+  st.warpStrength = clamp((parseFloat(warpStrengthInput.value)||100)/100, 0, 2);
+  warpStrengthLabel.textContent = `${Math.round(st.warpStrength*100)}%`;
+  st.lowlandMaxMeters = Math.max(0, parseFloat(lowlandMaxMetersInput.value)||1500);
+
+  st.smoothingPasses = clamp(parseInt(smoothingPassesInput.value)||2, 0, 5);
+
+  st.precipMode = precipModeSel.value === "mult" ? "mult" : "budget";
+  st.useOrography = !!useOrographyCB.checked;
+  st.useCurrents = !!useCurrentsCB.checked;
+  st.useSeasonalITCZ = !!useSeasonalITCZCB.checked;
+
+  setDimensionsLabel();
+}
+[
+  seaInput, computeScaleSel,
+  elevInfluenceInput, maxElevMetersInput, highlandThresholdMetersInput,
+  interiorScaleKmInput, hadleyWidthDegInput,
+  monsoonStrengthInput, warpEnabledInput, warpStrengthInput, lowlandMaxMetersInput,
+  smoothingPassesInput, precipModeSel, useOrographyCB, useCurrentsCB, useSeasonalITCZCB
+].forEach(el=>{
+  el.addEventListener('input', syncControls);
+  el.addEventListener('change', syncControls);
+});
+syncLatBand();
+syncControls();
+
+/* ============================================================
+   File load
+   ============================================================ */
+fileInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = ()=>{
+    const W = img.width, H = img.height;
+    canvas.width = W; canvas.height = H;
+    ctx.drawImage(img,0,0);
+    const src = ctx.getImageData(0,0,W,H);
+    const N = W*H;
+    const elevFull = new Uint16Array(N);
     const S = src.data;
-    for (let i = 0; i < N; i++) {
-     elev[i] = S[i * 4]; // 0..255 greyscale
-    }
-
-    setDimensionsLabel();
-    setStatus('Heightmap loaded. Ready to run.');
+    for(let i=0;i<N;i++) elevFull[i] = S[i*4]; // use R
+    const st = Program.state;
+    st.W=W; st.H=H;
+    st.elevFull = elevFull;
+    st.work = ctx.createImageData(W,H);
     runBtn.disabled = false;
+    runFullBtn.disabled = false;
+    dlBtn.disabled = true;
+    setStatus('Heightmap loaded. Ready.');
+    setDimensionsLabel();
     URL.revokeObjectURL(url);
-   };
-   img.onerror = () => {
-    setStatus('Failed to load image. Please try another file.');
+  };
+  img.onerror = ()=>{
+    setStatus('Failed to load image.');
     runBtn.disabled = true;
+    runFullBtn.disabled = true;
+    dlBtn.disabled = true;
     URL.revokeObjectURL(url);
-   };
-   img.src = url;
-  });
+  };
+  img.src = url;
+});
 
-  seaInput.addEventListener('change', () => {
-   const st = Program.state;
-   const val = parseInt(seaInput.value);
-   if (!Number.isFinite(val)) return;
-   st.sea = Math.max(0, Math.min(255, val));
-   setDimensionsLabel();
-  });
+/* ============================================================
+   Compute-grid build + distance to ocean (BFS) + gradients
+   ============================================================ */
 
-  // ----------------------------------------------------
-  // --- START: UPDATED PLUGIN REGISTRY ---
-  // ----------------------------------------------------
+function buildComputeGrid(st){
+  const W=st.W,H=st.H,scale=st.scale;
+  const cW = Math.max(1, Math.floor(W/scale));
+  const cH = Math.max(1, Math.floor(H/scale));
+  st.cW=cW; st.cH=cH;
 
-  // ---- PLUGIN 1: Asymmetric Seasonality (UPDATED lat mapping) ----
-  Program.register({
-    id: 'koppen-latitude-base',
-    name: 'Latitude Climate (Asymmetric)',
-    uiDesc: 'West coasts get dry summers; East coasts get wet summers.',
-    enabled: true,
-    async run(st) {
-        const { W, H } = st;
-        if (!W || !H) return;
+  st.kmPerCell = Math.max(2, st.interiorScaleKm / 100);
 
-        const tempKeys = [
-            { lat: 0,  val: 28 }, { lat: 20, val: 26 },
-            { lat: 35, val: 22 }, { lat: 50, val: 10 },
-            { lat: 70, val: -5 }, { lat: 90, val: -20 }
-        ];
-        const rainKeys = [
-            { lat: 0,  val: 3000 }, { lat: 10, val: 2000 },
-            { lat: 20, val: 600 },  { lat: 28, val: 100 },
-            { lat: 35, val: 400 },  { lat: 45, val: 1100 },
-            { lat: 60, val: 800 },  { lat: 90, val: 200 }
-        ];
+  const cN=cW*cH;
+  st.cN=cN;
 
-        function getLerp(deg, keys) {
-            for (let i = 0; i < keys.length - 1; i++) {
-                const k1 = keys[i];
-                const k2 = keys[i+1];
-                if (deg >= k1.lat && deg <= k2.lat) {
-                    const t = (deg - k1.lat) / (k2.lat - k1.lat);
-                    return k1.val + t * (k2.val - k1.val);
-                }
-            }
-            return keys[keys.length-1].val;
+  const elevCGray = new Uint16Array(cN);
+  const landMaskC = new Uint8Array(cN);
+
+  // ✅ allocate once; fill AFTER landMaskC is computed
+  st.oceanMaskC = new Uint8Array(cN);
+
+  // ocean circulation fields
+  st.psiOcean = new Float32Array(cN);
+  st.uOcean   = new Float32Array(cN);
+  st.vOcean   = new Float32Array(cN);
+  st.Tocean   = new Float32Array(cN);
+
+  const elevCMeters = new Float32Array(cN);
+
+  const sea = st.sea;
+  const maxLandGray = Math.max(1, 255-sea);
+  const maxElevMeters = st.maxElevMeters;
+
+  const eFull = st.elevFull;
+
+  // box-average
+  for(let cy=0; cy<cH; cy++){
+    const y0 = (cy*scale)|0;
+    const y1 = Math.min(H, y0+scale);
+    for(let cx=0; cx<cW; cx++){
+      const x0=(cx*scale)|0;
+      const x1=Math.min(W, x0+scale);
+      let sum=0, cnt=0;
+      for(let y=y0;y<y1;y++){
+        let row=y*W;
+        for(let x=x0;x<x1;x++){
+          sum += eFull[row+x];
+          cnt++;
         }
+      }
+      const g = (sum/cnt)|0;
+      const i = cy*cW+cx;
+      elevCGray[i]=g;
 
-        const rows = new Array(H);
+      const isLand = g>=sea ? 1 : 0;
+      landMaskC[i]=isLand;
 
-        for (let y = 0; y < H; y++) {
-            // UPDATED: use configurable latitude band
-            const latDeg = latAtRow(y, H, st.latTop, st.latBottom);
-            const absLat = Math.abs(latDeg);
-            const isNH = latDeg >= 0;
+      // ✅ now ocean mask is correct
+      st.oceanMaskC[i] = isLand ? 0 : 1;
 
-            const T_ann = getLerp(absLat, tempKeys);
-            const P_ann = getLerp(absLat, rainKeys);
-            const T_amp = 3 + 25 * (absLat / 90);
-
-            const T_row = new Float32Array(12);
-            const P_row = new Float32Array(12);
-            const twoPi = Math.PI * 2;
-
-            for (let m = 0; m < 12; m++) {
-                const phase = twoPi * (m / 12);
-
-                // Temp
-                const offset = isNH ? Math.PI : 0;
-                T_row[m] = T_ann + T_amp * Math.cos(phase + offset);
-
-                // Seasonality Logic
-                let seasonalFactor = 1.0;
-                const isSummer = isNH ? (m >= 4 && m <= 9) : (m <= 3 || m >= 9);
-
-                // 1. MONSOON (Tropics 0-20): Always Summer Wet
-                if (absLat < 20) {
-                    const strength = (20 - absLat) / 20;
-                    if (isSummer) seasonalFactor += 1.5 * strength;
-                    else seasonalFactor -= 0.8 * strength;
-                }
-
-                let Pm = (P_ann / 12) * seasonalFactor;
-                if (Pm < 0) Pm = 0;
-                P_row[m] = Pm;
-            }
-            rows[y] = { latDeg, isNH, T_row, P_row };
-        }
-        st.rowClimate = rows;
+      if(isLand){
+        const landGray = g - sea;
+        elevCMeters[i] = (landGray/maxLandGray)*maxElevMeters;
+      } else {
+        elevCMeters[i] = 0;
+      }
     }
-  });
-
-  // ---- PLUGIN 2: Directional Coast Scanner (UNCHANGED) ----
-  Program.register({
-    id: 'koppen-directional-coast',
-    name: 'Directional Coast Scanner',
-    uiDesc: 'Scans rows West-to-East and East-to-West to find specific upwind distances.',
-    enabled: true,
-    async run(st) {
-        const { W, H, sea, elev } = st;
-        if (!W || !H || !elev) return;
-
-        const distWest = new Int32Array(W * H);
-        const distEast = new Int32Array(W * H);
-
-        for (let y = 0; y < H; y++) {
-            const rowOffset = y * W;
-
-            let run = 0;
-            for (let x = 0; x < W; x++) {
-                const i = rowOffset + x;
-                if (elev[i] < sea) run = 0;
-                else run++;
-                distWest[i] = run;
-            }
-
-            run = 0;
-            for (let x = W - 1; x >= 0; x--) {
-                const i = rowOffset + x;
-                if (elev[i] < sea) run = 0;
-                else run++;
-                distEast[i] = run;
-            }
-        }
-
-        st.distWest = distWest;
-        st.distEast = distEast;
-
-        st.distToCoast = new Int32Array(W * H);
-        for(let i=0; i<W*H; i++) {
-            st.distToCoast[i] = Math.min(distWest[i], distEast[i]);
-        }
-    }
-  });
-
-  // ---- PLUGIN 3: Dynamic circulation (UNCHANGED) ----
-  Program.register({
-    id: 'koppen-dynamic-circulation',
-    name: 'Aggressive Circulation & Gyres (2D)',
-    uiDesc: 'Adds longitude-dependent waves + interior cooling to break latitudinal bands.',
-    enabled: true,
-    async run(st) {
-        const { W, H, rowClimate, distWest, distEast, elev, sea } = st;
-        if (!W || !rowClimate || !distWest || !distEast || !elev) return;
-
-        const perCellClimate = new Array(W * H);
-        const KM_PER_PIXEL = 10;
-
-        const getElev = (x, y) => {
-            if (x < 0) x += W;
-            if (x >= W) x -= W;
-            y = Math.max(0, Math.min(H - 1, y));
-            return elev[y * W + x];
-        };
-
-        function hash2D(x, y) {
-            let n = x * 374761393 + y * 668265263;
-            n = (n ^ (n >> 13)) * 1274126177;
-            n = (n ^ (n >> 16));
-            return (n >>> 0) / 4294967295;
-        }
-
-        for (let y = 0; y < H; y++) {
-            const baseRow = rowClimate[y];
-            const { latDeg, isNH } = baseRow;
-            const absLat = Math.abs(latDeg);
-
-            for (let x = 0; x < W; x++) {
-                const i = y * W + x;
-                if (elev[i] < sea) { perCellClimate[i] = null; continue; }
-
-                let windFromWest;
-                let upwindDistPx;
-                if (absLat < 30) {
-                    windFromWest = false;
-                    upwindDistPx = distEast[i];
-                } else {
-                    windFromWest = true;
-                    upwindDistPx = distWest[i];
-                }
-
-                const upwindKm = upwindDistPx * KM_PER_PIXEL;
-                const continentality = Math.min(1.0, upwindKm / 2000);
-
-                const T_row = new Float32Array(baseRow.T_row);
-                const P_row = new Float32Array(baseRow.P_row);
-
-                const nx = x / W;
-                const ny = y / H;
-
-                const w1 = Math.sin(2 * Math.PI * (nx * 2.5 + ny * 0.35));
-                const w2 = Math.sin(2 * Math.PI * (nx * 4.1 - ny * 0.18));
-                let wave = 0.6 * w1 + 0.4 * w2;
-                const waveNorm = Math.max(-1, Math.min(1, wave));
-
-                const tropicWeight   = Math.max(0, 1 - absLat / 30);
-                const midLatWeight   = Math.max(0, 1 - Math.abs(absLat - 40) / 20);
-                const highLatWeight  = Math.max(0, 1 - Math.abs(absLat - 65) / 20);
-
-                const tempWaveAmp =
-                    2.0 * tropicWeight +
-                    5.0 * midLatWeight +
-                    1.5 * highLatWeight;
-
-                const rainWaveAmp =
-                    0.4 * tropicWeight +
-                    0.3 * midLatWeight +
-                    0.15 * highLatWeight;
-
-                let tempWave = waveNorm * tempWaveAmp;
-                let rainWave = waveNorm * rainWaveAmp;
-
-                const jitter = (hash2D(x, y) - 0.5);
-                tempWave += jitter * 0.7;
-                rainWave += jitter * 0.08;
-
-                let tempOffsetWinter = 0;
-                let rainMult = 1.0;
-
-                if (absLat > 35 && absLat < 65 && windFromWest) {
-                    if (continentality < 0.5) {
-                        const heatBoost = 10.0 * (1.0 - continentality / 0.5);
-                        tempOffsetWinter += heatBoost;
-                        rainMult *= 1.4;
-                    }
-                    if (continentality > 0.6) {
-                        tempOffsetWinter -= 5.0;
-                    }
-                }
-
-                if (absLat > 15 && absLat < 35) {
-                    const isWestSide = distWest[i] < distEast[i];
-
-                    if (isWestSide) {
-                        if (distWest[i] * KM_PER_PIXEL < 400) {
-                            rainMult *= 0.2;
-                            tempOffsetWinter -= 2.0;
-                        }
-                    } else {
-                        if (distEast[i] * KM_PER_PIXEL < 400) {
-                            rainMult *= 1.7;
-                            tempOffsetWinter += 3.0;
-                        }
-                    }
-                }
-
-                const lookBack = 3;
-                const upwindX = windFromWest ? (x - lookBack) : (x + lookBack);
-                const slope = elev[i] - getElev(upwindX, y);
-
-                rainMult *= (1.0 - continentality * 0.5);
-
-                if (slope > 5) {
-                    rainMult *= (1.0 + Math.min(0.9, slope / 8));
-                } else if (slope < -5) {
-                    rainMult *= 0.25;
-                }
-
-                const interiorCoolMidLats = 6.0 * continentality * midLatWeight;
-                const interiorHotTropics  = 3.0 * continentality * tropicWeight;
-
-                let tempAllSeasonsOffset = -interiorCoolMidLats + interiorHotTropics;
-
-                rainMult *= (1.0 + rainWave);
-                if (rainMult < 0.05) rainMult = 0.05;
-                if (rainMult > 4.5)  rainMult = 4.5;
-
-                tempOffsetWinter += tempWave * 0.7;
-                tempAllSeasonsOffset += tempWave * 0.3;
-
-                for (let m = 0; m < 12; m++) {
-                    const isSummer = isNH ? (m >= 4 && m <= 9) : (m <= 3 || m >= 9);
-                    const isWinter = !isSummer;
-
-                    P_row[m] *= rainMult;
-                    if (P_row[m] < 0) P_row[m] = 0;
-
-                    T_row[m] += tempAllSeasonsOffset;
-                    if (isWinter) T_row[m] += tempOffsetWinter;
-                    else T_row[m] += tempOffsetWinter * 0.2;
-                }
-
-                perCellClimate[i] = { T_row, P_row };
-            }
-
-            if (y % 100 === 0) await new Promise(r => setTimeout(r, 0));
-        }
-
-        st.perCellClimate = perCellClimate;
-    }
-  });
-
-  // ---- CLASSIFICATION FUNCTION (UNCHANGED) ----
-  function classifyKoppenForCell(row, elevMeters) {
-    const { latDeg, isNH, T_row, P_row } = row;
-
-    const elevKm = Math.max(0, elevMeters) / 1000;
-    const lapse = -6.5;
-    const dT = lapse * elevKm;
-
-    const Tm = new Float32Array(12);
-    let T_ann = 0;
-    let Tcold = 1000;
-    let Twarm = -1000;
-    let nGT10 = 0;
-
-    for (let m = 0; m < 12; m++) {
-        const t = T_row[m] + dT;
-        Tm[m] = t;
-        T_ann += t;
-        if (t < Tcold) Tcold = t;
-        if (t > Twarm) Twarm = t;
-        if (t > 10) nGT10++;
-    }
-    T_ann /= 12;
-
-    let P_ann = 0;
-    let P_summer = 0;
-    let P_winter = 0;
-
-    const summerMonths = isNH ? [3,4,5,6,7,8] : [9,10,11,0,1,2];
-
-    let P_drySummer = 10000, P_wetSummer = -1;
-    let P_dryWinter = 10000, P_wetWinter = -1;
-
-    for (let m = 0; m < 12; m++) {
-        const Pm = P_row[m];
-        P_ann += Pm;
-
-        if (summerMonths.includes(m)) {
-            P_summer += Pm;
-            if (Pm < P_drySummer) P_drySummer = Pm;
-            if (Pm > P_wetSummer) P_wetSummer = Pm;
-        } else {
-            P_winter += Pm;
-            if (Pm < P_dryWinter) P_dryWinter = Pm;
-            if (Pm > P_wetWinter) P_wetWinter = Pm;
-        }
-    }
-
-    let P_th;
-    const fracSummer = P_summer / P_ann;
-    const fracWinter = P_winter / P_ann;
-
-    if (fracSummer >= 0.7)      P_th = 20 * T_ann + 280;
-    else if (fracWinter >= 0.7) P_th = 20 * T_ann;
-    else                        P_th = 20 * T_ann + 140;
-
-    if (Twarm < 10) {
-        return Twarm <= 0 ? CODE_TO_INDEX['EF'] : CODE_TO_INDEX['ET'];
-    }
-
-    if (P_ann < P_th) {
-        const isHot = T_ann >= 18;
-        const isDesert = P_ann < (0.5 * P_th);
-        if (isDesert) return isHot ? CODE_TO_INDEX['BWh'] : CODE_TO_INDEX['BWk'];
-        else          return isHot ? CODE_TO_INDEX['BSh'] : CODE_TO_INDEX['BSk'];
-    }
-
-    if (Tcold >= 18) {
-        let P_min = 10000;
-        for(let m=0; m<12; m++) if(P_row[m] < P_min) P_min = P_row[m];
-
-        if (P_min >= 60) return CODE_TO_INDEX['Af'];
-        if (P_ann >= 25 * (100 - P_min)) return CODE_TO_INDEX['Am'];
-
-        if (P_drySummer < P_dryWinter) return CODE_TO_INDEX['As'];
-        return CODE_TO_INDEX['Aw'];
-    }
-
-    const isGroupC = (Tcold > -3);
-
-    let secondLetter = 'f';
-    if (P_drySummer < 40 && P_drySummer < (P_wetWinter / 3)) secondLetter = 's';
-    else if (P_dryWinter < (P_wetSummer / 10)) secondLetter = 'w';
-
-    let thirdLetter;
-    if (Twarm >= 22) thirdLetter = 'a';
-    else if (nGT10 >= 4) thirdLetter = 'b';
-    else if (Tcold < -38) thirdLetter = 'd';
-    else thirdLetter = 'c';
-
-    const group = isGroupC ? 'C' : 'D';
-    const code = group + secondLetter + thirdLetter;
-
-    if (CODE_TO_INDEX[code] !== undefined) return CODE_TO_INDEX[code];
-    return isGroupC ? CODE_TO_INDEX['Cfb'] : CODE_TO_INDEX['Dfb'];
   }
 
-  // ---- PLUGIN 4: Elevation + Köppen index (UNCHANGED) ----
-  Program.register({
-    id: 'koppen-elev-index',
-    name: 'Elevation + Köppen Index',
-    uiDesc: 'Applies lapse rate from the heightmap and classifies each land cell into a raw Köppen class.',
-    enabled: true,
-    async run(st) {
-       const { W, H, sea, elev, rowClimate, perCellClimate, koppenCodes } = st;
-       if (!W || !H || !perCellClimate || !koppenCodes) {
-         setStatus('Missing data for classification.');
-         return;
-       }
-       const seaGray = sea;
-       const maxLandGray = Math.max(1, 255 - seaGray);
-       const maxElevMeters = 8550;
+  st.elevCGray=elevCGray;
+  st.landMaskC=landMaskC;
+  st.elevCMeters=elevCMeters;
 
-       for (let y = 0; y < H; y++) {
-         const baseRow = rowClimate[y];
-         for (let x = 0; x < W; x++) {
-           const i = y * W + x;
-           const g = elev[i];
-           if (g < seaGray) { koppenCodes[i] = 255; continue; }
+  st.distToOceanC = new Uint16Array(cN);
+  st.gradX = new Float32Array(cN);
+  st.gradY = new Float32Array(cN);
 
-           const cellClimate = perCellClimate[i];
-           const modifiedRow = {
-              latDeg: baseRow.latDeg,
-              isNH: baseRow.isNH,
-              T_row: cellClimate.T_row,
-              P_row: cellClimate.P_row
-           };
+  st.Tseason = new Float32Array(4*cN);
+  st.Pseason = new Float32Array(4*cN);
+  st.Tm = new Float32Array(12*cN);
+  st.Pm = new Float32Array(12*cN);
+  st.koppenC = new Uint8Array(cN);
 
-           const landGray = g - seaGray;
-           const elevMeters = (landGray / maxLandGray) * maxElevMeters;
+  return cN;
+}
 
-           let classIndex = classifyKoppenForCell(modifiedRow, elevMeters);
 
-           const elevKm = elevMeters / 1000;
-           const baseCode = KOPPEN_CLASSES[classIndex].code;
-           if (elevKm >= 2.5) {
-             if (baseCode[0] !== 'E' && baseCode[0] !== 'B') classIndex = CODE_TO_INDEX['H'];
-           }
-           koppenCodes[i] = classIndex;
-         }
-         if (y % 256 === 0) await new Promise(r => setTimeout(r, 0));
-       }
-     }
-  });
+function computeDistToOceanBFS(st){
+  const {cW,cH,landMaskC,distToOceanC} = st;
+  const N = cW*cH;
+  const INF = 65535;
+  for(let i=0;i<N;i++) distToOceanC[i]=INF;
 
-  // ---- PLUGIN 5: Smoothing (UNCHANGED) ----
-  Program.register({
-    id: 'koppen-smooth',
-    name: 'Köppen Majority Smoothing',
-    uiDesc: 'Shrinks tiny outlier patches and softens harsh pixel noise.',
-    enabled: true,
-    async run(st) {
-        const { W, H, koppenCodes } = st;
-        if (!W || !H || !koppenCodes) return;
+  const qx = new Int32Array(N);
+  const qy = new Int32Array(N);
+  let qh=0, qt=0;
 
-        const N = W * H;
-        const tmp = new Uint8Array(N);
-        const neighbors = [
-            [-1, -1], [0, -1], [1, -1],
-            [-1,  0],          [1,  0],
-            [-1,  1], [0,  1], [1,  1],
-        ];
-
-        const passes = 2;
-
-        for (let pass = 0; pass < passes; pass++) {
-            tmp.set(koppenCodes);
-
-            for (let y = 0; y < H; y++) {
-                for (let x = 0; x < W; x++) {
-                    const i = y * W + x;
-                    const c = tmp[i];
-                    if (c === 255) continue;
-
-                    const counts = new Map();
-                    let sameCount = 0;
-
-                    for (const [dx, dy] of neighbors) {
-                        let nx = x + dx;
-                        let ny = y + dy;
-                        if (nx < 0) nx += W;
-                        if (nx >= W) nx -= W;
-                        if (ny < 0 || ny >= H) continue;
-                        const ni = ny * W + nx;
-                        const nc = tmp[ni];
-                        if (nc === 255) continue;
-                        if (nc === c) sameCount++;
-                        counts.set(nc, (counts.get(nc) || 0) + 1);
-                    }
-
-                    let bestC = c;
-                    let bestCount = sameCount;
-
-                    for (const [cc, count] of counts) {
-                        if (count > bestCount) {
-                            bestCount = count;
-                            bestC = cc;
-                        }
-                    }
-
-                    if (bestC !== c && bestCount >= 4 && sameCount <= 2) {
-                        koppenCodes[i] = bestC;
-                    }
-                }
-            }
-        }
+  for(let y=0;y<cH;y++){
+    const row=y*cW;
+    for(let x=0;x<cW;x++){
+      const i=row+x;
+      if(landMaskC[i]===0){
+        distToOceanC[i]=0;
+        qx[qt]=x; qy[qt]=y; qt++;
+      }
     }
-  });
+  }
+  if(qt===0) return;
 
-  // ---- PLUGIN 6: Lowland warp (UPDATED lat mapping) ----
-  Program.register({
-    id: 'koppen-lowland-warp',
-    name: 'Lowland Domain Warp (Anti-Banding)',
-    uiDesc: 'Smooth 2D domain warping of lowland climates only, avoiding ocean & highlands to break residual banding.',
-    enabled: true,
-    async run(st) {
-        const { W, H, sea, elev, koppenCodes } = st;
-        if (!W || !H || !elev || !koppenCodes) return;
-
-        setStatus('Lowland domain warp…');
-
-        const N = W * H;
-
-        const seaGray = sea;
-        const maxLandGray = Math.max(1, 255 - seaGray);
-        const maxElevMeters = 8550;
-        const lowlandMaxMeters = 1500;
-
-        const lowlandMask = new Uint8Array(N);
-        const landMask = new Uint8Array(N);
-
-        for (let i = 0; i < N; i++) {
-            const g = elev[i];
-            if (g < seaGray) { landMask[i] = 0; lowlandMask[i] = 0; continue; }
-            landMask[i] = 1;
-            const landGray = g - seaGray;
-            const elevMeters = (landGray / maxLandGray) * maxElevMeters;
-            lowlandMask[i] = (elevMeters < lowlandMaxMeters) ? 1 : 0;
-        }
-
-        const twoPi = Math.PI * 2;
-
-        function vecNoise(nx, ny) {
-            const sx1 = Math.sin(twoPi * (nx * 3.17 + ny * 1.23));
-            const sx2 = Math.sin(twoPi * (nx * 7.13 - ny * 0.92));
-            const sy1 = Math.sin(twoPi * (nx * 2.11 - ny * 3.41));
-            const sy2 = Math.sin(twoPi * (nx * 5.33 + ny * 1.71));
-            const vx = (sx1 * 0.6 + sx2 * 0.4);
-            const vy = (sy1 * 0.6 + sy2 * 0.4);
-            return [vx, vy];
-        }
-
-        const BASE_WARP_PX = 64;
-
-        const newCodes = new Uint8Array(N);
-        newCodes.set(koppenCodes);
-
-        function wrapX(x) {
-            if (x < 0) x = (x % W + W) % W;
-            else if (x >= W) x = x % W;
-            return x;
-        }
-        function clampY(y) {
-            if (y < 0) return 0;
-            if (y >= H) return H - 1;
-            return y;
-        }
-
-        // UPDATED: latitude degrees per row from configurable band
-        const latDegRow = new Float32Array(H);
-        for (let y = 0; y < H; y++) {
-            latDegRow[y] = latAtRow(y, H, st.latTop, st.latBottom);
-        }
-
-        for (let y = 0; y < H; y++) {
-            const latDeg = latDegRow[y];
-            const absLat = Math.abs(latDeg);
-
-            const lowLatWeight = Math.max(0, 1 - absLat / 45);
-            const midLatBoost = Math.max(0, 1 - Math.abs(absLat - 40) / 20);
-            const latWeight = Math.min(1, 0.4 + 0.6 * (0.7 * lowLatWeight + 0.3 * midLatBoost));
-
-            for (let x = 0; x < W; x++) {
-                const i = y * W + x;
-                const ci = koppenCodes[i];
-
-                if (!landMask[i] || !lowlandMask[i] || ci === 255) {
-                    newCodes[i] = ci;
-                    continue;
-                }
-
-                const localWarpPx = BASE_WARP_PX * latWeight;
-                if (localWarpPx < 1.0) { newCodes[i] = ci; continue; }
-
-                const nx = x / W;
-                const ny = y / H;
-                const [vx, vy] = vecNoise(nx, ny);
-
-                let dx = vx * localWarpPx;
-                let dy = vy * localWarpPx;
-
-                let sampleCode = ci;
-                let found = false;
-
-                for (let attempt = 0; attempt < 3; attempt++) {
-                    const tx = wrapX(Math.round(x + dx));
-                    const ty = clampY(Math.round(y + dy));
-                    const ti = ty * W + tx;
-
-                    if (landMask[ti] && lowlandMask[ti] && koppenCodes[ti] !== 255) {
-                        sampleCode = koppenCodes[ti];
-                        found = true;
-                        break;
-                    }
-
-                    dx *= 0.5;
-                    dy *= 0.5;
-                }
-
-                newCodes[i] = found ? sampleCode : ci;
-            }
-
-            if ((y & 0xff) === 0) await new Promise(r => setTimeout(r, 0));
-        }
-
-        koppenCodes.set(newCodes);
+  while(qh<qt){
+    const x=qx[qh], y=qy[qh]; qh++;
+    const i=y*cW+x;
+    const d=distToOceanC[i];
+    const nd=d+1;
+    if(x>0){
+      const j=i-1;
+      if(distToOceanC[j]>nd){ distToOceanC[j]=nd; qx[qt]=x-1; qy[qt]=y; qt++; }
     }
-  });
+    if(x+1<cW){
+      const j=i+1;
+      if(distToOceanC[j]>nd){ distToOceanC[j]=nd; qx[qt]=x+1; qy[qt]=y; qt++; }
+    }
+    if(y>0){
+      const j=i-cW;
+      if(distToOceanC[j]>nd){ distToOceanC[j]=nd; qx[qt]=x; qy[qt]=y-1; qt++; }
+    }
+    if(y+1<cH){
+      const j=i+cW;
+      if(distToOceanC[j]>nd){ distToOceanC[j]=nd; qx[qt]=x; qy[qt]=y+1; qt++; }
+    }
+  }
+}
 
-  // ---- FINAL: Render (UNCHANGED) ----
-  Program.register({
-   id: 'koppen-render',
-   name: 'Render Köppen Map',
-   uiDesc: 'Renders class colors to the canvas and summarizes dominant types.',
-   enabled: true,
-   async run(st) {
-    const { W, H, koppenCodes, work } = st;
-    if (!W || !H || !koppenCodes || !work) { setStatus('Missing canvas, indices, or work buffer.'); return; }
+function computeGradients(st){
+  const {cW,cH,elevCMeters,gradX,gradY} = st;
 
-    const out = work.data;
-    const oceanColor = [10, 30, 80];
-    const classCounts = new Array(KOPPEN_CLASSES.length).fill(0);
+  function wrapX(x){ x%=cW; if(x<0)x+=cW; return x; }
+  function clampY(y){ return y<0?0:(y>=cH?cH-1:y); }
 
-    for (let i = 0; i < koppenCodes.length; i++) {
-     const idx4 = i * 4;
-     const ci = koppenCodes[i];
-     if (ci === 255) {
-      out[idx4 + 0] = oceanColor[0];
-      out[idx4 + 1] = oceanColor[1];
-      out[idx4 + 2] = oceanColor[2];
-      out[idx4 + 3] = 255;
-     } else {
-      const cl = KOPPEN_CLASSES[ci];
-      const rgb = hexToRgb(cl.color);
-      out[idx4 + 0] = rgb[0];
-      out[idx4 + 1] = rgb[1];
-      out[idx4 + 2] = rgb[2];
-      out[idx4 + 3] = 255;
-      classCounts[ci]++;
-     }
+  for(let y=0;y<cH;y++){
+    const ym = clampY(y-1);
+    const yp = clampY(y+1);
+    const row=y*cW, rowm=ym*cW, rowp=yp*cW;
+    for(let x=0;x<cW;x++){
+      const xm = wrapX(x-1);
+      const xp = wrapX(x+1);
+
+      const hL = elevCMeters[row + xm];
+      const hR = elevCMeters[row + xp];
+      const hU = elevCMeters[rowm + x];
+      const hD = elevCMeters[rowp + x];
+
+      // meters per cell (central difference)
+      gradX[row + x] = 0.5*(hR - hL);
+      gradY[row + x] = 0.5*(hD - hU);
+    }
+  }
+}
+
+/* ============================================================
+   Baseline seasonal T/P (still cheap), then 2D advection refines precip.
+   ============================================================ */
+const tempKeys = [
+  { lat: 0,  val: 28 }, { lat: 20, val: 26 },
+  { lat: 35, val: 22 }, { lat: 50, val: 10 },
+  { lat: 70, val: -5 }, { lat: 90, val: -20 }
+];
+const rainKeys = [
+  { lat: 0,  val: 3000 }, { lat: 10, val: 2000 },
+  { lat: 20, val: 600 },  { lat: 28, val: 100 },
+  { lat: 35, val: 400 },  { lat: 45, val: 1100 },
+  { lat: 60, val: 800 },  { lat: 90, val: 200 }
+];
+function getLerp(deg, keys) {
+  for (let i = 0; i < keys.length - 1; i++) {
+    const k1 = keys[i], k2 = keys[i+1];
+    if (deg >= k1.lat && deg <= k2.lat) {
+      const t = (deg - k1.lat) / (k2.lat - k1.lat);
+      return k1.val + t * (k2.val - k1.val);
+    }
+  }
+  return keys[keys.length-1].val;
+}
+
+function oceanSSTProxy(latDeg, nx, ny){
+  const absLat = Math.abs(latDeg);
+  const base = lerp(27, -1, Math.min(1, absLat/70));
+  const w1 = Math.sin(2*Math.PI*(nx*1.8 + ny*0.55));
+  const w2 = Math.sin(2*Math.PI*(nx*3.1 - ny*0.28));
+  const wave = 0.6*w1 + 0.4*w2;
+  return base + 3.0*wave;
+}
+
+function computeSeasonsBaseline(st){
+  const {cW,cH,cN,landMaskC,distToOceanC,elevCMeters} = st;
+  const Tseason=st.Tseason, Pseason=st.Pseason;
+
+  const hadley = st.hadleyWidthDeg;
+  const useITCZ = st.useSeasonalITCZ;
+  const useCurrents = st.useCurrents;
+
+  const kmPerCell = st.kmPerCell;
+  const interiorKm = st.interiorScaleKm;
+
+  // 0=DJF,1=MAM,2=JJA,3=SON
+  for(let cy=0; cy<cH; cy++){
+    const latDeg = latAtRow(cy, cH, st.latTop, st.latBottom);
+    const absLat = Math.abs(latDeg);
+    const isNH = latDeg>=0;
+
+    const T_ann = getLerp(absLat, tempKeys);
+    const P_ann = getLerp(absLat, rainKeys);
+    const T_amp = 3 + 25*(absLat/90);
+
+    for(let cx=0; cx<cW; cx++){
+      const i = cy*cW+cx;
+      const land = landMaskC[i];
+      const nx = cx / Math.max(1, cW-1);
+      const ny = cy / Math.max(1, cH-1);
+
+      const dKm = Math.min(interiorKm, distToOceanC[i]*kmPerCell);
+      const maritime = 1.0 - (dKm / interiorKm);
+      const maritimeClamped = clamp(maritime, 0, 1);
+
+      // coastal moderation of seasonal amplitude
+      const ampMod = lerp(1.25, 0.55, maritimeClamped);
+      // coastal seasonal lag (in season units)
+      const lag = lerp(0.0, 0.22, maritimeClamped);
+
+      // SST influence near coasts
+      let coastSST = 0;
+      if(useCurrents){
+        const baseOcean = lerp(27, -1, Math.min(1, absLat/70));
+        coastSST = (oceanSSTProxy(latDeg, nx, ny) - baseOcean) * maritimeClamped;
+      }
+
+      // seasonal temps
+      for(let s=0;s<4;s++){
+        const phase = (s/4)*2*Math.PI;
+        const warmPeak = isNH ? Math.PI : 0;
+        const seasonal = Math.cos(phase + warmPeak + lag*2*Math.PI);
+
+        let T = T_ann + (T_amp*ampMod)*seasonal;
+        T += coastSST;
+
+        // cheap continentality offsets
+        const tropW = Math.max(0, 1 - absLat/30);
+        const midW  = Math.max(0, 1 - Math.abs(absLat-45)/20);
+        const cont = 1.0 - maritimeClamped;
+        T += (+2.0*tropW - 4.0*midW)*cont;
+
+        // slight height-based local cooling baked into baseline (very weak; real lapse happens later)
+        T -= 0.25 * (elevCMeters[i]/2000);
+
+        Tseason[s*cN + i] = T;
+      }
+
+      // baseline precip (convective + monsoon + coastal humidity hint).
+      // The 2D advection will REPLACE/REFINE this in budget mode,
+      // but we keep it as “local convective/background” to blend with transport.
+      for(let s=0;s<4;s++){
+        let P = (P_ann/12);
+
+        // humid coasts
+        P *= lerp(0.85, 1.20, maritimeClamped);
+
+        // monsoon (local seasonal background)
+        if(useITCZ && absLat < 25){
+          const k = st.monsoonStrength;
+          const summerHem = isNH ? 2 : 0;
+          const isSummer = (s === summerHem) || (s === ((summerHem+1)&3));
+          const strength = Math.max(0, (25-absLat)/25);
+          if(isSummer) P *= (1.0 + 1.2*strength*k);
+          else P *= Math.max(0.12, 1.0 - 0.6*strength*k);
+        }
+
+        // tiny wave to avoid perfect bands even in legacy mode
+        const w = 0.18*Math.sin(2*Math.PI*(nx*2.7 + ny*0.35)) + 0.12*Math.sin(2*Math.PI*(nx*4.1 - ny*0.18));
+        P *= clamp(1.0 + w, 0.35, 1.85);
+
+        Pseason[s*cN + i] = land ? P : 0;
+      }
+    }
+  }
+}
+
+/* ============================================================
+   2D WIND FIELD + MOISTURE ADVECTION (BUDGET MODE)
+   ============================================================ */
+
+function wrapX(x, cW){ x%=cW; if(x<0)x+=cW; return x; }
+function clampY(y, cH){ return y<0?0:(y>=cH?cH-1:y); }
+
+function bilerpWrapX(buf, cW, cH, x, y){
+  // x wraps, y clamps
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const fx = x - x0;
+  const fy = y - y0;
+
+  const xA = wrapX(x0, cW);
+  const xB = wrapX(x0+1, cW);
+  const yA = clampY(y0, cH);
+  const yB = clampY(y0+1, cH);
+
+  const iAA = yA*cW + xA;
+  const iBA = yA*cW + xB;
+  const iAB = yB*cW + xA;
+  const iBB = yB*cW + xB;
+
+  const vAA = buf[iAA];
+  const vBA = buf[iBA];
+  const vAB = buf[iAB];
+  const vBB = buf[iBB];
+
+  const vA = vAA + (vBA - vAA)*fx;
+  const vB = vAB + (vBB - vAB)*fx;
+  return vA + (vB - vA)*fy;
+}
+
+function buildWindFieldSeason(st, s, vx, vy){
+  // vx/vy are in "cells per step" (dt=1).
+  // We create: zonal bands (trades vs westerlies) + meanders + weak topo steering.
+  const {cW,cH,gradX,gradY,landMaskC} = st;
+  const hadley = st.hadleyWidthDeg;
+  const useITCZ = st.useSeasonalITCZ;
+
+  // season sign for ITCZ and meanders
+  // NH summer = JJA/SON (2/3), SH summer = DJF/MAM (0/1) for the opposite hemisphere.
+  const seasonPhase = (s/4) * 2*Math.PI; // 0..1..2..3
+  const meanderPhase = seasonPhase * 0.75;
+
+  const steer = st.useOrography ? 0.10 : 0.05; // steering is mostly relevant when orography is on
+  const meanderAmp = 0.35;                     // how “curvy” the flow is
+  const meridAmp = 0.18;                       // N/S component from Rossby-ish waviness
+
+  for(let y=0;y<cH;y++){
+    const lat0 = latAtRow(y, cH, st.latTop, st.latBottom);
+    const isNH = lat0 >= 0;
+
+    // ITCZ seasonal shift: push the tropical belt toward summer hemisphere
+    let lat = lat0;
+    if(useITCZ){
+      const summerHemNH = (s===2 || s===3);
+      const shift = (summerHemNH ? +6 : -6) * (isNH ? 1 : -1);
+      const w = clamp(1 - Math.abs(lat0)/45, 0, 1);
+      lat += shift * w;
     }
 
-    ctx.putImageData(work, 0, 0);
+    const absLat = Math.abs(lat);
 
-    const totalLand = classCounts.reduce((a, b) => a + b, 0);
-    let lines = [];
-    lines.push(`Land pixels: ${totalLand.toLocaleString()}`);
-    if (totalLand > 0) {
-     const top = [...classCounts.entries()]
-      .filter(([idx, c]) => c > 0)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-     lines.push('Dominant classes:');
-     top.forEach(([idx, c]) => {
-      const cl = KOPPEN_CLASSES[idx];
-      const pct = (c * 100 / totalLand).toFixed(1);
+    // determine base zonal direction
+    // trades: easterlies (from east) => flow westward => vx negative
+    // westerlies: from west => flow eastward => vx positive
+    const inTrades = absLat < hadley;
+    const baseZonal = inTrades ? -1.0 : +1.0;
+
+    // stronger jets near mid-lats
+    const jet = 0.70 + 0.55 * clamp(1 - Math.abs(absLat-45)/18, 0, 1);
+
+    const ny = y / Math.max(1, cH-1);
+
+    for(let x=0;x<cW;x++){
+      const i = y*cW + x;
+      const nx = x / Math.max(1, cW-1);
+
+      // large-scale meanders: two low-frequency waves (deterministic, cheap)
+      const w1 = Math.sin(2*Math.PI*(nx*1.6 + ny*0.55) + meanderPhase);
+      const w2 = Math.sin(2*Math.PI*(nx*0.9 - ny*0.85) - meanderPhase*0.7);
+      const wav = 0.65*w1 + 0.35*w2;
+
+      // base flow
+      let ux = baseZonal * jet * (1.0 + meanderAmp*wav);
+      let uy = meridAmp * wav;
+
+      // small seasonal cross-equatorial flow hint in tropics (helps monsoon tongues)
+      if(absLat < 20 && useITCZ){
+        const t = (20-absLat)/20;
+        // toward ITCZ: in NH summer, flow crosses equator northward in DJF etc.
+        const towardSummer = ( (s===2 || s===3) ? +1 : -1 );
+        uy += towardSummer * (isNH ? +0.10 : -0.10) * t;
+      }
+
+      // topographic steering: deflect around strong gradients
+      // Use perpendicular to gradient (i.e., along contour lines) as a deflection direction.
+      const gx = gradX[i], gy = gradY[i];
+      const gmag = Math.sqrt(gx*gx + gy*gy) + 1e-6;
+      const strength = clamp(gmag / 250, 0, 1); // 250m/cell ≈ strong slope
+      const px = -gy / gmag;
+      const py =  gx / gmag;
+
+      ux += steer * strength * px;
+      uy += steer * strength * py;
+
+      // normalize to stable speed, then scale to ~0.8..1.4 cells/step depending on latitude
+      const sp = Math.sqrt(ux*ux + uy*uy) + 1e-6;
+      ux /= sp; uy /= sp;
+
+      // speed: a bit faster mid-lats, slower deep tropics/polar
+      const speed = 0.85 + 0.45*clamp(1 - Math.abs(absLat-45)/30, 0, 1);
+
+      vx[i] = ux * speed;
+      vy[i] = uy * speed;
+    }
+  }
+}
+
+function computeDivergence(cW, cH, vx, vy, divOut){
+  // div = d(vx)/dx + d(vy)/dy (finite diff; x wraps, y clamps)
+  for(let y=0;y<cH;y++){
+    const ym = clampY(y-1, cH);
+    const yp = clampY(y+1, cH);
+    const row=y*cW, rowm=ym*cW, rowp=yp*cW;
+    for(let x=0;x<cW;x++){
+      const xm = wrapX(x-1, cW);
+      const xp = wrapX(x+1, cW);
+
+      const dvx = 0.5*(vx[row+xp] - vx[row+xm]);
+      const dvy = 0.5*(vy[rowp+x] - vy[rowm+x]);
+      divOut[row+x] = dvx + dvy;
+    }
+  }
+}
+
+async function advectMoistureSeason(st, s){
+  // Semi-Lagrangian advection of moisture M on compute grid.
+  // Produces refined Pseason for this season.
+  const {cW,cH,cN,landMaskC,distToOceanC,elevCMeters,gradX,gradY} = st;
+  const kmPerCell = st.kmPerCell;
+  const interiorKm = st.interiorScaleKm;
+
+  // buffers (allocated per call to reduce persistent memory)
+  const M  = new Float32Array(cN);
+  const M2 = new Float32Array(cN);
+
+  const vx = new Float32Array(cN);
+  const vy = new Float32Array(cN);
+  const div = new Float32Array(cN);
+  const PbaseSeason = new Float32Array(cN);
+  PbaseSeason.set(st.Pseason.subarray(s*cN, (s+1)*cN));
+
+  buildWindFieldSeason(st, s, vx, vy);
+  computeDivergence(cW, cH, vx, vy, div);
+
+    // Initialize moisture using upwind ocean fetch (kills symmetric coastal rings).
+  for(let y=0;y<cH;y++){
+    const latDeg = latAtRow(y, cH, st.latTop, st.latBottom);
+    const absLat = Math.abs(latDeg);
+    for(let x=0;x<cW;x++){
+        const i=y*cW+x;
+
+        if(st.oceanMaskC[i]) { M[i]=1.0; continue; }
+
+        // backtrace wind to find ocean fetch
+        const hit = traceUpwindOcean(st, x, y, vx, vy, 50);
+
+        let m = 0.10; // base interior dryness
+        if(hit.hit){
+        // shorter fetch = more marine
+        const marine = Math.exp(-hit.steps / 18);
+        // SST factor: warm source air carries more moisture
+        const Tsrc = st.useCurrents ? st.Tocean[hit.oi] : lerp(28,-1, clamp(absLat/70,0,1));
+        const warm = clamp((Tsrc + 2) / 30, 0, 1); // -2..28 => 0..1
+        m = 0.12 + 0.78*marine*(0.55 + 0.45*warm);
+        }else{
+        // no upwind ocean quickly -> continental
+        m = 0.08 + 0.08*clamp(1 - absLat/60, 0, 1);
+        }
+
+        M[i] = clamp(m, 0.02, 1.0);
+    }
+}
+
+
+  // Tunables (internal; keep your “7 controls” intact)
+  const iters = 3;                             // <= keep fast, but breaks banding a lot
+  const landDecayKm = Math.max(250, interiorKm * 0.55); // moisture loss over land
+  const consumeScale = 240;                    // mm/month per moisture unit
+  const precipGain = 240;                      // mm/month from moisture potential
+  const convStrength = 1.35;                   // convergence -> more precip
+  const orogStrength = st.useOrography ? 1.65 : 0.0;
+  const shadowStrength = st.useOrography ? 0.65 : 0.0;
+
+  // baseline blending:
+  // keep some local convective/monsoon precip from baseline (especially in tropics),
+  // but let transport dominate mid-lats.
+  function baselineBlend(latAbs){
+    // 0.70 in tropics, ~0.45 in mid-lats, ~0.55 in high-lats
+    const trop = clamp(1 - latAbs/25, 0, 1);
+    const mid  = clamp(1 - Math.abs(latAbs-45)/18, 0, 1);
+    return clamp(0.40 + 0.30*trop + 0.10*(1-mid), 0.35, 0.75);
+  }
+
+  // rain shadow memory (cheap): store recent descent influence per cell each iter
+  // (prevents everything from instantly re-wetting behind a ridge)
+  const shadow = new Float32Array(cN);
+
+  for(let iter=0; iter<iters; iter++){
+    // iterate rows for cache locality; yield occasionally
+    for(let y=0;y<cH;y++){
+      const latDeg = latAtRow(y, cH, st.latTop, st.latBottom);
+      const absLat = Math.abs(latDeg);
+      const bBlend = baselineBlend(absLat);
+
+      for(let x=0;x<cW;x++){
+        const i=y*cW+x;
+
+        if(landMaskC[i]===0){
+          // ocean stays moist; baseline precip irrelevant
+          M2[i]=1.0;
+          st.Pseason[s*cN + i]=0;
+          shadow[i]=0;
+          continue;
+        }
+
+        // Backtrace to upwind position
+        const ux = vx[i], uy = vy[i];
+        const sx = x - ux;     // dt=1 cell
+        const sy = y - uy;
+
+        let Min = bilerpWrapX(M, cW, cH, sx, sy);
+
+        // decay over land travel
+        const travelKm = kmPerCell * Math.sqrt(ux*ux + uy*uy);
+        const decay = Math.exp(-travelKm / landDecayKm);
+        Min *= decay;
+
+        // convergence proxy: -div(wind) increases precipitation
+        const conv = clamp(-div[i], 0, 1.25);
+
+        // Orographic uplift along wind: dot(grad, windDir) positive => ascent
+        let uplift = 0;
+        let descent = 0;
+        if(st.useOrography){
+          const sp = Math.sqrt(ux*ux + uy*uy) + 1e-6;
+          const wx = ux/sp, wy = uy/sp;
+          const gdot = (gradX[i]*wx + gradY[i]*wy); // meters/cell along wind
+          if(gdot > 0) uplift = clamp(gdot / 180, 0, 2.5); // 180m/cell is strong ascent
+          else descent = clamp((-gdot) / 220, 0, 2.0);
+        }
+
+        // shadow accumulation/decay:
+        // descent builds shadow; uplift erodes it; then we fade by a fixed factor each iter.
+        let sh = shadow[i];
+        sh = clamp(sh*0.86 + descent*0.20 - uplift*0.10, 0, 1.25);
+        shadow[i]=sh;
+
+        // moisture->precip potential
+        // base from Min, boosted by convergence and uplift, reduced by shadow.
+        let Pbudget = precipGain * Min;
+        Pbudget *= (1.0 + convStrength*conv);
+        Pbudget *= (1.0 + orogStrength*uplift);
+        Pbudget *= (1.0 - shadowStrength*clamp(sh,0,1));
+        Pbudget = clamp(Pbudget, 0, 900);
+
+        // Blend with baseline seasonal precip (local convection/monsoon)
+        const Pbase = PbaseSeason[i];
+        let P = bBlend * Pbase + (1.0 - bBlend) * Pbudget;
+
+        // additional “SST humidity” near coasts in currents mode:
+        // slightly increases precip availability for coastal cells.
+        if(st.useCurrents){
+        const hit = traceUpwindOcean(st, x, y, vx, vy, 50);
+        if(hit.hit){
+            const Tsrc = st.Tocean[hit.oi];
+            const warm = clamp((Tsrc + 2) / 30, 0, 1);
+            // marine air arriving from warm water boosts precip slightly; cold water reduces it slightly
+            P *= clamp(0.92 + 0.18*warm, 0.85, 1.12);
+        }
+        }
+
+
+        P = clamp(P, 0, 950);
+
+        // Consume moisture by precip
+        let Mout = Min - (P / consumeScale);
+        // Keep a small floor so land doesn't dead-end into zero permanently (storms can recover from ocean later)
+        Mout = clamp(Mout, 0.02, 1.0);
+
+        // Store outputs
+        M2[i] = Mout;
+        st.Pseason[s*cN + i] = P;
+      }
+
+      if((y & 63) === 0) await new Promise(r=>setTimeout(r,0));
+    }
+
+    // swap
+    M.set(M2);
+  }
+}
+
+/* ============================================================
+   Monthly reconstruction from 4 seasons
+   ============================================================ */
+function buildMonthly(st){
+  const {cW,cH,cN,Tseason,Pseason,Tm,Pm} = st;
+
+  // month→season fraction
+  for(let m=0;m<12;m++){
+    const t = (m/3);                 // 0..4
+    const s0 = Math.floor(t) & 3;    // 0..3
+    const s1 = (s0+1)&3;
+    const f = t - Math.floor(t);     // 0..1
+
+    const o0 = s0*cN, o1 = s1*cN;
+    const mo = m*cN;
+
+    for(let i=0;i<cN;i++){
+      Tm[mo+i] = lerp(Tseason[o0+i], Tseason[o1+i], f);
+      Pm[mo+i] = Math.max(0, lerp(Pseason[o0+i], Pseason[o1+i], f));
+    }
+  }
+}
+
+/* ============================================================
+   Köppen classification
+   ============================================================ */
+function classifyKoppenCellMonthly(isNH, T_row, P_row){
+  let T_ann=0, Tcold=1e9, Twarm=-1e9, nGT10=0;
+  for(let m=0;m<12;m++){
+    const t=T_row[m];
+    T_ann += t;
+    if(t<Tcold) Tcold=t;
+    if(t>Twarm) Twarm=t;
+    if(t>10) nGT10++;
+  }
+  T_ann/=12;
+
+  let P_ann=0, P_summer=0, P_winter=0;
+  const summerMonths = isNH ? [3,4,5,6,7,8] : [9,10,11,0,1,2];
+  let P_drySummer=1e9, P_wetSummer=-1;
+  let P_dryWinter=1e9, P_wetWinter=-1;
+
+  for(let m=0;m<12;m++){
+    const p=P_row[m];
+    P_ann += p;
+    if(summerMonths.includes(m)){
+      P_summer += p;
+      if(p<P_drySummer) P_drySummer=p;
+      if(p>P_wetSummer) P_wetSummer=p;
+    }else{
+      P_winter += p;
+      if(p<P_dryWinter) P_dryWinter=p;
+      if(p>P_wetWinter) P_wetWinter=p;
+    }
+  }
+  if(P_ann<=0) P_ann=0.001;
+
+  let P_th;
+  const fracSummer = P_summer/P_ann;
+  const fracWinter = P_winter/P_ann;
+  if(fracSummer>=0.7) P_th = 20*T_ann + 280;
+  else if(fracWinter>=0.7) P_th = 20*T_ann;
+  else P_th = 20*T_ann + 140;
+
+  if(Twarm<10){
+    return (Twarm<=0) ? CODE_TO_INDEX['EF'] : CODE_TO_INDEX['ET'];
+  }
+
+  if(P_ann < P_th){
+    const isHot = T_ann>=18;
+    const isDesert = P_ann < (0.5*P_th);
+    if(isDesert) return isHot ? CODE_TO_INDEX['BWh'] : CODE_TO_INDEX['BWk'];
+    return isHot ? CODE_TO_INDEX['BSh'] : CODE_TO_INDEX['BSk'];
+  }
+
+  if(Tcold>=18){
+    let P_min=1e9;
+    for(let m=0;m<12;m++) if(P_row[m]<P_min) P_min=P_row[m];
+    if(P_min>=60) return CODE_TO_INDEX['Af'];
+    if(P_ann >= 25*(100-P_min)) return CODE_TO_INDEX['Am'];
+    if(P_drySummer < P_dryWinter) return CODE_TO_INDEX['As'];
+    return CODE_TO_INDEX['Aw'];
+  }
+
+  const isGroupC = (Tcold>-3);
+  let secondLetter='f';
+  if(P_drySummer<40 && P_drySummer < (P_wetWinter/3)) secondLetter='s';
+  else if(P_dryWinter < (P_wetSummer/10)) secondLetter='w';
+
+  let thirdLetter;
+  if(Twarm>=22) thirdLetter='a';
+  else if(nGT10>=4) thirdLetter='b';
+  else if(Tcold<-38) thirdLetter='d';
+  else thirdLetter='c';
+
+  const group = isGroupC ? 'C' : 'D';
+  const code = group + secondLetter + thirdLetter;
+  if(CODE_TO_INDEX[code]!==undefined) return CODE_TO_INDEX[code];
+  return isGroupC ? CODE_TO_INDEX['Cfb'] : CODE_TO_INDEX['Dfb'];
+}
+
+function classifyAll(st){
+  const {cW,cH,cN,elevCMeters,landMaskC,Tm,Pm,koppenC} = st;
+  const lapse = -6.5 * st.elevInfluence;
+  const highlandThr = st.highlandThresholdMeters;
+
+  const Trow = new Float32Array(12);
+  const Prow = new Float32Array(12);
+
+  for(let cy=0; cy<cH; cy++){
+    const latDeg = latAtRow(cy, cH, st.latTop, st.latBottom);
+    const isNH = latDeg>=0;
+
+    for(let cx=0; cx<cW; cx++){
+      const i = cy*cW+cx;
+      if(landMaskC[i]===0){
+        koppenC[i]=255;
+        continue;
+      }
+
+      const elevM = elevCMeters[i];
+      const dT = lapse * (Math.max(0,elevM)/1000);
+
+      for(let m=0;m<12;m++){
+        const mo = m*cN;
+        Trow[m] = Tm[mo + i] + dT;
+        Prow[m] = Pm[mo + i];
+      }
+
+      let ci = classifyKoppenCellMonthly(isNH, Trow, Prow);
+
+      // Highland class H
+      const code = KOPPEN_CLASSES[ci].code;
+      if(elevM >= highlandThr){
+        if(code[0]!=='E' && code[0]!=='B') ci = CODE_TO_INDEX['H'];
+      }
+      koppenC[i]=ci;
+    }
+  }
+}
+
+/* ============================================================
+   Post-process
+   ============================================================ */
+function smoothing(st){
+  const passes = st.smoothingPasses|0;
+  if(passes<=0) return;
+  const {cW,cH,koppenC} = st;
+  const N=cW*cH;
+  const tmp = new Uint8Array(N);
+  const neighbors = [
+    [-1,-1],[0,-1],[1,-1],
+    [-1,0],       [1,0],
+    [-1,1],[0,1],[1,1]
+  ];
+  for(let p=0;p<passes;p++){
+    tmp.set(koppenC);
+    for(let y=0;y<cH;y++){
+      for(let x=0;x<cW;x++){
+        const i=y*cW+x;
+        const c=tmp[i];
+        if(c===255) continue;
+        const counts = new Map();
+        let same=0;
+        for(const [dx,dy] of neighbors){
+          let nx=x+dx, ny=y+dy;
+          nx = wrapX(nx, cW);
+          if(ny<0||ny>=cH) continue;
+          const j=ny*cW+nx;
+          const cj=tmp[j];
+          if(cj===255) continue;
+          if(cj===c) same++;
+          counts.set(cj,(counts.get(cj)||0)+1);
+        }
+        let best=c, bestCount=same;
+        for(const [cc,k] of counts){
+          if(k>bestCount){ bestCount=k; best=cc; }
+        }
+        if(best!==c && bestCount>=4 && same<=2) koppenC[i]=best;
+      }
+    }
+  }
+}
+
+function lowlandWarp(st){
+  if(!st.warpEnabled) return;
+  const strength = st.warpStrength;
+  if(strength<=0.001) return;
+
+  const {cW,cH,koppenC,landMaskC,elevCMeters} = st;
+  const N=cW*cH;
+  const maxLow = st.lowlandMaxMeters;
+  const tmp = new Uint8Array(N);
+  tmp.set(koppenC);
+
+  const baseWarp = 10 * strength; // compute-grid pixels
+  for(let y=0;y<cH;y++){
+    const lat = latAtRow(y,cH,st.latTop,st.latBottom);
+    const absLat=Math.abs(lat);
+    const latW = clamp(1 - absLat/60, 0, 1);
+    for(let x=0;x<cW;x++){
+      const i=y*cW+x;
+      const c=tmp[i];
+      if(c===255 || !landMaskC[i]) continue;
+      if(elevCMeters[i] >= maxLow) continue;
+
+      const nx=x/Math.max(1,cW-1), ny=y/Math.max(1,cH-1);
+      const vx = Math.sin(2*Math.PI*(nx*2.7 + ny*0.35)) + 0.35*Math.sin(2*Math.PI*(nx*5.1 - ny*0.18));
+      const vy = Math.sin(2*Math.PI*(nx*1.9 - ny*2.2)) + 0.35*Math.sin(2*Math.PI*(nx*3.8 + ny*1.1));
+      const dx = vx * baseWarp * latW;
+      const dy = vy * baseWarp * latW;
+
+      const sx=wrapX(Math.round(x+dx), cW);
+      const sy=clampY(Math.round(y+dy), cH);
+      const j=sy*cW+sx;
+
+      if(landMaskC[j] && elevCMeters[j] < maxLow && tmp[j]!==255){
+        koppenC[i]=tmp[j];
+      }
+    }
+  }
+}
+
+/* ============================================================
+   Render: upsample compute classes to full-res pixels
+   ============================================================ */
+function renderFull(st){
+  const {W,H,cW,cH,scale,koppenC,work} = st;
+  const out=work.data;
+  const oceanColor=[10,30,80];
+  const classCounts = new Array(KOPPEN_CLASSES.length).fill(0);
+
+  for(let y=0;y<H;y++){
+    const cy = Math.min(cH-1, (y/scale)|0);
+    const row=y*W;
+    const crow=cy*cW;
+    for(let x=0;x<W;x++){
+      const cx = Math.min(cW-1, (x/scale)|0);
+      const ci = koppenC[crow+cx];
+      const i4=(row+x)*4;
+      if(ci===255){
+        out[i4+0]=oceanColor[0];
+        out[i4+1]=oceanColor[1];
+        out[i4+2]=oceanColor[2];
+        out[i4+3]=255;
+      }else{
+        const rgb = hexToRgb(KOPPEN_CLASSES[ci].color);
+        out[i4+0]=rgb[0];
+        out[i4+1]=rgb[1];
+        out[i4+2]=rgb[2];
+        out[i4+3]=255;
+        classCounts[ci]++;
+      }
+    }
+  }
+  ctx.putImageData(work,0,0);
+
+  const totalLand = classCounts.reduce((a,b)=>a+b,0);
+  const lines=[];
+  lines.push(`Land pixels: ${totalLand.toLocaleString()}`);
+  lines.push(`Compute grid: ${st.cW}×${st.cH} (scale=${st.scale})`);
+  lines.push(`Precip: ${st.precipMode==='budget'?'2D advection':'legacy multipliers'} · Orography: ${st.useOrography?'on':'off'}`);
+  if(totalLand>0){
+    const top=[...classCounts.entries()].filter(([i,c])=>c>0).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    lines.push('Dominant classes:');
+    for(const [idx,c] of top){
+      const cl=KOPPEN_CLASSES[idx];
+      const pct=(c*100/totalLand).toFixed(1);
       lines.push(`• ${cl.code} (${cl.name}) — ${pct}%`);
-     });
     }
-    metricsEl.textContent = lines.join('\n');
-   }
-  });
+  }
+  metricsEl.textContent = lines.join('\n');
+}
 
-  // ----------------------------------------------------
-  // --- END: UPDATED PLUGIN REGISTRY ---
-  // ----------------------------------------------------
+/* ============================================================
+   Download map (PNG)
+   ============================================================ */
+dlBtn.addEventListener('click', ()=>{
+  if(dlBtn.disabled) return;
+  const a=document.createElement('a');
+  a.download='koppen_map.png';
+  a.href=canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
 
-  Program.renderPluginUI();
+/* ============================================================
+   Run
+   ============================================================ */
 
-  // ---- Run button (sync lat band before run) ----
-  runBtn.addEventListener('click', async () => {
-   const st = Program.state;
-   if (!st.W || !st.H || !st.elev) { setStatus('Upload a heightmap first.'); return; }
+async function runPipeline({ forceScale = null } = {}){
+  const st = Program.state;
+  if(!st.W || !st.H || !st.elevFull){
+    setStatus('Upload a heightmap first.');
+    return;
+  }
 
-   st.sea = parseInt(seaInput.value) || 19;
-   syncLatBand(); // ADDED
-   setDimensionsLabel();
+  syncLatBand();
+  syncControls();
 
-   setStatus('Running pipeline…');
-   runBtn.disabled = true;
-   try {
-    await Program.run();
-   } catch (err) {
+  const prevScaleSel = computeScaleSel.value;
+  const prevScale = st.scale;
+
+  if(forceScale != null){
+    computeScaleSel.value = String(forceScale);
+    st.scale = forceScale;
+  }
+
+  runBtn.disabled = true;
+  runFullBtn.disabled = true;
+  dlBtn.disabled = true;
+
+  try{
+    setStatus('Building compute grid…');
+    buildComputeGrid(st);
+    setDimensionsLabel();
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Computing 2D distance to ocean (BFS)…');
+    computeDistToOceanBFS(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Computing terrain gradients…');
+    computeGradients(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Baseline seasonal climate…');
+    computeSeasonsBaseline(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    if(st.precipMode === 'budget'){
+      if(st.useCurrents){
+        setStatus('Building ocean gyres + SST (from mean winds)…');
+
+        const vxMean = new Float32Array(st.cN);
+        const vyMean = new Float32Array(st.cN);
+        const vxTmp = new Float32Array(st.cN);
+        const vyTmp = new Float32Array(st.cN);
+
+        for(let s=0;s<4;s++){
+          buildWindFieldSeason(st, s, vxTmp, vyTmp);
+          for(let i=0;i<st.cN;i++){
+            vxMean[i] += 0.25*vxTmp[i];
+            vyMean[i] += 0.25*vyTmp[i];
+          }
+          await new Promise(r=>setTimeout(r,0));
+        }
+
+        await buildOceanGyresAndSST(st, vxMean, vyMean);
+        await new Promise(r=>setTimeout(r,0));
+      }
+
+      for(let s=0;s<4;s++){
+        setStatus(`2D advection season ${s+1}/4…`);
+        // NOTE: your code calls window.advectMoistureSeason, keep that behavior:
+        await window.advectMoistureSeason(st, s);
+        await new Promise(r=>setTimeout(r,0));
+      }
+    }else{
+      setStatus('Legacy precip mode (no 2D transport)…');
+      await new Promise(r=>setTimeout(r,0));
+    }
+
+    setStatus('Building monthly series (12 months)…');
+    buildMonthly(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Classifying Köppen…');
+    classifyAll(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Post-process: smoothing…');
+    smoothing(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Post-process: lowland warp…');
+    lowlandWarp(st);
+    await new Promise(r=>setTimeout(r,0));
+
+    setStatus('Rendering full-resolution map…');
+    renderFull(st);
+
+    dlBtn.disabled = false;
+    setStatus('Done. Köppen map generated.');
+  } catch(err){
     console.error(err);
     setStatus('Error during generation. See console.');
-   } finally {
+  } finally {
     runBtn.disabled = false;
-   }
-  });
- </script>
+    runFullBtn.disabled = false;
+
+    // restore UI/state if we forced full compute
+    if(forceScale != null){
+      computeScaleSel.value = prevScaleSel;
+      st.scale = prevScale;
+      setDimensionsLabel();
+    }
+  }
+}
+
+runBtn.addEventListener('click', ()=> runPipeline());
+runFullBtn.addEventListener('click', ()=> runPipeline({ forceScale: 1 }));
+
+
+/* ============================================================
+   Moisture micro-controls: UI wiring + advectMoistureSeason patch
+   Paste this at the END of your script.
+   ============================================================ */
+
+/* ============================================================
+   Moisture micro-controls: DEBUG + robust patch
+   (paste at END of script)
+   ============================================================ */
+(function(){
+  // Always log that the block started (even if we early-return later)
+  console.log('[Moisture micro-controls] IIFE start');
+
+  function debounce(fn, ms=140){
+    let t=0;
+    return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+  }
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  // Run after DOM is definitely ready (even if this script moves later)
+  function boot(){
+    console.log('[Moisture micro-controls] boot()');
+
+    // ---- DOM check ----
+    const transportEl = document.getElementById('mc_enableTransport');
+    if(!transportEl){
+      console.warn('[Moisture micro-controls] Missing #mc_enableTransport in DOM. Not patching.');
+      return;
+    }
+    console.log('[Moisture micro-controls] Found UI nodes');
+
+    // ---- Program check ----
+    if(!window.Program || !Program.state){
+      console.warn('[Moisture micro-controls] Program/state not found on window. Not patching.');
+      return;
+    }
+    const st = Program.state;
+
+    // ---- function availability check ----
+    const required = ['advectMoistureSeason','buildWindFieldSeason','computeDivergence','bilerpWrapX','traceUpwindOcean','latAtRow'];
+    const missing = required.filter(name => typeof window[name] !== 'function');
+    if(missing.length){
+      console.warn('[Moisture micro-controls] Missing required functions:', missing);
+      console.warn('[Moisture micro-controls] NOTE: if these are not on window, your code is in module scope. In that case use the non-monkeypatch approach (I can give that).');
+      return;
+    }
+    console.log('[Moisture micro-controls] Required functions present');
+
+    // ---- config store ----
+    st.moistCfg = st.moistCfg || {
+      enableTransport: true,
+      enableUpwindInit: true,
+      enableConvergence: true,
+      enableOroUplift: true,
+      enableRainShadow: true,
+      enableSSTCoupling: true,
+      enableBaselineBlend: true,
+      iters: 3,
+      landDecayFactor: 0.55,
+      convStrength: 1.35,
+      orogStrength: 1.65,
+      shadowStrength: 0.65,
+      moistureFloor: 0.02
+    };
+    const cfg = st.moistCfg;
+
+    // ---- bind helpers ----
+    function bindCheck(id, key){
+      const el = document.getElementById(id);
+      if(!el){ console.warn('[Moisture micro-controls] Missing checkbox:', id); return; }
+      el.checked = !!cfg[key];
+      el.addEventListener('change', ()=>{ cfg[key] = !!el.checked; });
+    }
+    function bindRange(id, labelId, key, parseFn, fmtFn){
+      const el = document.getElementById(id);
+      const lbl = document.getElementById(labelId);
+      if(!el || !lbl){ console.warn('[Moisture micro-controls] Missing range/label:', id, labelId); return; }
+      const apply = ()=>{
+        cfg[key] = parseFn(el.value);
+        lbl.textContent = fmtFn(cfg[key]);
+      };
+      el.addEventListener('input', debounce(apply, 120));
+      el.addEventListener('change', apply);
+      apply();
+    }
+
+    bindCheck('mc_enableTransport', 'enableTransport');
+    bindCheck('mc_enableUpwindInit', 'enableUpwindInit');
+    bindCheck('mc_enableConvergence', 'enableConvergence');
+    bindCheck('mc_enableOroUplift', 'enableOroUplift');
+    bindCheck('mc_enableRainShadow', 'enableRainShadow');
+    bindCheck('mc_enableSSTCoupling', 'enableSSTCoupling');
+    bindCheck('mc_enableBaselineBlend', 'enableBaselineBlend');
+
+    bindRange('mc_iters','mc_itersLabel','iters', v=>clamp(parseInt(v||'3',10),1,8), v=>String(v));
+    bindRange('mc_landDecayFactor','mc_landDecayFactorLabel','landDecayFactor', v=>clamp(parseFloat(v||'0.55'),0.10,1.20), v=>v.toFixed(2));
+    bindRange('mc_convStrength','mc_convStrengthLabel','convStrength', v=>clamp(parseFloat(v||'1.35'),0,3), v=>v.toFixed(2));
+    bindRange('mc_orogStrength','mc_orogStrengthLabel','orogStrength', v=>clamp(parseFloat(v||'1.65'),0,3), v=>v.toFixed(2));
+    bindRange('mc_shadowStrength','mc_shadowStrengthLabel','shadowStrength', v=>clamp(parseFloat(v||'0.65'),0,1.5), v=>v.toFixed(2));
+    bindRange('mc_moistureFloor','mc_moistureFloorLabel','moistureFloor', v=>clamp(parseFloat(v||'0.02'),0,0.10), v=>v.toFixed(3));
+
+    // ---- patch advectMoistureSeason ----
+    if(!window.__advectMoistureSeason_original){
+      window.__advectMoistureSeason_original = window.advectMoistureSeason;
+    }
+
+    window.advectMoistureSeason = advectMoistureSeason = async function advectMoistureSeason_micro(st, s){
+      const cfg = st.moistCfg || {};
+      if(!cfg.enableTransport) return;
+
+      const {cW,cH,cN,landMaskC,gradX,gradY} = st;
+      const kmPerCell = st.kmPerCell;
+      const interiorKm = st.interiorScaleKm;
+
+      const M  = new Float32Array(cN);
+      const M2 = new Float32Array(cN);
+
+      const vx = new Float32Array(cN);
+      const vy = new Float32Array(cN);
+      const div = new Float32Array(cN);
+
+      buildWindFieldSeason(st, s, vx, vy);
+      computeDivergence(cW, cH, vx, vy, div);
+
+      const PbaseSeason = new Float32Array(cN);
+      PbaseSeason.set(st.Pseason.subarray(s*cN, (s+1)*cN));
+
+      const iters = clamp((cfg.iters|0)||3, 1, 8);
+      const landDecayKm = Math.max(250, interiorKm * (cfg.landDecayFactor ?? 0.55));
+      const moistureFloor = cfg.moistureFloor ?? 0.02;
+
+      const convStrength = cfg.convStrength ?? 1.35;
+      const orogStrength = cfg.orogStrength ?? 1.65;
+      const shadowStrength = cfg.shadowStrength ?? 0.65;
+
+      const consumeScale = 240;
+      const precipGain = 240;
+
+      const enableUpwind = !!cfg.enableUpwindInit;
+      const enableConv = !!cfg.enableConvergence;
+      const enableOro = !!cfg.enableOroUplift && !!st.useOrography;
+      const enableShadow = !!cfg.enableRainShadow && !!st.useOrography;
+      const enableSST = !!cfg.enableSSTCoupling && !!st.useCurrents;
+      const enableBlend = !!cfg.enableBaselineBlend;
+
+      function baselineBlend(latAbs){
+        if(!enableBlend) return 0.0;
+        const trop = clamp(1 - latAbs/25, 0, 1);
+        const mid  = clamp(1 - Math.abs(latAbs-45)/18, 0, 1);
+        return clamp(0.40 + 0.30*trop + 0.10*(1-mid), 0.35, 0.75);
+      }
+
+      for(let y=0;y<cH;y++){
+        const latDeg = latAtRow(y, cH, st.latTop, st.latBottom);
+        const absLat = Math.abs(latDeg);
+        for(let x=0;x<cW;x++){
+          const i=y*cW+x;
+
+          if(st.oceanMaskC && st.oceanMaskC[i]) { M[i]=1.0; continue; }
+          if(!enableUpwind || !st.oceanMaskC){ M[i]=0.18; continue; }
+
+          const hit = traceUpwindOcean(st, x, y, vx, vy, 50);
+          let m = 0.10;
+
+          if(hit.hit){
+            const marine = Math.exp(-hit.steps / 18);
+            const Tsrc = enableSST ? st.Tocean[hit.oi] : lerp(28,-1, clamp(absLat/70,0,1));
+            const warm = clamp((Tsrc + 2) / 30, 0, 1);
+            m = 0.12 + 0.78*marine*(0.55 + 0.45*warm);
+          }else{
+            m = 0.08 + 0.08*clamp(1 - absLat/60, 0, 1);
+          }
+          M[i] = clamp(m, 0.02, 1.0);
+        }
+      }
+
+      const shadow = new Float32Array(cN);
+
+      for(let iter=0; iter<iters; iter++){
+        for(let y=0;y<cH;y++){
+          const latDeg = latAtRow(y, cH, st.latTop, st.latBottom);
+          const absLat = Math.abs(latDeg);
+          const bBlend = baselineBlend(absLat);
+
+          for(let x=0;x<cW;x++){
+            const i=y*cW+x;
+
+            if(landMaskC[i]===0){
+              M2[i]=1.0;
+              st.Pseason[s*cN + i]=0;
+              shadow[i]=0;
+              continue;
+            }
+
+            const ux=vx[i], uy=vy[i];
+            const sx=x-ux, sy=y-uy;
+            let Min = bilerpWrapX(M, cW, cH, sx, sy);
+
+            const travelKm = kmPerCell * Math.sqrt(ux*ux + uy*uy);
+            Min *= Math.exp(-travelKm / landDecayKm);
+
+            const conv = enableConv ? clamp(-div[i], 0, 1.25) : 0;
+
+            let uplift=0, descent=0;
+            if(st.useOrography && (enableOro || enableShadow)){
+              const sp=Math.sqrt(ux*ux + uy*uy) + 1e-6;
+              const wx=ux/sp, wy=uy/sp;
+              const gdot=(gradX[i]*wx + gradY[i]*wy);
+              if(gdot>0) uplift = clamp(gdot/180, 0, 2.5);
+              else descent = clamp((-gdot)/220, 0, 2.0);
+            }
+
+            let sh=shadow[i];
+            if(enableShadow){
+              sh = clamp(sh*0.86 + descent*0.20 - uplift*0.10, 0, 1.25);
+            }else{
+              sh = 0;
+            }
+            shadow[i]=sh;
+
+            let Pbudget = precipGain * Min;
+            if(enableConv) Pbudget *= (1.0 + convStrength*conv);
+            if(enableOro)  Pbudget *= (1.0 + orogStrength*uplift);
+            if(enableShadow) Pbudget *= (1.0 - shadowStrength*clamp(sh,0,1));
+            Pbudget = clamp(Pbudget, 0, 900);
+
+            const Pbase = PbaseSeason[i];
+            let P = enableBlend ? (bBlend * Pbase + (1.0 - bBlend) * Pbudget) : Pbudget;
+
+            if(enableSST && st.oceanMaskC){
+              const hit = traceUpwindOcean(st, x, y, vx, vy, 50);
+              if(hit.hit){
+                const Tsrc = st.Tocean[hit.oi];
+                const warm = clamp((Tsrc + 2) / 30, 0, 1);
+                P *= clamp(0.92 + 0.18*warm, 0.85, 1.12);
+              }
+            }
+
+            P = clamp(P, 0, 950);
+
+            let Mout = Min - (P / consumeScale);
+            Mout = clamp(Mout, moistureFloor, 1.0);
+
+            M2[i]=Mout;
+            st.Pseason[s*cN + i]=P;
+          }
+
+          if((y & 63) === 0) await new Promise(r=>setTimeout(r,0));
+        }
+        M.set(M2);
+      }
+    };
+
+    console.log('[Moisture micro-controls] Applied: advectMoistureSeason patched + UI wired.');
+  }
+
+  if(document.readyState === 'loading'){
+    window.addEventListener('DOMContentLoaded', boot, { once:true });
+  }else{
+    boot();
+  }
+})();
+
+
+
+</script>
 </body>
 </html>
