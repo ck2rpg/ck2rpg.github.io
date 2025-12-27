@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Any Map → Land/Sea Mask (HSV Water Detection) — Single File</title>
+<style>
+  :root{
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --accent:#a65d37;
+    --accent-2:#2f5f73;
+    --border:#c4b496;
+    --shadow:0 10px 30px rgba(34,26,18,.18);
+    --radius:14px;
+    --font-serif:"Georgia","Times New Roman",serif;
+    --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:#2a241e;
+    color:var(--ink);
+    overflow:hidden;
+    font-family:var(--font-serif);
+  }
+
+  .app{
+    height:100%;
+    display:grid;
+    grid-template-columns: 380px 1fr;
+  }
+
+  .panel{
+    height:100%;
+    padding:16px;
+    background:
+      radial-gradient(1200px 700px at 30% 0%, rgba(255,255,255,.35), transparent 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    border-right:1px solid rgba(60,47,33,.18);
+    box-shadow: var(--shadow);
+    overflow:auto;
+  }
+
+  .panel h1{
+    font-size:18px;
+    margin:0 0 8px 0;
+    letter-spacing:.2px;
+  }
+  .sub{
+    font-family:var(--font-sans);
+    font-size:12px;
+    color:var(--ink-muted);
+    line-height:1.35;
+    margin:0 0 14px 0;
+  }
+
+  .card{
+    background:rgba(255,255,255,.55);
+    border:1px solid rgba(60,47,33,.16);
+    border-radius:var(--radius);
+    padding:12px;
+    box-shadow:0 6px 14px rgba(34,26,18,.10);
+    margin:12px 0;
+  }
+
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .row > *{flex:1}
+
+  label{
+    display:block;
+    font-family:var(--font-sans);
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:0 0 6px 2px;
+  }
+
+  input[type="file"]{
+    width:100%;
+    font-family:var(--font-sans);
+    font-size:12px;
+    padding:8px;
+    border-radius:12px;
+    border:1px solid rgba(60,47,33,.20);
+    background:rgba(255,255,255,.65);
+    color:var(--ink);
+  }
+
+  .btn{
+    cursor:pointer;
+    user-select:none;
+    border:none;
+    border-radius:14px;
+    padding:10px 12px;
+    font-family:var(--font-sans);
+    font-weight:700;
+    font-size:13px;
+    color:#fff;
+    background:linear-gradient(180deg, #b56a43, #8f4d2e);
+    box-shadow:0 8px 18px rgba(34,26,18,.18);
+    transition:transform .05s ease, filter .15s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{ background:linear-gradient(180deg, #3f7186, #2a5365); }
+  .btn.ghost{
+    color:var(--ink);
+    background:rgba(255,255,255,.55);
+    border:1px solid rgba(60,47,33,.18);
+    box-shadow:none;
+  }
+  .btn:disabled{opacity:.55; cursor:not-allowed}
+
+  .toggle{
+    display:flex; gap:8px; align-items:center; flex-wrap:nowrap;
+    font-family:var(--font-sans);
+    font-size:12px;
+    color:var(--ink-muted);
+  }
+  .toggle input{transform:translateY(1px)}
+
+  .mono{
+    font-family:var(--mono);
+    font-size:12px;
+    color:rgba(60,47,33,.85);
+    background:rgba(255,255,255,.55);
+    border:1px dashed rgba(60,47,33,.22);
+    border-radius:12px;
+    padding:10px;
+    white-space:pre-wrap;
+  }
+
+  .sliderWrap{
+    padding:10px;
+    border-radius:14px;
+    border:1px solid rgba(60,47,33,.16);
+    background:rgba(255,255,255,.45);
+  }
+  input[type="range"]{ width:100%; accent-color:#a65d37; }
+  .small{
+    font-family:var(--font-sans);
+    font-size:12px;
+    color:var(--ink-muted);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .pill{
+    font-family:var(--mono);
+    font-size:11px;
+    color:rgba(60,47,33,.9);
+    background:rgba(255,255,255,.6);
+    border:1px solid rgba(60,47,33,.15);
+    border-radius:999px;
+    padding:2px 8px;
+  }
+
+  .stage{
+    position:relative;
+    height:100%;
+    background:
+      radial-gradient(1200px 900px at 40% 10%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #15120f, #0f0d0b);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  canvas{
+    background:#0b0b0b;
+    border-radius:18px;
+    box-shadow:0 18px 40px rgba(0,0,0,.45);
+    image-rendering:auto;
+    max-width:100%;
+    max-height:100%;
+  }
+
+  .badge{
+    position:absolute;
+    left:14px;
+    bottom:14px;
+    padding:8px 10px;
+    border-radius:14px;
+    background:rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.10);
+    color:rgba(255,255,255,.85);
+    font-family:var(--font-sans);
+    font-size:12px;
+    backdrop-filter: blur(6px);
+  }
+
+  .hint{
+    position:absolute;
+    right:14px;
+    bottom:14px;
+    padding:8px 10px;
+    border-radius:14px;
+    background:rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.10);
+    color:rgba(255,255,255,.85);
+    font-family:var(--font-sans);
+    font-size:12px;
+    backdrop-filter: blur(6px);
+    max-width:min(520px, 46vw);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <h1>HSV Water Detection → Land/Sea Mask</h1>
+    <p class="sub">
+      Robust(ish) conversion for mixed map styles: classify water by <b>Hue range (blue/cyan)</b> + <b>min saturation</b>,
+      plus an optional <b>“dark water” fallback</b> for near-black oceans. Output is a CK3-friendly mask:
+      water = (0,0,0), land = (19,19,19).
+    </p>
+
+    <div class="card">
+      <label>Input image</label>
+      <input id="file" type="file" accept="image/*" />
+      <div class="row" style="margin-top:10px">
+        <button id="convert" class="btn" disabled>Convert</button>
+        <button id="download" class="btn secondary" disabled>Download PNG</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="fit" class="btn ghost" disabled>Fit to View</button>
+        <div class="toggle" title="Show original instead of the mask">
+          <input id="showOriginal" type="checkbox" />
+          <span>Show original</span>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="toggle" title="Treat transparent pixels as water (black)">
+          <input id="alphaAsWater" type="checkbox" checked />
+          <span>Transparent → water</span>
+        </div>
+        <div class="toggle" title="Auto-recompute the mask when sliders change (after you have converted once)">
+          <input id="autoRecompute" type="checkbox" checked />
+          <span>Auto recompute</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sliderWrap">
+        <label>Water hue range (degrees)</label>
+        <input id="hMin" type="range" min="0" max="359" value="170" />
+        <div class="small"><span>Hue min</span><span class="pill"><span id="hMinVal">170</span>°</span></div>
+        <div style="height:8px"></div>
+        <input id="hMax" type="range" min="0" max="359" value="250" />
+        <div class="small"><span>Hue max</span><span class="pill"><span id="hMaxVal">250</span>°</span></div>
+        <div class="small" style="margin-top:8px">
+          <span>Tip: cyan→blue is ~170–250°</span>
+          <span class="pill" id="wrapPill">wrap: off</span>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="sliderWrap">
+        <label>Minimum saturation for water</label>
+        <input id="sMin" type="range" min="0" max="100" value="18" />
+        <div class="small"><span>Sat min</span><span class="pill"><span id="sMinVal">18</span>%</span></div>
+        <div class="small" style="margin-top:8px">
+          <span>Higher = ignores pale/gray blues</span>
+          <span>Lower = catches desaturated oceans</span>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="sliderWrap">
+        <label>Dark-water fallback (optional)</label>
+        <div class="toggle" title="Classify very dark pixels as water regardless of hue">
+          <input id="useDark" type="checkbox" checked />
+          <span>Enable dark-water rule</span>
+        </div>
+        <div style="height:8px"></div>
+        <input id="vMaxDark" type="range" min="0" max="100" value="16" />
+        <div class="small"><span>Value (brightness) ≤</span><span class="pill"><span id="vMaxDarkVal">16</span>%</span></div>
+        <div style="height:8px"></div>
+        <input id="sMaxDark" type="range" min="0" max="100" value="40" />
+        <div class="small"><span>and Saturation ≤</span><span class="pill"><span id="sMaxDarkVal">40</span>%</span></div>
+        <div class="small" style="margin-top:8px">
+          <span>Helps black/gray oceans, avoids dark forests by capping saturation.</span>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="sliderWrap">
+        <label>Cleanup (optional)</label>
+        <input id="speckle" type="range" min="0" max="3" value="1" />
+        <div class="small">
+          <span>Despeckle passes</span>
+          <span class="pill"><span id="speckleVal">1</span></span>
+        </div>
+        <div class="small" style="margin-top:8px">
+          <span>Removes tiny noisy dots near coasts/labels (cheap majority filter).</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Status</label>
+      <div id="status" class="mono">Load an image to begin.</div>
+    </div>
+
+    <div class="card">
+      <label>Output values</label>
+      <div class="mono">Water: (0, 0, 0)
+Land:  (19, 19, 19)</div>
+    </div>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="badge" id="dims">—</div>
+    <div class="hint" id="hint">
+      Rule: water if (Hue in range AND Sat ≥ min) OR (dark rule). If your “water” is greenish,
+      widen the hue range toward ~160°. If blue land is misread as water, raise Sat min.
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const fileEl = document.getElementById("file");
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+
+  const convertBtn = document.getElementById("convert");
+  const downloadBtn = document.getElementById("download");
+  const fitBtn = document.getElementById("fit");
+
+  const statusEl = document.getElementById("status");
+  const dimsEl = document.getElementById("dims");
+  const wrapPill = document.getElementById("wrapPill");
+
+  const showOriginalEl = document.getElementById("showOriginal");
+  const alphaAsWaterEl = document.getElementById("alphaAsWater");
+  const autoRecomputeEl = document.getElementById("autoRecompute");
+
+  const hMinEl = document.getElementById("hMin");
+  const hMaxEl = document.getElementById("hMax");
+  const sMinEl = document.getElementById("sMin");
+  const useDarkEl = document.getElementById("useDark");
+  const vMaxDarkEl = document.getElementById("vMaxDark");
+  const sMaxDarkEl = document.getElementById("sMaxDark");
+  const speckleEl = document.getElementById("speckle");
+
+  const hMinValEl = document.getElementById("hMinVal");
+  const hMaxValEl = document.getElementById("hMaxVal");
+  const sMinValEl = document.getElementById("sMinVal");
+  const vMaxDarkValEl = document.getElementById("vMaxDarkVal");
+  const sMaxDarkValEl = document.getElementById("sMaxDarkVal");
+  const speckleValEl = document.getElementById("speckleVal");
+
+  const WATER = [0,0,0];
+  const LAND  = [19,19,19];
+
+  let img = null;
+  let originalImageData = null;   // full-res original
+  let maskImageData = null;       // full-res mask
+  let viewScale = 1;
+
+  function setStatus(msg){ statusEl.textContent = msg; }
+
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+
+  function debounce(fn, ms){
+    let t = 0;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  function enableUI(on){
+    convertBtn.disabled = !on;
+    fitBtn.disabled = !on;
+  }
+
+  function enableDownload(on){
+    downloadBtn.disabled = !on;
+  }
+
+  function drawToCanvas(imageData){
+    cv.width = imageData.width;
+    cv.height = imageData.height;
+    ctx.putImageData(imageData, 0, 0);
+    dimsEl.textContent = `${cv.width} × ${cv.height}`;
+    fitToView();
+  }
+
+  function fitToView(){
+    const stage = document.getElementById("stage");
+    const pad = 28;
+    const sw = stage.clientWidth - pad*2;
+    const sh = stage.clientHeight - pad*2;
+    if (cv.width === 0 || cv.height === 0) return;
+
+    const s = Math.min(sw / cv.width, sh / cv.height);
+    viewScale = clamp(s, 0.05, 8);
+
+    cv.style.width = Math.max(1, Math.floor(cv.width * viewScale)) + "px";
+    cv.style.height = Math.max(1, Math.floor(cv.height * viewScale)) + "px";
+  }
+
+  window.addEventListener("resize", () => fitToView());
+
+  // --- Color conversion: RGB [0..255] -> HSV where
+  // h in [0..360), s in [0..1], v in [0..1]
+  function rgbToHsv(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max = r>g ? (r>b ? r : b) : (g>b ? g : b);
+    const min = r<g ? (r<b ? r : b) : (g<b ? g : b);
+    const d = max - min;
+
+    let h = 0;
+    if (d !== 0){
+      if (max === r)      h = ((g - b) / d) % 6;
+      else if (max === g) h = ((b - r) / d) + 2;
+      else                h = ((r - g) / d) + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    return [h, s, v];
+  }
+
+  function hueInRange(h, hMin, hMax){
+    // supports wrap-around (e.g., 300..30)
+    if (hMin <= hMax) return h >= hMin && h <= hMax;
+    return (h >= hMin && h < 360) || (h >= 0 && h <= hMax);
+  }
+
+  function updatePills(){
+    const hMin = hMinEl.value|0;
+    const hMax = hMaxEl.value|0;
+    const sMin = sMinEl.value|0;
+    const vMaxDark = vMaxDarkEl.value|0;
+    const sMaxDark = sMaxDarkEl.value|0;
+    const sp = speckleEl.value|0;
+
+    hMinValEl.textContent = String(hMin);
+    hMaxValEl.textContent = String(hMax);
+    sMinValEl.textContent = String(sMin);
+    vMaxDarkValEl.textContent = String(vMaxDark);
+    sMaxDarkValEl.textContent = String(sMaxDark);
+    speckleValEl.textContent = String(sp);
+
+    wrapPill.textContent = (hMin <= hMax) ? "wrap: off" : "wrap: on";
+  }
+
+  function computeMask(){
+    if (!originalImageData) return;
+
+    const hMin = hMinEl.value|0;
+    const hMax = hMaxEl.value|0;
+    const sMin = (sMinEl.value|0) / 100;
+
+    const useDark = !!useDarkEl.checked;
+    const vMaxDark = (vMaxDarkEl.value|0) / 100;
+    const sMaxDark = (sMaxDarkEl.value|0) / 100;
+
+    const specklePasses = speckleEl.value|0;
+    const alphaAsWater = !!alphaAsWaterEl.checked;
+
+    const w = originalImageData.width;
+    const h = originalImageData.height;
+    const src = originalImageData.data;
+
+    // First pass: build a boolean water mask
+    // water if:
+    //   - alpha==0 and alphaAsWater, OR
+    //   - (hue in range AND sat >= sMin), OR
+    //   - (useDark AND v <= vMaxDark AND s <= sMaxDark)
+    const water = new Uint8Array(w*h);
+
+    for (let y=0; y<h; y++){
+      let row = y*w;
+      for (let x=0; x<w; x++){
+        const i = ((row + x) << 2);
+        const r = src[i], g = src[i+1], b = src[i+2], a = src[i+3];
+
+        let isWater = false;
+
+        if (alphaAsWater && a === 0){
+          isWater = true;
+        } else {
+          const hsv = rgbToHsv(r,g,b);
+          const hh = hsv[0], ss = hsv[1], vv = hsv[2];
+
+          const hueWater = hueInRange(hh, hMin, hMax) && (ss >= sMin);
+          const darkWater = useDark && (vv <= vMaxDark) && (ss <= sMaxDark);
+
+          isWater = hueWater || darkWater;
+        }
+
+        water[row + x] = isWater ? 1 : 0;
+      }
+    }
+
+    // Optional despeckle: cheap majority filter on the boolean water map.
+    // This removes tiny noise (labels / coast antialias) without heavy morphology.
+    function despeckleOnce(inp){
+      const out = new Uint8Array(inp.length);
+      for (let y=0; y<h; y++){
+        const y0 = y>0 ? y-1 : y;
+        const y1 = y;
+        const y2 = y<h-1 ? y+1 : y;
+        for (let x=0; x<w; x++){
+          const x0 = x>0 ? x-1 : x;
+          const x1 = x;
+          const x2 = x<w-1 ? x+1 : x;
+          let sum = 0;
+
+          sum += inp[y0*w + x0];
+          sum += inp[y0*w + x1];
+          sum += inp[y0*w + x2];
+
+          sum += inp[y1*w + x0];
+          sum += inp[y1*w + x1];
+          sum += inp[y1*w + x2];
+
+          sum += inp[y2*w + x0];
+          sum += inp[y2*w + x1];
+          sum += inp[y2*w + x2];
+
+          // majority (>=5) decides
+          out[y*w + x] = (sum >= 5) ? 1 : 0;
+        }
+      }
+      return out;
+    }
+
+    let water2 = water;
+    for (let p=0; p<specklePasses; p++){
+      water2 = despeckleOnce(water2);
+    }
+
+    // Build output image
+    const out = new ImageData(w, h);
+    const dst = out.data;
+    for (let j=0; j<water2.length; j++){
+      const i = j<<2;
+      if (water2[j]){
+        dst[i] = WATER[0]; dst[i+1] = WATER[1]; dst[i+2] = WATER[2]; dst[i+3] = 255;
+      } else {
+        dst[i] = LAND[0];  dst[i+1] = LAND[1];  dst[i+2] = LAND[2];  dst[i+3] = 255;
+      }
+    }
+
+    maskImageData = out;
+
+    const wrap = (hMin <= hMax) ? "no" : "yes";
+    setStatus(
+      `Converted. Water if (Hue ${hMin}–${hMax}° (wrap ${wrap}) AND Sat≥${(sMin*100)|0}%)` +
+      (useDark ? ` OR (Value≤${(vMaxDark*100)|0}% AND Sat≤${(sMaxDark*100)|0}%)` : ``) +
+      (alphaAsWater ? ` OR (alpha=0)` : ``) +
+      (specklePasses ? ` | Despeckle: ${specklePasses} pass(es).` : ``)
+    );
+    enableDownload(true);
+
+    drawToCanvas(showOriginalEl.checked ? originalImageData : maskImageData);
+  }
+
+  const computeMaskDebounced = debounce(() => {
+    if (!originalImageData) return;
+    if (!maskImageData) return; // only auto-recompute after first convert
+    if (!autoRecomputeEl.checked) return;
+    computeMask();
+  }, 140);
+
+  function loadImageFromFile(file){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const im = new Image();
+      im.onload = () => { URL.revokeObjectURL(url); resolve(im); };
+      im.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+      im.src = url;
+    });
+  }
+
+  async function handleFile(file){
+    setStatus("Loading image…");
+    enableUI(false);
+    enableDownload(false);
+    maskImageData = null;
+    originalImageData = null;
+
+    try{
+      img = await loadImageFromFile(file);
+
+      cv.width = img.naturalWidth || img.width;
+      cv.height = img.naturalHeight || img.height;
+      ctx.clearRect(0,0,cv.width,cv.height);
+      ctx.drawImage(img, 0, 0);
+
+      originalImageData = ctx.getImageData(0,0,cv.width,cv.height);
+      setStatus(`Loaded ${file.name}. Click Convert.`);
+      dimsEl.textContent = `${cv.width} × ${cv.height}`;
+      enableUI(true);
+      fitToView();
+
+    }catch(err){
+      console.error(err);
+      setStatus("Failed to load image. Try a different file.");
+    }
+  }
+
+  // --- UI wiring
+  fileEl.addEventListener("change", () => {
+    const f = fileEl.files && fileEl.files[0];
+    if (f) handleFile(f);
+  });
+
+  convertBtn.addEventListener("click", () => computeMask());
+
+  showOriginalEl.addEventListener("change", () => {
+    if (!originalImageData) return;
+    if (showOriginalEl.checked){
+      drawToCanvas(originalImageData);
+      setStatus("Showing original (toggle off to view mask).");
+    } else if (maskImageData){
+      drawToCanvas(maskImageData);
+      setStatus("Showing mask.");
+    } else {
+      drawToCanvas(originalImageData);
+      setStatus("Mask not computed yet. Click Convert.");
+    }
+  });
+
+  fitBtn.addEventListener("click", () => fitToView());
+
+  function onAnyParamChange(){
+    updatePills();
+    computeMaskDebounced();
+  }
+
+  // Slider + checkbox listeners
+  [hMinEl,hMaxEl,sMinEl,vMaxDarkEl,sMaxDarkEl,speckleEl].forEach(el => el.addEventListener("input", onAnyParamChange));
+  [useDarkEl, alphaAsWaterEl, autoRecomputeEl].forEach(el => el.addEventListener("change", onAnyParamChange));
+
+  downloadBtn.addEventListener("click", () => {
+    if (!maskImageData) return;
+    const tmp = document.createElement("canvas");
+    tmp.width = maskImageData.width;
+    tmp.height = maskImageData.height;
+    tmp.getContext("2d").putImageData(maskImageData, 0, 0);
+
+    const a = document.createElement("a");
+    a.download = "mask_land19_water0_hsv.png";
+    a.href = tmp.toDataURL("image/png");
+    a.click();
+  });
+
+  // Init
+  updatePills();
+})();
+</script>
+</body>
+</html>
