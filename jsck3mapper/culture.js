@@ -3389,7 +3389,7 @@ function assignVisualsFromGeo(culture) {
   const key = culture.id || culture.key || culture.name || "";
 
   const chosenCoa      = chooseFrom(cands.coa,      key, "coa");
-  const chosenEth      = culture.id//chooseFrom(cands.ethnicity, key, "ethnicity");
+  const chosenEth      = chooseFrom(cands.ethnicity, key, "ethnicity"); //culture.id (This is where we will fix eths)
   const chosenBuilding = chooseFrom(cands.building, key, "building");
   const chosenClothing = chooseFrom(cands.clothing, key, "clothing");
   const chosenUnit     = chooseFrom(cands.unit,     key, "unit");
