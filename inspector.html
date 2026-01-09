@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Province Inspector</title>
+<style>
+  :root{
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+    --border:#c4b496;
+
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --faint:#8a7a63;
+
+    --accent:#a65d37;          /* burnt sienna */
+    --accent-2:#2f5f73;        /* ink-blue */
+
+    --good:#2f7a4a;
+    --warn:#b45309;
+    --bad:#b42318;
+
+    --line:rgba(60,47,33,.18);
+    --line-strong:rgba(60,47,33,.26);
+
+    --shadow:0 14px 40px rgba(34,26,18,.22);
+    --shadow-soft:0 8px 22px rgba(34,26,18,.16);
+
+    --r:14px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    --serif: "Georgia","Times New Roman",serif;
+  }
+
+  /* --- Page background: parchment + subtle ink blooms --- */
+  html,body{
+    height:100%;
+    margin:0;
+    color:var(--ink);
+    font-family:var(--sans);
+    background:
+      radial-gradient(1100px 780px at 18% 12%, rgba(47,95,115,.16), transparent 55%),
+      radial-gradient(980px 720px at 82% 26%, rgba(166,93,55,.14), transparent 60%),
+      radial-gradient(1200px 900px at 50% 105%, rgba(60,47,33,.10), transparent 60%),
+      linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+    position:relative;
+  }
+
+  /* Paper grain + edge darkening */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(60,47,33,.10), transparent 55%),
+      radial-gradient(140% 110% at 50% 110%, rgba(60,47,33,.09), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(60,47,33,.028), rgba(60,47,33,.028) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:multiply;
+    opacity:.55;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(1200px 900px at 0% 0%, rgba(60,47,33,.12), transparent 60%),
+      radial-gradient(1200px 900px at 100% 0%, rgba(60,47,33,.10), transparent 60%),
+      radial-gradient(1200px 900px at 50% 100%, rgba(60,47,33,.10), transparent 60%);
+    mix-blend-mode:multiply;
+    opacity:.35;
+  }
+
+  .app{
+    display:grid;
+    grid-template-columns: 380px 1fr;
+    gap:14px;
+    padding:14px;
+    box-sizing:border-box;
+    height:100%;
+  }
+
+  /* --- Panels: parchment cards with ink borders --- */
+  .panel,
+  .view{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.22)),
+      radial-gradient(1200px 800px at 20% 0%, rgba(47,95,115,.08), transparent 60%),
+      radial-gradient(900px 700px at 85% 30%, rgba(166,93,55,.07), transparent 60%);
+    border:1px solid var(--line-strong);
+    border-radius:var(--r);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    backdrop-filter: blur(2px);
+  }
+
+  .panel header,
+  .view header{
+    padding:12px 12px 10px 12px;
+    border-bottom:1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,0));
+  }
+
+  .title{
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.15px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--ink);
+  }
+
+  .pill{
+    font-size:11px;
+    color:rgba(60,47,33,.72);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px 8px;
+    background:rgba(244,233,213,.55);
+  }
+
+  .sub{
+    margin-top:6px;
+    font-size:12px;
+    color:rgba(60,47,33,.75);
+    line-height:1.35;
+  }
+
+  .body{
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:0;
+  }
+
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+  /* --- Buttons: ink outline + parchment fill --- */
+  .btn{
+    cursor:pointer;
+    user-select:none;
+    border:1px solid var(--line-strong);
+    background:rgba(244,233,213,.65);
+    color:var(--ink);
+    padding:8px 10px;
+    border-radius:12px;
+    font-size:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform .06s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+    box-shadow:0 1px 0 rgba(60,47,33,.10);
+  }
+  .btn:hover{
+    background:rgba(47,95,115,.12);
+    border-color:rgba(47,95,115,.35);
+    box-shadow:0 10px 22px rgba(47,95,115,.12);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{
+    background:rgba(47,95,115,.18);
+    border-color:rgba(47,95,115,.38);
+  }
+  .btn.danger{
+    background:rgba(180,35,24,.10);
+    border-color:rgba(180,35,24,.22);
+  }
+  .btn.small{padding:6px 8px; border-radius:10px; font-size:11px;}
+
+  /* --- File pickers --- */
+  .file{
+    display:flex; gap:10px; align-items:center; width:100%;
+    padding:10px;
+    border:1px dashed rgba(60,47,33,.28);
+    border-radius:12px;
+    background:rgba(244,233,213,.55);
+  }
+  .file input{width:100%}
+
+  /* --- Cards --- */
+  .card{
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:rgba(244,233,213,.55);
+    padding:10px;
+    box-shadow:var(--shadow-soft);
+  }
+  .card h3{
+    margin:0 0 8px 0;
+    font-size:12px;
+    color:rgba(60,47,33,.70);
+    font-weight:900;
+    letter-spacing:.18px;
+    text-transform:uppercase;
+  }
+
+  .mini{
+    font-family:var(--mono);
+    font-size:11px;
+    color:rgba(60,47,33,.72);
+    line-height:1.35;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  /* --- Clickable property list --- */
+  .propsList{
+    font-family:var(--mono);
+    font-size:11px;
+    color:rgba(60,47,33,.72);
+    line-height:1.35;
+    white-space:pre;
+    overflow-wrap:anywhere;
+  }
+  .propLine{
+    padding:2px 6px;
+    margin:0 -6px;
+    cursor:pointer;
+    border-radius:8px;
+  }
+  .propLine:hover{
+    background:rgba(47,95,115,.14);
+    color:var(--ink);
+  }
+  .propLine.active{
+    background:rgba(47,122,74,.14);
+    color:var(--ink);
+    outline:1px solid rgba(47,122,74,.28);
+  }
+  .propKey{ color:rgba(60,47,33,.86); }
+  .propVal{ color:rgba(60,47,33,.68); }
+
+  .statGrid{display:grid; grid-template-columns: 1fr 1fr; gap:8px;}
+  .stat{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px;
+    background:rgba(255,255,255,.35);
+  }
+  .stat .k{font-size:11px; color:rgba(60,47,33,.62); margin-bottom:2px}
+  .stat .v{font-size:12px; color:var(--ink); font-family:var(--mono)}
+  .divider{height:1px; background:var(--line); margin:2px 0;}
+  .scroll{overflow:auto; min-height:0; padding-right:6px;}
+
+  /* --- Search input --- */
+  .search{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid var(--line-strong);
+    border-radius:12px;
+    padding:9px 10px;
+    background:rgba(255,255,255,.40);
+    color:var(--ink);
+    outline:none;
+    font-size:12px;
+  }
+  .search::placeholder{color:rgba(60,47,33,.55)}
+  .search:focus{
+    border-color:rgba(47,95,115,.45);
+    box-shadow:0 0 0 3px rgba(47,95,115,.12);
+  }
+
+  /* --- Chips --- */
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    cursor:pointer;
+    user-select:none;
+    font-size:11px;
+    padding:6px 8px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.34);
+    color:rgba(60,47,33,.70);
+  }
+  .chip.active{
+    background:rgba(47,95,115,.20);
+    border-color:rgba(47,95,115,.40);
+    color:var(--ink);
+  }
+
+  .hint{font-size:11px; color:rgba(60,47,33,.70); line-height:1.35}
+
+  /* --- Canvas area gets a parchment wash, not dark --- */
+  .canvasWrap{
+    position:relative;
+    flex:1;
+    min-height:0;
+    background:
+      radial-gradient(1200px 900px at 40% 25%, rgba(255,255,255,.55), transparent 62%),
+      radial-gradient(900px 700px at 80% 70%, rgba(166,93,55,.10), transparent 60%),
+      linear-gradient(180deg, rgba(244,233,213,.70), rgba(232,219,195,.80));
+  }
+
+  canvas{display:block; width:100%; height:100%; image-rendering:pixelated;}
+
+  /* --- Tooltip: parchment card with ink border --- */
+  .tooltip{
+    position:absolute;
+    pointer-events:none;
+    z-index:10;
+    min-width:240px;
+    max-width:360px;
+    background:rgba(244,233,213,.94);
+    border:1px solid rgba(60,47,33,.28);
+    border-radius:12px;
+    box-shadow:0 16px 50px rgba(34,26,18,.22);
+    padding:10px;
+    transform:translate(12px, 12px);
+    backdrop-filter: blur(4px);
+  }
+  .tooltip.hidden{display:none;}
+  .tooltip .ttTitle{
+    font-weight:900;
+    font-size:12px;
+    margin-bottom:6px;
+    color:var(--ink);
+  }
+  .tooltip .ttLine{
+    font-family:var(--mono);
+    font-size:11px;
+    color:rgba(60,47,33,.72);
+    line-height:1.35;
+    white-space:pre;
+  }
+
+  /* --- Toast: parchment tag --- */
+  .toast{
+    position:absolute; left:12px; bottom:12px;
+    background:rgba(244,233,213,.92);
+    border:1px solid rgba(60,47,33,.26);
+    border-radius:12px;
+    padding:8px 10px;
+    font-size:12px;
+    color:rgba(60,47,33,.74);
+    box-shadow:0 16px 50px rgba(34,26,18,.20);
+    max-width:520px;
+  }
+  .toast b{color:var(--ink)}
+  .hidden{display:none}
+</style>
+
+</head>
+<body>
+<div class="app">
+
+  <section class="panel" id="leftPanel">
+    <header>
+      <div class="title">Province Inspector <span class="pill">hover + click</span></div>
+      <div class="sub">
+        Upload a <b>province map</b> (PNG) and a <b>.jsonl or .json</b> data file. Hover to inspect.
+        Click a property line to <b>highlight all provinces with the same value</b>.
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="file">
+        <div style="min-width:98px; font-size:12px; color:var(--muted);">Province Map</div>
+        <input type="file" id="mapFile" accept="image/png,image/webp,image/jpeg" />
+      </div>
+      <div class="file">
+        <div style="min-width:98px; font-size:12px; color:var(--muted);">Data (.jsonl)</div>
+        <input type="file" id="jsonlFile" accept=".jsonl,.json,application/json,text/plain" />
+      </div>
+
+      <div class="row">
+        <button class="btn primary" id="btnFit">Fit</button>
+        <button class="btn" id="btnReset">Reset View</button>
+        <button class="btn danger" id="btnClearOverlay">Clear Overlay</button>
+      </div>
+
+      <input class="search" id="filterSearch" placeholder="Filter keys… (e.g. materials., hunting., koppenCode, elevM)" />
+
+      <div class="card">
+        <h3>Overlay Mode</h3>
+        <div class="chips" id="overlayChips"></div>
+        <div class="divider"></div>
+        <div class="hint">
+          Overlay chips show numeric heatmap. Property-click mode shows categorical/value matching.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Selected Province</h3>
+        <div class="statGrid" id="quickStats">
+          <div class="stat"><div class="k">id</div><div class="v" id="qs_id">—</div></div>
+          <div class="stat"><div class="k">terrain</div><div class="v" id="qs_terrain">—</div></div>
+          <div class="stat"><div class="k">köppen</div><div class="v" id="qs_koppen">—</div></div>
+          <div class="stat"><div class="k">elev (m)</div><div class="v" id="qs_elev">—</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="scroll" style="max-height:34vh">
+          <div class="propsList" id="provDetails">Hover a province…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>File Info</h3>
+        <div class="mini" id="fileInfo">No data loaded yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view">
+    <header>
+      <div class="left">
+        <div class="title" style="font-size:13px;">Map View</div>
+        <div class="legend" id="legend">
+          <span class="pill" id="legendLabel">Overlay: none</span>
+          <span class="pill" id="legendRange">—</span>
+        </div>
+      </div>
+      <div class="right">
+        <button class="btn small" id="btnZoomIn">Zoom +</button>
+        <button class="btn small" id="btnZoomOut">Zoom −</button>
+      </div>
+    </header>
+
+    <div class="canvasWrap" id="canvasWrap">
+      <canvas id="cv"></canvas>
+      <div class="tooltip hidden" id="tooltip">
+        <div class="ttTitle" id="ttTitle">Province</div>
+        <div class="ttLine" id="ttBody"></div>
+      </div>
+      <div class="toast" id="toast">
+        <b>Tip:</b> Click a property line (e.g., <code>primaryOceanId: 1</code>) to highlight all matching provinces.
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  // -----------------------------
+  // State
+  // -----------------------------
+  const S = {
+    img: null,
+    imgW: 0,
+    imgH: 0,
+
+    // provinceId by pixel
+    idMap: null, // Uint32Array length W*H
+
+    // province objects by id
+    provById: new Map(),
+    meta: null,
+    world: null,
+
+    // view transform
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+
+    // UI
+    pinnedId: null,
+    hoverId: null,
+
+    // overlay (heatmap chips)
+    overlayKey: null,
+    overlayMin: 0,
+    overlayMax: 1,
+    overlayImageData: null,
+    overlayCanvas: null,
+    overlayCtx: null,
+
+    // NEW: value-based highlight mode from property-click
+    highlightMode: null, // { key: "primaryOceanId", value: 1, valueType: "number"|"string"|"boolean"|"null"|"object" }
+    highlightMaskById: null, // Uint8Array length maxId+1 or Map fallback
+    highlightCount: 0,
+    styleMapImageData: null, // Uint8ClampedArray RGBA of white+black+green in image space (W,H)
+    styleMapDirty: true,
+
+    // perf buffers
+    imgData: null,     // original map ImageData (image-space)
+    rawRGBA: null      // Uint8ClampedArray of imgData.data
+  };
+
+  // -----------------------------
+  // DOM
+  // -----------------------------
+  const cv = document.getElementById('cv');
+  const wrap = document.getElementById('canvasWrap');
+  const tip = document.getElementById('tooltip');
+  const ttTitle = document.getElementById('ttTitle');
+  const ttBody = document.getElementById('ttBody');
+
+  const mapFile = document.getElementById('mapFile');
+  const jsonlFile = document.getElementById('jsonlFile');
+
+  const btnFit = document.getElementById('btnFit');
+  const btnReset = document.getElementById('btnReset');
+  const btnClearOverlay = document.getElementById('btnClearOverlay');
+  const btnZoomIn = document.getElementById('btnZoomIn');
+  const btnZoomOut = document.getElementById('btnZoomOut');
+
+  const overlayChips = document.getElementById('overlayChips');
+  const legendLabel = document.getElementById('legendLabel');
+  const legendRange = document.getElementById('legendRange');
+  const fileInfo = document.getElementById('fileInfo');
+  const provDetails = document.getElementById('provDetails');
+  const filterSearch = document.getElementById('filterSearch');
+
+  const qs_id = document.getElementById('qs_id');
+  const qs_terrain = document.getElementById('qs_terrain');
+  const qs_koppen = document.getElementById('qs_koppen');
+  const qs_elev = document.getElementById('qs_elev');
+
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = false;
+
+  // overlay offscreen canvas (image-size)
+  const ovCv = document.createElement('canvas');
+  const ovCtx = ovCv.getContext('2d', { willReadFrequently: true });
+  ovCtx.imageSmoothingEnabled = false;
+  S.overlayCanvas = ovCv;
+  S.overlayCtx = ovCtx;
+
+  // style-map offscreen canvas (image-size)
+  const styleCv = document.createElement('canvas');
+  const styleCtx = styleCv.getContext('2d', { willReadFrequently: true });
+  styleCtx.imageSmoothingEnabled = false;
+
+  // -----------------------------
+  // Utilities
+  // -----------------------------
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const fmt = (v) => {
+    if (v === null || v === undefined) return 'null';
+    if (typeof v === 'number') {
+      if (!Number.isFinite(v)) return String(v);
+      const abs = Math.abs(v);
+      if (abs >= 1000) return v.toFixed(0);
+      if (abs >= 10) return v.toFixed(2).replace(/\.00$/, '');
+      return v.toFixed(4).replace(/0+$/, '').replace(/\.$/,'');
+    }
+    if (typeof v === 'string') return v;
+    if (typeof v === 'boolean') return v ? 'true' : 'false';
+    return JSON.stringify(v);
+  };
+
+  function getByPath(obj, path) {
+    if (!obj || !path) return undefined;
+    const parts = path.split('.');
+    let cur = obj;
+    for (const p of parts) {
+      if (!cur) return undefined;
+      cur = cur[p];
+    }
+    return cur;
+  }
+
+  function flattenKeys(obj, prefix = "", out = []) {
+    if (!obj || typeof obj !== 'object') return out;
+    for (const k of Object.keys(obj)) {
+      const v = obj[k];
+      const key = prefix ? `${prefix}.${k}` : k;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        flattenKeys(v, key, out);
+      } else {
+        out.push(key);
+      }
+    }
+    return out;
+  }
+
+  // Convert a JS value into a stable compare token for equality matching.
+  // (We do *exact* matching, which is what you want for ids/strings/bools.
+  //  For objects/arrays we stringify, so it's still matchable.)
+  function valueToken(v) {
+    if (v === undefined) return { type: 'undefined', token: 'undefined' };
+    if (v === null) return { type: 'null', token: 'null' };
+    const t = typeof v;
+    if (t === 'number') return { type: 'number', token: Number.isNaN(v) ? 'NaN' : String(v) };
+    if (t === 'string') return { type: 'string', token: v };
+    if (t === 'boolean') return { type: 'boolean', token: v ? 'true' : 'false' };
+    // arrays/objects: stable-ish token
+    try { return { type: t, token: JSON.stringify(v) }; }
+    catch { return { type: t, token: '[unstringifiable]' }; }
+  }
+
+  function setToast(msg, ms = 2200) {
+    const el = document.getElementById('toast');
+    el.innerHTML = msg;
+    el.classList.remove('hidden');
+    if (ms > 0) setTimeout(() => el.classList.add('hidden'), ms);
+  }
+
+  // -----------------------------
+  // Loading: Province Map
+  // -----------------------------
+  async function loadImageFromFile(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = url;
+      await img.decode();
+      return img;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function loadProvinceMap(file) {
+    const img = await loadImageFromFile(file);
+    S.img = img;
+    S.imgW = img.naturalWidth || img.width;
+    S.imgH = img.naturalHeight || img.height;
+
+    // draw to offscreen to get pixels
+    const tmp = document.createElement('canvas');
+    tmp.width = S.imgW;
+    tmp.height = S.imgH;
+    const tctx = tmp.getContext('2d', { willReadFrequently: true });
+    tctx.imageSmoothingEnabled = false;
+    tctx.drawImage(img, 0, 0);
+
+    const imgData = tctx.getImageData(0, 0, S.imgW, S.imgH);
+    S.imgData = imgData;
+    S.rawRGBA = imgData.data;
+
+    // Build idMap (will be filled after JSON load)
+    const N = S.imgW * S.imgH;
+    const idMap = new Uint32Array(N);
+    idMap.fill(0xFFFFFFFF);
+    S.idMap = idMap;
+
+    // prep offscreen canvases
+    ovCv.width = S.imgW;
+    ovCv.height = S.imgH;
+    styleCv.width = S.imgW;
+    styleCv.height = S.imgH;
+
+    S.styleMapImageData = null;
+    S.styleMapDirty = true;
+
+    // initial view
+    resetView();
+    fitToView();
+    draw();
+
+    setToast(`<b>Loaded map</b> ${S.imgW}×${S.imgH}. Now load the JSONL/JSON data.`);
+  }
+
+  // -----------------------------
+  // Loading: JSONL / JSON
+  // -----------------------------
+  function tryParseJSON(text) { return JSON.parse(text); }
+
+  function parseJSONL(text) {
+    const trimmed = text.trim();
+    if (!trimmed) throw new Error("Empty file.");
+
+    if (trimmed[0] === '{') return tryParseJSON(trimmed);
+
+    const lines = trimmed.split(/\r?\n/).filter(l => l.trim().length);
+    const objs = lines.map((l, i) => {
+      try { return JSON.parse(l); }
+      catch (e) { throw new Error(`JSONL parse error on line ${i+1}: ${e.message}`); }
+    });
+
+    for (const o of objs) if (o && o.provinces && Array.isArray(o.provinces)) return o;
+
+    const out = {};
+    for (const o of objs) Object.assign(out, o);
+    return out;
+  }
+
+  function buildProvIndex(data) {
+    S.meta = data.meta || null;
+    S.world = data.world || null;
+
+    const provinces = data.provinces || [];
+    S.provById.clear();
+
+    let countLand = 0;
+    let countTotal = provinces.length;
+
+    // rgbInt -> id
+    const rgbToId = new Map();
+
+    let maxId = 0;
+    for (const p of provinces) {
+      if (!p || typeof p.id !== 'number') continue;
+      S.provById.set(p.id, p);
+      if (p.id > maxId) maxId = p.id;
+
+      const rgbInt = (typeof p.rgbInt === 'number')
+        ? p.rgbInt
+        : ((p.rgbR<<16) | (p.rgbG<<8) | (p.rgbB));
+      rgbToId.set((rgbInt>>>0), p.id>>>0);
+
+      if (p.isLand) countLand++;
+    }
+
+    // If map loaded, resolve idMap
+    if (S.rawRGBA && S.idMap) {
+      const dataRGBA = S.rawRGBA;
+      const N = S.imgW * S.imgH;
+      const idMap = S.idMap;
+
+      for (let i = 0, px = 0; px < N; px++, i += 4) {
+        const r = dataRGBA[i], g = dataRGBA[i+1], b = dataRGBA[i+2];
+        const rgbInt = ((r<<16)|(g<<8)|b) >>> 0;
+        const id = rgbToId.get(rgbInt);
+        idMap[px] = (id === undefined) ? 0xFFFFFFFF : (id >>> 0);
+      }
+    }
+
+    // Highlight mask storage (fast array)
+    S.highlightMaskById = new Uint8Array(maxId + 1);
+
+    // Overlay chips from keys
+    const sample = provinces.find(p => p && typeof p === 'object') || null;
+    const keys = sample ? flattenKeys(sample) : [];
+    keys.sort();
+
+    const interesting = keys.filter(k =>
+      k.startsWith("materials.") ||
+      k.startsWith("hunting.") ||
+      k.startsWith("innovations.") ||
+      k.startsWith("modifiers.")
+    );
+    renderOverlayChips(interesting);
+
+    const metaW = S.meta?.imageW ?? S.world?.w ?? S.imgW;
+    const metaH = S.meta?.imageH ?? S.world?.h ?? S.imgH;
+    const sea = S.meta?.seaLevel ?? S.world?.seaLevel ?? "—";
+    fileInfo.textContent =
+      `provinces: ${countTotal}\nland provinces: ${countLand}\nmeta image: ${metaW}×${metaH}\nmap image: ${S.imgW||'—'}×${S.imgH||'—'}\nseaLevel: ${sea}`;
+
+    setToast(`<b>Loaded data</b> ${countTotal} provinces. Hover the map.`);
+    S.styleMapDirty = true;
+    draw();
+  }
+
+  async function loadJSONLFile(file) {
+    const text = await file.text();
+    const data = parseJSONL(text);
+    buildProvIndex(data);
+
+    if (S.meta && S.imgW && (S.meta.imageW !== S.imgW || S.meta.imageH !== S.imgH)) {
+      setToast(`<b>Warning:</b> meta says ${S.meta.imageW}×${S.meta.imageH} but map is ${S.imgW}×${S.imgH}. Hover picking uses the map image pixels.`, 4200);
+    }
+  }
+
+  // -----------------------------
+  // Overlay rendering (heatmap chips)
+  // -----------------------------
+  function renderOverlayChips(keys) {
+    overlayChips.innerHTML = '';
+    if (!keys.length) {
+      overlayChips.innerHTML = `<div class="hint">No materials/hunting/modifiers/innovations keys found yet.</div>`;
+      return;
+    }
+
+    const groups = [
+      { title: "Materials", prefix: "materials." },
+      { title: "Hunting", prefix: "hunting." },
+      { title: "Innovations", prefix: "innovations." },
+      { title: "Modifiers", prefix: "modifiers." }
+    ];
+
+    for (const g of groups) {
+      const list = keys.filter(k => k.startsWith(g.prefix));
+      if (!list.length) continue;
+
+      const label = document.createElement('div');
+      label.className = 'pill';
+      label.textContent = g.title;
+      overlayChips.appendChild(label);
+
+      for (const k of list) {
+        const ch = document.createElement('div');
+        ch.className = 'chip';
+        ch.textContent = k.replace(g.prefix, '');
+        ch.dataset.key = k;
+        ch.addEventListener('click', () => setOverlayKey(k));
+        overlayChips.appendChild(ch);
+      }
+      const br = document.createElement('div');
+      br.style.flexBasis = "100%";
+      overlayChips.appendChild(br);
+    }
+
+    syncChipActive();
+  }
+
+  function syncChipActive() {
+    const chips = overlayChips.querySelectorAll('.chip');
+    chips.forEach(c => c.classList.toggle('active', c.dataset.key === S.overlayKey));
+  }
+
+  function computeOverlayRange(key) {
+    let min = Infinity, max = -Infinity, n = 0;
+    for (const p of S.provById.values()) {
+      const v = getByPath(p, key);
+      if (typeof v === 'number' && Number.isFinite(v)) {
+        min = Math.min(min, v);
+        max = Math.max(max, v);
+        n++;
+      }
+    }
+    if (n === 0) return { min: 0, max: 1, n: 0 };
+    if (min === max) return { min: min - 1e-9, max: max + 1e-9, n };
+    return { min, max, n };
+  }
+
+  function setOverlayKey(key) {
+    if (!key) {
+      S.overlayKey = null;
+      legendLabel.textContent = 'Overlay: none';
+      legendRange.textContent = '—';
+      syncChipActive();
+      draw();
+      return;
+    }
+
+    // overlay chips are separate from highlight mode; turning on overlay does NOT turn off highlight mode
+    S.overlayKey = key;
+    syncChipActive();
+
+    const { min, max, n } = computeOverlayRange(key);
+    S.overlayMin = min;
+    S.overlayMax = max;
+
+    legendLabel.textContent = `Overlay: ${key}`;
+    legendRange.textContent = (n === 0) ? 'no numeric values' : `range ${fmt(min)} → ${fmt(max)}`;
+
+    buildOverlayImage();
+    draw();
+  }
+
+  function buildOverlayImage() {
+    if (!S.overlayKey || !S.imgW || !S.imgH || !S.idMap) return;
+    if (S.provById.size === 0) return;
+
+    const W = S.imgW, H = S.imgH;
+    const N = W * H;
+    const idMap = S.idMap;
+
+    const valById = new Map();
+    const min = S.overlayMin, max = S.overlayMax;
+    const denom = (max - min) || 1;
+
+    for (const [id, p] of S.provById.entries()) {
+      let v = getByPath(p, S.overlayKey);
+      if (!(typeof v === 'number') || !Number.isFinite(v)) v = 0;
+      let t = (v - min) / denom;
+      t = clamp(t, 0, 1);
+      valById.set(id, t);
+    }
+
+    const imgData = ovCtx.createImageData(W, H);
+    const out = imgData.data;
+
+    for (let px = 0, i = 0; px < N; px++, i += 4) {
+      const id = idMap[px];
+      if (id === 0xFFFFFFFF) { out[i]=0; out[i+1]=0; out[i+2]=0; out[i+3]=0; continue; }
+      const t = valById.get(id) ?? 0;
+      const a = Math.round(220 * t);
+      out[i]   = 120;
+      out[i+1] = 200;
+      out[i+2] = 255;
+      out[i+3] = a;
+    }
+
+    S.overlayImageData = imgData;
+  }
+
+  // -----------------------------
+  // NEW: Value-based highlight mode (property-click)
+  // -----------------------------
+  function clearHighlightMode(silent=false) {
+    S.highlightMode = null;
+    S.highlightCount = 0;
+    S.styleMapDirty = true;
+
+    // clear active styling in prop lines
+    const active = provDetails.querySelectorAll('.propLine.active');
+    active.forEach(el => el.classList.remove('active'));
+
+    if (!silent) {
+      setToast(`<b>Cleared</b> property highlight.`, 1600);
+      legendLabel.textContent = (S.overlayKey ? `Overlay: ${S.overlayKey}` : 'Overlay: none');
+    }
+    draw();
+  }
+
+  function setHighlightMode(key, rawValue) {
+    if (!key) return;
+    if (!S.provById.size) return;
+
+    // If same selection, toggle off
+    if (S.highlightMode && S.highlightMode.key === key) {
+      const a = valueToken(S.highlightMode.value);
+      const b = valueToken(rawValue);
+      if (a.type === b.type && a.token === b.token) {
+        clearHighlightMode(false);
+        return;
+      }
+    }
+
+    // Build match token
+    const vt = valueToken(rawValue);
+    S.highlightMode = { key, value: rawValue, valueType: vt.type, valueToken: vt.token };
+
+    // Fill match mask by province id
+    if (S.highlightMaskById) S.highlightMaskById.fill(0);
+
+    let count = 0;
+    for (const [id, p] of S.provById.entries()) {
+      const v = getByPath(p, key);
+      const t = valueToken(v);
+      const match = (t.type === vt.type && t.token === vt.token);
+      if (match) {
+        if (S.highlightMaskById && id < S.highlightMaskById.length) S.highlightMaskById[id] = 1;
+        count++;
+      }
+    }
+    S.highlightCount = count;
+
+    // entering highlight mode switches map style; (overlay heatmap remains optional on top)
+    S.styleMapDirty = true;
+
+    // Update legend
+    legendLabel.textContent = `Property: ${key} = ${fmt(rawValue)}`;
+    legendRange.textContent = `${count} provinces`;
+
+    setToast(`<b>Highlight</b> ${count} provinces where <code>${key}</code> = <code>${fmt(rawValue)}</code>`, 2600);
+    draw();
+  }
+
+  // Build white-fill + black borders (+ green for matches) image-space raster.
+  function ensureStyleMapBuilt() {
+    if (!S.highlightMode) return;
+    if (!S.imgW || !S.imgH || !S.idMap) return;
+    if (!S.styleMapDirty && S.styleMapImageData) return;
+
+    const W = S.imgW, H = S.imgH;
+    const N = W * H;
+    const idMap = S.idMap;
+    const mask = S.highlightMaskById;
+
+    // Create image data
+    const img = styleCtx.createImageData(W, H);
+    const out = img.data;
+
+    // Pass 1: fill provinces (white or green)
+    for (let px = 0, i = 0; px < N; px++, i += 4) {
+      const id = idMap[px];
+      if (id === 0xFFFFFFFF) {
+        // outside/unknown -> transparent (or white). We'll do transparent.
+        out[i]=0; out[i+1]=0; out[i+2]=0; out[i+3]=0;
+        continue;
+      }
+      const isMatch = (mask && id < mask.length && mask[id] === 1);
+
+      if (isMatch) {
+        // green fill
+        out[i]   = 124;
+        out[i+1] = 255;
+        out[i+2] = 154;
+        out[i+3] = 255;
+      } else {
+        // white fill
+        out[i]   = 255;
+        out[i+1] = 255;
+        out[i+2] = 255;
+        out[i+3] = 255;
+      }
+    }
+
+    // Pass 2: black borders (4-neighbor boundary)
+    // We overwrite border pixels with black (opaque).
+    for (let y = 0; y < H; y++) {
+      const row = y * W;
+      for (let x = 0; x < W; x++) {
+        const idx = row + x;
+        const here = idMap[idx];
+        if (here === 0xFFFFFFFF) continue;
+
+        const left  = (x>0)   ? idMap[idx-1] : here;
+        const right = (x<W-1) ? idMap[idx+1] : here;
+        const up    = (y>0)   ? idMap[idx-W] : here;
+        const down  = (y<H-1) ? idMap[idx+W] : here;
+
+        if (left !== here || right !== here || up !== here || down !== here) {
+          const i = idx * 4;
+          out[i] = 0; out[i+1] = 0; out[i+2] = 0; out[i+3] = 255;
+        }
+      }
+    }
+
+    S.styleMapImageData = img;
+    S.styleMapDirty = false;
+  }
+
+  // -----------------------------
+  // View transform
+  // -----------------------------
+  function resetView() {
+    S.scale = 1;
+    S.offsetX = 0;
+    S.offsetY = 0;
+  }
+
+  function fitToView() {
+    if (!S.imgW || !S.imgH) return;
+    const rect = wrap.getBoundingClientRect();
+    const sx = rect.width / S.imgW;
+    const sy = rect.height / S.imgH;
+    S.scale = Math.max(0.05, Math.min(64, Math.min(sx, sy)));
+    S.offsetX = (rect.width - S.imgW * S.scale) * 0.5;
+    S.offsetY = (rect.height - S.imgH * S.scale) * 0.5;
+    draw();
+  }
+
+  function screenToImage(x, y) {
+    return {
+      ix: Math.floor((x - S.offsetX) / S.scale),
+      iy: Math.floor((y - S.offsetY) / S.scale)
+    };
+  }
+
+  // -----------------------------
+  // Drawing
+  // -----------------------------
+  function draw() {
+    const rect = wrap.getBoundingClientRect();
+    const screenW = Math.max(1, Math.floor(rect.width));
+    const screenH = Math.max(1, Math.floor(rect.height));
+
+    if (cv.width !== screenW || cv.height !== screenH) {
+      cv.width = screenW;
+      cv.height = screenH;
+    }
+
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.imageSmoothingEnabled = false;
+
+    // draw base
+    ctx.setTransform(S.scale, 0, 0, S.scale, S.offsetX, S.offsetY);
+
+    if (S.highlightMode) {
+      ensureStyleMapBuilt();
+      if (S.styleMapImageData) {
+        styleCtx.putImageData(S.styleMapImageData, 0, 0);
+        ctx.drawImage(styleCv, 0, 0);
+      }
+    } else if (S.img) {
+      ctx.drawImage(S.img, 0, 0);
+    }
+
+    // overlay tint (optional, still works)
+    if (S.overlayKey && S.overlayImageData && S.imgW && S.imgH) {
+      S.overlayCtx.putImageData(S.overlayImageData, 0, 0);
+      ctx.drawImage(S.overlayCanvas, 0, 0);
+    }
+
+    // hover outline (small & cheap) — skip when highlight mode is on (borders already shown)
+    if (!S.highlightMode && S.hoverId != null && S.hoverId !== 0xFFFFFFFF) {
+      drawHoverOutline(S.hoverId);
+    }
+  }
+
+  function drawHoverOutline(id) {
+    if (!S.idMap || !S.imgW || !S.imgH) return;
+    const p = S.provById.get(id);
+    if (!p) return;
+
+    const minX = (p.minX ?? 0), minY = (p.minY ?? 0);
+    const maxX = (p.maxX ?? 0), maxY = (p.maxY ?? 0);
+    if (!(maxX > minX && maxY > minY)) return;
+
+    const W = S.imgW;
+    const idMap = S.idMap;
+
+    const bw = (maxX - minX + 1);
+    const bh = (maxY - minY + 1);
+    if (bw * bh > 450000) return;
+
+    const outline = document.createElement('canvas');
+    outline.width = bw;
+    outline.height = bh;
+    const octx = outline.getContext('2d');
+    const img = octx.createImageData(bw, bh);
+    const out = img.data;
+
+    for (let y = 0; y < bh; y++) {
+      const yy = minY + y;
+      for (let x = 0; x < bw; x++) {
+        const xx = minX + x;
+        const idx = yy * W + xx;
+        const here = idMap[idx];
+        if (here !== id) continue;
+
+        const left  = (xx>0)       ? idMap[idx-1] : here;
+        const right = (xx<W-1)     ? idMap[idx+1] : here;
+        const up    = (yy>0)       ? idMap[idx-W] : here;
+        const down  = (yy<S.imgH-1)? idMap[idx+W] : here;
+
+        if (left !== id || right !== id || up !== id || down !== id) {
+          const i = (y*bw + x) * 4;
+          out[i] = 255; out[i+1] = 255; out[i+2] = 255; out[i+3] = 220;
+        }
+      }
+    }
+
+    octx.putImageData(img, 0, 0);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.drawImage(outline, minX, minY);
+    ctx.restore();
+  }
+
+  // -----------------------------
+  // Hover + pick
+  // -----------------------------
+  function pickProvinceId(ix, iy) {
+    if (!S.idMap || !S.imgW || !S.imgH) return null;
+    if (ix < 0 || iy < 0 || ix >= S.imgW || iy >= S.imgH) return null;
+    const id = S.idMap[iy * S.imgW + ix];
+    if (id === 0xFFFFFFFF) return null;
+    return id;
+  }
+
+  function updateTooltip(prov, clientX, clientY) {
+    if (!prov) { tip.classList.add('hidden'); return; }
+
+    ttTitle.textContent = `Province #${prov.id}`;
+
+    const lines = [];
+    lines.push(`terrain: ${fmt(prov.terrainResolved)}`);
+    lines.push(`köppen: ${fmt(prov.koppenCode)} (${fmt(prov.koppenGroup)})`);
+    lines.push(`elevM: ${fmt(prov.elevM)}`);
+    lines.push(`coastal: ${prov.isCoastal ? 'yes' : 'no'}  land: ${prov.isLand ? 'yes' : 'no'}`);
+
+    if (S.overlayKey) {
+      const v = getByPath(prov, S.overlayKey);
+      lines.push(`${S.overlayKey}: ${fmt(v)}`);
+    }
+    if (S.highlightMode) {
+      lines.push(`highlight: ${S.highlightMode.key} = ${fmt(S.highlightMode.value)}`);
+    }
+
+    ttBody.textContent = lines.join("\n");
+
+    tip.style.left = `${clientX}px`;
+    tip.style.top = `${clientY}px`;
+    tip.classList.remove('hidden');
+  }
+
+  // -----------------------------
+  // Property list rendering (clickable)
+  // -----------------------------
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  // Build a flat list of key->value for display, honoring filter substring.
+  // We only list leaf values (non-object, non-null object arrays are leaf too).
+  function flattenKeyValues(obj, prefix="", out=[]) {
+    if (!obj || typeof obj !== 'object') return out;
+    const keys = Object.keys(obj);
+    for (const k of keys) {
+      const v = obj[k];
+      const key = prefix ? `${prefix}.${k}` : k;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        flattenKeyValues(v, key, out);
+      } else {
+        out.push({ key, value: v });
+      }
+    }
+    return out;
+  }
+
+  function renderProvDetailsClickable(prov) {
+    const filter = (filterSearch.value || "").trim();
+    const kvs = flattenKeyValues(prov);
+    kvs.sort((a,b)=>a.key.localeCompare(b.key));
+
+    // render as div lines, each clickable
+    const frag = document.createDocumentFragment();
+    let shown = 0;
+
+    for (const { key, value } of kvs) {
+      if (filter && !key.includes(filter)) continue;
+
+      const line = document.createElement('div');
+      line.className = 'propLine';
+      line.dataset.key = key;
+
+      // store a token (and raw) for value-based matching
+      const vt = valueToken(value);
+      line.dataset.vtype = vt.type;
+      line.dataset.vtoken = vt.token;
+
+      // active styling if matches current highlight mode
+      if (S.highlightMode) {
+        const isActive = (S.highlightMode.key === key &&
+                          valueToken(S.highlightMode.value).type === vt.type &&
+                          valueToken(S.highlightMode.value).token === vt.token);
+        if (isActive) line.classList.add('active');
+      }
+
+      line.innerHTML =
+        `<span class="propKey">${escapeHtml(key)}</span>` +
+        `<span class="propVal">: ${escapeHtml(fmt(value))}</span>`;
+
+      line.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Clicking a property line triggers highlight mode (value-based)
+        setHighlightMode(key, value);
+
+        // Update active class visuals
+        const all = provDetails.querySelectorAll('.propLine');
+        all.forEach(el => el.classList.remove('active'));
+        // if highlight toggled off, no active
+        if (S.highlightMode && S.highlightMode.key === key) {
+          // find this exact line (same token)
+          const vtNow = valueToken(value);
+          if (valueToken(S.highlightMode.value).type === vtNow.type &&
+              valueToken(S.highlightMode.value).token === vtNow.token) {
+            line.classList.add('active');
+          }
+        }
+      });
+
+      frag.appendChild(line);
+      shown++;
+      if (shown > 2000) break; // prevent insane DOM
+    }
+
+    provDetails.innerHTML = '';
+    if (!shown) {
+      provDetails.innerHTML = `<div class="mini">No fields match this filter.</div>`;
+      return;
+    }
+    provDetails.appendChild(frag);
+  }
+
+  function setPinned(prov) {
+    if (!prov) return;
+    S.pinnedId = prov.id;
+
+    qs_id.textContent = String(prov.id);
+    qs_terrain.textContent = fmt(prov.terrainResolved);
+    qs_koppen.textContent = fmt(prov.koppenCode);
+    qs_elev.textContent = fmt(prov.elevM);
+
+    renderProvDetailsClickable(prov);
+  }
+
+  function setHover(prov) {
+    if (!prov) return;
+    if (S.pinnedId == null) {
+      qs_id.textContent = String(prov.id);
+      qs_terrain.textContent = fmt(prov.terrainResolved);
+      qs_koppen.textContent = fmt(prov.koppenCode);
+      qs_elev.textContent = fmt(prov.elevM);
+      renderProvDetailsClickable(prov);
+    }
+  }
+
+  // -----------------------------
+  // Pan/zoom interactions
+  // -----------------------------
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+
+  wrap.addEventListener('mousedown', (e) => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+  window.addEventListener('mouseup', () => dragging = false);
+
+  window.addEventListener('mousemove', (e) => {
+    if (!S.imgW || !S.imgH) return;
+
+    if (dragging) {
+      S.offsetX += (e.clientX - lastX);
+      S.offsetY += (e.clientY - lastY);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      draw();
+      return;
+    }
+
+    const rect = wrap.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const { ix, iy } = screenToImage(x, y);
+    const id = pickProvinceId(ix, iy);
+    S.hoverId = id;
+
+    if (id == null) {
+      updateTooltip(null);
+      draw();
+      return;
+    }
+
+    const prov = S.provById.get(id);
+    if (prov) {
+      updateTooltip(prov, e.clientX - rect.left, e.clientY - rect.top);
+      setHover(prov);
+      draw();
+    } else {
+      updateTooltip(null);
+      draw();
+    }
+  });
+
+  wrap.addEventListener('click', (e) => {
+    // clicking map pins a province (still works)
+    if (!S.imgW || !S.imgH) return;
+    const rect = wrap.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const { ix, iy } = screenToImage(x, y);
+    const id = pickProvinceId(ix, iy);
+    if (id == null) return;
+    const prov = S.provById.get(id);
+    if (!prov) return;
+    setPinned(prov);
+    setToast(`<b>Pinned</b> province #${prov.id}. (Click another to replace.)`);
+  });
+
+  wrap.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const zoom = Math.exp(-e.deltaY * 0.0012);
+    const newScale = clamp(S.scale * zoom, 0.05, 64);
+
+    const ix = (mx - S.offsetX) / S.scale;
+    const iy = (my - S.offsetY) / S.scale;
+    S.scale = newScale;
+    S.offsetX = mx - ix * S.scale;
+    S.offsetY = my - iy * S.scale;
+
+    draw();
+  }, { passive: false });
+
+  btnZoomIn.addEventListener('click', () => {
+    const rect = wrap.getBoundingClientRect();
+    const mx = rect.width * 0.5;
+    const my = rect.height * 0.5;
+    const zoom = 1.25;
+    const newScale = clamp(S.scale * zoom, 0.05, 64);
+
+    const ix = (mx - S.offsetX) / S.scale;
+    const iy = (my - S.offsetY) / S.scale;
+    S.scale = newScale;
+    S.offsetX = mx - ix * S.scale;
+    S.offsetY = my - iy * S.scale;
+    draw();
+  });
+
+  btnZoomOut.addEventListener('click', () => {
+    const rect = wrap.getBoundingClientRect();
+    const mx = rect.width * 0.5;
+    const my = rect.height * 0.5;
+    const zoom = 1/1.25;
+    const newScale = clamp(S.scale * zoom, 0.05, 64);
+
+    const ix = (mx - S.offsetX) / S.scale;
+    const iy = (my - S.offsetY) / S.scale;
+    S.scale = newScale;
+    S.offsetX = mx - ix * S.scale;
+    S.offsetY = my - iy * S.scale;
+    draw();
+  });
+
+  btnFit.addEventListener('click', fitToView);
+  btnReset.addEventListener('click', () => { resetView(); fitToView(); });
+
+  btnClearOverlay.addEventListener('click', () => {
+    setOverlayKey(null);
+    clearHighlightMode(true);
+    legendLabel.textContent = 'Overlay: none';
+    legendRange.textContent = '—';
+    setToast(`<b>Cleared</b> overlay + highlight.`, 1700);
+    draw();
+  });
+
+  filterSearch.addEventListener('input', () => {
+    const prov = (S.pinnedId != null) ? S.provById.get(S.pinnedId) :
+                 (S.hoverId != null) ? S.provById.get(S.hoverId) : null;
+    if (prov) renderProvDetailsClickable(prov);
+  });
+
+  // -----------------------------
+  // File handlers
+  // -----------------------------
+  mapFile.addEventListener('change', async () => {
+    const f = mapFile.files && mapFile.files[0];
+    if (!f) return;
+    try {
+      await loadProvinceMap(f);
+      if (S.provById.size) {
+        const provinces = Array.from(S.provById.values());
+        buildProvIndex({ meta: S.meta, world: S.world, provinces });
+      }
+    } catch (e) {
+      console.error(e);
+      setToast(`<b>Error loading map</b>: ${e.message}`, 4200);
+    }
+  });
+
+  jsonlFile.addEventListener('change', async () => {
+    const f = jsonlFile.files && jsonlFile.files[0];
+    if (!f) return;
+    try {
+      await loadJSONLFile(f);
+      if (!S.img) setToast(`<b>Loaded data</b>. Now load the province map image so hover picking works.`, 3800);
+    } catch (e) {
+      console.error(e);
+      setToast(`<b>Error loading data</b>: ${e.message}`, 5200);
+    }
+  });
+
+  // -----------------------------
+  // Initial overlay chip placeholders
+  // -----------------------------
+  renderOverlayChips([]);
+
+  // Resize redraw
+  new ResizeObserver(() => draw()).observe(wrap);
+})();
+</script>
+</body>
+</html>
