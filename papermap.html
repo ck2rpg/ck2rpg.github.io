@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Antique Political Map Synth — Reference-Style Parchment + Wash</title>
+<style>
+:root{
+  --parchment-bg:#f4e9d5;
+  --parchment-dark:#e8dbc3;
+  --parchment-edge:#dcccad;
+  --ink:#3c2f21;
+  --ink-muted:#6b5a46;
+  --accent:#a65d37;
+  --accent-2:#2f5f73;
+  --border:#c4b496;
+
+  --shadow:0 10px 30px rgba(34,26,18,.20);
+  --shadow-soft:0 6px 16px rgba(34,26,18,.14);
+
+  --radius:14px;
+  --font-serif:"Georgia","Times New Roman",serif;
+  --font-sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+
+  --danger:#b54b3c;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:#2a241e;
+  color:var(--ink);
+  overflow:hidden;
+  font-family:var(--font-serif);
+}
+
+.app{ height:100%; display:grid; grid-template-columns: 360px 1fr; }
+
+.sidebar{
+  position:relative;
+  padding:14px 14px 16px;
+  background:
+    radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.35), rgba(255,255,255,0) 55%),
+    linear-gradient(180deg, var(--parchment-bg), var(--parchment-dark));
+  border-right:1px solid rgba(60,47,33,.18);
+  box-shadow: inset -1px 0 0 rgba(255,255,255,.35);
+}
+.sidebar:before{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 700px at 30% 0%, rgba(166,93,55,.08), rgba(0,0,0,0) 55%),
+    radial-gradient(800px 650px at 70% 40%, rgba(47,95,115,.06), rgba(0,0,0,0) 60%),
+    repeating-linear-gradient(0deg, rgba(60,47,33,.02), rgba(60,47,33,.02) 1px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 6px);
+  mix-blend-mode:multiply;
+  opacity:.9;
+}
+
+.brand{
+  padding:12px 12px 10px;
+  border:1px solid rgba(60,47,33,.22);
+  border-radius:var(--radius);
+  box-shadow: var(--shadow-soft);
+  background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18));
+}
+.brand h1{ margin:0; font-size:16px; letter-spacing:.4px; }
+
+.card{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid rgba(60,47,33,.20);
+  border-radius:var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.52), rgba(255,255,255,.16));
+  box-shadow: var(--shadow-soft);
+}
+
+.row{ display:flex; gap:10px; align-items:center; }
+.col{ display:flex; flex-direction:column; gap:8px; }
+.label{
+  font-family:var(--font-sans);
+  font-size:12px;
+  color:var(--ink-muted);
+  letter-spacing:.2px;
+}
+hr.sep{
+  border:0;
+  height:1px;
+  background: linear-gradient(90deg, rgba(60,47,33,0), rgba(60,47,33,.22), rgba(60,47,33,0));
+  margin:10px 0;
+}
+.btn{
+  appearance:none;
+  border:1px solid rgba(60,47,33,.25);
+  background: linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.20));
+  color:var(--ink);
+  padding:10px 10px;
+  border-radius:12px;
+  cursor:pointer;
+  font-family:var(--font-sans);
+  font-size:12px;
+  letter-spacing:.2px;
+  box-shadow: 0 2px 0 rgba(60,47,33,.12), 0 10px 18px rgba(34,26,18,.10);
+  transition: transform .06s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.btn:hover{ border-color: rgba(60,47,33,.35); }
+.btn:active{ transform: translateY(1px); box-shadow: 0 1px 0 rgba(60,47,33,.10), 0 7px 14px rgba(34,26,18,.10); }
+.btn[disabled]{ opacity:.55; cursor:not-allowed; }
+.btn.primary{
+  border-color: rgba(166,93,55,.55);
+  background: linear-gradient(180deg, rgba(255,246,235,.78), rgba(255,246,235,.26));
+}
+.btn.danger{
+  border-color: rgba(181,75,60,.55);
+  color:#3a1310;
+}
+.file{ display:flex; gap:10px; align-items:center; width:100%; }
+.file input[type="file"]{
+  width:100%;
+  font-family:var(--font-sans);
+  font-size:12px;
+  color:var(--ink-muted);
+}
+.kv{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:10px;
+  align-items:center;
+  margin-top:6px;
+}
+.kv .value{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:rgba(60,47,33,.85);
+}
+.slider{ width:100%; accent-color: var(--accent); }
+.small{ font-family:var(--font-sans); font-size:11px; color:var(--ink-muted); }
+.status{ font-family:var(--font-sans); font-size:12px; color:var(--ink-muted); line-height:1.35; min-height:34px; }
+
+.stage{
+  position:relative;
+  background:
+    radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
+    linear-gradient(180deg, #1e1a15, #1a1612);
+}
+.stage canvas{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  image-rendering: pixelated;
+}
+.corner{
+  position:absolute;
+  right:12px; top:12px;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.82);
+  font-family:var(--font-sans);
+  font-size:12px;
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Antique Political Map Synth</h1>
+    </div>
+
+    <div class="card">
+      <div class="label">Inputs</div>
+      <div class="col" style="margin-top:8px">
+        <div class="file"><input id="voronoiFile" type="file" accept="image/png,image/jpeg,image/webp" /></div>
+        <div class="small">Voronoi country map (flat region colors best).</div>
+        <hr class="sep" />
+        <div class="file"><input id="heightFile" type="file" accept="image/png,image/jpeg,image/webp" /></div>
+        <div class="small">Heightmap (grayscale preferred). Transparent treated as 0.</div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="renderBtn" class="btn primary" disabled>Render Antique Map</button>
+        <button id="downloadBtn" class="btn" disabled>Download PNG</button>
+      </div>
+
+      <div class="status" id="status" style="margin-top:10px">Load both images to enable rendering.</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Fill + Ocean</div>
+      <div class="kv">
+        <div class="label">Dull amount</div><div class="value" id="dullVal">1</div>
+        <input class="slider" id="dull" type="range" min="0" max="1" step="0.01" value="0.62" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Ocean strength</div><div class="value" id="oceanVal">1.00</div>
+        <input class="slider" id="ocean" type="range" min="0" max="1.4" step="0.01" value="0.92" style="grid-column:1/-1" />
+      </div>
+
+      <hr class="sep" />
+
+      <div class="label">Pigment borders</div>
+      <div class="kv">
+        <div class="label">Border strength</div><div class="value" id="bCoreVal">0.95</div>
+        <input class="slider" id="bCore" type="range" min="0" max="1.6" step="0.01" value="1.05" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Edge soak</div><div class="value" id="bSoakVal">0.70</div>
+        <input class="slider" id="bSoak" type="range" min="0" max="1.8" step="0.01" value="0.92" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Soak width (px)</div><div class="value" id="soakWVal">3</div>
+        <input class="slider" id="soakW" type="range" min="1" max="100" step="1" value="7" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Line breaks</div><div class="value" id="breakVal">0.14</div>
+        <input class="slider" id="breaks" type="range" min="0" max="0.6" step="0.01" value="0.18" style="grid-column:1/-1" />
+      </div>
+
+      <hr class="sep" />
+
+      <div class="label">Relief + Coast</div>
+      <div class="kv">
+        <div class="label">Sea level (0–255)</div><div class="value" id="seaVal">19</div>
+        <input class="slider" id="sea" type="range" min="0" max="255" step="1" value="19" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Relief opacity</div><div class="value" id="reliefVal">0.75</div>
+        <input class="slider" id="relief" type="range" min="0" max="1.6" step="0.01" value="0.62" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Relief contrast</div><div class="value" id="reliefCVal">1.35</div>
+        <input class="slider" id="reliefC" type="range" min="0.5" max="3.2" step="0.01" value="1.55" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Relief scale</div><div class="value" id="reliefScaleVal">3.00</div>
+        <input class="slider" id="reliefScale" type="range" min="0.5" max="10" step="0.05" value="3.40" style="grid-column:1/-1" />
+      </div>
+
+      <div class="kv">
+        <div class="label">Coast ink</div><div class="value" id="coastInkVal">0.80</div>
+        <input class="slider" id="coastInk" type="range" min="0" max="1.6" step="0.01" value="0.95" style="grid-column:1/-1" />
+      </div>
+      <div class="kv">
+        <div class="label">Coast shadow</div><div class="value" id="coastShVal">0.55</div>
+        <input class="slider" id="coastSh" type="range" min="0" max="1.6" step="0.01" value="0.62" style="grid-column:1/-1" />
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="resetBtn" class="btn danger">Reset</button>
+      </div>
+
+      <div class="small" style="margin-top:10px">
+        This version adds: paper grain + stains + folds + edge vignette, watercolor-ish wash variation,
+        pigment pooling “tide lines,” and faint graticule + compass overlay (like the reference).
+      </div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <canvas id="out"></canvas>
+    <div class="corner" id="corner">No images loaded</div>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- DOM ----------
+  const $ = (s) => document.querySelector(s);
+  const voronoiFile = $("#voronoiFile");
+  const heightFile  = $("#heightFile");
+  const renderBtn   = $("#renderBtn");
+  const downloadBtn = $("#downloadBtn");
+  const statusEl    = $("#status");
+  const cornerEl    = $("#corner");
+  const out = $("#out");
+  const ctx = out.getContext("2d", { willReadFrequently:true });
+
+  const dull = $("#dull"), dullVal=$("#dullVal");
+  const ocean = $("#ocean"), oceanVal=$("#oceanVal");
+
+  const bCore = $("#bCore"), bCoreVal=$("#bCoreVal");
+  const bSoak = $("#bSoak"), bSoakVal=$("#bSoakVal");
+  const soakW = $("#soakW"), soakWVal=$("#soakWVal");
+  const breaks = $("#breaks"), breakVal=$("#breakVal");
+
+  const sea = $("#sea"), seaVal=$("#seaVal");
+  const relief = $("#relief"), reliefVal=$("#reliefVal");
+  const reliefC = $("#reliefC"), reliefCVal=$("#reliefCVal");
+  const reliefScale = $("#reliefScale"), reliefScaleVal=$("#reliefScaleVal");
+
+  const coastInk = $("#coastInk"), coastInkVal=$("#coastInkVal");
+  const coastSh = $("#coastSh"), coastShVal=$("#coastShVal");
+
+  const resetBtn = $("#resetBtn");
+
+  // ---------- Helpers ----------
+  const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const smoothstep=(t)=>{ t=clamp(t,0,1); return t*t*(3-2*t); };
+  const luminance255=(r,g,b)=>0.2126*r+0.7152*g+0.0722*b;
+
+  function setStatus(msg){ statusEl.textContent = msg; }
+  function debounce(fn, ms=140){
+    let t=0;
+    return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+  }
+
+  function updateLabels(){
+    dullVal.textContent=(+dull.value).toFixed(2);
+    oceanVal.textContent=(+ocean.value).toFixed(2);
+
+    bCoreVal.textContent=(+bCore.value).toFixed(2);
+    bSoakVal.textContent=(+bSoak.value).toFixed(2);
+    soakWVal.textContent=(soakW.value|0);
+    breakVal.textContent=(+breaks.value).toFixed(2);
+
+    seaVal.textContent=(sea.value|0);
+    reliefVal.textContent=(+relief.value).toFixed(2);
+    reliefCVal.textContent=(+reliefC.value).toFixed(2);
+    reliefScaleVal.textContent=(+reliefScale.value).toFixed(2);
+
+    coastInkVal.textContent=(+coastInk.value).toFixed(2);
+    coastShVal.textContent=(+coastSh.value).toFixed(2);
+  }
+
+  async function fileToBitmap(file){
+    const url=URL.createObjectURL(file);
+    try{ return await createImageBitmap(await (await fetch(url)).blob()); }
+    finally{ URL.revokeObjectURL(url); }
+  }
+
+  function bitmapToImageData(bmp){
+    const c=document.createElement("canvas");
+    c.width=bmp.width; c.height=bmp.height;
+    const g=c.getContext("2d",{willReadFrequently:true});
+    g.drawImage(bmp,0,0);
+    return g.getImageData(0,0,c.width,c.height);
+  }
+
+  function resampleImageDataTo(srcImg, w, h){
+    const src=document.createElement("canvas");
+    src.width=srcImg.width; src.height=srcImg.height;
+    src.getContext("2d").putImageData(srcImg,0,0);
+
+    const dst=document.createElement("canvas");
+    dst.width=w; dst.height=h;
+    const g=dst.getContext("2d",{willReadFrequently:true});
+    g.imageSmoothingEnabled=true;
+    g.drawImage(src,0,0,w,h);
+    return g.getImageData(0,0,w,h);
+  }
+
+  // ---------- Blur ----------
+  function boxBlurSeparable(src, w, h, radius){
+    radius |= 0;
+    if(radius<=0) return src.slice(0);
+    const tmp=new Float32Array(w*h);
+    const dst=new Float32Array(w*h);
+    const win=radius*2+1;
+
+    for(let y=0;y<h;y++){
+      let sum=0;
+      const row=y*w;
+      for(let k=-radius;k<=radius;k++){
+        const x=clamp(k,0,w-1);
+        sum += src[row+x];
+      }
+      tmp[row]=sum/win;
+      for(let x=1;x<w;x++){
+        const addX=clamp(x+radius,0,w-1);
+        const subX=clamp(x-radius-1,0,w-1);
+        sum += tmp ? (src[row+addX]-src[row+subX]) : 0;
+        tmp[row+x]=sum/win;
+      }
+    }
+
+    for(let x=0;x<w;x++){
+      let sum=0;
+      for(let k=-radius;k<=radius;k++){
+        const y=clamp(k,0,h-1);
+        sum += tmp[y*w+x];
+      }
+      dst[x]=sum/win;
+      for(let y=1;y<h;y++){
+        const addY=clamp(y+radius,0,h-1);
+        const subY=clamp(y-radius-1,0,h-1);
+        sum += tmp[addY*w+x]-tmp[subY*w+x];
+        dst[y*w+x]=sum/win;
+      }
+    }
+    return dst;
+  }
+
+  // ---------- Masks ----------
+  function buildLandMaskFromHeight(heightRGBA, w, h, seaLevel){
+    const land=new Float32Array(w*h);
+    for(let p=0;p<w*h;p++){
+      const i=p*4;
+      const a=heightRGBA[i+3];
+      const lum=(a===0)?0:luminance255(heightRGBA[i],heightRGBA[i+1],heightRGBA[i+2]);
+      land[p]=(lum>=seaLevel)?1:0;
+    }
+    return land;
+  }
+
+  function buildEdgeMaskBinary(mask01, w, h){
+    const edge=new Float32Array(w*h);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const p=y*w+x;
+        const v=mask01[p];
+        let e=0;
+        if(x>0 && mask01[p-1]!==v) e=1;
+        else if(x<w-1 && mask01[p+1]!==v) e=1;
+        else if(y>0 && mask01[p-w]!==v) e=1;
+        else if(y<h-1 && mask01[p+w]!==v) e=1;
+        edge[p]=e;
+      }
+    }
+    return edge;
+  }
+
+  function buildCountryBorderMask(vorRGBA, w, h){
+    const m=new Float32Array(w*h);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const p=y*w+x;
+        const i=p*4;
+        const a=vorRGBA[i+3];
+        if(a===0){ m[p]=0; continue; }
+        const r=vorRGBA[i], g=vorRGBA[i+1], b=vorRGBA[i+2];
+        let e=0;
+        if(x>0){
+          const j=i-4;
+          if(vorRGBA[j+3]!==0 && (vorRGBA[j]!==r || vorRGBA[j+1]!==g || vorRGBA[j+2]!==b)) e=1;
+        }
+        if(!e && x<w-1){
+          const j=i+4;
+          if(vorRGBA[j+3]!==0 && (vorRGBA[j]!==r || vorRGBA[j+1]!==g || vorRGBA[j+2]!==b)) e=1;
+        }
+        if(!e && y>0){
+          const j=i-4*w;
+          if(vorRGBA[j+3]!==0 && (vorRGBA[j]!==r || vorRGBA[j+1]!==g || vorRGBA[j+2]!==b)) e=1;
+        }
+        if(!e && y<h-1){
+          const j=i+4*w;
+          if(vorRGBA[j+3]!==0 && (vorRGBA[j]!==r || vorRGBA[j+1]!==g || vorRGBA[j+2]!==b)) e=1;
+        }
+        m[p]=e;
+      }
+    }
+    return m;
+  }
+
+  // ---------- Noise (Numbers only) ----------
+  function hash2i(x,y,seed){
+    let h = (x|0);
+    h = Math.imul(h, 374761393);
+    h ^= (y|0) + 0x9e3779b9;
+    h = Math.imul(h, 668265263);
+    h ^= (seed|0);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return (h ^ (h >>> 16)) >>> 0;
+  }
+  function noise01(x,y,seed){
+    return (hash2i(x,y,seed) & 0xFFFFFF) / 0xFFFFFF;
+  }
+  function valueNoise2D(x,y,seed){
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const u = xf*xf*(3-2*xf);
+    const v = yf*yf*(3-2*yf);
+
+    const n00=noise01(xi,yi,seed);
+    const n10=noise01(xi+1,yi,seed);
+    const n01=noise01(xi,yi+1,seed);
+    const n11=noise01(xi+1,yi+1,seed);
+
+    const nx0 = n00 + (n10-n00)*u;
+    const nx1 = n01 + (n11-n01)*u;
+    return nx0 + (nx1-nx0)*v;
+  }
+  function fbm(x,y,seed){
+    let f=1, amp=0.55, sum=0, norm=0;
+    for(let o=0;o<4;o++){
+      sum += valueNoise2D(x*f, y*f, seed + o*17) * amp;
+      norm += amp;
+      f *= 2.0;
+      amp *= 0.55;
+    }
+    return sum / norm; // 0..1
+  }
+
+  // ---------- Relief ----------
+  function computeHillshade(heightRGBA, w, h, seaLevel, scale, contrast){
+    const hs=new Float32Array(w*h);
+
+    const az=315*Math.PI/180;
+    const alt=45*Math.PI/180;
+    const Lx=Math.cos(alt)*Math.cos(az);
+    const Ly=Math.cos(alt)*Math.sin(az);
+    const Lz=Math.sin(alt);
+
+    const getH=(x,y)=>{
+      x=x<0?0:(x>=w?w-1:x);
+      y=y<0?0:(y>=h?h-1:y);
+      const i=(y*w+x)*4;
+      const a=heightRGBA[i+3];
+      if(a===0) return 0;
+      return luminance255(heightRGBA[i],heightRGBA[i+1],heightRGBA[i+2]);
+    };
+
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const c=getH(x,y);
+        if(c<seaLevel){ hs[y*w+x]=0.5; continue; }
+
+        const z1=getH(x-1,y-1), z2=getH(x,y-1), z3=getH(x+1,y-1);
+        const z4=getH(x-1,y),   z5=getH(x,y),   z6=getH(x+1,y);
+        const z7=getH(x-1,y+1), z8=getH(x,y+1), z9=getH(x+1,y+1);
+
+        let dzdx=((z3+2*z6+z9)-(z1+2*z4+z7))/8;
+        let dzdy=((z7+2*z8+z9)-(z1+2*z2+z3))/8;
+        dzdx*=scale; dzdy*=scale;
+
+        let nx=-dzdx, ny=-dzdy, nz=1;
+        const inv=1/Math.hypot(nx,ny,nz);
+        nx*=inv; ny*=inv; nz*=inv;
+
+        let d=nx*Lx+ny*Ly+nz*Lz;
+        d=clamp(d,-1,1);
+        let v=0.5+0.5*d;
+        v=0.5+(v-0.5)*contrast;
+        hs[y*w+x]=clamp(v,0,1);
+      }
+    }
+    return hs;
+  }
+
+  // ---------- Reference-style parchment field ----------
+  function buildPaperFields(W,H,seed){
+    const n = W*H;
+    const grain = new Float32Array(n);
+    const stain = new Float32Array(n);
+    const speck = new Float32Array(n);
+    const fold  = new Float32Array(n);
+    const edge  = new Float32Array(n);
+
+    const cx = (W-1)*0.5, cy=(H-1)*0.5;
+    const maxR = Math.hypot(cx,cy);
+
+    for(let y=0;y<H;y++){
+      for(let x=0;x<W;x++){
+        const p=y*W+x;
+
+        const g1 = fbm(x*0.020, y*0.020, seed+11);
+        const g2 = fbm(x*0.095, y*0.095, seed+29);
+        const g3 = fbm(x*0.006, y*0.006, seed+71);
+        grain[p] = clamp(0.55*g1 + 0.35*g2 + 0.10*g3, 0, 1);
+
+        let s = fbm(x*0.0045, y*0.0045, seed+101);
+        s = smoothstep((s-0.35)/0.45);
+        const s2 = fbm(x*0.012, y*0.012, seed+133);
+        stain[p] = clamp(s*0.85 + s2*0.15, 0, 1);
+
+        const r = noise01(x, y, seed+313);
+        speck[p] = (r>0.9965) ? 1 : (r>0.994 ? 0.5 : 0);
+
+        const f1 = Math.abs((x*0.92 + y*0.38) - Math.round((x*0.92 + y*0.38)/260)*260);
+        const f2 = Math.abs((x*0.15 + y*1.02) - Math.round((x*0.15 + y*1.02)/310)*310);
+        const foldBand = (f1<1.2?1:0) + (f2<1.0?1:0);
+        fold[p] = clamp(foldBand*0.60, 0, 1);
+
+        const d = Math.hypot(x-cx, y-cy)/maxR;
+        const vign = smoothstep((d-0.62)/0.38);
+        const edgeN = fbm(x*0.030, y*0.030, seed+777);
+        edge[p] = clamp(vign * lerp(0.85, 1.15, edgeN), 0, 1);
+      }
+    }
+
+    const stainSoft = boxBlurSeparable(stain, W, H, 2);
+    return { grain, stain: stainSoft, speck, fold, edge };
+  }
+
+  // ---------- Color shaping (wash on paper) ----------
+  function dullPoliticalColor(r,g,b, dullAmt){
+    const lum=luminance255(r,g,b);
+    const sr=lerp(r, lum, dullAmt*0.80);
+    const sg=lerp(g, lum, dullAmt*0.80);
+    const sb=lerp(b, lum, dullAmt*0.80);
+    const pr=244, pg=233, pb=213;
+    const t=dullAmt*0.26;
+    return [
+      clamp(Math.round(lerp(sr, pr, t)),0,255),
+      clamp(Math.round(lerp(sg, pg, t)),0,255),
+      clamp(Math.round(lerp(sb, pb, t)),0,255),
+    ];
+  }
+
+  function pigmentBorderTone(fillR, fillG, fillB, strength01){
+    const s = clamp(strength01, 0, 1.6);
+    const darkMul = clamp(0.78 - 0.22*s, 0.45, 0.82);
+    const desat   = clamp(0.12 + 0.18*s, 0.10, 0.55);
+
+    const lum = luminance255(fillR, fillG, fillB);
+    const r1 = lerp(fillR, lum, desat) * darkMul;
+    const g1 = lerp(fillG, lum, desat) * darkMul;
+    const b1 = lerp(fillB, lum, desat) * darkMul;
+
+    return [clamp(r1,0,255), clamp(g1,0,255), clamp(b1,0,255)];
+  }
+
+  function applyWashToPaper(paperRGB, pigmentRGB, washAlpha01, paperGrain01, stain01){
+    const grab = clamp(0.72 + (paperGrain01-0.5)*0.32, 0.55, 0.92);
+    const stainDark = 1.0 - stain01*0.12;
+
+    const a = clamp(washAlpha01 * grab, 0, 1);
+    const r = lerp(paperRGB[0], pigmentRGB[0], a) * stainDark;
+    const g = lerp(paperRGB[1], pigmentRGB[1], a) * stainDark;
+    const b = lerp(paperRGB[2], pigmentRGB[2], a) * stainDark;
+    return [r,g,b];
+  }
+
+  // ---------- Decorations ----------
+  function drawGraticule(g, W,H, seed){
+    g.save();
+    g.globalCompositeOperation = "multiply";
+    g.globalAlpha = 0.16;
+    g.lineWidth = 1;
+
+    const base = "rgba(120,95,70,0.55)";
+    g.strokeStyle = base;
+
+    const spacing = Math.max(80, Math.floor(Math.min(W,H)/10));
+    for(let x=0; x<=W; x+=spacing){
+      const wob = (fbm(x*0.01, 0.0, seed+900) - 0.5) * 1.4;
+      g.beginPath();
+      g.moveTo(x+wob, 0);
+      g.lineTo(x-wob, H);
+      g.stroke();
+    }
+    for(let y=0; y<=H; y+=spacing){
+      const wob = (fbm(0.0, y*0.01, seed+901) - 0.5) * 1.4;
+      g.beginPath();
+      g.moveTo(0, y+wob);
+      g.lineTo(W, y-wob);
+      g.stroke();
+    }
+
+    g.globalAlpha = 0.08;
+    g.strokeStyle = "rgba(80,65,50,0.7)";
+    for(let k=0;k<8;k++){
+      const x0 = (noise01(k, 7, seed+7777))*W;
+      const y0 = (noise01(k, 9, seed+8888))*H;
+      const x1 = x0 + (noise01(k, 11, seed+9999)-0.5)*W*0.35;
+      const y1 = y0 + (noise01(k, 13, seed+2222)-0.5)*H*0.35;
+      g.beginPath();
+      g.moveTo(x0,y0);
+      g.lineTo(x1,y1);
+      g.stroke();
+    }
+
+    g.restore();
+  }
+
+  function drawCompassRose(g, W,H){
+    const size = Math.floor(Math.min(W,H) * 0.18);
+    const x = W - size*0.65;
+    const y = size*0.62;
+
+    g.save();
+    g.translate(x,y);
+    g.globalCompositeOperation = "multiply";
+    g.globalAlpha = 0.22;
+
+    g.lineWidth = Math.max(1, size*0.012);
+    g.strokeStyle = "rgba(95,75,55,0.9)";
+    g.beginPath();
+    g.arc(0,0,size*0.42,0,Math.PI*2);
+    g.stroke();
+
+    g.globalAlpha = 0.16;
+    g.beginPath();
+    g.arc(0,0,size*0.30,0,Math.PI*2);
+    g.stroke();
+
+    g.globalAlpha = 0.20;
+    for(let k=0;k<8;k++){
+      g.save();
+      g.rotate(k*Math.PI/4);
+      g.beginPath();
+      g.moveTo(0,-size*0.42);
+      g.lineTo(size*0.06,-size*0.06);
+      g.lineTo(0,size*0.12);
+      g.lineTo(-size*0.06,-size*0.06);
+      g.closePath();
+      g.stroke();
+      g.restore();
+    }
+
+    g.globalAlpha = 0.26;
+    g.lineWidth = Math.max(1, size*0.016);
+    g.beginPath();
+    g.moveTo(0,-size*0.52);
+    g.lineTo(0,size*0.52);
+    g.moveTo(-size*0.52,0);
+    g.lineTo(size*0.52,0);
+    g.stroke();
+
+    g.restore();
+  }
+
+  // ---------- State ----------
+  let vorData=null, hgtData=null;
+  let W=0,H=0;
+  let seed=(Math.random()*1e9)|0;
+
+  function maybeEnable(){
+    const ok=!!(vorData && hgtData);
+    renderBtn.disabled=!ok;
+    if(ok){
+      setStatus("Ready. Click Render (or tweak sliders).");
+      cornerEl.textContent = `Voronoi ${vorData.width}×${vorData.height} | Height ${hgtData.width}×${hgtData.height}`;
+    } else {
+      setStatus("Load both images to enable rendering.");
+      cornerEl.textContent="No images loaded";
+    }
+  }
+
+  voronoiFile.addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      setStatus("Loading Voronoi…");
+      vorData = bitmapToImageData(await fileToBitmap(f));
+      seed=(Math.random()*1e9)|0;
+      maybeEnable();
+    } catch(err){
+      console.error(err);
+      setStatus("Failed to load Voronoi.");
+    }
+  });
+
+  heightFile.addEventListener("change", async (e)=>{
+    const f=e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      setStatus("Loading heightmap…");
+      hgtData = bitmapToImageData(await fileToBitmap(f));
+      seed=(Math.random()*1e9)|0;
+      maybeEnable();
+    } catch(err){
+      console.error(err);
+      setStatus("Failed to load heightmap.");
+    }
+  });
+
+  function apply(){
+    if(!vorData || !hgtData) return;
+
+    W=vorData.width; H=vorData.height;
+    out.width=W; out.height=H;
+
+    const h = (hgtData.width===W && hgtData.height===H) ? hgtData : resampleImageDataTo(hgtData,W,H);
+    const vorRGBA=vorData.data;
+    const hgtRGBA=h.data;
+
+    const dullAmt=+dull.value;
+    const oceanStr=+ocean.value;
+
+    const borderStrength=+bCore.value;
+    const soakStrength=+bSoak.value;
+    const soakWidth=(soakW.value|0);
+    const breakAmt=+breaks.value;
+
+    const seaLevel=sea.value|0;
+    const relOp=+relief.value;
+    const relC=+reliefC.value;
+    const relSc=+reliefScale.value;
+
+    const coastInkStr=+coastInk.value;
+    const coastShadowStr=+coastSh.value;
+
+    setStatus("Building paper fields…");
+    const paperFields = buildPaperFields(W,H,seed);
+
+    setStatus("Building land/coast masks…");
+    const landMask=buildLandMaskFromHeight(hgtRGBA,W,H,seaLevel);
+    const coastEdge=buildEdgeMaskBinary(landMask,W,H);
+
+    setStatus("Building border mask…");
+    const borderCore=buildCountryBorderMask(vorRGBA,W,H);
+
+    setStatus("Building border soak field…");
+    const soakRaw = boxBlurSeparable(borderCore, W, H, soakWidth);
+
+    const soakField = new Float32Array(W * H);
+    const gain = 6.5 * Math.max(1, soakWidth);
+    for(let i=0;i<soakField.length;i++){
+      const v = soakRaw[i];
+      soakField[i] = 1 - Math.exp(-v * gain);
+    }
+
+    const coastSoftRaw = boxBlurSeparable(coastEdge, W, H, 7);
+    let cMax=1e-6;
+    for(let i=0;i<coastSoftRaw.length;i++) if(coastSoftRaw[i]>cMax) cMax=coastSoftRaw[i];
+    const coastSoft = new Float32Array(W*H);
+    for(let i=0;i<coastSoft.length;i++){
+      coastSoft[i]=smoothstep(clamp(coastSoftRaw[i]/cMax,0,1));
+    }
+
+    setStatus("Computing relief…");
+    const hs=computeHillshade(hgtRGBA,W,H,seaLevel,relSc,relC);
+
+    setStatus("Rendering…");
+    const outImg=ctx.createImageData(W,H);
+    const dst=outImg.data;
+
+    // reference-ish paper + ocean palette
+    const paperBase=[244,233,213];
+    const paperWarm=[236,222,198];
+
+    // CHANGED: make the ocean *actually blue* (still paper-forward via wash)
+    // Deep -> shallow: navy -> coastal cerulean
+    const oceanDeep=[ 16,  56,  92];   // deep ocean (blue)
+    const oceanShal=[138, 196, 232];   // shallow (lighter blue)
+
+    const coastInkRGB=[44,33,26];
+    const reliefGrey=206;
+
+    const reliefKnock=0.48;
+
+    for(let y=0;y<H;y++){
+      for(let x=0;x<W;x++){
+        const p=y*W+x;
+        const i=p*4;
+
+        const grain = paperFields.grain[p];
+        const stain = paperFields.stain[p];
+        const speck = paperFields.speck[p];
+        const fold  = paperFields.fold[p];
+        const edgeA = paperFields.edge[p];
+
+        const broad = fbm(x*0.0025, y*0.0025, seed+404);
+        const paperMix = clamp(0.35 + (broad-0.5)*0.22, 0.18, 0.55);
+        let pr = lerp(paperBase[0], paperWarm[0], paperMix);
+        let pg = lerp(paperBase[1], paperWarm[1], paperMix);
+        let pb = lerp(paperBase[2], paperWarm[2], paperMix);
+
+        const gW = (grain-0.5) * 12.0;
+        pr = clamp(pr + gW, 0, 255);
+        pg = clamp(pg + gW, 0, 255);
+        pb = clamp(pb + gW, 0, 255);
+
+        if(stain>0){
+          const t = clamp(stain*0.35, 0, 1);
+          pr = lerp(pr, pr*0.90, t);
+          pg = lerp(pg, pg*0.88, t);
+          pb = lerp(pb, pb*0.86, t);
+        }
+
+        if(fold>0){
+          const t = fold*0.16;
+          pr = lerp(pr, pr+6, t);
+          pg = lerp(pg, pg+6, t);
+          pb = lerp(pb, pb+6, t);
+        }
+
+        if(edgeA>0){
+          const t = edgeA*0.55;
+          pr = lerp(pr, pr*0.80, t);
+          pg = lerp(pg, pg*0.79, t);
+          pb = lerp(pb, pb*0.78, t);
+        }
+
+        if(speck>0){
+          const t = speck*0.55;
+          pr = lerp(pr, 118, t);
+          pg = lerp(pg, 98, t);
+          pb = lerp(pb, 82, t);
+        }
+
+        const aH=hgtRGBA[i+3];
+        const hLum=(aH===0)?0:luminance255(hgtRGBA[i],hgtRGBA[i+1],hgtRGBA[i+2]);
+        const isLand = (hLum>=seaLevel);
+        const cS = coastSoft[p];
+
+        let r=pr, g=pg, b=pb;
+
+        if(!isLand){
+          const depth = clamp(1 - cS*1.25, 0, 1);
+          let or = lerp(oceanShal[0], oceanDeep[0], depth);
+          let og = lerp(oceanShal[1], oceanDeep[1], depth);
+          let ob = lerp(oceanShal[2], oceanDeep[2], depth);
+
+          const wv = fbm(x*0.010, y*0.010, seed+606);
+          const wmul = lerp(0.94, 1.06, wv);
+          or*=wmul; og*=wmul; ob*=wmul;
+
+          // OPTIONAL (leave as-is): if you want even bluer oceans, bump 0.58 -> 0.70
+          const washA = clamp(0.70*oceanStr, 0, 1);
+          [r,g,b] = applyWashToPaper([pr,pg,pb], [or,og,ob], washA, grain, stain);
+
+          // coastal shadow band: nudge cooler (still subtle)
+          const sh = coastShadowStr * cS * 0.55;
+          r = lerp(r, 32, sh);
+          g = lerp(g, 56, sh);
+          b = lerp(b, 78, sh);
+
+          dst[i]=clamp(r,0,255);
+          dst[i+1]=clamp(g,0,255);
+          dst[i+2]=clamp(b,0,255);
+          dst[i+3]=255;
+          continue;
+        }
+
+        const va=vorRGBA[i+3];
+        let fillR, fillG, fillB;
+
+        if(va===0){
+          fillR=pr; fillG=pg; fillB=pb;
+        } else {
+          const vr=vorRGBA[i], vg=vorRGBA[i+1], vb=vorRGBA[i+2];
+          [fillR,fillG,fillB]=dullPoliticalColor(vr,vg,vb,dullAmt);
+        }
+
+        const washN1 = fbm(x*0.018, y*0.018, seed+1001);
+        const washN2 = fbm(x*0.055, y*0.055, seed+1002);
+        const washVar = (washN1-0.5)*0.10 + (washN2-0.5)*0.06;
+        fillR = clamp(fillR*(1+washVar),0,255);
+        fillG = clamp(fillG*(1+washVar),0,255);
+        fillB = clamp(fillB*(1+washVar),0,255);
+
+        const washAlpha = clamp(0.64 + (grain-0.5)*0.08, 0.50, 0.75);
+        [r,g,b] = applyWashToPaper([pr,pg,pb], [fillR,fillG,fillB], washAlpha, grain, stain);
+
+        if(relOp>0){
+          const shade = hs[p];
+          const k = (shade - 0.5);
+          const dark = clamp(-k * 0.90, 0, 1);
+          const light = clamp(k * 0.58, 0, 1);
+
+          const borderInfluence = clamp(borderCore[p] + soakField[p]*0.90, 0, 1);
+          const relLocal = relOp * (1 - borderInfluence*reliefKnock);
+
+          if(dark>0){
+            const t=clamp(dark*relLocal,0,1);
+            r = lerp(r, r*0.72, t);
+            g = lerp(g, g*0.72, t);
+            b = lerp(b, b*0.72, t);
+          }
+          if(light>0){
+            const t=clamp(light*relLocal,0,1);
+            r = lerp(r, 225, t*0.30);
+            g = lerp(g, 225, t*0.30);
+            b = lerp(b, 225, t*0.30);
+          }
+
+          const gt = 0.12 * relLocal;
+          r = lerp(r, reliefGrey, gt);
+          g = lerp(g, reliefGrey, gt);
+          b = lerp(b, reliefGrey, gt);
+        }
+
+        if(cS>0){
+          const lift = cS * 0.10;
+          r = lerp(r, r+12, lift);
+          g = lerp(g, g+12, lift);
+          b = lerp(b, b+12, lift);
+        }
+
+        if(soakField[p] > 0 || borderCore[p] > 0){
+          const nWob = fbm(x*0.055, y*0.055, seed+1501);
+          const wobble = lerp(0.90, 1.14, nWob);
+
+          const bn = fbm(x*0.17, y*0.17, seed+1502);
+          const breakMask = (breakAmt>0) ? clamp((bn - (1.0 - breakAmt)) / breakAmt, 0, 1) : 0;
+          const breakFadeCore = 1 - breakMask*0.78;
+
+          const sT = clamp(soakField[p] * soakStrength * wobble, 0, 1.6);
+
+          const cT = (borderCore[p] > 0)
+            ? clamp(borderStrength * wobble, 0, 1.6) * breakFadeCore
+            : 0;
+
+          const [sr,sg,sb] = pigmentBorderTone(r,g,b, sT);
+          const [cr,cg,cb] = pigmentBorderTone(r,g,b, cT + 0.35);
+
+          const absorb = clamp(0.86 + stain*0.18 + (grain-0.5)*0.10, 0.70, 1.18);
+
+          if(sT>0){
+            const t = clamp(sT*0.70*absorb, 0, 1);
+            r = lerp(r, sr, t);
+            g = lerp(g, sg, t);
+            b = lerp(b, sb, t);
+          }
+          if(cT>0){
+            const t = clamp(cT*0.88*absorb, 0, 1);
+            r = lerp(r, cr, t);
+            g = lerp(g, cg, t);
+            b = lerp(b, cb, t);
+          }
+        }
+
+        if(coastEdge[p]>0 && coastInkStr>0){
+          const n = fbm(x*0.10, y*0.10, seed+303);
+          const t = clamp(coastInkStr * lerp(0.72, 1.18, n), 0, 1.25);
+          r = lerp(r, coastInkRGB[0], t);
+          g = lerp(g, coastInkRGB[1], t);
+          b = lerp(b, coastInkRGB[2], t);
+        }
+
+        dst[i]=clamp(r,0,255);
+        dst[i+1]=clamp(g,0,255);
+        dst[i+2]=clamp(b,0,255);
+        dst[i+3]=255;
+      }
+    }
+
+    ctx.putImageData(outImg,0,0);
+
+    ctx.save();
+    ctx.globalCompositeOperation="multiply";
+    ctx.globalAlpha=0.10;
+    ctx.fillStyle="rgb(246,235,216)";
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
+
+    drawGraticule(ctx, W,H, seed);
+    drawCompassRose(ctx, W,H);
+
+    ctx.save();
+    ctx.globalCompositeOperation="multiply";
+    const grd = ctx.createRadialGradient(W*0.50,H*0.44, Math.min(W,H)*0.15, W*0.50,H*0.44, Math.min(W,H)*0.78);
+    grd.addColorStop(0, "rgba(0,0,0,0)");
+    grd.addColorStop(1, "rgba(80,60,40,0.22)");
+    ctx.fillStyle=grd;
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalCompositeOperation="multiply";
+    ctx.globalAlpha=0.10;
+    const dust = document.createElement("canvas");
+    dust.width=W; dust.height=H;
+    const dg = dust.getContext("2d");
+    const img = dg.createImageData(W,H);
+    const dd = img.data;
+    for(let i=0;i<W*H;i++){
+      const x = i%W, y = (i/W)|0;
+      const r = noise01(x,y,seed+90909);
+      const v = (r>0.9978) ? 90 : (r>0.9968 ? 140 : 255);
+      dd[i*4]=v; dd[i*4+1]=v; dd[i*4+2]=v; dd[i*4+3]=255;
+    }
+    dg.putImageData(img,0,0);
+    ctx.drawImage(dust,0,0);
+    ctx.restore();
+
+    setStatus("Done.");
+    downloadBtn.disabled=false;
+    cornerEl.textContent=`Rendered ${W}×${H}`;
+  }
+
+  const applyDebounced = debounce(apply, 140);
+
+  renderBtn.addEventListener("click", ()=>{
+    try{ apply(); }
+    catch(err){ console.error(err); setStatus("Render failed (check console)."); }
+  });
+
+  downloadBtn.addEventListener("click", ()=>{
+    if(!out.width || !out.height) return;
+    const a=document.createElement("a");
+    a.download="antique_political_map.png";
+    a.href=out.toDataURL("image/png");
+    a.click();
+  });
+
+  const onSlider=()=>{
+    updateLabels();
+    if(vorData && hgtData) applyDebounced();
+  };
+
+  [dull,ocean,bCore,bSoak,soakW,breaks,sea,relief,reliefC,reliefScale,coastInk,coastSh].forEach(el=>{
+    el.addEventListener("input", onSlider);
+    el.addEventListener("change", onSlider);
+  });
+
+  resetBtn.addEventListener("click", ()=>{
+    dull.value=0.62; ocean.value=0.92;
+    bCore.value=1.05; bSoak.value=0.92; soakW.value=7; breaks.value=0.18;
+    sea.value=19; relief.value=0.62; reliefC.value=1.55; reliefScale.value=3.40;
+    coastInk.value=0.95; coastSh.value=0.62;
+    updateLabels();
+    if(vorData && hgtData) applyDebounced();
+  });
+
+  updateLabels();
+  maybeEnable();
+})();
+</script>
+</body>
+</html>
