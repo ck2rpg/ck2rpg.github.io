@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voronoi Provinces: Borders + Regions + Landmasses + Waterbodies + Distance-to-Coast</title>
+
+<style>
+  :root{
+    /* Parchment palette (same family, more “modern UI” tokens) */
+    --paper-0:#fbf6ea;
+    --paper-1:#f4e9d5;
+    --paper-2:#e8dbc3;
+    --paper-3:#dcccad;
+
+    --ink-0:#2b2117;
+    --ink-1:#3c2f21;
+    --ink-2:#6b5a46;
+    --ink-3:#8a7a63;
+
+    --accent:#2f5f73;    /* ink-blue */
+    --accent2:#a65d37;   /* sienna */
+    --warn:#b45309;
+
+    --line:rgba(60,47,33,.14);
+    --line2:rgba(60,47,33,.22);
+
+    --shadow-lg: 0 20px 50px rgba(34,26,18,.14);
+    --shadow-md: 0 12px 28px rgba(34,26,18,.12);
+    --shadow-sm: 0 6px 14px rgba(34,26,18,.10);
+
+    --r-lg:18px;
+    --r-md:14px;
+    --r-sm:12px;
+
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    --serif:"Georgia","Times New Roman",serif;
+
+    --container: 1480px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink-1);
+
+    /* Modern parchment: subtle grain + soft corner vignette */
+    background:
+      radial-gradient(1200px 900px at 16% 12%, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 58%),
+      radial-gradient(1000px 760px at 88% 18%, rgba(0,0,0,.06) 0%, rgba(0,0,0,0) 62%),
+      radial-gradient(1400px 900px at 50% 110%, rgba(0,0,0,.09) 0%, rgba(0,0,0,0) 60%),
+      linear-gradient(180deg, var(--paper-0), var(--paper-2));
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{
+    width:min(var(--container), calc(100vw - 56px));
+    margin:22px auto 28px;
+  }
+  @media (max-width: 720px){
+    .wrap{width:calc(100vw - 28px); margin:14px auto 18px;}
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: minmax(720px, 1fr) minmax(360px, 460px);
+    gap:16px;
+    margin-top:14px;
+    align-items:start;
+  }
+  @media (max-width: 1180px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Top App Bar ---------- */
+  .top{
+    position:relative;
+    display:flex;
+    gap:14px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+
+    padding:18px 18px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.30));
+    box-shadow: var(--shadow-lg);
+    overflow:hidden;
+  }
+
+  /* clean “glass paper” highlight */
+  .top:before{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    pointer-events:none;
+    background:
+      radial-gradient(900px 280px at 18% 12%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+      radial-gradient(1000px 360px at 78% 72%, rgba(0,0,0,.05), rgba(0,0,0,0) 64%);
+    opacity:.85;
+    mix-blend-mode:multiply;
+  }
+
+  .brand{
+    position:relative;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    flex:1;
+    min-width:320px;
+  }
+
+  .logo{
+    width:38px;height:38px;border-radius:12px;
+    background:
+      radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%),
+      linear-gradient(180deg, rgba(47,95,115,.20), rgba(47,95,115,.06));
+    border:1px solid rgba(47,95,115,.25);
+    box-shadow: var(--shadow-sm);
+    flex:0 0 auto;
+    margin-top:2px;
+  }
+
+  h1{
+    margin:0;
+    font-size:16px;
+    line-height:1.25;
+    letter-spacing:.2px;
+    font-weight:780;
+  }
+  .sub{
+    margin-top:6px;
+    color:var(--ink-2);
+    font-size:13px;
+    line-height:1.45;
+  }
+  .mono{font-family:var(--mono)}
+  .kvs{
+    position:relative;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .pill{
+    font-size:12px;
+    color:var(--ink-2);
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.55);
+    box-shadow: var(--shadow-sm);
+    white-space:nowrap;
+  }
+  .pill strong{color:var(--ink-1)}
+  .pill.ok{border-color:rgba(47,95,115,.25)}
+  .pill.warn{border-color:rgba(166,93,55,.32)}
+  .pill.dim{opacity:.9}
+
+  /* ---------- Cards ---------- */
+  .card{
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.34));
+    box-shadow: var(--shadow-md);
+    overflow:hidden;
+  }
+
+  .card header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+
+    background:
+      linear-gradient(180deg, rgba(232,219,195,.65), rgba(244,233,213,.25));
+  }
+
+  .card header .title{
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.2px;
+    color:var(--ink-1);
+  }
+
+  .card header .tag{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-3);
+  }
+
+  .card .body{padding:14px;}
+
+  /* ---------- Form Blocks ---------- */
+  .sectionTitle{
+    margin:0 0 10px;
+    font-size:12px;
+    color:var(--ink-2);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap:12px;
+  }
+  @media (max-width: 720px){
+    .row{grid-template-columns:1fr;}
+  }
+
+  .ctrl{
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:rgba(255,255,255,.55);
+    box-shadow: var(--shadow-sm);
+    padding:12px;
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-2);
+    margin-bottom:8px;
+    font-weight:700;
+  }
+
+  input[type=file]{width:100%}
+
+  .help{
+    margin-top:8px;
+    font-size:12px;
+    color:var(--ink-3);
+    line-height:1.4;
+  }
+
+  .row2{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width: 980px){
+    .row2{grid-template-columns:1fr;}
+  }
+
+  input[type=number], input[type=text], select{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--line2);
+    padding:10px 12px;
+    background:rgba(255,255,255,.72);
+    color:var(--ink-1);
+    outline:none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+  }
+  input[type=number]:focus, input[type=text]:focus, select:focus{
+    border-color: rgba(47,95,115,.52);
+    box-shadow: 0 0 0 4px rgba(47,95,115,.14);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btns{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  button{
+    cursor:pointer;
+    border-radius:14px;
+    border:1px solid rgba(47,95,115,.28);
+    background:
+      radial-gradient(14px 14px at 30% 20%, rgba(255,255,255,.60), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(47,95,115,.22), rgba(47,95,115,.08));
+    color:var(--ink-0);
+    padding:10px 12px;
+    font-weight:800;
+    letter-spacing:.2px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .08s ease, filter .12s ease;
+  }
+  button:hover{filter:saturate(1.06) brightness(1.02)}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+  button.secondary{
+    border-color: rgba(60,47,33,.22);
+    background:
+      radial-gradient(14px 14px at 30% 20%, rgba(255,255,255,.65), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.26));
+  }
+
+  button.warn{
+    border-color: rgba(166,93,55,.38);
+    background:
+      radial-gradient(14px 14px at 30% 20%, rgba(255,255,255,.58), rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, rgba(166,93,55,.22), rgba(166,93,55,.08));
+  }
+
+  /* ---------- Status Console ---------- */
+  .status{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-2);
+    white-space:pre-wrap;
+    line-height:1.45;
+
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background: rgba(255,255,255,.60);
+    box-shadow: var(--shadow-sm);
+    padding:12px;
+    min-height:210px;
+  }
+
+  /* ---------- Preview ---------- */
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    background:#0b0b0b;
+    border-radius:var(--r-lg);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), var(--shadow-md);
+  }
+
+  .note{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--ink-3);
+    line-height:1.4;
+  }
+
+  /* ---------- Small polish ---------- */
+  .divider{height:12px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Voronoi Provinces</h1>
+        <div class="sub">
+          Borders, regions, landmasses, waterbodies, and distance-to-coast — plus optional heightmap, rivers, and tectonics meta.
+        </div>
+      </div>
+    </div>
+
+    <div class="kvs">
+      <div class="pill ok"><strong>Workflow:</strong> Upload → Compute → Export</div>
+      <div class="pill dim"><span class="mono" id="dimLbl">—</span></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <header>
+        <div class="title">Inputs & Controls</div>
+        <div class="tag">Enrich → JSON payload</div>
+      </header>
+
+      <div class="body">
+    <div class="sectionTitle">Inputs</div>
+
+    <div class="row">
+            <div class="ctrl">
+                <label>Province map image</label>
+                <input id="imgFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="ctrl">
+                <label>Provinces JSON file</label>
+                <input id="jsonFile" type="file" accept=".json,.txt,application/json,text/plain" />
+            </div>
+
+            <div class="ctrl">
+                <label>Heightmap image (optional, grayscale)</label>
+                <input id="heightFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="ctrl">
+                <label>River map image (optional, indexed)</label>
+                <input id="riverFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="ctrl" style="grid-column:1 / -1">
+            <label>Tectonics Meta (PNG)</label>
+            <input id="tectMetaFile" type="file" accept="image/png,image/*" />
+            <div id="tectMetaStatus" class="help mono">No file loaded</div>
+            </div>
+
+            <div class="ctrl">
+                <label>Köppen map image (optional, indexed)</label>
+                <input id="koppenFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="ctrl">
+                <label>Texture map image (optional)</label>
+                <input id="textureFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="ctrl">
+                <label>Terrain map image (optional, indexed)</label>
+                <input id="terrainFile" type="file" accept="image/*" />
+            </div>
+
+
+          
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sectionTitle">Options</div>
+
+        <div class="ctrl">
+          <div class="row2">
+            <div>
+              <label>Scale (km per pixel) — optional</label>
+              <input id="kmPerPx" type="number" min="0" step="0.001" value="0" />
+              <div class="help">If &gt;0, writes <span class="mono">areaKm2</span>.</div>
+            </div>
+
+            <div>
+              <label>Missing colors</label>
+              <select id="missingMode">
+                <option value="skip" selected>Skip missing colors</option>
+                <option value="create">Create stub province for missing</option>
+              </select>
+              <div class="help">“Create stub” assigns new ids to unknown colors found in the image.</div>
+            </div>
+
+            <div>
+              <label>Island cutoff (max # provinces)</label>
+              <input id="islandCutoff" type="number" min="1" step="1" value="30" />
+              <div class="help">Landmass ≤ cutoff → <span class="mono">island</span>, else <span class="mono">continent</span>.</div>
+            </div>
+          </div>
+
+          <div class="row2" style="margin-top:12px">
+            <div>
+              <label>Terrain field name</label>
+              <input id="terrainKey" type="text" value="terrainResolved" />
+            </div>
+
+            <div>
+              <label>Include water provinces in terrain regions?</label>
+              <select id="includeWater">
+                <option value="0" selected>No (land only)</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Missing terrain handling</label>
+              <select id="missingTerrain">
+                <option value="skip" selected>Skip missing terrain</option>
+                <option value="unknown">Group as "unknown"</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="help" style="margin-top:12px">
+            Border lengths are computed <b>exactly</b> from pixel boundaries.
+            <span class="mono">distanceToCoast</span> is minimum <b>land-province neighbor hops</b> to any coastal land province.
+            Waterbodies are connected components of <b>water provinces</b> in the neighbor graph.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="btns">
+          <button id="btnLoad">1) Load inputs</button>
+          <button id="btnCompute" class="secondary" disabled>2) Compute everything</button>
+          <button id="btnExport" class="warn" disabled>3) Export enriched JSON</button>
+          <button id="btnReset" class="secondary">Reset</button>
+        </div>
+
+        <div class="divider"></div>
+        <div id="status" class="status">Status: idle</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <header>
+        <div class="title">Preview</div>
+        <div class="tag">Canvas backing store</div>
+      </header>
+      <div class="body">
+        <canvas id="cv" width="2" height="2"></canvas>
+        <div class="note">
+          The canvas backing store is used for pixel reads.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="neighborsjs/setup.js"></script>
+<script src="neighborsjs/neighborsruggedness.js"></script>
+<script src="neighborsjs/neighborsmaterials.js"></script>
+<script src="neighborsjs/neighborsrivers.js"></script>
+<script src="neighborsjs/neighborstectonics.js"></script>
+<script src="neighborsjs/buildConnectedTerrainRegions.js"></script>
+<script src="neighborsjs/buildLandmasses.js"></script>
+<script src="neighborsjs/buildWaterbodies.js"></script>
+<script src="neighborsjs/computeCoastAndMaritimeProperties.js"></script>
+<script src="neighborsjs/computeCoveragePercents.js"></script>
+<script src="neighborsjs/computeDistanceToCoast.js"></script>
+<script src="neighborsjs/computeElevationStatsFromHeightmap.js"></script>
+<script src="neighborsjs/computeElevationStatsFromProvinces.js"></script>
+<script src="neighborsjs/computeIslandClosestContinent.js"></script>
+<script src="neighborsjs/computeProvinceShapeGeometry.js"></script>
+<script src="neighborsjs/computeProvinceStatsExact.js"></script>
+<script src="neighborsjs/computeWorldLandWaterPixels.js"></script>
+<script src="neighborsjs/drawOceanMaps.js"></script>
+<script src="neighborsjs/finalizeLandmassStats.js"></script>
+<script src="neighborsjs/finalizeRegionStats.js"></script>
+<script src="neighborsjs/partitionWorldOceanIntoEarthLikeOceans.js"></script>
+<script src="neighborsjs/newTerrains.js"></script>
+<script src="neighborsjs/buttonLoad2.js"></script>
+<script src="neighborsjs/makeExportPayload.js"></script>
+<script src="neighborsjs/buttonReset.js"></script>
+<script src="neighborsjs/buttonCompute.js"></script>
+<script src="neighborsjs/buttonExport.js"></script>
+<script src="neighborsjs/annotateDivergentDistanceAndBasinTypes.js"></script>
+<script src="neighborsjs/annotateLithologyFromTectonicsAndGeom.js"></script>
+</body>
+</html>
