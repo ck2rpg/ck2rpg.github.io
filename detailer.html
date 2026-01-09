@@ -431,18 +431,23 @@ Program.register({
   id: "warp-edges-volcanoseeds",
   name: "Warp Edges + Volcano Seeds",
   enabled: true,
-  desc: "Voronoi labels + boundary colors + seed markers",
+  desc: "Voronoi labels + boundary colors + seed markers + meta export",
   async run(st){
     const W = st.W, H = st.H;
     const im = st.src || cx.getImageData(0,0,W,H);
     const S  = im.data;
 
-    const N   = (+UI.seeds.value)|0;
-    const A   = +UI.amp.value;
-    const F   = +UI.freq.value;
-    const O   = +UI.oct.value;
-    const SW  = +UI.swarp.value;
+    const N    = (+UI.seeds.value)|0;
+    const A    = +UI.amp.value;
+    const F    = +UI.freq.value;
+    const O    = +UI.oct.value;
+    const SW   = +UI.swarp.value;
     const land = st.sea;
+
+    // Optional auto-download switches (defaults true if UI missing)
+    const autoDL_edges = (UI.autoDownloadEdges ? !!UI.autoDownloadEdges.checked : true);
+    // NEW: meta download toggle (add a checkbox if you want; defaults true)
+    const autoDL_meta  = (UI.autoDownloadTectonicsMeta ? !!UI.autoDownloadTectonicsMeta.checked : true);
 
     const sx  = new Float32Array(N);
     const sy  = new Float32Array(N);
@@ -451,6 +456,7 @@ Program.register({
     const dir = new Uint8Array(N);
     const spd = new Uint8Array(N);
 
+    // Visual plate colors MUST remain unchanged for your downstream pipeline
     const rc = new Uint8Array(N);
     const gc = new Uint8Array(N);
     const bc = new Uint8Array(N);
@@ -502,19 +508,32 @@ Program.register({
     }
 
     // Persistent masks + seed list for downstream plugins
-    const edgeMask = new Uint8Array(W*H);  // all boundaries
-    const convMask = new Uint8Array(W*H);  // convergent only
-    const seedMask = new Uint8Array(W*H);  // seed pixels persisted
-    const seedPoints = [];                 // [{x,y,type:"arc"|"hotspot"}]
+    const edgeMask   = new Uint8Array(W*H); // 255 where any boundary pixel
+    const convMask   = new Uint8Array(W*H); // 255 where convergent boundary pixel
+    const seedMask   = new Uint8Array(W*H); // 1 where a volcano seed pixel
+    const seedPoints = [];
 
     const sampleH = (x,y)=>sampleGray(S,W,H,x,y);
     let stride = 0;
+
+    // --- NEW: meta image (encoded PNG) that preserves semantics for import/analyze ---
+    // Encoding (per pixel):
+    //   R = plateId+1 (1..N) for land pixels, or 0 for water (optional)
+    //   G = edgeMask (0 or 255)
+    //   B = convMask (0 or 255)
+    //   A = 255
+    //
+    // Notes:
+    // - PlateId stored as (id+1) so 0 can mean "no plate / water"
+    // - N should be <= 254 for perfect uniqueness (255 reserved-ish). If you ever exceed 254, see comment below.
+    const meta = cx.createImageData(W,H);
+    const Ma   = meta.data;
 
     for(let y=0,i=0;y<H;y++){
       for(let x=0;x<W;x++,i++){
         const L = S[i*4];
         const isLand = L >= land;
-        const id = lab[i];
+        const id = lab[i]; // 0..N-1
 
         let edge = null;
         const j  = i+1;
@@ -522,16 +541,22 @@ Program.register({
         if(x+1<W && lab[i]!==lab[j]) edge = [id, lab[j]];
         else if(y+1<H && lab[i]!==lab[j2]) edge = [id, lab[j2]];
 
+        let isEdge = 0;
+        let isConv = 0;
+
         if(edge){
           const c = interact(edge[0],edge[1],dir,spd,maxRel);
+
+          // VISUAL OUTPUT (unchanged)
           Oa[i*4]=c[0]; Oa[i*4+1]=c[1]; Oa[i*4+2]=c[2]; Oa[i*4+3]=255;
 
-          // mark boundary
+          isEdge = 255;
           edgeMask[i] = 255;
-          if(c[3]==="convergent") convMask[i] = 255;
 
-          // place volcanic seed marks *and* persist them
           if(c[3]==="convergent"){
+            isConv = 255;
+            convMask[i] = 255;
+
             stride++;
             if(stride%120===0){
               const a=edge[0], b=edge[1];
@@ -558,38 +583,93 @@ Program.register({
                 const nx = clamp((x + dx/mag*6)|0, 0, W-1);
                 const ny = clamp((y + dy/mag*6)|0, 0, H-1);
 
-                // visualize the seed
                 const ii = (ny*W + nx) * 4;
+
+                // VISUAL seed marker (unchanged)
                 Oa[ii]=seedColor[0]; Oa[ii+1]=seedColor[1]; Oa[ii+2]=seedColor[2]; Oa[ii+3]=255;
 
-                // persist the seed
                 seedMask[ny*W + nx] = 1;
                 seedPoints.push({x:nx,y:ny,type:seedType});
               }
             }
           }
         }else{
+          // VISUAL interior plate coloring (unchanged)
           if(isLand){
             Oa[i*4]=rc[id]; Oa[i*4+1]=gc[id]; Oa[i*4+2]=bc[id]; Oa[i*4+3]=255;
           }else{
             Oa[i*4]=Oa[i*4+1]=Oa[i*4+2]=0; Oa[i*4+3]=255;
           }
         }
+
+        // META OUTPUT (stable semantics, for province analyzer/import)
+        // Plate id stored for land pixels; water=0 (so you can skip quickly later)
+        const pid = isLand ? (id + 1) : 0;
+
+        Ma[i*4]   = pid;     // plate id + 1 (or 0 water)
+        Ma[i*4+1] = isEdge;  // boundary mask
+        Ma[i*4+2] = isConv;  // convergent boundary mask
+        Ma[i*4+3] = 255;
       }
     }
 
-    // expose masks/seeds for later plugins
-    st.edgeMask  = edgeMask;
-    st.convMask  = convMask;
-    st.seedMask  = seedMask;
-    st.seedPoints = seedPoints;
-    st.dir = dir;
-    st.spd = spd;
-    st.wsx = wsx;
-    st.wsy = wsy;
+    // expose masks/seeds for later plugins (unchanged + meta)
+    st.edgeMask    = edgeMask;
+    st.convMask    = convMask;
+    st.seedMask    = seedMask;
+    st.seedPoints  = seedPoints;
+    st.dir         = dir;
+    st.spd         = spd;
+    st.wsx         = wsx;
+    st.wsy         = wsy;
 
-    st.work = out;
+    // Keep your existing "work"/"edges" behavior intact
+    st.work  = out;
+    st.edges = out;
+
+    // NEW: expose the meta image for import/export/analyzer
+    st.tectonicsMeta = meta;
+
+    // draw visual image to main canvas (unchanged)
     cx.putImageData(out,0,0);
+
+    // --- Auto-download helpers (download exact image data, no timing risk) ---
+    async function downloadImageData(imageData, filename){
+      const tmp = document.createElement("canvas");
+      tmp.width = W; tmp.height = H;
+      const tctx = tmp.getContext("2d");
+      tctx.putImageData(imageData, 0, 0);
+      const blob = await new Promise(res => tmp.toBlob(res, "image/png"));
+      if(blob){
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    // Download BOTH outputs (visual + meta) if toggles allow
+    if(autoDL_edges){
+      await downloadImageData(out, `edges_${W}x${H}.png`);
+    }
+    if(autoDL_meta){
+      await downloadImageData(meta, `tectonics_meta_${W}x${H}.png`);
+    }
+
+    /*
+      IMPORTANT LIMIT NOTE (if you ever crank N huge):
+      - This meta encoding stores plate id in a single 8-bit channel (0..255).
+      - With the "id+1" trick, you have reliable unique ids for N <= 254.
+      - If you need more, we can split id across two channels:
+          R = (id & 255)
+          G = (id >> 8)
+        and move edge/conv into B/A or a second meta image.
+      For most tectonic plate counts, N <= 254 is plenty.
+    */
   }
 });
 
@@ -973,8 +1053,46 @@ Program.register({
 
 
 
-Program.register({id:"capture-edges",name:"Capture Edges Snapshot",enabled:false,desc:"Save current RGBA as edge snapshot",
-async run(st){const W=st.W,H=st.H,im=cx.getImageData(0,0,W,H);st.edges=im;Program.toast("Edges snapshot captured")}});
+Program.register({
+  id: "capture-edges",
+  name: "Capture Edges Snapshot",
+  enabled: true,
+  desc: "Save current RGBA as edge snapshot (downloads PNG)",
+  async run(st) {
+    const W = st.W, H = st.H;
+
+    // Make sure you're reading from the correct canvas/context.
+    // If `cx` is your 2D context, this is fine:
+    const im = cx.getImageData(0, 0, W, H);
+    st.edges = im;
+
+    // Convert ImageData -> PNG download
+    const tmp = document.createElement("canvas");
+    tmp.width = W; tmp.height = H;
+    const tctx = tmp.getContext("2d", { willReadFrequently: true });
+    tctx.putImageData(im, 0, 0);
+
+    const blob = await new Promise((resolve) =>
+      tmp.toBlob(resolve, "image/png")
+    );
+    if (!blob) {
+      Program.toast("Failed to encode PNG (toBlob returned null)");
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `edges_${W}x${H}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    Program.toast("Edges snapshot captured + downloaded");
+  }
+});
+
 
 Program.register({
   id: "smooth-boundaries",
