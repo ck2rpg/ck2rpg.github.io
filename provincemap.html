@@ -1,0 +1,1669 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Parchment Province Map Generator</title>
+<style>
+  :root{
+    --parchment-bg:#f4e9d5;
+    --parchment-dark:#e8dbc3;
+    --parchment-edge:#dcccad;
+
+    --ink:#3c2f21;
+    --ink-muted:#6b5a46;
+    --faint:#8a7a63;
+
+    --accent:#a65d37;
+    --accent-2:#2f5f73;
+
+    --line:rgba(60,47,33,.18);
+    --line-strong:rgba(60,47,33,.26);
+    --shadow:0 16px 44px rgba(34,26,18,.22);
+    --shadow-soft:0 10px 24px rgba(34,26,18,.16);
+
+    --r:14px;
+    --r2:18px;
+
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    --serif: "Georgia","Times New Roman",serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    overflow:hidden;
+    background:
+      radial-gradient(1100px 700px at 18% 8%, rgba(166,93,55,.12), transparent 55%),
+      radial-gradient(950px 650px at 85% 18%, rgba(47,95,115,.10), transparent 58%),
+      radial-gradient(650px 520px at 70% 95%, rgba(180,83,9,.06), transparent 60%),
+      linear-gradient(180deg, rgba(244,233,213,1), rgba(232,219,195,1));
+  }
+
+  .app{height:100vh; display:flex; gap:12px; padding:12px; min-height:0;}
+
+  .sidebar{
+    width: 360px; min-width: 320px; max-width: 420px;
+    background: linear-gradient(180deg, rgba(244,233,213,.92), rgba(232,219,195,.92));
+    border:1px solid var(--line);
+    border-radius: var(--r2);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    min-height:0;
+  }
+
+  .side-hd{
+    padding:14px 14px 10px;
+    border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; gap:6px;
+    flex:0 0 auto;
+  }
+  .side-hd h1{margin:0; font-size:16px; font-weight:850; letter-spacing:.2px; font-family:var(--serif);}
+  .side-hd .sub{
+    font-size:12px; color:var(--ink-muted); line-height:1.35;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+
+  .side-bd{
+    padding:12px 14px 14px;
+    overflow:auto;
+    display:flex; flex-direction:column; gap:12px;
+    flex:1 1 auto;
+    min-height:0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .card{
+    background: rgba(255,255,255,.35);
+    border:1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-soft);
+  }
+  .card .hd{
+    padding:10px 10px 8px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .card .hd strong{
+    font-size:12px; letter-spacing:.2px;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+  .card .bd{padding:10px}
+
+  .row{
+    display:flex; gap:10px; align-items:center;
+    flex-wrap:wrap;
+    min-width:0;
+  }
+  .row > *{min-width:0; max-width:100%}
+
+  .col{display:flex; flex-direction:column; gap:6px; min-width:0}
+  .k{display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:10px}
+  .k > *{min-width:0}
+
+  .small{
+    font-size:12px; color:var(--ink-muted);
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+  .mono{font-family:var(--mono)}
+  label{
+    font-size:12px; color:var(--ink-muted);
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+
+  input[type="number"], input[type="range"], input[type="file"]{
+    width:100%;
+    border-radius: 12px;
+    border:1px solid var(--line-strong);
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    padding:10px 10px;
+    outline:none;
+    max-width:100%;
+  }
+  input[type="range"]{padding:8px 8px}
+  input[type="file"]{padding:8px}
+
+  .btn{
+    appearance:none;
+    border:1px solid var(--line-strong);
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    border-radius: 12px;
+    padding:10px 12px;
+    font-weight:800;
+    cursor:pointer;
+    transition: transform .06s ease, background .12s ease, border-color .12s ease;
+    user-select:none;
+    box-shadow: 0 8px 18px rgba(34,26,18,.10);
+    white-space:normal;
+    line-height:1.15;
+    max-width:100%;
+  }
+  .btn:hover{background: rgba(255,255,255,.72); border-color: rgba(60,47,33,.34)}
+  .btn:active{transform: translateY(1px)}
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(166,93,55,.30), rgba(166,93,55,.16));
+    border-color: rgba(166,93,55,.34);
+  }
+  .btn.blue{
+    background: linear-gradient(180deg, rgba(47,95,115,.26), rgba(47,95,115,.12));
+    border-color: rgba(47,95,115,.30);
+  }
+
+  .pill{
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.45);
+    font-size:12px;
+    color: var(--ink-muted);
+    display:inline-flex; align-items:center; gap:8px;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .pill b{color:var(--ink); font-weight:900}
+
+  .chk{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius: 12px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.42);
+    font-size:12px;
+    color:var(--ink-muted);
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+  .chk input{margin:0}
+
+  .status{
+    padding:10px 14px;
+    border-top:1px solid var(--line);
+    background: rgba(255,255,255,.35);
+    display:flex; flex-direction:column; gap:4px;
+    flex:0 0 auto;
+    min-width:0;
+  }
+  .status .line{
+    display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    font-size:12px; color:var(--ink-muted);
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+
+  .main{
+    flex:1; min-width:0;
+    background: rgba(255,255,255,.22);
+    border:1px solid var(--line);
+    border-radius: var(--r2);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    min-height:0;
+  }
+
+  .mainbar{
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    background: rgba(255,255,255,.32);
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    flex:0 0 auto;
+  }
+  .seg{
+    display:inline-flex;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.42);
+    border-radius: 14px;
+    overflow:hidden;
+  }
+  .seg button{
+    border:0; background:transparent;
+    color:var(--ink-muted);
+    padding:9px 10px;
+    font-weight:900;
+    cursor:pointer;
+    font-family: var(--sans);
+  }
+  .seg button.active{color:var(--ink); background: rgba(255,255,255,.68);}
+  .mainbar .right{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+
+  .canvasWrap{flex:1; min-height:0; position:relative;}
+  canvas{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    image-rendering: pixelated;
+    background:
+      radial-gradient(900px 600px at 12% 12%, rgba(60,47,33,.08), transparent 58%),
+      rgba(244,233,213,.35);
+  }
+
+  @media (max-width: 980px){
+    body{overflow:auto}
+    .app{flex-direction:column; height:auto; min-height:100vh}
+    .sidebar{width:auto; max-width:none}
+    .main{min-height: 55vh}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-hd">
+      <h1>Province Map Generator</h1>
+      <div class="sub">
+        Loads showing <b>Height</b>. Seeds show on Height view. Generate to switch to <b>Provinces</b>. Downloads a definition file. Click to download province map.
+      </div>
+      <div class="row">
+        <span class="pill mono"><span id="dimLbl">—</span></span>
+        <span class="pill mono">Seeds: <b id="legend">0</b></span>
+        <span class="pill mono">Land prov: <b id="provCountLbl">—</b></span>
+      </div>
+    </div>
+
+    <div class="side-bd">
+      <div class="card">
+        <div class="hd"><strong>Heightmap</strong><span class="small mono">Auto-load</span></div>
+        <div class="bd">
+          <div class="col">
+            <label>Upload heightmap (PNG/JPG)</label>
+            <input id="heightFile" type="file" accept="image/*" />
+            <div class="small">Land is ≥ sea level (default 19). RGB converted to luminance.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><strong>Land / Water / Impassable</strong><span class="small mono" id="seaVal">thr 19</span></div>
+        <div class="bd">
+          <div class="col" style="gap:10px">
+            <div class="k">
+              <div class="col">
+                <label>Sea level</label>
+                <input id="sea" type="number" min="0" max="255" value="19" />
+              </div>
+              <div class="col">
+                <label>Impassable above height</label>
+                <input id="impHi" type="number" min="0" max="255" value="255" />
+                <div class="small">Any pixel with height ≥ this becomes province <b>0;0;0</b> (impassable). Use 255 to disable.</div>
+              </div>
+            </div>
+
+            <div class="row">
+              <label class="chk"><input id="invertMask" type="checkbox">Invert (dark=land)</label>
+              <label class="chk"><input id="overlayMask" type="checkbox" checked>Land tint (height view)</label>
+            </div>
+
+            <div class="k">
+              <div class="col">
+                <label>Tiny land cutoff (px)</label>
+                <input id="minIslandPxIn" type="number" min="0" value="400" />
+                <label class="chk"><input id="tinyAsSea" type="checkbox" checked>Tiny land → sea</label>
+              </div>
+              <div class="col">
+                <label>Tiny water cutoff (px)</label>
+                <input id="minSeaPxIn" type="number" min="0" value="100" />
+                <label class="chk"><input id="tinyWaterAsLand" type="checkbox">Tiny water → land</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <label class="chk"><input id="showEdges" type="checkbox">Edges (provinces)</label>
+              <label class="chk"><input id="oceanColoring" type="checkbox">Ocean coloring</label>
+            </div>
+
+            <div class="small">
+              IMPORTANT: Any non-impassable “pockets” fully enclosed by impassable are automatically filled into impassable (prevents speckle holes inside province 0).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><strong>Merge passes</strong><span class="small mono">Pass #2 + Force-Absorb</span></div>
+        <div class="bd">
+          <div class="col" style="gap:10px">
+            <label class="chk"><input id="mergeEnable" type="checkbox" checked>Enable merge pass #2 (same-type)</label>
+            <div class="k">
+              <div class="col">
+                <label>Merge land provinces &lt; px</label>
+                <input id="mergeLandPx" type="number" min="0" value="120" />
+              </div>
+              <div class="col">
+                <label>Merge water provinces &lt; px</label>
+                <input id="mergeWaterPx" type="number" min="0" value="120" />
+              </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid var(--line); margin:6px 0 2px">
+
+            <label class="chk"><input id="forceAbsorbEnable" type="checkbox" checked>
+              Force-Absorb: eliminate tiny provinces (guaranteed)
+            </label>
+            <div class="col">
+              <label>Force-absorb any province &lt; px (into largest-border neighbor)</label>
+              <input id="forceAbsorbPx" type="number" min="0" value="24" />
+              <div class="small">
+                Final cleanup that prevents tiny survivors. 
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><strong>Seeding</strong><span class="small mono">Defaults tuned</span></div>
+        <div class="bd">
+          <div class="k">
+            <div class="col">
+              <label>Land seeds</label>
+              <input id="landSeedsIn" type="number" min="0" value="5000" />
+            </div>
+            <div class="col">
+              <label>Sea seeds</label>
+              <input id="seaSeedsIn" type="number" min="0" value="1000" />
+            </div>
+          </div>
+
+          <div class="col" style="margin-top:10px">
+            <label>Cell size (px) for auto-seeding</label>
+            <input id="cellSizeIn" type="number" min="4" max="512" value="16" />
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn blue" id="autoSeedsBtn">Auto Seeds</button>
+            <button class="btn" id="clearSeedsBtn">Clear Seeds</button>
+            <button class="btn" id="recolorBtn">Recolor</button>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" id="runBtn" style="flex:1">Run Barrier-Voronoi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status">
+      <div class="line"><span id="status">Choose a heightmap to begin.</span><span class="mono" id="perf"></span></div>
+      <div class="line"><span class="mono">Click map to add seeds • Shift+Click to remove</span><span class="mono">Download exports current view</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="mainbar">
+      <div class="seg" id="levelSeg" title="View mode">
+        <button data-level="preview" class="active">Height</button>
+        <button data-level="provinces">Provinces</button>
+      </div>
+      <div class="right">
+        <button class="btn" id="fit">Fit</button>
+        <button class="btn primary" id="dlBtn">Download PNG</button>
+      </div>
+    </div>
+    <div class="canvasWrap">
+      <canvas id="view"></canvas>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+
+  // ===== DOM =====
+  const statusEl = document.getElementById('status');
+  const perfEl = document.getElementById('perf');
+  const dimLbl = document.getElementById('dimLbl');
+  const legend = document.getElementById('legend');
+  const provCountLbl = document.getElementById('provCountLbl');
+
+  const heightFile = document.getElementById('heightFile');
+
+  const sea = document.getElementById('sea');
+  const impHi = document.getElementById('impHi');
+  const seaVal = document.getElementById('seaVal');
+  const invertMask = document.getElementById('invertMask');
+  const overlayMask = document.getElementById('overlayMask');
+
+  const minIslandPxIn = document.getElementById('minIslandPxIn');
+  const tinyAsSea = document.getElementById('tinyAsSea');
+
+  const minSeaPxIn = document.getElementById('minSeaPxIn');
+  const tinyWaterAsLand = document.getElementById('tinyWaterAsLand');
+
+  const showEdges = document.getElementById('showEdges');
+  const oceanColoring = document.getElementById('oceanColoring');
+
+  const mergeEnable = document.getElementById('mergeEnable');
+  const mergeLandPx = document.getElementById('mergeLandPx');
+  const mergeWaterPx = document.getElementById('mergeWaterPx');
+
+  const forceAbsorbEnable = document.getElementById('forceAbsorbEnable');
+  const forceAbsorbPx = document.getElementById('forceAbsorbPx');
+
+  const landSeedsIn = document.getElementById('landSeedsIn');
+  const seaSeedsIn = document.getElementById('seaSeedsIn');
+  const cellSizeIn = document.getElementById('cellSizeIn');
+
+  const autoSeedsBtn = document.getElementById('autoSeedsBtn');
+  const clearSeedsBtn = document.getElementById('clearSeedsBtn');
+  const recolorBtn = document.getElementById('recolorBtn');
+  const runBtn = document.getElementById('runBtn');
+
+  const levelSeg = document.getElementById('levelSeg');
+  const fitBtn = document.getElementById('fit');
+  const dlBtn = document.getElementById('dlBtn');
+
+  const view = document.getElementById('view');
+  const vctx = view.getContext('2d', { willReadFrequently: true });
+
+  // offscreen
+  const heightCanvas = document.createElement('canvas');
+  const hctx = heightCanvas.getContext('2d', { willReadFrequently: true });
+
+  // ===== State =====
+  let W=0, H=0;
+  let heightData=null;      // Uint8Array W*H (0..255 luminance)
+  let baseType=null;        // Uint8Array W*H: 0=water, 1=land, 2=impassable (from sea+imp thresholds)
+  let effType=null;         // Uint8Array W*H: 0=water, 1=land, 2=impassable (after tiny cutoffs)
+
+  // components for land/water in baseType only (impassable acts as barrier)
+  let landCompId=null, landCompSize=null;
+  let waterCompId=null, waterCompSize=null;
+
+  // components for land in effType (for ensureSeedsCoverComponents)
+  let effLandCompId=null, effLandCompSize=null, effLandCompCount=0;
+
+  let seeds=[];             // only NON-IMP seeds: {x,y,isLand,id,color}
+  let palette=[];           // uint24 colors (non-black)
+  let label=null;           // Int32Array W*H: -1 for impassable/unassigned, else seedIndex 0..S-1
+
+  // Default view: HEIGHT
+  let currentLevel = 'preview';
+
+  showEdges.checked = false;
+  oceanColoring.checked = false;
+
+  // ===== Utils =====
+  function setStatus(msg){ statusEl.textContent = msg; }
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+  function idx(x,y){ return y*W+x; }
+  function rng(){ return Math.random(); }
+  function oceanRGB(){ return 0x0a2236; }
+
+  function updateSeaLabel(){
+    seaVal.textContent = invertMask.checked
+      ? `sea ${sea.value} (dark=land)` : `sea ${sea.value} (bright=land)`;
+  }
+
+  function shuffle(a){
+    for(let i=a.length-1;i>0;--i){
+      const j=(rng()*(i+1))|0;
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+  }
+
+  function makeUniquePalette(n){
+    // we also avoid black (0x000000)
+    const out=new Array(n);
+    let x=((rng()*0xFFFFFF)|1)&0xFFFFFF;
+    for(let i=0;i<n;i++){
+      x^=(x<<5)&0xFFFFFF; x^=(x>>>7); x^=(x<<3)&0xFFFFFF;
+      let y=x&0xFFFFFF;
+      let r=(y>>>16)&255,g=(y>>>8)&255,b=y&255;
+
+      // stir
+      r=(r*149+37)&255; g=(g*131+53)&255; b=(b*197+17)&255;
+
+      // avoid pure black (and avoid super-dark near-black a bit)
+      if((r|g|b) === 0) { r=17; g=19; b=23; }
+      if(r<6 && g<6 && b<6){ r=clamp(r+23,0,255); g=clamp(g+19,0,255); b=clamp(b+29,0,255); }
+
+      out[i]=(r<<16)|(g<<8)|b;
+    }
+    return out;
+  }
+
+  async function loadImageFile(file){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function setCanvasDims(w,h){
+    W=w; H=h;
+    view.width=W; view.height=H;
+    heightCanvas.width=W; heightCanvas.height=H;
+    dimLbl.textContent = `${W}×${H}`;
+  }
+
+  function buildHeightDataFromCanvas(){
+    const im = hctx.getImageData(0,0,W,H).data;
+    const out = new Uint8Array(W*H);
+    for(let i=0, k=0; k<out.length; k++, i+=4){
+      const r=im[i], g=im[i+1], b=im[i+2];
+      out[k] = (0.2126*r + 0.7152*g + 0.0722*b + 0.5) | 0;
+    }
+    return out;
+  }
+
+  // ===== Components (binary mask) =====
+  function labelComponents(maskArr, maskVal){
+    const compId=new Int32Array(W*H).fill(-1);
+    const compSize=[];
+    let count=0;
+    const qx=new Int32Array(W*H);
+    const qy=new Int32Array(W*H);
+
+    for(let y=0;y<H;y++){
+      for(let x=0;x<W;x++){
+        const k=y*W+x;
+        if(maskArr[k]!==maskVal || compId[k]!==-1) continue;
+
+        const id=count++;
+        let size=0;
+        let qh=0, qt=0;
+
+        qx[qt]=x; qy[qt]=y; qt++;
+        compId[k]=id; size++;
+
+        while(qh<qt){
+          const cx=qx[qh], cy=qy[qh]; qh++;
+          const ck=cy*W+cx;
+
+          if(cx>0){
+            const nk=ck-1;
+            if(maskArr[nk]===maskVal && compId[nk]===-1){ compId[nk]=id; qx[qt]=cx-1; qy[qt]=cy; qt++; size++; }
+          }
+          if(cx<W-1){
+            const nk=ck+1;
+            if(maskArr[nk]===maskVal && compId[nk]===-1){ compId[nk]=id; qx[qt]=cx+1; qy[qt]=cy; qt++; size++; }
+          }
+          if(cy>0){
+            const nk=ck-W;
+            if(maskArr[nk]===maskVal && compId[nk]===-1){ compId[nk]=id; qx[qt]=cx; qy[qt]=cy-1; qt++; size++; }
+          }
+          if(cy<H-1){
+            const nk=ck+W;
+            if(maskArr[nk]===maskVal && compId[nk]===-1){ compId[nk]=id; qx[qt]=cx; qy[qt]=cy+1; qt++; size++; }
+          }
+        }
+
+        compSize[id]=size;
+      }
+    }
+    return { compId, compSize, count };
+  }
+
+  // ===== Fill ALL non-imp pockets fully enclosed by impassable =====
+  // Any connected component of (type!=2) that does NOT touch the map edge is enclosed by impassable,
+  // because the only other cell type that blocks the component is impassable (2).
+  function fillAllEnclosedPocketsInImpassable(typeArr){
+    if(!typeArr) return;
+
+    const N = W*H;
+    const comp = new Int32Array(N).fill(-1);
+    const touchesEdge = []; // per comp
+    const q = new Int32Array(N);
+
+    let cid=0;
+
+    for(let k0=0;k0<N;k0++){
+      if(typeArr[k0]===2) continue;     // skip impassable itself
+      if(comp[k0]!==-1) continue;
+
+      let qh=0, qt=0;
+      q[qt++] = k0;
+      comp[k0]=cid;
+
+      let te=false;
+
+      while(qh<qt){
+        const k = q[qh++];
+        const y = (k/W)|0;
+        const x = k - y*W;
+        if(x===0 || y===0 || x===W-1 || y===H-1) te=true;
+
+        if(x>0){
+          const nk=k-1;
+          if(typeArr[nk]!==2 && comp[nk]===-1){ comp[nk]=cid; q[qt++]=nk; }
+        }
+        if(x<W-1){
+          const nk=k+1;
+          if(typeArr[nk]!==2 && comp[nk]===-1){ comp[nk]=cid; q[qt++]=nk; }
+        }
+        if(y>0){
+          const nk=k-W;
+          if(typeArr[nk]!==2 && comp[nk]===-1){ comp[nk]=cid; q[qt++]=nk; }
+        }
+        if(y<H-1){
+          const nk=k+W;
+          if(typeArr[nk]!==2 && comp[nk]===-1){ comp[nk]=cid; q[qt++]=nk; }
+        }
+      }
+
+      touchesEdge[cid] = te;
+      cid++;
+    }
+
+    // Convert all enclosed comps to impassable
+    let converted=0;
+    for(let k=0;k<N;k++){
+      if(typeArr[k]===2) continue;
+      const c = comp[k];
+      if(c>=0 && !touchesEdge[c]){
+        typeArr[k]=2;
+        converted++;
+      }
+    }
+    if(converted){
+      console.log(`fillAllEnclosedPocketsInImpassable: converted ${converted} enclosed pixels to impassable.`);
+    }
+  }
+
+  // ===== Seeds: palette + reconciliation =====
+  function colorizeSeeds(){
+    const n = seeds.length;
+    palette = makeUniquePalette(n);
+    for(let i=0;i<n;i++) seeds[i].color = palette[i];
+    legend.textContent = String(n);
+  }
+
+  function isEffLandAt(k){ return effType && effType[k]===1; }
+  function isEffWaterAt(k){ return effType && effType[k]===0; }
+  function isEffImpassableAt(k){ return effType && effType[k]===2; }
+
+  function reconcileSeedsToEffType({ mode="drop" } = {}){
+    if(!effType || !seeds || !seeds.length) return;
+
+    let flipped=0, dropped=0;
+    const out=[];
+
+    for(const s of seeds){
+      const k = idx(s.x, s.y);
+      if(k<0 || k>=W*H) continue;
+
+      const t = effType[k];
+      if(t===2){
+        // seeds are NEVER allowed on impassable
+        dropped++;
+        continue;
+      }
+
+      const effIsLand = (t===1);
+      if(!!s.isLand !== effIsLand){
+        if(mode==="flip"){
+          s.isLand = effIsLand;
+          flipped++;
+          out.push(s);
+        }else{
+          dropped++;
+        }
+      }else{
+        out.push(s);
+      }
+    }
+
+    seeds = out;
+    for(let i=0;i<seeds.length;i++) seeds[i].id=i;
+
+    if(seeds.length) colorizeSeeds();
+    else { palette=[]; legend.textContent='0'; }
+
+    if(flipped || dropped){
+      console.log(`reconcileSeedsToEffType: flipped=${flipped} dropped=${dropped} kept=${seeds.length}`);
+    }
+  }
+
+  // ===== Export definition.csv (impassable is ALWAYS province 0) =====
+  function exportDefinitionCSVFromSeeds(seedsArr, filename = "definition.csv") {
+    if (!Array.isArray(seedsArr)) {
+      console.warn("exportDefinitionCSVFromSeeds: seeds[] missing.");
+      return;
+    }
+
+    const lines = [];
+    // province 0: impassable black
+    lines.push("0;0;0;0;0;x");
+
+    // provinces 1..N : these correspond to NON-IMP seeds only
+    for (let id = 1; id <= seedsArr.length; id++) {
+      const s = seedsArr[id-1];
+      const c = (s?.color ?? 0) >>> 0;
+      const r = (c >>> 16) & 255;
+      const g = (c >>> 8) & 255;
+      const b = c & 255;
+      lines.push(`${id};${r};${g};${b};prov_${id};x`);
+    }
+
+    const csvText = lines.join("\r\n") + "\r\n";
+    const bom = "\uFEFF";
+    const blob = new Blob([bom, csvText], { type: "text/plain;charset=utf-8" });
+
+    const a = document.createElement("a");
+    a.download = filename;
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 500);
+
+    console.log(`Saved ${filename} (UTF-8 BOM). province0=impassable, provinces1..${seedsArr.length}=non-imp seeds.`);
+  }
+
+  // ===== Masks / Types =====
+  function computeMask(){
+    if(!heightData) return;
+
+    const seaThr = +sea.value|0;
+    const inv = invertMask.checked;
+    const impThrRaw = +impHi.value|0;
+    const impThr = clamp(impThrRaw, 0, 255);
+
+    baseType = new Uint8Array(W*H);
+
+    // baseType: 2 impassable, else 1 land, else 0 water
+    for(let i=0;i<baseType.length;i++){
+      const h = heightData[i];
+
+      // impassable: height >= impThr (use 255 to effectively disable unless height==255)
+      if(h >= impThr){
+        baseType[i] = 2;
+        continue;
+      }
+
+      const isLand = inv ? (h <= seaThr) : (h >= seaThr);
+      baseType[i] = isLand ? 1 : 0;
+    }
+
+    // CRITICAL: fill ALL enclosed pockets (non-imp) into impassable to avoid speckle holes in province 0
+    fillAllEnclosedPocketsInImpassable(baseType);
+
+    // Build land/water component tables for tiny cutoffs
+    // landMask1: 1 where baseType==1
+    // waterMask1: 1 where baseType==0
+    const landMask1 = new Uint8Array(W*H);
+    const waterMask1 = new Uint8Array(W*H);
+    for(let k=0;k<baseType.length;k++){
+      const t = baseType[k];
+      landMask1[k]  = (t===1) ? 1 : 0;
+      waterMask1[k] = (t===0) ? 1 : 0;
+    }
+
+    const landC  = labelComponents(landMask1, 1);
+    const waterC = labelComponents(waterMask1, 1);
+    landCompId = landC.compId; landCompSize = landC.compSize;
+    waterCompId = waterC.compId; waterCompSize = waterC.compSize;
+
+    rebuildEffectiveType();
+  }
+
+  function rebuildEffectiveType(){
+    if(!baseType) return;
+
+    const islandThr = Math.max(0,(+minIslandPxIn.value|0));
+    const seaThr    = Math.max(0,(+minSeaPxIn.value|0));
+    const treatTinyLandAsSea   = !!tinyAsSea.checked;
+    const treatTinyWaterAsLand = !!tinyWaterAsLand.checked;
+
+    effType = new Uint8Array(W*H);
+    effType.set(baseType);
+
+    // tiny land -> sea (but never touch impassable)
+    if(treatTinyLandAsSea && islandThr>0){
+      for(let k=0;k<effType.length;k++){
+        if(baseType[k]===1){
+          const cid = landCompId[k];
+          if(cid>=0 && landCompSize[cid] < islandThr){
+            effType[k] = 0;
+          }
+        }
+      }
+    }
+
+    // tiny water -> land (but never touch impassable)
+    if(treatTinyWaterAsLand && seaThr>0){
+      for(let k=0;k<effType.length;k++){
+        if(baseType[k]===0){
+          const cid = waterCompId[k];
+          if(cid>=0 && waterCompSize[cid] < seaThr){
+            effType[k] = 1;
+          }
+        }
+      }
+    }
+
+    // Recompute effective land components (for coverage)
+    const effLandMask1 = new Uint8Array(W*H);
+    for(let k=0;k<effType.length;k++) effLandMask1[k] = (effType[k]===1) ? 1 : 0;
+    const effC = labelComponents(effLandMask1, 1);
+    effLandCompId = effC.compId;
+    effLandCompSize = effC.compSize;
+    effLandCompCount = effC.count;
+
+    // Seeds: drop anything that is now on impassable; optionally flip type mismatch
+    reconcileSeedsToEffType({ mode: "drop" });
+
+    label = null;
+    provCountLbl.textContent = '—';
+    render();
+  }
+
+  // Ensure we have at least one seed in each connected land component AND each connected water component
+  // (impassable is never seeded and never becomes a province)
+  function ensureSeedsCoverComponents(){
+    if(!effType) return;
+
+    // land components from effLandCompId (already computed)
+    const land = {compId:effLandCompId, compSize:effLandCompSize, count:effLandCompCount};
+
+    // water components from effType==0
+    const waterMask1 = new Uint8Array(W*H);
+    for(let k=0;k<effType.length;k++) waterMask1[k] = (effType[k]===0) ? 1 : 0;
+    const seaC = labelComponents(waterMask1, 1);
+
+    const hasLand = new Uint8Array(land.count);
+    const hasSea  = new Uint8Array(seaC.count);
+
+    for(const s of seeds){
+      const k = s.y*W + s.x;
+      const t = effType[k];
+      if(t===2) continue; // should not happen, but safety
+      if(t===1){
+        const id=land.compId[k];
+        if(id>=0) hasLand[id]=1;
+      }else if(t===0){
+        const id=seaC.compId[k];
+        if(id>=0) hasSea[id]=1;
+      }
+    }
+
+    // helper: find first pixel in comp
+    function findFirstIndexInComp(typeArr, compArr, compWanted, wantType){
+      for(let k=0;k<compArr.length;k++){
+        if(typeArr[k]===wantType && compArr[k]===compWanted) return k;
+      }
+      return -1;
+    }
+
+    for(let id=0; id<land.count; id++){
+      if(!hasLand[id]){
+        const k=findFirstIndexInComp(effType, land.compId, id, 1);
+        if(k>=0) seeds.push({x:k%W,y:(k/W)|0,isLand:true,id:seeds.length,color:0});
+      }
+    }
+    for(let id=0; id<seaC.count; id++){
+      if(!hasSea[id]){
+        const k=findFirstIndexInComp(effType, seaC.compId, id, 0);
+        if(k>=0) seeds.push({x:k%W,y:(k/W)|0,isLand:false,id:seeds.length,color:0});
+      }
+    }
+
+    // re-id and recolor
+    for(let i=0;i<seeds.length;i++) seeds[i].id=i;
+    if(seeds.length) colorizeSeeds();
+  }
+
+  // ===== Min-heap =====
+  function makeMinHeap(cap){
+    const key=new Float32Array(cap+5);
+    const heap=new Int32Array(cap+5);
+    let n=0;
+    return {
+      push(id,k){
+        n++; let i=n; heap[i]=id; key[i]=k;
+        while(i>1){
+          const p=i>>1;
+          if(key[p]<=key[i]) break;
+          { const t=heap[i]; heap[i]=heap[p]; heap[p]=t; }
+          { const tk=key[i]; key[i]=key[p]; key[p]=tk; }
+          i=p;
+        }
+      },
+      pop(){
+        if(n===0) return -1;
+        const top=heap[1];
+        heap[1]=heap[n]; key[1]=key[n]; n--;
+        let i=1;
+        while(true){
+          let l=i<<1,r=l+1,sm=i;
+          if(l<=n && key[l]<key[sm]) sm=l;
+          if(r<=n && key[r]<key[sm]) sm=r;
+          if(sm===i) break;
+          { const t=heap[i]; heap[i]=heap[sm]; heap[sm]=t; }
+          { const tk=key[i]; key[i]=key[sm]; key[sm]=tk; }
+          i=sm;
+        }
+        return top;
+      },
+      empty(){ return n===0; }
+    };
+  }
+
+  // ===== Barrier-Voronoi (seed->pixels only within same type; impassable excluded) =====
+  function runBarrierVoronoi(){
+    if(!effType || !seeds.length) return null;
+
+    // Drop any invalid seeds (impassable), keep only land/water seeds
+    reconcileSeedsToEffType({ mode:"drop" });
+    ensureSeedsCoverComponents();
+    colorizeSeeds();
+
+    const N = W*H;
+    const dist = new Float32Array(N);
+    const lab  = new Int32Array(N);
+    dist.fill(1e30);
+    lab.fill(-1);
+
+    const heap = makeMinHeap(N);
+
+    // initialize from seeds (only land/water)
+    for(let si=0; si<seeds.length; si++){
+      const s = seeds[si];
+      const k = idx(s.x,s.y);
+      if(effType[k]===2) continue; // safety
+      dist[k]=0;
+      lab[k]=si;
+      heap.push(k,0);
+    }
+
+    const dirs=[
+      [-1,0,1],[1,0,1],[0,-1,1],[0,1,1],
+      [-1,-1,Math.SQRT2],[1,-1,Math.SQRT2],[-1,1,Math.SQRT2],[1,1,Math.SQRT2]
+    ];
+
+    while(!heap.empty()){
+      const k = heap.pop();
+      const d0 = dist[k];
+
+      // impassable never participates
+      const tHere = effType[k];
+      if(tHere===2) continue;
+
+      const y = (k/W)|0;
+      const x = k - y*W;
+
+      const si = lab[k];
+      if(si<0) continue;
+
+      const sType = seeds[si].isLand ? 1 : 0;
+      if(tHere !== sType) continue;
+
+      for(const [dx,dy,cost] of dirs){
+        const nx=x+dx, ny=y+dy;
+        if(nx<0||ny<0||nx>=W||ny>=H) continue;
+        const nk = ny*W+nx;
+
+        const tN = effType[nk];
+        if(tN===2) continue;          // blocked by impassable
+        if(tN !== sType) continue;    // barrier between land/water
+
+        const nd = d0 + cost;
+        if(nd < dist[nk]){
+          dist[nk]=nd;
+          lab[nk]=si;
+          heap.push(nk,nd);
+        }
+      }
+    }
+
+    // small repair: fill unlabeled non-imp pixels from neighbors (never touches impassable)
+    for(let pass=0; pass<3; pass++){
+      let changed=0;
+      for(let y=1;y<H-1;y++){
+        const row=y*W;
+        for(let x=1;x<W-1;x++){
+          const k=row+x;
+          if(effType[k]===2) continue;
+          if(lab[k]!==-1) continue;
+
+          const t = effType[k];
+          const a=lab[k-1], b=lab[k+1], c=lab[k-W], d=lab[k+W];
+          let pick=-1;
+          if(a>=0 && (seeds[a].isLand?1:0)===t) pick=a;
+          else if(b>=0 && (seeds[b].isLand?1:0)===t) pick=b;
+          else if(c>=0 && (seeds[c].isLand?1:0)===t) pick=c;
+          else if(d>=0 && (seeds[d].isLand?1:0)===t) pick=d;
+
+          if(pick>=0){ lab[k]=pick; changed++; }
+        }
+      }
+      if(!changed) break;
+    }
+
+    return lab;
+  }
+
+  // ===== Merge pass #2: same-type only (optional) =====
+  function mergeTinyProvincesInPlace(labels, opts){
+    const {
+      landThresholdPx = 0,
+      waterThresholdPx = 0,
+      maxIters = 20
+    } = opts || {};
+
+    const N = W*H;
+    const S = seeds.length;
+
+    const lt = landThresholdPx|0;
+    const wt = waterThresholdPx|0;
+    if(lt<=0 && wt<=0) return { merges:0, iters:0 };
+
+    let totalMerges = 0;
+
+    function findRoot(map, a){
+      while(map[a] !== a) { map[a] = map[map[a]]; a = map[a]; }
+      return a;
+    }
+
+    for(let iter=0; iter<maxIters; iter++){
+      const rep = new Int32Array(S);
+      for(let i=0;i<S;i++) rep[i]=i;
+
+      const area = new Int32Array(S);
+      for(let k=0;k<N;k++){
+        const p = labels[k];
+        if(p>=0) area[p]++;
+      }
+
+      const bestNbr = new Int32Array(S).fill(-1);
+      const bestBdr = new Int32Array(S).fill(0);
+
+      function consider(a,b,bcnt){
+        if(a===b || a<0 || b<0) return;
+        const tA = seeds[a].isLand ? 1 : 0;
+        const tB = seeds[b].isLand ? 1 : 0;
+        if(tA !== tB) return;
+        const thrA = tA ? lt : wt;
+        if(thrA<=0) return;
+        if(area[a] <= 0 || area[a] >= thrA) return;
+        if(area[b] <= 0) return;
+        if(bcnt > bestBdr[a]){ bestBdr[a]=bcnt; bestNbr[a]=b; }
+      }
+
+      const border = new Map();
+      function addBorder(a,b){
+        if(a===b || a<0 || b<0) return;
+        const lo = a<b ? a : b;
+        const hi = a<b ? b : a;
+        const key = lo*S + hi;
+        border.set(key, (border.get(key)||0) + 1);
+      }
+
+      // 4-neigh border counting
+      for(let y=0;y<H;y++){
+        const row=y*W;
+        for(let x=1;x<W;x++){
+          const a = labels[row+x-1];
+          const b = labels[row+x];
+          if(a!==b) addBorder(a,b);
+        }
+      }
+      for(let y=1;y<H;y++){
+        const row=y*W, prev=(y-1)*W;
+        for(let x=0;x<W;x++){
+          const a = labels[prev+x];
+          const b = labels[row+x];
+          if(a!==b) addBorder(a,b);
+        }
+      }
+
+      for(const [key, bcnt] of border.entries()){
+        const a = (key / S) | 0;
+        const b = key - a*S;
+        consider(a,b,bcnt);
+        consider(b,a,bcnt);
+      }
+
+      let wants=0;
+      for(let p=0;p<S;p++) if(bestNbr[p]>=0) wants++;
+      if(wants===0) return { merges: totalMerges, iters: iter };
+
+      // union merges
+      for(let p=0;p<S;p++){
+        const q = bestNbr[p];
+        if(q<0) continue;
+        const rp=findRoot(rep,p), rq=findRoot(rep,q);
+        if(rp===rq) continue;
+        rep[rp]=rq;
+        totalMerges++;
+      }
+
+      // rewrite labels
+      let changedPx=0;
+      for(let k=0;k<N;k++){
+        const p=labels[k];
+        if(p<0) continue;
+        const r=findRoot(rep,p);
+        if(r!==p){ labels[k]=r; changedPx++; }
+      }
+      if(changedPx===0) return { merges: totalMerges, iters: iter+1 };
+    }
+
+    return { merges: totalMerges, iters: maxIters };
+  }
+
+  // ===== Pass #4: FORCE-ABSORB (guarantees no provinces < threshold) =====
+  // Impassable pixels are label=-1 and are ignored (never a province).
+  function forceAbsorbTinyProvincesInPlace(labels, opts){
+    const { thresholdPx = 0, maxIters = 50 } = opts || {};
+    const thr = thresholdPx|0;
+    if(!labels || thr <= 0) return { absorbs:0, iters:0 };
+
+    const N = W*H;
+    const S = seeds.length;
+    if(S <= 0) return { absorbs:0, iters:0 };
+
+    let totalAbsorbs = 0;
+
+    function computeArea(){
+      const area = new Int32Array(S);
+      for(let k=0;k<N;k++){
+        const p = labels[k];
+        if(p>=0) area[p]++;
+      }
+      return area;
+    }
+
+    function computeBorders(){
+      const border = new Map();
+      function add(a,b){
+        if(a===b || a<0 || b<0) return;
+        const lo = a<b ? a : b;
+        const hi = a<b ? b : a;
+        const key = lo*S + hi;
+        border.set(key, (border.get(key)||0) + 1);
+      }
+      for(let y=0;y<H;y++){
+        const row=y*W;
+        for(let x=1;x<W;x++){
+          const a=labels[row+x-1], b=labels[row+x];
+          if(a!==b) add(a,b);
+        }
+      }
+      for(let y=1;y<H;y++){
+        const row=y*W, prev=(y-1)*W;
+        for(let x=0;x<W;x++){
+          const a=labels[prev+x], b=labels[row+x];
+          if(a!==b) add(a,b);
+        }
+      }
+      return border;
+    }
+
+    function bestNeighborByBorder(area, border){
+      const bestNbr = new Int32Array(S).fill(-1);
+      const bestBdr = new Int32Array(S).fill(0);
+
+      function consider(p,q,bcnt){
+        if(p<0||q<0||p>=S||q>=S) return;
+        if(area[p] <= 0) return;
+        if(area[p] >= thr) return;
+        if(area[q] <= 0) return;
+        if(bcnt > bestBdr[p]){
+          bestBdr[p]=bcnt;
+          bestNbr[p]=q;
+        }
+      }
+
+      for(const [key, bcnt] of border.entries()){
+        const a = (key / S) | 0;
+        const b = key - a*S;
+        consider(a,b,bcnt);
+        consider(b,a,bcnt);
+      }
+      return { bestNbr, bestBdr };
+    }
+
+    for(let iter=0; iter<maxIters; iter++){
+      const area = computeArea();
+
+      let anyTiny=false;
+      for(let p=0;p<S;p++){
+        if(area[p] > 0 && area[p] < thr){ anyTiny=true; break; }
+      }
+      if(!anyTiny) return { absorbs: totalAbsorbs, iters: iter };
+
+      const border = computeBorders();
+      const { bestNbr } = bestNeighborByBorder(area, border);
+
+      const absorbTo = new Int32Array(S).fill(-1);
+      let planned=0;
+
+      for(let p=0;p<S;p++){
+        if(area[p] <= 0 || area[p] >= thr) continue;
+        const q = bestNbr[p];
+        if(q >= 0 && q !== p){
+          absorbTo[p] = q;
+          planned++;
+        }
+      }
+
+      if(planned === 0){
+        // attempt local fixes
+        let fixed=0;
+        for(let y=1;y<H-1;y++){
+          const row=y*W;
+          for(let x=1;x<W-1;x++){
+            const k=row+x;
+            const p=labels[k];
+            if(p<0) continue;
+            if(area[p] >= thr) continue;
+            const a=labels[k-1], b=labels[k+1], c=labels[k-W], d=labels[k+W];
+            let q = (a>=0 && a!==p) ? a : (b>=0 && b!==p) ? b : (c>=0 && c!==p) ? c : (d>=0 && d!==p) ? d : -1;
+            if(q>=0){ labels[k]=q; fixed++; }
+          }
+        }
+        if(fixed===0) return { absorbs: totalAbsorbs, iters: iter };
+        totalAbsorbs += fixed;
+        continue;
+      }
+
+      let changedPx=0, absorbedCount=0;
+      for(let k=0;k<N;k++){
+        const p=labels[k];
+        if(p<0) continue;
+        const q=absorbTo[p];
+        if(q>=0 && q!==p){
+          labels[k]=q;
+          changedPx++;
+        }
+      }
+
+      for(let p=0;p<S;p++) if(absorbTo[p]>=0) absorbedCount++;
+      totalAbsorbs += absorbedCount;
+
+      if(changedPx===0) return { absorbs: totalAbsorbs, iters: iter+1 };
+    }
+
+    return { absorbs: totalAbsorbs, iters: maxIters };
+  }
+
+  // ===== Rendering =====
+  function render(){
+    if(!W || !H){
+      vctx.clearRect(0,0,view.width,view.height);
+      return;
+    }
+    vctx.imageSmoothingEnabled = false;
+
+    if(currentLevel === 'preview'){
+      vctx.clearRect(0,0,W,H);
+      vctx.drawImage(heightCanvas,0,0,W,H);
+
+      // tint land only (effType==1)
+      if(overlayMask.checked && effType){
+        const im = vctx.getImageData(0,0,W,H);
+        const d = im.data;
+        for(let k=0;k<effType.length;k++){
+          if(effType[k]!==1) continue;
+          const i=k*4;
+          d[i]   = (d[i]   + 18) > 255 ? 255 : (d[i]   + 18);
+          d[i+1] = (d[i+1] + 14) > 255 ? 255 : (d[i+1] + 14);
+          d[i+2] = (d[i+2] +  6) > 255 ? 255 : (d[i+2] +  6);
+        }
+        vctx.putImageData(im,0,0);
+      }
+
+      // optional: visualize impassable on height view as dark overlay
+      if(effType){
+        const im = vctx.getImageData(0,0,W,H);
+        const d = im.data;
+        for(let k=0;k<effType.length;k++){
+          if(effType[k]!==2) continue;
+          const i=k*4;
+          d[i]=0; d[i+1]=0; d[i+2]=0; d[i+3]=255;
+        }
+        vctx.putImageData(im,0,0);
+      }
+
+      if(seeds.length){
+        vctx.globalAlpha = 0.95;
+        for(const s of seeds){
+          vctx.fillStyle = s.isLand ? 'rgba(22,101,52,.95)' : 'rgba(47,95,115,.95)';
+          vctx.beginPath(); vctx.arc(s.x,s.y,2,0,Math.PI*2); vctx.fill();
+          vctx.strokeStyle = 'rgba(60,47,33,.95)'; vctx.lineWidth=0.75; vctx.stroke();
+        }
+        vctx.globalAlpha = 1;
+      }
+      return;
+    }
+
+    // provinces view
+    if(!label || !effType){
+      vctx.clearRect(0,0,W,H);
+      vctx.drawImage(heightCanvas,0,0,W,H);
+      return;
+    }
+
+    const img = vctx.createImageData(W,H);
+    const d = img.data;
+
+    const ocean = oceanRGB();
+    const oceanR=(ocean>>16)&255, oceanG=(ocean>>8)&255, oceanB=ocean&255;
+
+    for(let k=0;k<label.length;k++){
+      const i = k*4;
+
+      // province 0: impassable => black
+      if(effType[k]===2){
+        d[i]=0; d[i+1]=0; d[i+2]=0; d[i+3]=255;
+        continue;
+      }
+
+      const p = label[k];
+      if(p<0){
+        // should not happen for non-imp, but safe
+        d[i]=0; d[i+1]=0; d[i+2]=0; d[i+3]=255;
+        continue;
+      }
+
+      // optional ocean coloring
+      if(oceanColoring.checked && effType[k]===0){
+        d[i]=oceanR; d[i+1]=oceanG; d[i+2]=oceanB; d[i+3]=255;
+        continue;
+      }
+
+      const c = seeds[p]?.color ?? 0x444444;
+      d[i]=(c>>16)&255; d[i+1]=(c>>8)&255; d[i+2]=c&255; d[i+3]=255;
+    }
+
+    if(showEdges.checked){
+      const ex=60, ey=47, ez=33;
+      function gidAt(k){
+        if(effType[k]===2) return -99; // imp boundary
+        const p=label[k]; if(p<0) return -98;
+        if(oceanColoring.checked && effType[k]===0) return -97;
+        return p;
+      }
+      for(let y=1;y<H-1;y++){
+        for(let x=1;x<W-1;x++){
+          const k=y*W+x;
+          const a=gidAt(k);
+          const i=k*4;
+          if(a!==gidAt(k-1) || a!==gidAt(k+1) || a!==gidAt(k-W) || a!==gidAt(k+W)){
+            d[i]=ex; d[i+1]=ey; d[i+2]=ez;
+          }
+        }
+      }
+    }
+
+    vctx.putImageData(img,0,0);
+  }
+
+  // ===== View helpers =====
+  function setActiveSeg(level){
+    [...levelSeg.querySelectorAll('button')].forEach(b => b.classList.toggle('active', b.dataset.level === level));
+  }
+
+  // ===== Load workflow =====
+  function resetAllAfterLoad(){
+    seeds = [];
+    palette = [];
+    label = null;
+    legend.textContent = '0';
+    provCountLbl.textContent = '—';
+  }
+
+  async function loadFromFile(file){
+    try{
+      if(!file) return;
+      setStatus('Loading heightmap...');
+      perfEl.textContent = '';
+
+      const img = await loadImageFile(file);
+      setCanvasDims(img.naturalWidth||img.width, img.naturalHeight||img.height);
+
+      hctx.imageSmoothingEnabled = false;
+      hctx.clearRect(0,0,W,H);
+      hctx.drawImage(img,0,0,W,H);
+      heightData = buildHeightDataFromCanvas();
+
+      resetAllAfterLoad();
+      computeMask();
+
+      currentLevel = 'preview';
+      setActiveSeg(currentLevel);
+      render();
+
+      setStatus('Heightmap loaded. Auto Seeds → Run Barrier-Voronoi.');
+    }catch(err){
+      console.error(err);
+      setStatus('Failed to load heightmap.');
+    }
+  }
+
+  heightFile.addEventListener('change', () => {
+    const f = heightFile.files?.[0];
+    loadFromFile(f);
+  });
+
+  function refreshMaskAndClearLabels(){
+    computeMask();
+    label = null;
+    provCountLbl.textContent = '—';
+    render();
+  }
+
+  sea.addEventListener('input',()=>{ updateSeaLabel(); refreshMaskAndClearLabels(); });
+  invertMask.addEventListener('change',()=>{ updateSeaLabel(); refreshMaskAndClearLabels(); });
+  impHi.addEventListener('input',()=>{ refreshMaskAndClearLabels(); });
+
+  minIslandPxIn.addEventListener('input',()=>{ rebuildEffectiveType(); });
+  tinyAsSea.addEventListener('change',()=>{ rebuildEffectiveType(); });
+
+  minSeaPxIn.addEventListener('input',()=>{ rebuildEffectiveType(); });
+  tinyWaterAsLand.addEventListener('change',()=>{ rebuildEffectiveType(); });
+
+  overlayMask.addEventListener('change',()=> render());
+  showEdges.addEventListener('change',()=> render());
+  oceanColoring.addEventListener('change',()=> render());
+
+  updateSeaLabel();
+
+  // Auto Seeds: switch to Height and render seeds
+  autoSeedsBtn.addEventListener('click',()=>{
+    if(!effType){ alert('Load a heightmap first.'); return; }
+
+    const landTarget = +landSeedsIn.value|0;
+    const seaTarget  = +seaSeedsIn.value|0;
+    const cs = clamp(+cellSizeIn.value|0, 4, 512);
+
+    seeds = [];
+
+    function sampleType(target, wantType){
+      const cols = Math.max(1, Math.floor(W/cs));
+      const rows = Math.max(1, Math.floor(H/cs));
+      const cells=[];
+      for(let gy=0; gy<rows; gy++){
+        for(let gx=0; gx<cols; gx++){
+          const x0=gx*cs, y0=gy*cs; let any=false;
+          for(let y=y0; y<Math.min(y0+cs,H); y+=Math.max(1,cs>>2)){
+            for(let x=x0; x<Math.min(x0+cs,W); x+=Math.max(1,cs>>2)){
+              const k=idx(x,y);
+              if(effType[k] === wantType){ any=true; break; }
+            }
+            if(any) break;
+          }
+          if(any) cells.push([gx,gy]);
+        }
+      }
+      shuffle(cells);
+      const take = Math.min(target, cells.length);
+
+      for(let i=0;i<take;i++){
+        const [gx,gy]=cells[i];
+        let tries=0, sx=0, sy=0;
+        do{
+          sx = clamp((gx*cs + (rng()*cs)|0), 0, W-1);
+          sy = clamp((gy*cs + (rng()*cs)|0), 0, H-1);
+          tries++;
+        } while(tries<80 && (effType[idx(sx,sy)] !== wantType));
+
+        const k = idx(sx,sy);
+        if(effType[k] === wantType){
+          seeds.push({x:sx,y:sy,isLand:(wantType===1),id:seeds.length,color:0});
+        }
+      }
+    }
+
+    // Only seed land (1) and sea (0). Never seed impassable (2).
+    sampleType(landTarget, 1);
+    sampleType(seaTarget, 0);
+
+    reconcileSeedsToEffType({ mode:"drop" });
+    colorizeSeeds();
+
+    label = null;
+
+    currentLevel = 'preview';
+    setActiveSeg(currentLevel);
+    render();
+
+    setStatus(`Auto-seeded: ${seeds.filter(s=>s.isLand).length} land + ${seeds.filter(s=>!s.isLand).length} sea.`);
+  });
+
+  clearSeedsBtn.addEventListener('click',()=>{
+    seeds=[]; label=null; palette=[];
+    legend.textContent='0';
+    provCountLbl.textContent='—';
+    setStatus('Seeds cleared.');
+    render();
+  });
+
+  recolorBtn.addEventListener('click',()=>{
+    if(!seeds.length) return;
+    colorizeSeeds();
+    setStatus('Recolored palette.');
+    render();
+  });
+
+  // Click add/remove seeds (never allow seeds on impassable)
+  view.addEventListener('click',(e)=>{
+    if(!effType) return;
+    const rect = view.getBoundingClientRect();
+    const x = clamp(Math.floor((e.clientX-rect.left) * W / rect.width), 0, W-1);
+    const y = clamp(Math.floor((e.clientY-rect.top ) * H / rect.height),0, H-1);
+
+    if(e.shiftKey){
+      let bd=999999, bi=-1;
+      for(let i=0;i<seeds.length;i++){
+        const s=seeds[i];
+        const dx=s.x-x, dy=s.y-y;
+        const d=dx*dx+dy*dy;
+        if(d<bd){ bd=d; bi=i; }
+      }
+      if(bi>=0 && bd<=144){
+        seeds.splice(bi,1);
+        for(let i=0;i<seeds.length;i++) seeds[i].id=i;
+        colorizeSeeds();
+        label=null;
+        setStatus('Removed seed.');
+        render();
+      }
+      return;
+    }
+
+    const k = idx(x,y);
+    const t = effType[k];
+    if(t===2){
+      setStatus('Cannot place a seed on impassable (province 0).');
+      return;
+    }
+
+    seeds.push({ x, y, isLand: (t===1), id: seeds.length, color: 0 });
+    colorizeSeeds();
+    label=null;
+    setStatus(`Added ${(t===1)?'land':'sea'} seed @ ${x},${y}`);
+    render();
+  });
+
+  // ===== Generate =====
+  runBtn.addEventListener('click',()=>{
+    if(!effType){ alert('Upload a heightmap first.'); return; }
+    if(!seeds.length){ alert('Auto Seeds (or click to add) first.'); return; }
+
+    reconcileSeedsToEffType({ mode:"drop" });
+
+    setStatus('Running Barrier-Voronoi...');
+    const t0 = performance.now();
+
+    label = runBarrierVoronoi();
+
+    // pass #2 (optional)
+    let msg = [];
+    if(label && mergeEnable.checked){
+      const landThr = Math.max(0, (+mergeLandPx.value|0));
+      const waterThr = Math.max(0, (+mergeWaterPx.value|0));
+      if(landThr>0 || waterThr>0){
+        const res2 = mergeTinyProvincesInPlace(label, {
+          landThresholdPx: landThr,
+          waterThresholdPx: waterThr,
+          maxIters: 20
+        });
+        msg.push(`pass2 merges=${res2.merges} iters=${res2.iters}`);
+      }
+    }
+
+    // pass #4: force-absorb tiny survivors (only among non-imp provinces)
+    if(label && forceAbsorbEnable.checked){
+      const thr = Math.max(0, (+forceAbsorbPx.value|0));
+      if(thr > 0){
+        const res4 = forceAbsorbTinyProvincesInPlace(label, {
+          thresholdPx: thr,
+          maxIters: 60
+        });
+        msg.push(`forceAbsorb absorbs=${res4.absorbs} iters=${res4.iters}`);
+      }
+    }
+
+    // Land province count (non-imp only)
+    const landProvCount = seeds.reduce((n,s)=>n+(s.isLand?1:0),0);
+    provCountLbl.textContent = String(landProvCount);
+
+    currentLevel = 'provinces';
+    setActiveSeg(currentLevel);
+    render();
+
+    perfEl.textContent = `${(performance.now()-t0).toFixed(1)} ms`;
+    setStatus(msg.length ? `Done • ${msg.join(' • ')}` : 'Done. Province map generated.');
+
+    // IMPORTANT: definition.csv is ONLY for province 0 + non-imp seeds.
+    // Province 0 is impassable black; all other provinces start at 1.
+    exportDefinitionCSVFromSeeds(seeds, "definition.csv");
+  });
+
+  // ===== Seg control =====
+  levelSeg.addEventListener('click',(e)=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    currentLevel = btn.dataset.level;
+    setActiveSeg(currentLevel);
+    render();
+  });
+
+  fitBtn.addEventListener('click',()=>{ render(); setStatus('Fit (canvas fills available space).'); });
+
+  dlBtn.addEventListener('click',()=>{
+    if(!W) return;
+    const name = (currentLevel === 'provinces') ? 'provinces' : 'height';
+    const a=document.createElement('a');
+    a.download = `${name}.png`;
+    a.href = view.toDataURL('image/png');
+    a.click();
+  });
+
+})();
+</script>
+</body>
+</html>
